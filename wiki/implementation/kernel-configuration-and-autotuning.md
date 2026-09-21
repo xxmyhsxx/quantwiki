@@ -105,6 +105,8 @@ triton.Config(
 
 多次试跑还会重复修改数据。对 `out += partial`，若不重置，测试的第二次调用已不是相同初始状态；清零也只适用于目标输出本来应从零开始的情形。`reset_to_zero`、`restore_value` 或自定义 hook 用于维护这种语义，但自定义 hook 会覆盖默认 hook 的相应行为，必须检查实际执行路径。纯覆盖式 `out = f(input)` 与带状态更新的算子应分别处理。
 
+从 tile 展开到 MMA 的 lane/寄存器、AWQ split-K 与 Triton 编译产物的具体例子见 [Tensor Core 与量化 GEMM](tensor-core-quantized-gemm.md)。它把本页资源估计与真实代码接口连接起来。
+
 ## 7. 从经验建议得到可检验的选择
 
 先确定真实 shape 分布、布局、dtype、GPU 和计时范围，再提出少量能区分瓶颈的候选：例如缩小 M/N tile 检查工作不足，减小阶段数检查 shared 限制，改变 work ordering 检查缓存复用。合法性由后端与资源检查确认；资源估计只用于缩小搜索空间。

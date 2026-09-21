@@ -9,7 +9,7 @@ sources:
   - raw/papers/2026-09-21/fp8-formats/paper.pdf
   - raw/papers/2026-09-21/microscaling-formats/paper.pdf
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
-updated: 2026-09-16
+updated: 2026-09-22
 ---
 
 # FP8 与 Microscaling 数值格式
@@ -17,6 +17,8 @@ updated: 2026-09-16
 整数网格不是低精度表示的唯一形式。浮点格式用指数补充动态范围，块内共享尺度（Microscaling）进一步把有限位宽分配到一组元素上。哪些数值可表示、缩放放在哪一层、元数据占多少空间，直接决定量化器能否复用以及后端能否真正加速。
 
 本页依据 FP8 Formats for Deep Learning（arXiv:2209.05433，下称 F，全文研读；抽取文本缺表格，已回查作者 TeX 源码核对）与 Microscaling Data Formats（arXiv:2310.10537，下称 M，格式定义、值语义、转换算法与计算流局部研读），并定向核对 llama.cpp 固定快照 b820cc8e 的块结构定义。OCP FP8 与 Microscaling 规范原件未获取，涉及规范细节处只按论文转述，不冒充规范原文。仿射整数网格、分组与元数据的基本定义见 [均匀量化与分组](../quantization/uniform-quantization-and-groups.md)。
+
+指数偏置、正常数/非正规数、ULP 与累加舍入的共通基础见 [浮点表示与累加](floating-point-and-accumulation.md)。先区分动态范围和有效数字精度，再理解本页 FP8 与块尺度的取舍。
 
 ## 1. 为什么需要浮点低比特表示
 

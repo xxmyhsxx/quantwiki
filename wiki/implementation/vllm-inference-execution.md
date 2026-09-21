@@ -25,6 +25,8 @@ vLLM 把持续到达、长度不同的请求组织成一轮轮 GPU 工作。核�
 
 本页研读 raw 固定快照中的 V1 路径，以普通 decoder-only、全注意力、无推测解码的请求为解释主线。多进程职责依据 `docs/design/arch_overview.md`；执行链依据 `EngineCore.step`、`Scheduler.schedule` 和 `GPUModelRunner`。分页原理及原始论文实验复用[内存管理与批处理](serving-memory-and-batching.md)，Attention 接口和设备计算接续到[vLLM 算子设计](vllm-attention-operator-design.md)。
 
+请求背后的模型计算、下一 token 与 KV 的关系见 [Transformer 与自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)。多卡线性层的切片、归约与量化元数据见 [张量并行](tensor-parallel-quantization.md)，调度效果如何测量见 [服务性能评测](serving-performance-evaluation.md)。
+
 ## 1. 请求状态与模型执行为什么分开
 
 在线服务中，API 侧处理输入和输出流；EngineCore 管理等待/运行请求、调度和 KV 块；executor 组织 worker 执行，worker 内的 model runner 准备模型输入。它们分别面对请求生命周期、资源分配和设备执行三个问题。架构文档描述了多进程部署；单机、不同 executor 的进程组织不能由下面的逻辑图一概推出。

@@ -23,6 +23,8 @@ updated: 2026-09-22
 
 本页依据 vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。所有内容为单一快照的只读核对，本轮没有构建、导出或运行任何框架。
 
+部署时还需核对 [张量并行的分片与量化元数据](tensor-parallel-quantization.md)。后端能够加载后，按 [模型质量协议](model-quality-evaluation.md)与 [服务性能协议](serving-performance-evaluation.md)分别确认质量和收益，不能只用“支持该格式”作为完成依据。
+
 ## 1. 部署链路的环节
 
 量化模型上线至少要经过四段，任何一段不匹配都会退回未量化路径或直接报错：

@@ -21,11 +21,13 @@ updated: 2026-09-22
 
 本页依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留原始论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。这些源码分析不代表已研读对应服务论文。
 
-## 1. 为什么服务受显存而不是算力限制
+## 1. KV 容量怎样限制可用批量
 
-论文 §1 的动机分析：自回归生成逐 token 进行，每生成一个 token 都要读一遍权重与历史缓存，因此单个请求的运行是**受内存带宽限制**的，GPU 算力被闲置；提高吞吐要靠同时批处理多个请求。而批量能开多大，由显存里 KV cache 的占用方式决定——论文给出的 A100 40GB 例子中，约 65% 显存被静态权重占用，接近 30% 用于请求的动态状态（即 KV cache），剩余少部分是临时激活。**权重是常数，激活占比很小，所以 KV cache 的管理方式决定了最大批量。**
+论文 §1 的动机分析：自回归生成逐 token 进行，每生成一个 token 都要读一遍权重与历史缓存，因此论文关注的小批量生成场景常受内存带宽限制，GPU 算力被闲置；提高吞吐要靠同时批处理多个请求。而批量能开多大，由显存里 KV cache 的占用方式决定——论文给出的 A100 40GB 例子中，约 65% 显存被静态权重占用，接近 30% 用于请求的动态状态（即 KV cache），剩余少部分是临时激活。**权重是常数，激活占比很小，所以 KV cache 的管理方式决定了最大批量。**
 
-论文还给出两条量级：OPT-13B 每个 token 的 KV cache 需 800 KB（$2\times5120\times40\times2$ 字节，即键值两份、隐藏维、层数、FP16 每元素两字节），若序列长 2048，单请求缓存可达 1.6 GB；硬件趋势上，从 A100 到 H100 算力翻倍以上而显存上限仍停在 80GB，因此这一瓶颈只会更紧。
+论文还给出两条量级：OPT-13B 每个 token 的 KV cache 需 800 KB（$2\times5120\times40\times2$ 字节，即键值两份、隐藏维、层数、FP16 每元素两字节），若序列长 2048，单请求缓存可达 1.6 GB；硬件趋势上，从 A100 到 H100 算力翻倍以上而显存上限仍停在 80GB，用于说明该论文关注的容量压力；这不是对所有硬件型号、batch 和长度的普遍判断。
+
+显存容量决定能容纳多少状态，内存带宽决定搬运这些状态的时间，算力则约束计算速度，三者不能互相替代。大批量、长上下文和多卡执行会改变主导瓶颈；比较 TTFT、TPOT、吞吐及延迟目标下的有效吞吐，见 [服务性能评测](serving-performance-evaluation.md)。
 
 ## 2. 既有实现的三类浪费
 

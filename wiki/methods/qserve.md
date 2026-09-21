@@ -60,9 +60,9 @@ $\mathbf z_{\mathrm{u4}}$ 与 $\mathbf s^{(1)}_{\mathrm{u8}}$ 分别是按组的
 
 $$ \widehat q_{\mathrm{s8}}=\left\lfloor \frac{q_{\mathrm{s8}}}{s_{\mathrm{u8}}}\right\rceil\cdot s_{\mathrm{u8}}\le q_{\mathrm{s8}}+\frac{1}{2}s_{\mathrm{u8}}$$
 
-论文采用的保护范围是 $[-119,119]$，但 v3 §4.1 的中间算术有不一致：它先给出 $s_{mathrm{u8}}le17$，再写 $127-	frac12s_{mathrm{u8}}	o119.5$；直接代入 17 实为 118.5，不能照抄为有效推导。
+论文采用的保护范围是 $[-119,119]$，但 v3 §4.1 的中间算术有不一致：它先给出 $s_{\mathrm{u8}}\le17$，再写 $127-\tfrac12s_{\mathrm{u8}}\to119.5$；直接代入 17 实为 118.5，不能照抄为有效推导。
 
-**整理者补充的条件推导：** 若组内整数均已限制在 $[-119,119]$，且整数尺度按该节示例对范围除以 15 后取最近整数，则非退化组有 $sleoperatorname{round}(238/15)=16$。在整数零点、最近舍入且未发生码值截断的步骤中，误差至多 $s/2le8$，所以还原值位于 $[-127,127]$。这说明该范围在这些条件下可自洽，但不修复原文的 119.5 算术，也不替代对尺度选取、截断和退化组处理的代码核验。
+**整理者补充的条件推导：** 若组内整数均已限制在 $[-119,119]$，且整数尺度按该节示例对范围除以 15 后取最近整数，则非退化组有 $s\le\operatorname{round}(238/15)=16$。在整数零点、最近舍入且未发生码值截断的步骤中，误差至多 $s/2\le8$，所以还原值位于 $[-127,127]$。这说明该范围在这些条件下可自洽，但不修复原文的 119.5 算术，也不替代对尺度选取、截断和退化组处理的代码核验。
 
 固定代码 `w4a8_linear.py:from_linear` 接收外部尺度和零点，不能独立证明上游量化器强制了保护范围。第 176 行检查 $[-119,119]$ 的断言已被注释，实际执行的是 $[-128,127]$ 范围检查；“119 magic number”的注释与运行约束必须分开。该入口后续是打包流程，不能把这段检查当作完整校准算法。
 
@@ -112,7 +112,7 @@ $$ \arg\min_{\alpha}\left\|\mathrm{Block}(\mathbf X;\mathbf W)-\mathrm{Block}\le
 
 $$ \mathbf O=(\mathbf Q_{\mathbf X}\mathbf Q_{\mathbf W})\odot(\mathbf s_{\mathbf W}\times\mathbf s_{\mathbf X})-(\mathbf Q_{\mathbf X}\odot\mathbf S_{\mathbf X})\mathbf{ZS}_{\mathbf W},\qquad \mathbf X(\mathbf{ZS}_{\mathbf W})=\mathbf t_{\mathbf X}\times(\mathbf z_{\mathbf W}\odot\mathbf s_{\mathbf W}),$$
 
-其中 $\mathbf t_{\mathbf X}=\mathbf X\mathbf 1_k$，即每个 token 的输入通道求和。这里第二项从 $widehat{mathbf X}=mathbf Q_{mathbf X}odotmathbf S_{mathbf X}$ 改用未量化的 $mathbf X$，是论文 §5.2 明确采用的近似，不能把两种输入写成恒等。取 $mathbf t_{mathbf X}=mathbf Xmathbf 1_k$ 可复用前置浮点输入；相对严格的量化乘积，输出差为 $(widehat{mathbf X}-mathbf X)mathbf{ZS}_{mathbf W}$。两项均可整理为外维缩放，放进 GEMM 的 epilogue，而 $\mathbf t_{\mathbf X}$ 能在前一个访存受限内核里顺带算出（每个 W4A8 内核之前总是有一个访存受限内核），附加延迟可忽略。这就是先乘后减的次序。
+其中 $\mathbf t_{\mathbf X}=\mathbf X\mathbf 1_k$，即每个 token 的输入通道求和。这里第二项从 $\widehat{\mathbf X}=\mathbf Q_{\mathbf X}\odot\mathbf S_{\mathbf X}$ 改用未量化的 $\mathbf X$，是论文 §5.2 明确采用的近似，不能把两种输入写成恒等。取 $\mathbf t_{\mathbf X}=\mathbf X\mathbf 1_k$ 可复用前置浮点输入；相对严格的量化乘积，输出差为 $(\widehat{\mathbf X}-\mathbf X)\mathbf{ZS}_{\mathbf W}$。两项均可整理为外维缩放，放进 GEMM 的 epilogue，而 $\mathbf t_{\mathbf X}$ 能在前一个访存受限内核里顺带算出（每个 W4A8 内核之前总是有一个访存受限内核），附加延迟可忽略。这就是先乘后减的次序。
 
 按组量化时零点也是按组的，无法合并进 epilogue，且每个权重多一次 INT8 乘法。作者仍选择先乘后减，原因是它允许寄存器级并行：GPU 有 `vadd4`，一条 INT32 ALU 指令完成四次 INT8 加法，但没有对应的四次 INT8 乘法指令，只能用在高位补 24 个零来模拟。此处应区分无符号字节乘积与最终有符号还原值：先算 $q_{u4}s$，例如 $15\times16=240$，可放入 UINT8，却不在 SINT8 的正数范围内；再减去已缩放零点得到有符号结果。寄存器打包乘法要求各字节乘积不向邻字节进位，最终还原值还须满足有符号范围。论文统称 INT8，不应把两个范围混为一谈。先减后乘的次序不满足该条件，只能逐个相乘，效率极低。两级设计在这里同时服务于数值正确性与内核调度，这是本方法算法与系统协同的核心。
 

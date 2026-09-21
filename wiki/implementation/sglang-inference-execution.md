@@ -26,6 +26,8 @@ SGLang 的推理执行把请求、前缀复用、显存槽位和设备批次连�
 
 本页基于所收录的固定源码，选择普通自回归生成、MHA/GQA、设备内 RadixCache 的主线。从已完成输入处理的请求进入 Scheduler 开始，不展开前端编程接口、分布式路由、HiCache 分层存储或原始 SGLang 论文的实验。分页与连续批处理基础见[内存管理与批处理](serving-memory-and-batching.md)，算子侧接续到[SGLang Attention 设计](sglang-attention-operator-design.md)。
 
+模型计算的共通前置见 [Transformer 与自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)；模型内各 rank 怎样分担投影见 [张量并行与量化](tensor-parallel-quantization.md)。本页的缓存和重叠机制最终需用 [服务延迟与 goodput](serving-performance-evaluation.md)判断收益。
+
 ## 1. 从调度批次到模型批次
 
 `Scheduler.event_loop_normal` 依次接收请求、处理请求、`get_next_batch_to_run`、`run_batch`、`process_batch_result`。`ScheduleBatch` 保留请求对象和调度状态；worker 的 `forward_batch_generation` 通过 `ForwardBatch.init_new` 构造本轮模型输入，再调用 `ModelRunner.forward`。二者的职责不同，不能把修改请求队列等同于 GPU 输入已经就绪。

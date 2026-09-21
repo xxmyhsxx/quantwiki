@@ -11,14 +11,15 @@ sources:
   - raw/papers/2026-09-21/marlin/paper.pdf
   - raw/repositories/2026-09-21/marlin/source/marlin/__init__.py
   - raw/repositories/2026-09-21/marlin/source/marlin/marlin_cuda.cpp
-updated: 2026-09-16
+  - raw/repositories/2026-09-21/marlin/source/marlin/marlin_cuda_kernel.cu
+updated: 2026-09-22
 ---
 
 # Marlin：批处理 W4A16 GEMM 内核
 
 权重量化的加速通常以「生成阶段受权重读取带宽限制」为前提。当同时生成多个序列时，计算强度上升，这个前提会变弱：既有 W4A16 内核在 batch 稍大时收益迅速消失。Marlin 研究的是这条边界能不能后移——在不放弃 4 bit 权重的前提下，让中等批量仍然接近内存带宽上限。
 
-本页依据 MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（arXiv:2408.11743，下称论文，全文研读；抽取文本的 Kernel Design 段与精度表已回查作者 TeX 源码），并定向核对官方仓库固定快照 `1f25790bdd49fba53106164a24666dade68d7c90` 的 Python 接口与顶层 API。未运行任何内核，Ampere 之外的硬件行为不在本轮材料内。执行路径的共性分类见 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md)。
+本页依据 MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（arXiv:2408.11743，下称论文，全文研读；抽取文本的 Kernel Design 段与精度表已回查作者 TeX 源码），并定向核对官方仓库固定快照 `1f25790bdd49fba53106164a24666dade68d7c90` 的 Python 接口、顶层 API，并补核 CUDA 源码的 `dequant`、`mma` 与 `ldsm4`。未运行任何内核，Ampere 之外的硬件行为不在本轮材料内。执行路径的共性分类见 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md)。
 
 ## 1. 问题与 roofline 判断
 
@@ -26,7 +27,7 @@ updated: 2026-09-16
 
 $$b_{opt}\approx 50$$
 
-内存读取就会主导运行时间；$b_{opt}$ 正是「延迟既不受内存限制也不受计算限制」的批大小，也是在最大吞吐下取得最低延迟的工作点。理论上把权重从 16 bit 压到 4 bit 可得 $16/4=4\times$，但每 $G$ 个权重还要存一个 fp16 尺度，$G=128$ 时额外 $16/128=0.125$ bit/weight，因此理想上限是
+内存读取就会主导运行时间；$b_{opt}$ 正是该简化模型中权重搬运与计算耗时相当的拐点；它不是两个限制都消失，也不保证实际内核恰在此达到最优。理论上把权重从 16 bit 压到 4 bit 可得 $16/4=4\times$，但每 $G$ 个权重还要存一个 fp16 尺度，$G=128$ 时额外 $16/128=0.125$ bit/weight，因此理想上限是
 
 $$\frac{16}{4+0.125}\approx 3.87\times .$$
 
@@ -78,7 +79,9 @@ $$\frac{2MK_{sm}+0.5K_{sm}N_{sm}}{B_{l2}}<\frac{0.5K_{sm}N_{sm}}{B_{gl}},$$
 
 ## 5. 计算侧：INT4 到 FP16 的反量化
 
-**位技巧。** 直接做类型转换很慢，作者沿用 Kim 等的二进制操作思路：把 INT16 中某个 4 bit 字段取出后，用一条 `lop3` 同时完成掩码与或操作，把它变成指数为 50、尾数低 4 位正好是目标值的 FP16，再减去一个常量（指数 50、尾数 0）即得无符号值；减去 8 得到有符号值，而 8 可以直接融进被减数的低 3 位。现代 GPU 能在一个 32 bit 寄存器里并行处理两个 16 bit 操作数，因此一次可反量化两个 INT4。
+**位技巧。** `marlin_cuda_kernel.cu:dequant` 用 `lop3` 完成掩码与或操作。低半字节路径将码值 $q\in[0,15]$ 放进 FP16 编码 `0x6400` 的低 4 位：该编码的偏置指数为 25，真实指数为 $25-15=10$，对应 $1024+q$。减去 `0x6408` 对应的 1032，即得 $q-8$。`EX=0x64006400`、`SUB=0x64086408` 在一个 32 位寄存器里并行处理两个 half；高半字节路径另用乘加完成移位比例与零点修正，不能直接照搬低位减法。
+
+论文 Kernel Design 原文的“exponent of 50”与 FP16 位域及实现不符，此处按实际常量更正；FP16 的指数域只有 5 位。格式与舍入见 [浮点表示与累加](../fundamentals/numeric-formats/floating-point-and-accumulation.md)，完整编码差异见 [反量化内核](weight-only-dequant-kernels.md)，寄存器怎样进入矩阵乘见 [Tensor Core 与量化 GEMM](tensor-core-quantized-gemm.md)。
 
 **寄存器内交错。** 反量化结果要直接进入张量核心所需的寄存器布局，所以权重离线重排使每个线程读到的 16 字节正好是它需要的 8 个权重的 4 个 $16\times16$ 块；在 INT32 内部，权重按 `64207531` 的顺序交错存放，以配合上述并行解码。
 
@@ -127,7 +130,7 @@ Sparse-MARLIN 在 4 bit 权重之上叠加 NVIDIA Ampere 的结构化 2:4 稀疏
 ## 11. 局限与未验证
 
 - 未运行 Marlin 或其 vLLM 集成，未复现任何速度与精度数字；本页性能与精度均为作者报告。
-- 内核实现只在 Python 接口与顶层 API 层面核对，`marlin_cuda_kernel.cu` 的指令级细节未逐行审查。
+- 已核对 Python/顶层 API，以及 `marlin_cuda_kernel.cu` 的反量化常量、MMA/ldmatrix 和数据搬运主线；没有逐行审查全部设备分支或执行编译验证。
 - 论文未给出 Hopper 及更新架构的测量；2:4 路径要求权重可离线重排，且与结构化稀疏工具链配合，本轮未验证其端到端可用性。
 
 ## 来源身份

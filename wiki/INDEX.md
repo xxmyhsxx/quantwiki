@@ -10,6 +10,7 @@ sources: []
 
 ## 从哪里开始
 
+- **理解模型与数值**：[Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) → [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md)。
 - **建立共同基础**：[线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) → [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [校准数据与量化范围选择](theory/calibration-and-range-selection.md)。
 - **理解量化方法**：[AWQ](methods/awq.md) → [GPTQ](methods/gptq.md) → [SmoothQuant](methods/smoothquant.md) → [AWQ、GPTQ 与 SmoothQuant](methods/awq-gptq-smoothquant-comparison.md)。
 - **理解变换与研究抽象**：[对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) → [OmniQuant](methods/omniquant.md) → [AffineQuant](methods/affinequant.md) → [FlatQuant](methods/flatquant.md) → [OmniQuant、AffineQuant 与 FlatQuant](research/omniquant-affinequant-flatquant-comparison.md) → [QuaRot](methods/quarot.md) → [SpinQuant](methods/spinquant.md)。
@@ -17,11 +18,12 @@ sources: []
 - **学习算子开发**：[张量布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [GPU 执行与存储](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) → [逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) → [roofline](fundamentals/hardware/arithmetic-intensity-and-roofline.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md) → [AWQ 反量化内核](implementation/weight-only-dequant-kernels.md)。
 - **从算法走向部署**：[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) → [AWQ 的实现核对](implementation/awq-implementation.md) → [GPTQ 的实现核对](implementation/gptq-implementation.md) → [SmoothQuant 的实现核对](implementation/smoothquant-implementation.md) → [权重量化反量化内核的契约](implementation/weight-only-dequant-kernels.md) → [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md)。
 - **从推理库学习 CUDA 与 Triton**：[工作映射与张量接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [vLLM/SGLang 门控激活](implementation/gated-activation-cuda-triton-kernels.md) → [RMSNorm 行归约与残差融合](implementation/rmsnorm-cuda-triton-kernels.md) → [Attention 算子设计](implementation/sglang-attention-operator-design.md)。
+- **深入矩阵乘与多卡执行**：[Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) → [配置与自动调优](implementation/kernel-configuration-and-autotuning.md) → [张量并行与量化](implementation/tensor-parallel-quantization.md)。
 - **优化算子配置与流水**：[GPU 算子的计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md) → [Kernel 配置选择与自动调优](implementation/kernel-configuration-and-autotuning.md) → [异步拷贝与多级流水](implementation/gpu-async-copy-pipelines.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **理解 KV cache 与服务**：[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) → [KIVI](methods/kivi.md) → [SAW-INT4](methods/saw-int4.md) → [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)。
 - **理解推理框架与算子设计**：[内存管理与批处理](implementation/serving-memory-and-batching.md) → [vLLM 的 token 调度与变长批次](implementation/vllm-inference-execution.md) → [vLLM Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) → [AWQ 实现](implementation/awq-implementation.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **理解 SGLang 的缓存与算子**：[Radix 缓存、批次与重叠执行](implementation/sglang-inference-execution.md) → [KV 索引、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) → [AWQ 的 SGLang 路径](implementation/awq-implementation.md#6-跨引擎sglang)。
-- **判断误差与运行收益**：[量化误差诊断与验证](implementation/quantization-error-diagnosis.md) → [算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) → [VLM 压缩评测框架](implementation/lvlm-compression-benchmark.md) → [量化与可靠性](theory/quantization-reliability-and-selective-prediction.md)。
+- **判断误差与运行收益**：[量化误差诊断与验证](implementation/quantization-error-diagnosis.md) → [模型质量评测](implementation/model-quality-evaluation.md) → [量化与可靠性](theory/quantization-reliability-and-selective-prediction.md) → [服务性能评测](implementation/serving-performance-evaluation.md)。
 
 ## 全部知识页
 
@@ -29,6 +31,8 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) | 从 token、QKV、残差和 LM head 解释 prefill/decode、GQA 与 KV 复用。 |
+| [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
 | [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | shape、stride、dtype 和执行接口怎样决定正确读写。 |
 | [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解并行分工、mask、复用和融合。 |
 | [线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) | 线性层把一组输入特征加权组合成输出特征。 |
@@ -47,7 +51,7 @@ sources: []
 | --- | --- |
 | [积分梯度与量化敏感性：基线、路径和归因边界](theory/integrated-gradients-and-quantization-sensitivity.md) | 积分梯度（Integrated Gradients，IG）把一个标量输出相对参考输入的变化分配给输入坐标。 |
 | [量化与可靠性：选择性预测评测](theory/quantization-reliability-and-selective-prediction.md) | 多模态模型常常「很有把握地答错」。 |
-| [KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) | 权重可以离线反复优化，激活随输入即时产生，KV cache 与两者都不同：它在推理过程中逐 token 追加，既不能离线调参，也不能整批重算。 |
+| [KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) | 权重可以离线反复优化，激活随输入即时产生，KV cache 与两者都不同：它随输入在推理中追加，数值在线产生；策略可以离线校准，历史保留、重算与回收受服务成本约束。 |
 | [对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) | 对角缩放通过改变中间特征与权重的数值范围，给量化器提供更合适的输入。 |
 | [层输出重构与二阶误差补偿](theory/layer-reconstruction-second-order-compensation.md) | 量化改变权重，但我们关心的是这种改变怎样影响计算结果。 |
 | [混合精度分配：选择变量、预算与部署口径](theory/mixed-precision-allocation.md) | 混合精度分配决定不同层、模块或张量用什么量化配置。 |
@@ -94,6 +98,10 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [模型质量评测](implementation/model-quality-evaluation.md) | PPL 的有效计数、任务协议与风险—覆盖率怎样定义和比较。 |
+| [推理服务评测](implementation/serving-performance-evaluation.md) | 负载、TTFT、TPOT、吞吐与 SLO 下的 goodput 如何共同解释量化收益。 |
+| [张量并行与量化](implementation/tensor-parallel-quantization.md) | 列/行分片、GQA 复制、collective 与 group/scale/zero 如何配合。 |
+| [Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) | 从 tile、lane 和寄存器走到 ldmatrix、MMA、AWQ Triton 与编译诊断。 |
 | [vLLM 推理执行：从 token 调度到变长批次](implementation/vllm-inference-execution.md) | 请求如何分配 token 与 KV 空间，再变成算子的紧凑输入。 |
 | [vLLM 算子设计：Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) | 分页状态与元数据如何进入 Attention，设备端怎样复用、归约并适配图执行。 |
 | [SGLang 推理执行：Radix 缓存、批次调度与重叠执行](implementation/sglang-inference-execution.md) | 前缀复用如何连接缓存保护、请求映射、批次与跨轮结果。 |

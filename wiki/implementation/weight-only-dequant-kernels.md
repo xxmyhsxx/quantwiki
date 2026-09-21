@@ -175,6 +175,8 @@ _GET_IF(W_TYPE, THREAD_M_BLOCKS, THREAD_N_BLOCKS, THREAD_K_BLOCKS,
 
 这张表的用途不是排名，而是提醒：**「同一个量化格式」在不同引擎下意味着不同的内核契约**，跨引擎复用时至少要重新核对布局、模板命中条件与融合算子是否一起移植。
 
+反量化产生的寄存器片段怎样进入 Tensor Core、共享内存如何提供 A 片段，以及 AWQ Triton 的 split-K 和编译检查，继续见 [Tensor Core 与量化 GEMM](tensor-core-quantized-gemm.md)。
+
 ## 9. 可复用的实现要点
 
 1. 先写清张量契约（形状、打包因子、元数据对齐），再谈指令优化；

@@ -2,6 +2,15 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-09-22 · 全库审查后的纠错与知识衔接
+
+- 根据 65 页全库审查结果，修正 GGUF IQ1_M 总尺度的分散编码、q4 元数据字节口径、Marlin FP16 指数与位技巧、QServe 丢失转义的公式，以及可靠性页与自身 ECE 表格矛盾的总结。同步收紧 decode/带宽与 KV 离线校准的入口表述，澄清 VLM 评测页的 AWQ 泛化推断和 2 bit 比较条件。
+- 新增 6 页：Transformer 与自回归推理、浮点表示与累加、模型质量评测、服务性能评测、张量并行与量化、Tensor Core 与量化 GEMM。补齐模型形状/缓存、数值舍入、PPL/风险覆盖率、TTFT/TPOT/goodput、分片通信，以及 lane/寄存器/ldmatrix/MMA 与 AWQ Triton split-K 的解释。
+- 复用已有 vLLM、SGLang、Marlin、Triton、CS336 与可靠性论文；新增收录 NVIDIA 浮点、CUDA 11.8 PTX 片段布局及 Hugging Face PPL 三份官方文档的所用正文。保留完整版本、公开来源与快照身份，不保存原始 HTML。
+- 维护已有推理框架、部署、诊断、反量化、自动调优与数值页的相关入口，更新 INDEX。实际修改 15 个已有知识页，新增 6 页；不新增项目脚本、Skill 或过程报告。
+- 验证：21 项 CPU 教学/静态检查通过，覆盖 FP16 舍入与常量、IQ1_M 的 65,536 种尺度位模式、KV 容量、MMA 坐标与 ldmatrix 四块映射、AWQ 打包与 split-K、TP/GQA，以及评测计数与反例。受影响页面中已检查的 488 个公式经 KaTeX 转换通过，3 个 Mermaid 图解析通过；官方文档主读本摘要值与 README 一致。全库 71 个知识页、516 条来源登记（498 条本地、18 条固定 commit 外链）、953 条本地链接检查通过，无错误、警告或跳过；最终差异空白检查通过。
+- 边界：本轮完成知识写入与所列验证；没有启动服务、执行原始 CUDA/Triton kernel、多 GPU collective 或 GPU profiler，也没有得到这些 kernel 的实际编译产物。编译检查和性能诊断部分提供有源码依据的执行方法，不冒充已经测得的结果。本轮新增的验证脚本和解析依赖放在临时目录。
+
 ## 2026-09-22 · 从推理库算子学习 CUDA 与 Triton
 
 - 按本轮重点，选取已有 raw 中 vLLM `568afb3a` 与 SGLang `2f730e29` 的现成门控激活、RMSNorm 和残差融合实现，沿模型入口、包装分派与设备函数核对。版本仅用于定位；raw 与 Skill 未修改。
