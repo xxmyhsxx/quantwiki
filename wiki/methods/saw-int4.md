@@ -7,24 +7,27 @@ tags:
   - rotation
   - serving
 sources:
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_backend.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
+  - raw/papers/2026-09-21/saw-int4/source.eprint
   - raw/papers/2026-09-21/saw-int4/paper.pdf
   - raw/repositories/2026-09-21/saw-int4/source/README.md
   - raw/repositories/2026-09-21/saw-int4/source/docs/bdr_env_vars.md
   - raw/repositories/2026-09-21/saw-int4/source/SUBMODULE_VERSIONS.md
-updated: 2026-09-16
+updated: 2026-09-22
 ---
 
 # SAW-INT4：面向真实服务约束的 4 bit KV cache 量化
 
 许多 KV cache 压缩方法在离线精度与压缩率上表现不错，接入生产推理引擎后却拿不到收益。那些引擎围绕分页内存、连续批处理与融合注意力内核构建，留给额外算子与不规则访存的空间很小。SAW-INT4 不再提出更复杂的压缩算法，而是反过来问：在这些约束下，哪些方法还站得住，最简方案能有多简单。
 
-本页依据 SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（arXiv:2604.19157，预印本、标注 under review，下称论文，全文含附录研读）与官方仓库固定快照 `e51bfa72` 的 README、环境变量参考与子模块版本记录。论文的正文为 PDF 文本抽取，表格与图形按抽取内容核对；**仓库中承载融合内核的子模块未展开**，只能确认其 pin 版本。未运行任何服务或内核。KV cache 量化的共同框架见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
+本页依据 SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（arXiv:2604.19157，预印本、标注 under review，下称论文，全文含附录研读）与官方仓库固定快照 `e51bfa72` 的 README、环境变量参考与子模块版本记录。论文的正文为 PDF 文本抽取，表格与图形按抽取内容核对；本轮补读已展开的 fast-rotation 子模块 `0fcc2419`，核对 KV 写入与 Triton 解码的主机侧分派；设备端内核尚未逐行核验。未运行任何服务或内核。KV cache 量化的共同框架见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
 
 ## 1. 问题：离线指标与部署现实之间的落差
 
 论文 §1 的出发点是长上下文与 agent 负载下 KV cache 的绝对体量。作者给出的量级是：Llama 4 Scout 权重只有 218 GB，而在其 1000 万 token 最大上下文下服务单个请求就需要约 1.8 TiB 的 KV cache，比权重本身大一个数量级。
 
-随后作者指出核心矛盾：vLLM、SGLang、TensorRT-LLM 这类引擎依赖 PagedAttention、连续批处理与 FlashAttention 内核，而自回归解码受显存带宽限制，因此**任何额外的计算或不规则访存都会直接变成延迟**。既有压缩方法在这一层面各有冲突，论文把它们分为两类（§2）。
+随后作者指出核心矛盾：vLLM、SGLang、TensorRT-LLM 这类引擎依赖 PagedAttention、连续批处理与 FlashAttention 内核，而自回归解码受显存带宽限制，因此额外计算、访存与启动开销需要在实际融合路径中计量。既有压缩方法在这一层面各有冲突，论文把它们分为两类（§2）。
 
 **分页内存布局带来的冲突：**
 
@@ -40,7 +43,7 @@ updated: 2026-09-16
 - PCA/SVD 一类基变换需要在线矩阵向量乘，抬高寄存器压力并破坏分块的效率；
 - 逐通道量化常导致 channel-major 访存，破坏 GPU 注意力内核要求的合并访问。
 
-结论是「token 级量化」成为唯一同时满足分页布局与融合内核的范式：它按 token 独立处理，不引入跨块依赖，也保持合并访存。剩余的问题是补回朴素 INT4 丢掉的精度。
+作者据此选择按 token 独立处理的统一布局，以避免跨块统计并维持现有融合路径。这里的“唯一”受其页池和内核假设限制，不构成其他粒度在任何分页引擎中均不可实现的证明；支持其他布局所需的额外元数据、缓冲与内核成本应单独评估。
 
 ## 2. 方法：块对角 Hadamard 旋转
 
@@ -48,7 +51,7 @@ updated: 2026-09-16
 
 $$\widetilde{\mathbf K}=\mathrm{quant}(\mathbf K\mathbf H),\qquad \widetilde{\mathbf V}=\mathrm{quant}(\mathbf V\mathbf H),$$
 
-$\mathbf H$ 正交，保持 $\ell_2$ 范数同时重新分配能量，从而压平通道离群值；注意力可以直接在旋转空间计算，不引入额外近似误差。
+$\mathbf H$ 正交，保持 $\ell_2$ 范数并重新分配能量。保持注意力等价还需要配对操作：令 $Q'=QH$、$K'=KH$，则 $Q'K'^T=QK^T$；若同时旋转 V，输出还要乘 $H^T$，即 $(P(VH))H^T=PV$。只有旋转本身在精确算术下等价，随后量化仍产生误差。默认只旋转 K 时也必须旋转 Q，但无需还原 V 输出。
 
 全局稠密旋转代价高，论文改用**块对角旋转（BDR）**：把每个 head 的向量按块大小 $h$ 切分，每块独立旋转，整体变换为分块对角阵 $\mathbf H_{\mathrm{blk}}=\mathrm{diag}(\mathbf H_h,\dots,\mathbf H_h)$。块大小的取舍是：较大的 $h$ 混合更充分、更稳健；较小的 $h$ 并行度更高、更利于内核融合。论文报告后一半收益在实践中并不兑现——解码受显存带宽限制，旋转不是瓶颈，因此过小的块只牺牲质量而不带来端到端收益（第 4 节给出内核证据）。
 
@@ -82,7 +85,7 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数同时重新分配能量，从而压�
 
 其余模型（论文的另一张对照表）：Qwen3-8B 上 BF16 为 70.84、朴素 INT4 为 0.00、BDR-64（仅 K）为 69.86、BDR-128 为 69.97；GLM-4.7（358B）上 BF16 为 77.89、**朴素 INT4 已经是 77.21**，各 BDR 配置在 77.12 到 77.95 之间。后一组说明不同模型对该类量化的鲁棒性差别很大：对 GLM-4.7 而言旋转几乎只带来边际改善，「需要复杂方法」这一判断是模型相关的。
 
-消融还给出两条可迁移的结论（附录：旋转顺序与目标、质心数）：**只旋转键就足够**，同时旋转键与值在各模型与各块大小下几乎无差别，因此默认只旋转键以降低运行时开销；**块大小对敏感模型很重要**，Qwen3-4B 上任 16 的块大小损失可达 20 点以上，而 128 把差距压到 2 点以内。
+消融还给出两条限于所测设置的观察（附录：旋转顺序与目标、质心数）：**只旋转键就足够**，同时旋转键与值在各模型与各块大小下几乎无差别，因此默认只旋转键以降低运行时开销；**块大小对敏感模型很重要**，Qwen3-4B 上取 16 的块大小损失可达 20 点以上，而 128 把差距压到 2 点以内。
 
 ## 4. 实现：把旋转融进解码路径
 
@@ -94,6 +97,14 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数同时重新分配能量，从而压�
 
 仓库侧的配置面（快照 `e51bfa72` 的环境变量文档）与论文一致：`--kv-cache-dtype` 取 `auto`（BF16 基线）或 `int4`；`HADAMARD=1` 表示在 INT4 写入前对 K 做块 Hadamard 旋转并在解码时对 Q 做对应修正；`ROTATE_V=1` 额外旋转 V 并对注意力输出做逆旋转；`HADAMARD_ORDER` 是块大小，必须能整除 head 维度。文档给出的模式矩阵把 BF16、INT4 无旋转、INT4+BDR（仅 K）、INT4+BDR（K+V）四种模式区分开，与论文的默认选择（仅旋转 K）一致。
 
+固定版本的主机侧路径补足了配置背后的执行顺序（fast-rotation 子模块 `0fcc2419`）：
+
+1. `memory_pool.py::set_kv_buffer` 在 INT4 且启用 Hadamard 时检查块大小能否整除 head 维。`SGLANG_FUSE_HADAMARD_INT4_KV` 默认开启，调用融合旋转与写入包装；关闭后则显式 reshape、除以 $\sqrt h$、调用 Hadamard，再进入普通量化写入。
+2. `triton_backend.py` 的 decode 路径使用同一开关：融合时将 `fuse_q_hadamard=True` 和块大小传入量化 attention；关闭时在调用前显式旋转 Q。更改写入侧和读取侧必须保持一致。
+3. 若 `ROTATE_V=1`，写入端同时旋转 V，decode 返回后再显式对输出做归一化 Hadamard 还原。这条分支不能概括为所有旋转均已融入 attention；仅旋转 K 可避免该输出处理。
+
+这些是调用路径与张量变换的代码核对，尚不证明指定 GPU 上的内核正确性、实际分派或性能。
+
 ## 5. 服务级证据
 
 论文在单张 H100 80GB、Qwen3-8B、SGLang（FA3 预填充与 Triton 解码后端）上比较 BF16、INT4 与 INT4+BDR，分长上下文（平均输入 16384、输出 1024）与短上下文（平均输入 256、输出 1024）两种负载（§4.2 与附录）。
@@ -102,7 +113,7 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数同时重新分配能量，从而压�
 
 **短上下文下**显存不再是瓶颈，三种配置表现接近：低并发时 BF16 略快约 3%，并发不低于 64 时 INT4 与 BDR 的系统吞吐优势逐渐显现（并发 128 时分别 +13.5% 与 +11.2%），首 token 延迟相当。
 
-论文还报告在四种模型-硬件组合（Qwen3-4B、Qwen3-8B、Qwen3-32B 在 2×H100，GLM-4.7 358B 在 8×H100）上，INT4+BDR 在多数运行区间匹配或略优于纯 INT4 并优于 BF16；与更复杂方法的完整对照在附录。附录还给出与 Kitty 的对照，结论是后者的复杂度使其吞吐达不到 BF16 或 INT4+BDR 的水平。
+论文还报告在四种模型-硬件组合（Qwen3-4B、Qwen3-8B、Qwen3-32B 在 2×H100，GLM-4.7 358B 在 8×H100）上，INT4+BDR 在多数运行区间匹配或略优于纯 INT4 并优于 BF16；与更复杂方法的完整对照在附录。§2 的跨方法吞吐图还比较了 Kitty 等方案，但图注明确非 SGLang BF16 项使用 Hugging Face `model.generate`，缺少连续批处理与 PagedAttention。该图同时改变算法和服务后端，不能把全部差距归因于 Kitty 的量化复杂度，也不能据此给出同后端的方法速度排名。
 
 ## 6. Strong / Weak
 
@@ -121,7 +132,7 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数同时重新分配能量，从而压�
 ## 8. 未验证
 
 - 未运行论文的实现或任何服务，未复现精度、吞吐与剖析数据；本页数字全部来自论文。
-- 仓库中 `third_party/sglang-fast-rotation` 与 `third_party/sglang-kmeans` 子模块未展开，仅能确认 pin 版本（分别对应 sglang-fork 的 `0fcc241961f9c79c27f6bad9a456bf10c8554a84` 与 `43925c00fb91ce58eb2d9c6836bb2f9885ff618f`），因此融合内核的具体实现未核对。
+- fast-rotation 子模块已核对 KV 写入和 Triton decode 的主机侧路径；设备端循环、FA3 prefill 与 kmeans 子模块未在本轮逐行研读，未构建或运行。资料已展开与实现已验证是两件事。
 - 论文为预印本，其精度与吞吐结论尚待同行评审与独立复现；本页按预印本状态记录。
 
 ## 来源身份
@@ -132,3 +143,4 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数同时重新分配能量，从而压�
 | --- | --- | --- |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
 | [togethercomputer/saw-int4](https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0) | `e51bfa7291d52cd14b86e4c6ded6c002d0444ff0` | — |
+| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | fast-rotation 子模块，KV 写入及 Triton decode 主机侧路径 |

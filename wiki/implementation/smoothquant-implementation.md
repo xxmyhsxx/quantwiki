@@ -8,16 +8,17 @@ tags:
   - kernels
   - deployment
 sources:
+  - raw/papers/2026-09-21/smoothquant/paper.pdf
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/smooth.py
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/calibration.py
   - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/w8a8_int8.py
-updated: 2026-09-17
+updated: 2026-09-22
 ---
 
 # SmoothQuant 的实现核对：平滑融合、INT8 接口与离线边界
 
-SmoothQuant 的公式只有一行（`WX = (WD)(D⁻¹X)`），但工程上要回答的是：**平滑因子在哪里算、按什么统计算、融合到哪些参数上、以及服务框架拿到这份 checkpoint 时还要不要做别的事。** 第三问的答案是本页最有用的部分——它是「离线平滑、在线只需要 INT8 内核」这一分工的直接证据。
+SmoothQuant 的公式只有一行（`WX = (WD)(D⁻¹X)`），但工程上要回答的是：**平滑因子在哪里算、按什么统计算、融合到哪些参数上、以及服务框架拿到这份 checkpoint 时还要不要做别的事。** 这需要区分离线平滑因子、运行时激活量化尺度和内核重缩放系数。
 
 缩放公式、适用条件与论文证据见 [SmoothQuant](../methods/smoothquant.md)；融合的代数条件（前驱必须能吸收逆缩放、多消费者与残差要一起处理）见 [对角缩放与等价变换](../theory/diagonal-scaling-equivalent-transform.md)。
 
@@ -71,31 +72,28 @@ for fc in fcs: fc.weight.mul_(scales.view(1, -1))
 
 torch-int 的 `W8A8B8O8Linear` 是这条路径的执行端：
 
-- 构造参数为 `in_features, out_features, alpha=1.0, beta=1.0`，其中 `alpha/beta` 是权重与激活的尺度系数；
+- `from_float` 设置 `alpha = input_scale * weight_scale / output_scale`、`beta = bias_scale / output_scale`。前者把整数矩阵乘累加映射到输出网格，后者把独立量化的偏置映射到同一网格；这里的 alpha 不是平滑迁移强度；
 - `from_float(module, input_scale, output_scale)` 负责转换：权重与偏置分别用 `quantize_per_tensor_absmax` 量化（**逐张量**，不是逐通道）；
-- 因此「逐通道权重」这一说法在 SmoothQuant 论文里成立，而这条特定实现的加载接口使用的是逐张量权重尺度——两者需要在具体后端上分别核对，不能互相替代。
+- 论文 v7 表 2 的 O1/O2/O3 本来就使用逐张量权重；表 7 的后续模型设置才使用逐输出通道权重。这条 torch-int 路径的逐张量尺度不能单独当作论文与实现冲突，比较时须选同一实验配置。
 
 ## 5. 跨引擎：SGLang 的 w8a8_int8
 
-SGLang 提供 `w8a8_int8` 方法：内核走 `sgl_kernel.int8_scaled_mm`（参数含 `scales_a`、`scales_b`），配置类实现 `get_config_filenames`、`get_quant_method`、`is_layer_skipped`。最值得记录的是一处**否定性证据**：
+该快照 `W8A8Int8LinearMethod` 的普通 GPU 路径提供了比方法名更具体的契约：权重以 INT8 保存，weight_scale 的形状为 `(本分片输出通道数, 1)`；加载后转置权重。执行时先 `per_token_quant_int8(x)`，再把量化输入、逐 token 尺度、逐输出通道权重尺度交给 `int8_scaled_mm`，输出恢复为输入的 dtype。
 
-```python
-def get_scaled_act_names(self) -> List[str]:
-    return []
-```
+因此这个路径使用**动态逐 token 激活和逐输出通道权重**，不能直接等同于 O3 的静态逐张量配置；CPU 与 MoE 分支也不能据此一并推断。此处核对到 Python 调用和参数形状，尚未运行或审查底层整数内核。
 
-该接口在其它框架里用于声明「哪些激活需要额外缩放」（即平滑的运行时钩子）。本快照里它返回空列表，说明**这个后端不做在线平滑**：平滑必须已经离线完成、并被吸收进归一化参数与线性权重，引擎只需要做 INT8 计算。这与 [执行路径](quantized-matmul-scaling-execution.md) 的分类一致——引擎侧是「W8A8 整数矩阵乘 + 外维缩放」，平滑属于量化器侧。
+`get_scaled_act_names()` 返回空列表，只说明该配置没有通过这一接口声明额外激活缩放；不能仅凭空列表证明 checkpoint 已做 SmoothQuant、所有平滑均已融合或模型已正确转换。若加载的是经过平滑的模型，平滑因子与相应权重/归一化参数必须在上游保持一致；本方法名本身也不能认证它来自哪一种量化算法。
 
 ## 6. 跨引擎：TensorRT-LLM 的 int8_sq
 
-TensorRT-LLM 的量化配置里把这件事说得更直接：`int8_sq` 的描述是「权重先被平滑（smoothed）再按通道量化为 INT8，激活范围按张量校准」。也就是说**平滑是量化工具链的一部分**，与引擎解耦；这一点与我们上一节在 SGLang 看到的空钩子互相印证，见 [部署框架与后端支持](quantized-llm-deployment-backends.md) 的格式表。
+TensorRT-LLM 的量化配置里把这件事说得更直接：`int8_sq` 的描述是「权重先被平滑（smoothed）再按通道量化为 INT8，激活范围按张量校准」。也就是说**平滑是量化工具链的一部分**，与引擎解耦；这属于 TensorRT-LLM 自身配置说明，不能由 SGLang 的空钩子推出，见 [部署框架与后端支持](quantized-llm-deployment-backends.md) 的格式表。
 
 ## 7. 论文-代码对齐（本页补充）
 
-- 方法页记录的公式 $s_j=a_j^\alpha/b_j^{1-\alpha}$ 在代码里逐字出现，但 `a_j` 的取法被实现固定为「所有共享消费者上的逐通道最大激活」——论文没有规定共享归一化时如何进行这个归约；
+- 方法页记录的公式 $s_j=a_j^\alpha/b_j^{1-\alpha}$ 在代码里逐字出现，其中 `a_j` 是校准输入的逐通道激活 absmax；共享消费者之间再次取最大值的是权重侧 `b_j`，不要把两种归约写反；
 - 实现额外引入两处 `clamp(min=1e-5)`，属于数值保护而非算法部分；
 - `alpha` 在函数签名上默认 `0.5`，但论文的模型特定取值由调用方传入（`smooth_lm(model, scales, alpha)`），默认值不等于论文配置；
-- 「逐通道权重」是论文设置，而 torch-int 的加载接口用逐张量尺度；引用时应写明是哪一侧。
+- 论文表 2 与表 7 本身使用不同权重粒度；torch-int 和 SGLang 的已读路径也不同，均须逐配置记录。
 
 ## 8. 可复用的实现要点
 
@@ -103,14 +101,14 @@ TensorRT-LLM 的量化配置里把这件事说得更直接：`int8_sq` 的描述
 2. 共享归一化的所有消费者必须用同一组缩放，权重侧取逐通道最大值；
 3. 归一化带偏置时，权重与偏置一起除；RMSNorm 则只除权重；
 4. 通道与缩放都要设数值下限，并记录下限值；
-5. 明确平滑发生在离线还是在线：若目标引擎的「需要缩放的激活」清单为空，则必须先离线融合；
+5. 沿导出、加载和算子调用追踪平滑是否融合；空接口不能证明前处理正确，动态激活量化也不等于在线重新学习平滑因子；
 6. 权重尺度是逐通道还是逐张量，随执行接口变化，必须按后端核对。
 
 ## 9. 验证状态与待验证
 
 - 全部结论为 code-read；未运行校准、平滑、导出或任何 INT8 内核，未复现论文精度。
 - `fake_quant.py`、`export_int8_model.py` 与 `opt.py` 的 INT8 注意力路径未逐行审查；本页不评价导出模型的数值正确性。
-- SGLang 侧只核对了方法名、内核入口与 `get_scaled_act_names` 的返回值；未追踪 `int8_scaled_mm` 的尺度语义（逐张量还是逐通道），也未核对张量并行下的切分方式。
+- SGLang 已补读普通 GPU 线性路径的权重/尺度形状、加载后转置和逐 token 量化调用；底层 INT8 内核、完整张量并行加载及 CPU/MoE 路径未核验。
 - 预计算的 `act_scales` 未随快照保存，复现校准需要自行准备数据；本页没有运行 `get_act_scales`。
 
 ## 来源身份
@@ -119,6 +117,7 @@ TensorRT-LLM 的量化配置里把这件事说得更直接：`int8_sq` 的描述
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant.git/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
+| [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438v7) | `arXiv:2211.10438v7` | 表 2 与表 7 的权重粒度 |
+| [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
 | [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
 | [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |

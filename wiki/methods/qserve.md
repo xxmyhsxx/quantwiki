@@ -8,9 +8,10 @@ tags:
   - kv-cache
   - serving
 sources:
+  - raw/papers/2026-09-21/qserve/source.eprint
   - raw/papers/2026-09-21/qserve/paper.pdf
   - raw/repositories/2026-09-21/omniserve/source/omniserve/modeling/layers/quantized_linear/w4a8_linear.py
-updated: 2026-09-16
+updated: 2026-09-22
 ---
 
 # QServe：W4A8KV4 量化与系统协同
@@ -39,7 +40,7 @@ updated: 2026-09-16
 
 **为什么不选 W4A4。** 4 bit 张量核心的峰值是 8 bit 的两倍，理论交叉点在 $m>78$，但论文 §3.2 说明该收益无法在 Ampere 与 Hopper 上实现。按组量化的 W4A4 必须在主循环内做 INT32 到 FP32 的部分和转换：一方面 CUDA 核心峰值仅为 INT4 张量核心的 2%，使主循环被慢速运算支配；另一方面同时保存 FP32 与 INT32 两组部分和寄存器，而输出驻留式数据流下大 GEMM 本就受寄存器限制，寄存器压力压低同时驻留的 warp 数，进一步削弱隐藏延迟的能力。
 
-**与后续同类工作的对照。** 上述判断针对的是 Ampere 与 Hopper 上按组量化的 W4A4 主循环开销，它在 QuaRot 的在线 Hadamard、以及 [FlatQuant](flatquant.md) 一类融合实现下会被部分抵消或转移；论文没有覆盖后者的实现方式，因此不宜把「W4A4 不划算」当作与架构无关的结论。
+**与后续同类工作的对照。** 上述判断针对按组 W4A4 的主循环部分和缩放。改变表示与量化粒度会改变这个前提：例如 [FlatQuant](flatquant.md) v4 的主配置采用权重 per-channel、激活 per-token INT4，在线变换另有融合开销，不能直接套用沿归约维分组的代价。对照时要分别核对粒度、主循环缩放和在线变换成本，不把「W4A4 不划算」当作与实现无关的结论。
 
 ## 3. 渐进式分组量化
 
@@ -51,17 +52,19 @@ $$ \widehat{\mathbf W}={\mathbf Q_{\mathbf W}}^{(0)}_{\mathrm{s8}}\cdot \mathbf 
 
 其中 $ {\mathbf Q_{\mathbf W}}^{(0)}_{\mathrm{s8}}$ 是中间 8 bit 张量，$\mathbf s^{(0)}_{\mathrm{fp16}}$ 是逐通道 fp16 尺度。第二级对这个中间张量做按组非对称 INT4：
 
-$$ {\mathbf Q_{\mathbf W}}^{(0)}_{\mathrm{s8}}=\left({\mathbf Q_{\mathbf W}}_{\mathrm{u4}}-\mathbf z_{\mathrm{u4}}\right)\cdot \mathbf s^{(1)}_{\mathrm{u8}},$$
+$$ \widehat{\mathbf Q}^{(0)}_{\mathrm{s8}}=\left({\mathbf Q_{\mathbf W}}_{\mathrm{u4}}-\mathbf z_{\mathrm{u4}}\right)\cdot \mathbf s^{(1)}_{\mathrm{u8}}\approx {\mathbf Q_{\mathbf W}}^{(0)}_{\mathrm{s8}},$$
 
-$\mathbf z_{\mathrm{u4}}$ 与 $\mathbf s^{(1)}_{\mathrm{u8}}$ 分别是按组的无符号 4 bit 零点与无符号 8 bit 尺度。计算时先把 $ {\mathbf Q_{\mathbf W}}_{\mathrm{u4}}$ 反量化回中间 8 bit 张量，再按 W8A8 的方式做 INT8 矩阵乘。
+$\mathbf z_{\mathrm{u4}}$ 与 $\mathbf s^{(1)}_{\mathrm{u8}}$ 分别是按组的无符号 4 bit 零点与无符号 8 bit 尺度。计算时先把 $ {\mathbf Q_{\mathbf W}}_{\mathrm{u4}}$ 还原为可用 INT8 表示的近似张量，再按 W8A8 的方式做矩阵乘。上式特意区分第二级量化前后的整数：论文复用同一符号写等式，不能据此认为 INT8 到 INT4 没有舍入误差。
 
-**保护范围 [-119, 119] 的由来。** 朴素地做这两级量化不保证中间值仍落在 $[-128,127]$。论文给了一个反例：某组 8 bit 权重位于 $[-113,120]$，那么 4 bit 非对称量化的尺度为 $(120-(-113))/(15-0)=16$、零点为 7，值 120 编码为 15，反量化得 $(15-7)\times16=128$，越界。作者指出打开算术指令的饱和选项会严重损害吞吐（最多降 67%），于是改为从数学上留出余量。由
+**保护范围 [-119, 119] 的由来。** 朴素地做这两级量化不保证中间值仍落在 $[-128,127]$。论文给了一个反例：某组 8 bit 权重位于 $[-113,120]$，那么 4 bit 非对称量化的整数尺度为 $\operatorname{round}((120-(-113))/(15-0))=16$、零点为 7，值 120 编码为 15，反量化得 $(15-7)\times16=128$，越界。作者指出打开算术指令的饱和选项会严重损害吞吐（最多降 67%），于是改为从数学上留出余量。由
 
 $$ \widehat q_{\mathrm{s8}}=\left\lfloor \frac{q_{\mathrm{s8}}}{s_{\mathrm{u8}}}\right\rceil\cdot s_{\mathrm{u8}}\le q_{\mathrm{s8}}+\frac{1}{2}s_{\mathrm{u8}}$$
 
-且 $s_{\mathrm{u8}}$ 最大为 17（由 $[0,15]$ 与 $[-128,127]$ 的端点组合决定），要求 $\widehat q_{\mathrm{s8}}\le127$ 就得到 $q_{\mathrm{s8}}\le119.5$。因此把第一级对称范围从 $[-127,127]$ 收窄到 $[-119,119]$，用可控的精度余量换取无反量化溢出。
+论文采用的保护范围是 $[-119,119]$，但 v3 §4.1 的中间算术有不一致：它先给出 $s_{mathrm{u8}}le17$，再写 $127-	frac12s_{mathrm{u8}}	o119.5$；直接代入 17 实为 118.5，不能照抄为有效推导。
 
-固定代码与该设计一致：`w4a8_linear.py` 中保存着对第一阶段权重范围的断言，注释直接把 119 称作「那个魔法数字」，说明这个常数来自上述推导而非经验搜索。
+**整理者补充的条件推导：** 若组内整数均已限制在 $[-119,119]$，且整数尺度按该节示例对范围除以 15 后取最近整数，则非退化组有 $sleoperatorname{round}(238/15)=16$。在整数零点、最近舍入且未发生码值截断的步骤中，误差至多 $s/2le8$，所以还原值位于 $[-127,127]$。这说明该范围在这些条件下可自洽，但不修复原文的 119.5 算术，也不替代对尺度选取、截断和退化组处理的代码核验。
+
+固定代码 `w4a8_linear.py:from_linear` 接收外部尺度和零点，不能独立证明上游量化器强制了保护范围。第 176 行检查 $[-119,119]$ 的断言已被注释，实际执行的是 $[-128,127]$ 范围检查；“119 magic number”的注释与运行约束必须分开。该入口后续是打包流程，不能把这段检查当作完整校准算法。
 
 **与既有两级量化的区别。** QLoRA 的 Double Quantization 与 VSQuant 也引入两级尺度，但它们的第二级是对分组浮点尺度再量化，目的是减小元数据体积：先按目标位宽分组量化，再压缩尺度。QServe 的两级顺序相反，第二级量化的是中间位宽张量，目的是让反量化输出落在 INT8 可计算范围。DGQ 也限制尺度以满足 INT8 计算，但它把反量化内核与 GEMM 内核分开，导致端到端比 cuBLAS 的 W8A8 还慢；QServe 靠保护范围把反量化融合进 GEMM 内核并做寄存器级并行，作者报告其按组 W4A8 GEMM 相对 cuBLAS W8A8 有 1.5 倍加速。
 
@@ -77,11 +80,11 @@ $$ \lambda_i=\max(|\mathbf K_i|)^{\alpha},$$
 
 实践中 $\alpha=0.5$ 足够。**位置编码带来的额外约束：** 把缩放融合进前置线性层权重（$\mathbf W_Q\lambda$ 与 $\lambda^{-1}\mathbf W_K$）可以省去额外的内核调用，但 RoPE 在同一 head 内把通道 $i$ 与 $i+D/2$ 配对旋转，因此必须加上 $\lambda_i=\lambda_{i+D/2}$ 的硬约束，取两者幅值的较大者作为公共值。这个条件与 [平移与位置编码的融合边界](../theory/diagonal-scaling-equivalent-transform.md#7-平移与注意力位置编码的融合边界) 中推导的「缩放需与相对旋转交换」一致，只是这里直接按配对结构构造满足条件的缩放。
 
-这一观察与 [KIVI](kivi.md) 的独立结论一致（键有固定通道离群值、值没有），但两者在粒度与布局上给出不同方案：KIVI 对键用逐通道量化并保留全精度残差窗口，QServe 用逐 head 动态量化并把尺度与零点存进分页；[SAW-INT4](saw-int4.md) 则指出混合精度残差与分页布局冲突。共同结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
+这一观察与 [KIVI](kivi.md) 的独立结论一致（键有固定通道离群值、值没有），但两者在粒度与布局上给出不同方案：KIVI 对键用逐通道量化并保留全精度残差窗口，QServe 用逐 head 动态量化并把尺度与零点存进分页；[SAW-INT4](saw-int4.md) 则强调混合精度残差和跨 token 分组会增加其目标分页系统的管理与并行成本；这不是对所有分页实现的不可兼容证明。共同结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
 
 ## 5. 逐层的表示与范围调整
 
-论文 §4.3 针对不同线性层使用不同处理，四类手段都保持浮点计算等价：
+论文 §4.3 针对不同线性层使用不同处理，其中旋转、平滑与同步重排在配对变换下保持浮点等价；裁剪和量化本身会引入误差：
 
 **块输入模块旋转。** 对 QKV 投影、FFN 第一层这类消费块输入的模块，用缩放后的 Hadamard 矩阵旋转激活，权重侧反向旋转。旋转阵是酉矩阵，可吸收进上一块的输出权重，不增加运行时算子。这一思路与 [QuaRot](quarot.md) 相同。
 
@@ -109,13 +112,13 @@ $$ \arg\min_{\alpha}\left\|\mathrm{Block}(\mathbf X;\mathbf W)-\mathrm{Block}\le
 
 $$ \mathbf O=(\mathbf Q_{\mathbf X}\mathbf Q_{\mathbf W})\odot(\mathbf s_{\mathbf W}\times\mathbf s_{\mathbf X})-(\mathbf Q_{\mathbf X}\odot\mathbf S_{\mathbf X})\mathbf{ZS}_{\mathbf W},\qquad \mathbf X(\mathbf{ZS}_{\mathbf W})=\mathbf t_{\mathbf X}\times(\mathbf z_{\mathbf W}\odot\mathbf s_{\mathbf W}),$$
 
-其中 $\mathbf t_{\mathbf X}=\mathbf X\mathbf 1_k$，即每个 token 的输入通道求和。两项都是外维缩放形式，可以放进 GEMM 的 epilogue，而 $\mathbf t_{\mathbf X}$ 能在前一个访存受限内核里顺带算出（每个 W4A8 内核之前总是有一个访存受限内核），附加延迟可忽略。这就是先乘后减的次序。
+其中 $\mathbf t_{\mathbf X}=\mathbf X\mathbf 1_k$，即每个 token 的输入通道求和。这里第二项从 $widehat{mathbf X}=mathbf Q_{mathbf X}odotmathbf S_{mathbf X}$ 改用未量化的 $mathbf X$，是论文 §5.2 明确采用的近似，不能把两种输入写成恒等。取 $mathbf t_{mathbf X}=mathbf Xmathbf 1_k$ 可复用前置浮点输入；相对严格的量化乘积，输出差为 $(widehat{mathbf X}-mathbf X)mathbf{ZS}_{mathbf W}$。两项均可整理为外维缩放，放进 GEMM 的 epilogue，而 $\mathbf t_{\mathbf X}$ 能在前一个访存受限内核里顺带算出（每个 W4A8 内核之前总是有一个访存受限内核），附加延迟可忽略。这就是先乘后减的次序。
 
-按组量化时零点也是按组的，无法合并进 epilogue，且每个权重多一次 INT8 乘法。作者仍选择先乘后减，原因是它允许寄存器级并行：GPU 有 `vadd4`，一条 INT32 ALU 指令完成四次 INT8 加法，但没有对应的四次 INT8 乘法指令，只能用在高位补 24 个零来模拟。这种模拟要求每次 INT8 乘法的结果不超出 INT8 范围，而这正是渐进式分组量化的保护范围所保证的。先减后乘的次序不满足该条件，只能逐个相乘，效率极低。两级设计在这里同时服务于数值正确性与内核调度，这是本方法算法与系统协同的核心。
+按组量化时零点也是按组的，无法合并进 epilogue，且每个权重多一次 INT8 乘法。作者仍选择先乘后减，原因是它允许寄存器级并行：GPU 有 `vadd4`，一条 INT32 ALU 指令完成四次 INT8 加法，但没有对应的四次 INT8 乘法指令，只能用在高位补 24 个零来模拟。此处应区分无符号字节乘积与最终有符号还原值：先算 $q_{u4}s$，例如 $15\times16=240$，可放入 UINT8，却不在 SINT8 的正数范围内；再减去已缩放零点得到有符号结果。寄存器打包乘法要求各字节乘积不向邻字节进位，最终还原值还须满足有符号范围。论文统称 INT8，不应把两个范围混为一谈。先减后乘的次序不满足该条件，只能逐个相乘，效率极低。两级设计在这里同时服务于数值正确性与内核调度，这是本方法算法与系统协同的核心。
 
 其余为常规优化：多级软件流水与异步拷贝、共享内存 swizzle 消除 bank conflict、重排线程块划分以复用权重、在输入 token 数较少时沿 $K$ 维切分并用共享内存做 warp 间归约。
 
-**KV4 注意力。** 用 TensorRT-LLM 的 KV8 内核作基线，把静态逐张量访问替换为动态逐 head 的 4 bit 访问后，L40S 上快 1.7 倍，但 A100 上反而慢 1.1 到 1.2 倍。原因是 A100 FP32 CUDA 核心的 roofline 拐点只有 9.8 Ops/Byte，而从缓存中反量化一个 INT4 需要 5 次 ALU 操作（掩码、移位、整型转浮点、浮点乘、浮点减），反量化本身就打满了这个上限，使融合内核变成计算受限。作者的应对是双向的：把内核中的 FP32 运算换成 FP16 以抬高计算上限；用位技巧把每个元素的反量化降到 2 次操作；简化控制流、预取尺度与零点、简化地址计算。最终在 A100 上相对 KV8 基线快 1.5 倍。分项贡献为 0.48 ms 到 0.44（位技巧）、0.39（控制流）、0.36（QK 与 SV 转 FP16，各 0.03），再到 0.28 ms（异步预取），端到端约 1.7 倍。
+**KV4 注意力。** 用 TensorRT-LLM 的 KV8 内核作基线，把静态逐张量访问替换为动态逐 head 的 4 bit 访问后，L40S 上快 1.7 倍，但 A100 上反而慢 1.1 到 1.2 倍。原因是 A100 FP32 CUDA 核心的 roofline 拐点只有 9.8 Ops/Byte，而从缓存中反量化一个 INT4 需要 5 次 ALU 操作（掩码、移位、整型转浮点、浮点乘、浮点减），反量化本身就打满了这个上限，使融合内核变成计算受限。作者的应对是双向的：把内核中的 FP32 运算换成 FP16 以抬高计算上限；用位技巧把每个元素的反量化降到 2 次操作；简化控制流、预取尺度与零点、简化地址计算。最终在 A100 上相对 KV8 基线快 1.5 倍。分项贡献为 0.48 ms 到 0.44（位技巧）、0.39（控制流）、0.36（QK 与 SV 转 FP16，各 0.03），再到 0.28 ms（异步预取），这是该注意力内核相对 0.48 ms 起点约 1.7 倍的加速，不是整模型端到端吞吐。
 
 这段分析回答了 [执行路径页](../implementation/quantized-matmul-scaling-execution.md) 提出的问题：KV 位宽减半为什么不等于延迟减半。答案在反量化算术强度与 CUDA 核心拐点上，而不在带宽。
 
@@ -125,7 +128,7 @@ $$ \mathbf O=(\mathbf Q_{\mathbf X}\mathbf Q_{\mathbf W})\odot(\mathbf s_{\mathb
 
 **精度。** WikiText-2 困惑度相对 W8A8 的 SmoothQuant 与 W4A16 的 AWQ 最多升高 0.16；一致优于 Atom；相对 QuaRot 的 W4A4 最多低 0.49。零样本五任务中相对 FP16 的损失为 7B／13B／70B 分别为 1.03%、0.89%、0.40%；WinoGrande 上相对 QuaRot 高 4.82 个百分点。LongBench 长上下文结果相对 BF16 基线退化很小。
 
-**消融（L40S，64 请求，1024 输入与 512 输出；论文在效率评估一节的算法消融图）。** 从 RTN W8A8 出发：权重降到 4 bit 使困惑度明显恶化，但速度提高到 1.12 倍、省 3.5 GB；块输入旋转改善 0.18；用块输出 MSE 做裁剪再改善 0.16，此时 W4A8 的困惑度已与 W4A16 相当；KV 量化到 4 bit 又恶化 0.14，但同时带来 1.47 倍加速并把显存减半；SmoothAttention 改善 0.05 且无系统开销；渐进式分组量化再改善 0.04，反量化开销增加可忽略；通道重排改善 0.03。这组数字说明精度与加速的每一步都可单独归因，且 KV4 是换来速度的精度支出。
+**消融（L40S，64 请求，1024 输入与 512 输出；论文在效率评估一节的算法消融图）。** 从 RTN W8A8 出发：权重降到 4 bit 使困惑度明显恶化，但速度提高到 1.12 倍、省 3.5 GB；块输入旋转改善 0.18；用块输出 MSE 做裁剪再改善 0.16，此时 W4A8 的困惑度已与 W4A16 相当；KV 量化到 4 bit 又恶化 0.14，但同时带来 1.47 倍加速并把显存减半；SmoothAttention 改善 0.05 且无系统开销；渐进式分组量化再改善 0.04，反量化开销增加可忽略；通道重排改善 0.03。这组逐步叠加的消融显示各组件在当时已启用配置上的边际变化，不能排除组件交互或视为独立可加贡献；KV4 在这条路径上以精度支出换取速度。
 
 **吞吐。** 论文在 A100-80G 与 L40S-48G 上以相同显存预算测最大可达吞吐，输入 1024、输出 512。相对 TensorRT-LLM 的最佳精度配置：A100 上 Llama-1-30B 约 2 倍、Llama-2 系列 1.2 到 1.4 倍、Mistral 与 Yi 1.2 倍、Qwen1.5 2.4 倍；L40S 上为 1.47 到 3.47 倍。同批次拆分显示 Llama-2-7B 的 1.88 倍等于 1.45 倍（同批加速）乘 1.3 倍（批量增大）。作者还指出，L40S 上运行七个模型中的五个可达到高于 A100 上 TensorRT-LLM 的吞吐。
 
@@ -139,16 +142,16 @@ $$ \mathbf O=(\mathbf Q_{\mathbf X}\mathbf Q_{\mathbf W})\odot(\mathbf s_{\mathb
 
 ## 9. 与其他页面的关系
 
-与 [SmoothQuant](smoothquant.md) 共享通道缩放思想：SmoothAttention 是它的注意力变体，块输出平滑则给出「迁移强度应接近 0」的反例，说明同一公式在不同图位置的最优参数不同。与 [QuaRot](quarot.md) 共享旋转抑制离群值的做法，但 QServe 把旋转与平滑作为精度组合的一部分、并把讨论重点放在主循环开销上。与 [FlatQuant](flatquant.md) 的关系最需要区分：两者都做 W4A4KV4 级别的低比特推理，FlatQuant 主张用结构化在线变换加融合内核控制 W4A4 的开销，QServe 则论证当时的 W4A4 主循环反量化不可行、转向 W4A8。这类分歧应通过同一硬件、同一批次与同一测量口径的对照实验判断，而不是引用各自论文的排名。
+与 [SmoothQuant](smoothquant.md) 共享通道缩放思想：SmoothAttention 是它的注意力变体，块输出平滑则给出「迁移强度应接近 0」的反例，说明同一公式在不同图位置的最优参数不同。与 [QuaRot](quarot.md) 共享旋转抑制离群值的做法，但 QServe 把旋转与平滑作为精度组合的一部分、并把讨论重点放在主循环开销上。与 [FlatQuant](flatquant.md) 的关系最需要区分：两者都研究低比特权重与 KV cache，但 FlatQuant 的主配置是 W4A4KV4，QServe 是 W4A8KV4；FlatQuant 主张用结构化在线变换加融合内核控制 W4A4 的开销，QServe 则论证当时的 W4A4 主循环反量化不可行、转向 W4A8。这类分歧应通过同一硬件、同一批次与同一测量口径的对照实验判断，而不是引用各自论文的排名。
 
 部署侧的格式与后端映射见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)，W4A16 批量内核的对照见 [Marlin](../implementation/marlin-batched-w4a16-gemm.md)，存储格式与位宽口径见 [GGUF 块量化存储格式](../implementation/gguf-block-quantization-formats.md)。
 
 ## 10. 局限与未验证
 
 - 未运行 QServe 或任何基线系统；本页速度、精度与显存数字全部来自论文报告。
-- 代码核对限于 W4A8 线性层的模块结构与内核目录划分，`kernels/csrc/qgemm` 下的 CUDA 与 PTX 实现未逐行审查。
+- 代码核对包括 W4A8 线性层的范围检查、打包入口与内核目录划分，`kernels/csrc/qgemm` 下的 CUDA 与 PTX 实现未逐行审查。
 - 论文的 4 bit 基线对照使用普通按组量化，且部分模型因不支持而被跳过，因此优于 Atom 或 QuaRot 的范围受限。
-- artifact 附录给出的复现要求（A100 或 L40S、Docker、约 512 GB 磁盘）说明该验证门槛较高；本项目没有满足该条件的实验环境。
+- artifact 附录给出的复现要求（A100 或 L40S、Docker、约 512 GB 磁盘）说明该验证门槛较高；本轮未搭建该环境或执行复现。
 
 ## 来源身份
 

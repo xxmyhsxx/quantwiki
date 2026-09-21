@@ -8,6 +8,7 @@ tags:
   - kernels
   - serving
 sources:
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin_repack.cuh
   - raw/repositories/2026-09-21/gptq/source/gptq.py
   - raw/repositories/2026-09-21/gptq/source/quant.py
   - raw/repositories/2026-09-21/gptq/source/quant_cuda.cpp
@@ -15,7 +16,7 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_gptq.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/gptq_marlin_repack.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/schemes/gptq_marlin.py
-updated: 2026-09-17
+updated: 2026-09-22
 ---
 
 # GPTQ 的实现核对：量化器、打包与两套服务路径
@@ -57,18 +58,18 @@ fasterquant(blocksize=128, percdamp=.01, groupsize=-1, actorder=False, static_gr
 
 1. 先把 `zeros * scales` 合成 `self.zeros`（与 AWQ 的实现同构，便于反量化时少一次运算）；
 2. 整数化后**转置**（`intweight.t()`），使打包沿输入维进行；
-3. 用一段显式的手写循环把 **10 个 3-bit 值装进一个 int32**，并把第 10 个值的剩余位借到下两个 int32 中（`<< 30`、`>> 2`、`<< 31` 等位移与掩码）。
+3. 每 **32 个 3-bit 值恰好占 3 个 int32**，即 96 bit。第一个字保存 q0–q9 的 30 bit 和 q10 的低 2 bit；第二个字保存 q10 的高 1 bit、q11–q20 和 q21 的低 1 bit；第三个字保存 q21 的高 2 bit 和 q22–q31。跨字的是第 11、22 个值，不是“每 10 个构成一个完整打包单元”。
 
 第 3 步说明 GPTQ 的 3-bit 权重**不是逐元素可寻址的规整布局**，而是为某个内核定制的位流。这就是「为什么需要转换脚本」的根源：任何别的内核要读它，必须先解包再按自己的布局重排。
 
-此外，`g_idx`（分组索引/激活重排相关）与 `desc_act` 是否出现在 checkpoint 里，取决于量化时的选项；服务框架据此决定加载路径（下一节）。
+原始 `Quant3Linear` 没有通用分组索引 g_idx，forward 还显式拒绝多 token 输入。后文 AutoGPTQ/GPTQModel 类 checkpoint 的 `g_idx`、`desc_act` 和分组格式属于另一层导出协议，不能直接归给这个原始 3-bit 类。
 
 ## 4. 跨引擎：vLLM
 
 vLLM 的 `auto_gptq.py` 与 `gptq_utils.py` 做了两件实现层的事：
 
 - **配置解析与覆盖。** 从 checkpoint 的配置文件名（`get_config_filenames`）读取；`gptq_utils.override_config` 用 `get_dynamic_override` 取 `desc_act` 与 `sym`，再以 `(weight_bits, is_sym)` 查 `TYPE_MAP` 得到量化类型——也就是说**位宽与对称性必须在加载时被识别**，不能假定默认值。
-- **一个显式的退化规则。** `AutoGPTQConfig.__init__` 中：`if desc_act and group_size == -1` 则把 `desc_act` 关掉（该分支带警告）。逐通道量化与激活重排不能同时生效，属于加载期必须处理的组合。
+- **一个加载配置归一化规则。** `AutoGPTQConfig.__init__` 在 `desc_act=True` 且 `group_size=-1` 时将 desc_act 设为 False；该分支没有发出警告。源码解释是每个输出通道只有一个 group，推理布局无需再依赖 act-order 的跨组映射。这不说明量化时的列处理顺序不会影响舍入和补偿，更不是算法上禁止两者同时使用。
 
 加载之后 vLLM 仍有 GPTQ 原生内核与 `gptq_marlin` 两条路径（对应部署页里并列的方法名），后者需要一次 repack。
 
@@ -78,7 +79,7 @@ SGLang 的 `gptq/` 下同时有原生与 marlin 两套 scheme。marlin 路径的
 
 - `has_g_idx=self.quant_config.desc_act`——**是否带 g_idx 直接决定 repack 的行为**；
 - `marlin_repeat_scales_on_all_ranks(...)` 与 `scales_and_zp_input_dim`／`scales_and_zp_size = input_size // group_size` 的计算：在张量并行下，尺度张量要按**分片后的输入维**切分或复制，`input_size_per_partition` 与全量 `input_size` 是两个分支；
-- `jit_kernel/gptq_marlin_repack.py` 暴露 `gptq_marlin_repack(b_q_weight, perm, out, size_k, size_n, num_bits)`，其中 `perm` 是必需的输入——marlin 布局要求一个显式置换，它来自 GPTQ 的列顺序与 marlin 的分块规则。
+- Python 接口是 `gptq_marlin_repack(b_q_weight, perm, size_k, size_n, num_bits) -> out`，输出由内部创建；带 out 参数的是下层 C++ 包装。perm 参数必传，但允许空张量：C++ 用 `perm.size(0) != 0` 判定是否启用 act-order 置换。即使没有该置换，Marlin 的 tile 重排仍需执行；两种操作不能混为一谈。该包装只接受 4/8-bit，不接受前文原始 3-bit 打包结果。
 
 repack 的几何（16 行 tile、pack_factor、awq 与 MoE 变体）与 marlin 内核的模板匹配条件见 [权重量化反量化内核的契约](weight-only-dequant-kernels.md)。
 
@@ -94,8 +95,8 @@ repack 的几何（16 行 tile、pack_factor、awq 与 MoE 变体）与 marlin �
 
 1. 分清「网格参数」与「补偿」两类产物：scale/zero/g_idx 可以来自独立估计，补偿只改剩余权重；
 2. 记录列置换与还原顺序，导出时必须回到原坐标；
-3. 把位布局当成格式的一部分写进文档（GPTQ 的 10 连排布就是反例：论文里不会出现）；
-4. 加载端先解析 `sym`、`desc_act`、位宽，再决定内核路径，并处理互斥组合；
+3. 把位布局当成格式的一部分写进文档（例如原始 3-bit 的 32 值／3 字布局）；
+4. 加载端先解析 `sym`、`desc_act`、位宽，再决定内核路径，并区分算法选项与推理期配置归一化；
 5. 张量并行下确认尺度/零点是切分还是复制。
 
 ## 8. 验证状态与待验证
@@ -103,7 +104,7 @@ repack 的几何（16 行 tile、pack_factor、awq 与 MoE 变体）与 marlin �
 - 全部结论为 code-read；未构建、未量化、未加载任何模型，也未验证 `pack` 与任何内核的数值一致性。
 - `quant_cuda_kernel.cu` 未逐行审查；本页只说明其存在与在仓库中的位置。
 - vLLM 与 SGLang 的路径选择逻辑读取的是各自快照；版本不同时默认值、支持的位宽与是否要求 g_idx 都可能变化。
-- 「同一份 GPTQ checkpoint 在 vLLM 与 SGLang 上是否给出相同输出」属于待验证项，本页只核对两侧都做 repack 与置换这一事实。
+- 「同一份 GPTQ checkpoint 在 vLLM 与 SGLang 上是否给出相同输出」属于待验证项，本页只核对加载与 repack 分支，不将可选置换写成所有路径都必需。
 
 ## 来源身份
 

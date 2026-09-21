@@ -15,7 +15,7 @@ sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/gptq/paper.pdf
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 层输出重构与二阶误差补偿
@@ -149,7 +149,7 @@ $$
 
 W 从任务损失 Taylor 展开转到局部重构使用了近似与代理：一阶项是否可以忽略、跨层耦合怎样舍弃、任务曲率如何近似，都不能由 $H=2XX^{\mathsf T}$ 自动证明。白皮书未充分展开原始 AdaRound 的全部假设，本轮保留这一理解边界，不将其视为任务 Hessian 的精确等式。
 
-W 表 5 的 ResNet18 W4、其余设定按 §3.4，全部层最近舍入为 23.99，局部连续放松为 66.56，最终 AdaRound 配置为 68.60（5 次均值）；它支持舍入决策值得优化，不表示任意数据或模型都达到同等收益。梯度优化局部舍入仍可属于 [PTQ](../fundamentals/quantization/post-training-and-quantization-aware-training.md)；它与 GPTQ 顺序固定权重后解析补偿的变量和流程不同。AdaRound 原文把这组数字中的 66.56 与 68.60 分别对应到「逐层 MSE 目标」与「非对称重构加激活函数」两个设计选择上，具体见该页的消融部分。
+W 表 5 的 ResNet18 W4、其余设定按 §3.4，全部层最近舍入为 23.99，局部连续放松为 66.56，最终 AdaRound 配置为 68.60（5 次均值）；它支持舍入决策值得优化，不表示任意数据或模型都达到同等收益。梯度优化局部舍入仍可属于 [PTQ](../fundamentals/quantization/post-training-and-quantization-aware-training.md)；它与 GPTQ 顺序固定权重后解析补偿的变量和流程不同。AdaRound 原文把这组数字中的 66.56 与 68.60 分别对应到「逐层 MSE 目标」与「非对称重构加激活函数」两个设计选择上，具体见 [AdaRound 的非对称重构](../methods/adaround.md#4-松弛与正则)：非对称指教师输入 x 与量化前缀产生的输入 $\hat x$ 不同，不是量化网格的 zero-point。
 
 ## 7. 加权重构与非对称输入
 

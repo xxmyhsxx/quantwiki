@@ -8,15 +8,18 @@ tags:
   - kv-cache
   - performance
 sources:
+  - raw/papers/2026-09-21/qserve/source.eprint
+  - raw/papers/2026-09-21/saw-int4/source.eprint
+  - raw/papers/2026-09-21/pagedattention/source.eprint
   - raw/papers/2026-09-21/pagedattention/paper.pdf
-updated: 2026-09-17
+updated: 2026-09-22
 ---
 
 # 推理服务的内存管理与批处理
 
 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。同一个量化模型接进不同的引擎，有效批量不同，吞吐就不同——这也是为什么「量化之后快了多少」不能只由模型和内核决定。本页整理部署侧第一层知识：KV cache 的内存管理、批处理与调度。
 
-本页依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页不覆盖 chunked prefill 与 prefill/decode 分离，这两项对应的论文尚未研读。
+本页依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留原始论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；这不代表已研读 Sarathi-Serve 或 prefill/decode 分离的相关论文。
 
 ## 1. 为什么服务受显存而不是算力限制
 
@@ -32,9 +35,11 @@ updated: 2026-09-17
 
 论文借用操作系统的虚拟内存与分页，把每个序列的 KV cache 切成固定大小的 **KV 块**，块内放到不同物理位置；注意力按块计算：
 
-$$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\exp(q_i^{\mathsf T}K_t\mathbf 1/\sqrt d)},\qquad o_i=\sum_{j=1}^{\lceil i/B\rceil}V_jA_{ij}^{\mathsf T},$$
+$$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\exp(q_i^{\mathsf T}K_t/\sqrt d)\mathbf 1},\qquad o_i=\sum_{j=1}^{\lceil i/B\rceil}V_jA_{ij}^{\mathsf T},$$
 
-其中 $K_j,V_j$ 是第 $j$ 个键块与值块，$B$ 是块大小。内核按块表逐个取块，允许块在物理显存中不连续。
+其中 $K_j,V_j\in\mathbb R^{d\times B}$ 是第 $j$ 个键块与值块，$B$ 是块大小，指数逐元素计算，$\mathbf1$ 将块内权重求和。未填满位置与未来 token 在指数前屏蔽为 $-\infty$；归一化分母覆盖全部有效块，不能分别对每块做 softmax 后直接相加。
+
+这里是按普通注意力定义整理的公式修正：PagedAttention v1 §4.1 的块公式把 $\mathbf1$ 写在指数内部，与同文逐 token 定义不一致。正确顺序是先逐 token 取指数，再跨 token 求和；分页只改变存储与读取，不改变归一化对象。内核按块表逐个取块，允许块在物理显存中不连续。
 
 内存管理器维护**逻辑块到物理块的映射（块表）**，每条记录还保存该块已填充的位置数：请求的 KV cache 表示为一串从左到右填充的逻辑块，新物理块只在需要时才分配。这样每个请求的浪费被限制在最后一个未填满的块内，从而几乎消除前述三类浪费。请求结束后其块被释放给其它请求使用。
 
@@ -54,7 +59,7 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 ## 5. 批处理与调度
 
-论文 §2.3 说明批量能摊销权重搬运，但请求到达时间与长度都不同；按请求级批处理会让先到的请求等待或让后到的请求排队，还会为对齐长度而填充计算。此前提出的**迭代级调度**（亦称连续批处理）改为每轮迭代后移除已完成请求、加入新请求，因此新请求只需等待一轮，且不需要填充。
+论文 §2.3 说明批量能摊销权重搬运，但请求到达时间与长度都不同；按请求级批处理会让先到的请求等待或让后到的请求排队，还会为对齐长度而填充计算。此前提出的**迭代级调度**（亦称连续批处理）改为每轮迭代后移除已完成请求、加入新请求，因此可在迭代边界接纳新请求，并减少按最长请求填充的浪费；实际接纳仍受资源与调度约束。这里讨论逻辑批处理，不排除具体实现为 CUDA Graph 捕获规格补齐 token，后者见 [vLLM 算子设计](vllm-attention-operator-design.md)。
 
 在长度未知与显存有限的前提下，论文实现的是先来先服务调度，并在显存不足时抢占：驱逐以**序列为整体**（all-or-nothing），同一请求内的多个序列作为一个**序列组**整体抢占或恢复。被驱逐的缓存有两条恢复路径——**交换**（把块拷到 CPU 内存，交换空间上界由 GPU 上用于 KV 的显存决定）与**重算**（重新执行提示阶段生成缓存，由于解码出的 token 可以与原提示拼接成新提示，重算延迟通常低于原始延迟）。两者的相对优劣取决于 CPU–GPU 带宽与 GPU 算力，论文以实验比较。
 
@@ -64,13 +69,13 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 这四点决定了量化收益如何被服务系统放大或抵消：
 
-**KV 位宽改变每 token 的槽位数，从而改变有效批量。** 块内元素位宽减半，同样的显存能容纳更多块。论文的 OPT-13B 例子给出换算起点：每 token 800 KB 是 FP16 口径，位宽下降会按比例减少这一项，但残差窗口、逐 head 尺度等元数据会占回一部分——[KIVI](../methods/kivi.md) 的全精度残差窗口与统一块类型的冲突正来自这里，见 [SAW-INT4](../methods/saw-int4.md) 对分页布局约束的分析。
+**KV 位宽改变每 token 的存储字节数，从而改变有效批量。** 块内元素位宽减半，同样的显存能容纳更多块。论文的 OPT-13B 例子给出换算起点：每 token 800 KB 是 FP16 口径，位宽下降会按比例减少这一项，但残差窗口、逐 head 尺度等元数据会占回一部分——[KIVI](../methods/kivi.md) 的全精度残差需要额外保存和管理。[SAW-INT4](../methods/saw-int4.md) v1 §2 针对其统一分页池分析了集成成本，不能据此断言所有分页系统都无法支持残差窗口。
 
 **量化释放出的显存不一定转化为吞吐。** 在供给不足（请求速率低于系统容量）时，系统本来就受算力或单请求延迟限制，显存宽裕不带来收益；论文在 OPT-175B + Alpaca 的例子里明确观察到这种「配置宽裕所以各系统表现接近」的情形。评估量化收益时必须报告并发与请求速率。
 
 **逐请求速度与系统吞吐会背离。** 缓存占用更小的配置能开更大批量、跑更多请求，但单请求的解码速度可能因批量变大而下降；只看逐请求速度会得出反向结论，这一现象在 [SAW-INT4](../methods/saw-int4.md) 的服务级实验中给出定量例子。
 
-**量化元数据必须适配块的统一性。** 分页池要求块内类型统一，因此逐 head 动态尺度要么随页存放（[QServe](../methods/qserve.md) 的做法），要么放弃动态估计；token 淘汰若不能整块释放则不减少物理占用。这些约束不是实现细节，而是决定方案能否落地的前提。
+**量化元数据必须与分页访问保持一致。** [QServe](../methods/qserve.md) v3 §5.1 将逐 head 动态尺度与零点随页保存；这是一种布局选择，不构成“只能随页保存或放弃动态估计”的二选一。其他设计也需定义元数据索引和更新规则，并计入访问成本。对于按固定块回收的池，token 淘汰若没有腾空块或执行压缩搬移，就不会释放整个物理块；算法压缩与实际内存回收需分别测量。
 
 ## 7. 证据与口径
 
@@ -82,7 +87,7 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 ## 8. 局限与未验证
 
-- 本页只研读了 vLLM 论文；本地还有 SGLang（前缀树式共享）、Sarathi-Serve（chunked prefill）与 DistServe（prefill/decode 分离）三篇服务论文未研读，因此本页不覆盖它们的机制，也不做系统间排序。
+- 本页服务调度的原始依据为 vLLM 论文；量化接口另外核对了 QServe v3 §5.1 与 SAW-INT4 v1 §2，本地还有 SGLang（前缀树式共享）、Sarathi-Serve（chunked prefill）与 DistServe（prefill/decode 分离）三篇服务论文未研读，因此本页不覆盖这些论文的专有机制，也不做系统间排序。vLLM 源码中的分段 prefill 已由 [推理执行页](vllm-inference-execution.md)解释，论文证据与代码证据分别保留。
 - 论文的对比基线中，Orca 是作者自行实现的版本（论文说明 Orca 未公开，并给出 Oracle／Pow2／Max 三种预留假设），其中 Oracle 在实践中不可达；引用这些倍数时必须带上假设。
 - 未运行任何服务或基准，本页所有数值均为论文报告；硬件与软件版本以论文为准，与当前 vLLM 版本的行为可能不同。
 
@@ -93,3 +98,5 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | [Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180v1) | `arXiv:2309.06180v1` | — |
+| [QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving](https://arxiv.org/abs/2405.04532v3) | `arXiv:2405.04532v3` | 分页量化元数据布局 |
+| [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |

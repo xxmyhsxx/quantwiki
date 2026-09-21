@@ -8,8 +8,9 @@ tags:
   - mixed-precision
   - outliers
 sources:
+  - raw/papers/2026-09-21/llm-int8/source.eprint
   - raw/papers/2026-09-21/llm-int8/paper.pdf
-updated: 2026-09-16
+updated: 2026-09-22
 ---
 
 # LLM.int8()：向量级量化与混合精度分解
@@ -30,9 +31,11 @@ updated: 2026-09-16
 
 $$\mathbf X_{i8}=\left\lfloor \frac{127}{\|\mathbf X_{f16}\|_\infty}\mathbf X_{f16}\right\rceil=\left\lfloor s_{x_{f16}}\mathbf X_{f16}\right\rceil .$$
 
-**Zeropoint 量化**先把分布平移进 $[-127,127]$ 再用满位宽，适合 ReLU 输出这类非对称分布：
+**Zeropoint 量化**在缩放之外还要平移。该 v2 源文的 §2 公式没有清楚配合文字中的零点平移，不能把仅有 $\operatorname{round}(nd_xX)$ 的式子当作完整实现。为说明机制，下面采用明确的标准仿射约定（整理者改写；端点范围非零）：
 
-$$nd_{x_{f16}}=\frac{2\cdot127}{\max_{ij}\mathbf X^{ij}_{f16}-\min_{ij}\mathbf X^{ij}_{f16}},\qquad \mathbf X_{i8}=\left\lfloor nd_{x_{f16}}\mathbf X_{f16}\right\rceil .$$
+$$s=\frac{x_{\max}-x_{\min}}{254},\qquad z=\operatorname{round}\!\left(-127-\frac{x_{\min}}s\right),\qquad q=\operatorname{clip}\!\left(\operatorname{round}(x/s)+z,-127,127\right),\qquad \hat x=s(q-z).$$
+
+s 是反量化步长，z 是整数零点；原文的 $nd_x=1/s$ 是正向缩放系数。若按原文乘法展开采用 $q+zp$ 的加法记号，则对应 $zp=-z$。保持符号约定一致，才能判断该减去还是加回零点。
 
 论文指出 zeropoint 的实际代价：它需要把零点一起送进特殊指令；若硬件没有对应的 16 bit 乘法指令（GPU 与 TPU 属于这种情况），就得把乘积展开成
 
@@ -48,7 +51,7 @@ $c$ 为 absmax 的 $s$ 或 zeropoint 的 $nd$。张量级缩放的问题在于�
 
 ## 3. 规模上出现的离群特征
 
-论文 §4 的定义：给定隐藏状态 $\mathbf X\in\mathbb R^{s\times h}$，特征指某个维度 $h_i$；若某特征在所有层中至少出现一个幅值超过阈值 $\alpha$ 的离群值，就归入离群维度集合 $O$。作者取 $\alpha=6.0$。
+论文 §3.2 的运行时分解以当前矩阵 $\mathbf X\in\mathbb R^{s\times h}$ 为对象：$O=\{j:\max_i|X_{ij}|>\alpha\}$，作者取 $\alpha=6.0$。它按当前输入列选择高精度分支，不要求先汇总整网各层。§4 的现象统计另加“至少 25% 层、至少 6% 序列位置”的筛选条件；统计规则不能直接代替运行时的 O。
 
 规模上的观察（§4 与附录 C「Detailed Outlier Feature Data」）：
 
@@ -111,7 +114,7 @@ $$\mathbf C_{f16}\approx\sum_{h\in O}\mathbf X^h_{f16}\mathbf W^h_{f16}+\mathbf 
 
 **速度。** 论文附录 D「Inference Speedups and Slowdowns」的单层前馈基准（表 5）显示加速只在矩阵足够大时出现：
 
-| GPT-3 规模 | 768 | 1024 | 2048 | 4096 | 12288 |
+| 隐藏维度 | 768 | 1024 | 2048 | 4096 | 12288 |
 |---|---:|---:|---:|---:|---:|
 | Int8 无额外开销 | 0.99× | 1.08× | 1.61× | 1.67× | 2.29× |
 | Vector-wise，通用库算子 | 0.21× | 0.22× | 0.41× | 0.65× | 1.50× |
@@ -120,7 +123,7 @@ $$\mathbf C_{f16}\approx\sum_{h\in O}\mathbf X^h_{f16}\mathbf W^h_{f16}+\mathbf 
 
 作者的解释是量化与去量化的开销显著，Int8 矩阵乘只有在 GPU 被充分占满、即模型维度 4096 以上时才占优；低于该规模会变慢。加入混合精度分解进一步压低加速比，因此只有 13B 与 175B 一级的模型有净收益。同一张表还显示，同一算法用定制内核与用通用库算子可以差出一倍以上，这与 [执行路径](../implementation/quantized-matmul-scaling-execution.md) 中「低比特标签不决定速度」的判断一致。
 
-端到端 BLOOM-176B 在 Hugging Face 的测量（附录 D 表 6）中，batch 1、8、32 下 bfloat16 为 239、32、9.94 ms，LLM.int8() 为 253、34、10.44 ms（8×A100 80GB）：延迟略高但接近，收益落在更少的 GPU 上。
+端到端 BLOOM-176B 在 Hugging Face 的测量（附录 D 表 6）报告 per-token generation time：batch 1、8、32 下 bfloat16 为 239、32、9.94 ms，LLM.int8() 为 253、34、10.44 ms（8×A100 80GB）。这是该表的每 token 口径，不能读成整个批次每步延迟，更不能据此断言单请求延迟随 batch 线性下降。相同 8 卡条件下 INT8 略慢；同表 3 卡 INT8 也能运行并报告 247、33、9.11 ms，展示的主要价值是模型可用更少设备容纳。
 
 ## 7. 训练与微调的边界
 
@@ -139,7 +142,7 @@ $$\mathbf C_{f16}\approx\sum_{h\in O}\mathbf X^h_{f16}\mathbf W^h_{f16}+\mathbf 
 
 LLM.int8() 走的是「保留少数维度为高精度」的路线；[SmoothQuant](smoothquant.md) 走的是「用等价缩放把难度从激活迁到权重」的路线，两者都在 W8A8 框架内处理激活离群值，机制不同：前者改变计算精度分配，后者改变量化前的表示。[ZeroQuant](zeroquant.md) 是同期工作，用逐组权重与逐 token 激活的动态范围替代混合精度分解，并把推理后端纳入设计。后续的 [QServe](qserve.md) 把位宽压到 W4A8KV4，需要另加渐进式分组量化与 SmoothAttention 才能维持精度，说明「8 bit 无退化」不自动延伸到 4 bit。
 
-对部署的影响是具体可核对的：8 bit 路径后来成为常见默认选项，其内存优势属于权重与激活两个对象同时下降的情形，参见 [混合精度分配](../theory/mixed-precision-allocation.md)；速度是否受益则要按第 6 节的规模条件判断。
+对部署的影响是具体可核对的：8 bit 路径后来成为常见默认选项，其常驻内存优势主要来自权重存储；线性算子的输入输出仍为 16 bit，不能由 INT8 乘法推出整网激活和 KV cache 均减半，参见 [混合精度分配](../theory/mixed-precision-allocation.md)；速度是否受益则要按第 6 节的规模条件判断。
 
 ## 10. 未验证
 

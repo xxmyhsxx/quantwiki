@@ -9,7 +9,7 @@ tags:
 sources:
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-14
+updated: 2026-09-22
 ---
 
 # 量化误差诊断与验证
@@ -57,6 +57,8 @@ $$
 当模拟精度正常、部署结果异常时，先核对整数范围、零点、舍入 tie 规则、bias 单位、累加宽度、再量化顺序、饱和和融合边界。J 附录 B 指出，负数右移的中点舍入处理会引入系统偏差；数学上近似相同的表达式未必逐位相同。
 
 适合实现阶段的数值用例包括精确零、正负中点、端点内外、负偏置、长归约、残差两侧网格不同，以及动态激活尺度变化。可以先用小张量定位，再运行必要的模型验证。[整数累加与再量化](quantized-matmul-scaling-execution.md#6-从整数累加到下一层网格)展开其中的单位与范围；本轮仅验证教学关系，没有验证任何 ARM/GPU 内核。
+
+验证具体 CUDA/Triton 算子时，地址与边界错误需要和量化误差分离；参考结果、容限、异步计时与缓存口径见 [算子正确性与性能测量](kernel-correctness-and-benchmarking.md)。
 
 ## 5. 作者表格比概括性结论更具体
 

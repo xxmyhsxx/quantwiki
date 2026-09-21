@@ -8,6 +8,15 @@ tags:
   - matmul
   - data-format
 sources:
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/awq_triton.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/marlin_utils.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/awq_dequantize.cuh
+  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/dequantize.cuh
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin_repack.cuh
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/gptq_marlin_repack.py
+  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemm/gemm_cuda.cu
+  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemv/gemv_cuda.cu
+  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/qmodule.py
   - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization/dequantize.cuh
   - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization/gemv_cuda.cu
   - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization/gemm_cuda_gen.cu
@@ -16,14 +25,14 @@ sources:
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/awq_marlin_repack.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin.cuh
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin.cuh
-updated: 2026-09-17
+updated: 2026-09-22
 ---
 
 # 权重量化反量化内核的契约：AWQ 与 marlin 两种实现
 
-W4A16 的执行可以概括成一句话：权重以低比特打包存放，内核在读回它们时反量化到 fp16 再参与矩阵乘。执行路径的分类见 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md)，Marlin 的批处理设计见 [Marlin](marlin-batched-w4a16-gemm.md)。本页补的是更靠底层的一层：**内核入口要求什么样的张量、怎样把 4 位反量化成 fp16、线程与模板怎样配置**，以及这些约定在不同实现形态（预编译扩展、JIT 编译）下的差别。
+W4A16 的执行可以概括成一句话：权重以低比特打包存放，内核在读回它们时反量化到 FP16/BF16 再参与矩阵乘，具体 dtype 由实现路径决定。执行路径的分类见 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md)，Marlin 的批处理设计见 [Marlin](marlin-batched-w4a16-gemm.md)。本页补的是更靠底层的一层：**内核入口要求什么样的张量、怎样把 4 位反量化成 fp16、线程与模板怎样配置**，以及这些约定在不同实现形态（预编译扩展、JIT 编译）下的差别。
 
-比较对象是 AWQ 官方仓库的内核（`llm-awq` `d6e797a4`）与 SGLang 的 JIT marlin 内核（`2f730e29`）。全部结论为 code-read，未编译、未运行、未做性能测量。
+比较对象是 AWQ 官方仓库的内核（`llm-awq` `d6e797a4`）、SGLang 的 JIT AWQ/Marlin（`2f730e29`），并参照 vLLM 的 Triton AWQ（`568afb3a`）。本页是源码核对；未编译或运行 GPU 内核，未做性能测量。位布局的独立教学计算另见 AWQ 实现页。
 
 ## 1. 内核契约包含哪几件事
 
@@ -44,13 +53,13 @@ W4A16 的执行可以概括成一句话：权重以低比特打包存放，内�
 
 1. **用 `lop3` 一次完成掩码与或操作。** 四个常量是 `immLut = (0xf0 & 0xcc) | 0xaa`、`BOTTOM_MASK = 0x000f000f`、`TOP_MASK = 0x00f000f0`、`I4s_TO_F16s_MAGIC_NUM = 0x64006400`。它把每组 4 位放进 fp16 的尾数位，同时用魔数给出一个合法指数，于是这个半精度数成为「偏移后的整数」。
 2. **只做一次移位。** 代码注释写明：整个序列只需要一条移位指令（`top_i4s = i4s >> 8`），因为寄存器打包格式允许低位与高位两组元素分别处理。
-3. **用 `sub.f16x2` 与 `fma.rn.f16x2` 还原。** 两条减法减去魔数（{1024,1024}），两条乘加（`× 1/16` 再 `+ (−64)`）把 16 位容器里的错位元素还原成正确的有符号值。注释解释了为什么用乘加：`sub` 与 `fma` 吞吐相同，因此对高位元素不必先移位。
+3. **用 `sub.f16x2` 与 `fma.rn.f16x2` 还原。** 两条减法减去魔数（{1024,1024}），两条乘加（`× 1/16` 再 `+ (−64)`）把错位的 4-bit 码还原为 FP16 表示的 0–15；它尚未施加量化 scale/zero-point，不是有符号 INT4 的 −8–7。注释解释了为什么用乘加：`sub` 与 `fma` 吞吐相同，因此对高位元素不必先移位。
 
 文件里保留的注释还记录了一次设计变更：作者原本用 `{1032,1032}` 与 `−72`，后改为 `{1024,1024}` 与 `−64`，理由是「不需要映射到 [-8, 7]」。**这说明这类技巧的常量与「是否把权重映射成对称区间」绑定**，抄代码时不能只抄指令序列。
 
 ## 3. AWQ：GEMV 与 GEMM 的约定
 
-`gemv_cuda.cu` 的文件头注释直接给出契约：
+本节先解释 `quantization/gemv_cuda.cu` 的**旧版**契约，再区分当前 WQLinear 所走的新路径；同名文件所在目录不能省略。旧文件头注释给出：
 
 ```text
 _in_feats:        [B, IC]
@@ -65,7 +74,40 @@ _scaling_factors: half  [OC, IC // G]
 
 `gemm_cuda_gen.cu` 走另一套分块：`num_blocks((num_out_feats + 128 - 1) / 128 * j_factors1 * split_k_iters)`、`threads_per_block(32, 4)`，即输出方向按 128 切块，并带有 split-K 因子——与 [Marlin](marlin-batched-w4a16-gemm.md) 用 split-K/条带划分解决形状不整除的思路同源，只是实现方式更简单。
 
-`qmodule.py` 的 forward 按输入 token 数在两者之间分派（见 [AWQ 的实现核对](awq-implementation.md)），因此**同一份权重需要两套内核同时可用**。
+### 当前 WQLinear 的新版路径
+
+`qmodule.py:WQLinear.forward` 实际调用 `gemv_forward_cuda_new` / `gemm_forward_cuda_new`，经 pybind 进入 `quantization_new/`，并不进入上述旧内核。新版采用 int16 qweight 与浮点 `scales`、`scaled_zeros=-scale*zero`；反量化为 `q*scale+scaled_zeros`。旧版打包 qzeros 的契约不能拿来解释这些参数。
+
+新版 GEMV 主机端只有 g128 分支，按 M=1–7 实例化；每 block 256 线程，输出通道按 `N_PER_BLOCK=2`、`K_INTERLEAVE=4` 组织。新版 GEMM 在已读主机分支固定 `G=128`，按 token 数选择 CTA/SPLITK 配置。上层构造器允许某个 group size，不保证这条执行路径支持它：必须沿实际调用检查分派，而不能从旧文件的 g64 分支推断新版可运行。新版 GEMV 文件头仍有旧布局注释，判断应以 qmodule 的缓冲、主机端 dtype 检查和实际指针访问为准。
+
+这补齐了 [AWQ 实现页](awq-implementation.md) 中“打包产物 → 导出名 → 内核”的关系。本轮只做静态核对，没有编译或运行新版内核。
+
+### 新版 GEMV：加载、反量化与归约
+
+`gemv_kernel<NPerBlock,Batch,BlockSize,GroupSize,T>` 的实例是 NPerBlock=2、BlockSize=256、GroupSize=128、Batch=M。每个 block 负责 `2×4=8` 个输出通道，grid 为 N/8；四行交织来自序列化格式，不是额外 batch 维。
+
+1. 每线程一次用 128-bit 向量读 32 个 4-bit 码，沿输出 tile 读取对应组的 scale 与 scaled zero。虽然 Python 容器是 int16，设备端可以用 uint32/float4 按位搬运；容器视图不改变量化精度。
+2. `quantization_new/dequantize.cuh` 将 4-bit 码转换成浮点 0–15，随后 half2/bfloat162 融合乘加 `q*s+scaled_zero`。局部 shuffle 再对应 pack 时的 K 重排，不能把解包后的顺序直接视为逻辑 K 顺序。
+3. 读入激活后，用 `__hfma2` 更新类型为 T 的局部 psum。此 GEMV 不是 Tensor Core MMA，FP16/BF16 局部累加也不能统称 FP32。
+4. `warp_reduce` 先将局部和转换为 float，按 XOR 16、8、1 合并同一输出的数据；lane 0/2/4/6 写共享内存。之后跨 8 个 warp 以 float 求和，再转换为输出 T。
+
+所以即使整数码与尺度相同，局部累加精度、归约顺序和最终转换仍可能与浮点 matmul 产生差异；须在实际 GPU 上验证，不能由公式等价推导逐位相同。
+
+### 新版 GEMM：token 数决定哪些工作块
+
+`gemm_forward_cuda_new` 在 WQLinear 的 M≥8 分支使用下表；所有分支 G=128。
+
+| M 范围 | CTA M×N×K | stages | split-K |
+|---|---|---:|---:|
+| 8–32 | 16×128×128 | 4 | 2 |
+| 33–64 | 16×128×128 | 3 | 1 |
+| 65–128 | 32×128×128 | 4 | 1 |
+| 129–192 | 64×128×64 | 4 | 1 |
+| >192 | 64×128×64 | 4 | 切换至 `gemm_w4a16_T2`，不使用前述 SPLITK 模板参数 |
+
+已读数据路径用 `cp.async` 搬运到分阶段共享内存，`ldmatrix` 获取矩阵片段，在 B 的共享内存到寄存器阶段解包并应用组尺度，然后进入 MMA；不需要先写出整个浮点权重矩阵。具体 MMA 按 T 区分：half 路径为 `mma.sync...f16.f16.f16.f16`，bfloat16 路径为 `...f32.bf16.bf16.f32`。后者的 MMA 累加为 FP32，但输出和部分后续归约会转换回 BF16，不能把整条路径视为全程 FP32。
+
+启动代码沿 N 使用 `N // CTA_N`，只在 M 上做向上取整；所以 N=136 虽满足 WQLinear 的 N%8 检查，也不能据此认为 GEMM 已覆盖最后 8 列。这是源码可见的形状边界，不是本轮实测故障。M=8–32 的 split-K 分支还有 semaphore 控制的跨块合并；其同步、初始化、所有尾块和数值行为仍需运行测试，表中的线程配置不是性能保证。
 
 ## 4. AWQ：内核不是孤立的
 
@@ -90,15 +132,21 @@ def _jit_gptq_marlin_module(dtype: torch.dtype) -> Module:
 
 四点契约含义：**按 dtype 生成模板参数**（`make_cpp_args`），因此每种数据类型对应一次编译；`load_jit` 显式声明源文件与包装函数名；`@cache_once` 保证同一 dtype 只编译一次；`@debug_kernel_api` 是运行时的可观测入口。Python 侧还定义 `_MAX_THREAD_N = 256` 并注明与设备端 `device::marlin::` 一致——**主机与设备共享同一个线程上限常量**，两侧不一致会导致模板不匹配。
 
+### 普通 AWQ 的 JIT 反量化与 Marlin 不同
+
+`awq_dequantize.cuh` 的主机包装启动 16×16 线程块，横轴索引打包输出列，纵轴索引 K 行。每线程处理一个 int32 的 8 个码，按 `row // group_size` 读取一组元数据，计算 `(q-z)*s` 后写连续的 8 个浮点数；FP16 采用前述 1024 位技巧，BF16 有独立常量和编译架构门槛。主机匹配张量的 shape、dtype 和设备，不能据此推断任意 stride 或畸形分组都能运行。
+
+这一 kernel 写出完整 `(K,N)` 浮点矩阵，随后普通 AWQ backend 调用 matmul；Marlin 则在矩阵乘里消费预先重排的整数权重。配置选择及两种转换的发生时机见 [AWQ 的 SGLang 路径](awq-implementation.md#6-跨引擎sglang)。
+
 ## 6. SGLang：repack 的几何
 
 marlin 内核不接受量化器直接产出的布局，需要先重排：
 
-- `gptq_marlin_repack(b_q_weight, perm, out, size_k, size_n, num_bits)`：**必须传入 `perm`**，即一个显式置换张量（来自列顺序与分块规则的组合）；
+- Python 接口 `gptq_marlin_repack(b_q_weight, perm, size_k, size_n, num_bits)` 在内部创建并返回 out；底层包装才接收 out。perm 可为空，C++ 通过 `perm.size(0) != 0` 决定是否执行 act-order 置换；tile 重排本身在两种情况下都存在。该包装明确支持 4/8-bit，不能直接消费原始 GPTQ 3-bit 位流；
 - `awq_marlin_repack(b_q_weight, size_k, size_n, num_bits)`：不需要 perm，但输出形状按 `tile_size = 16` 与 `pack_factor = 32 // num_bits` 计算为 `(size_k // 16, size_n * 16 // pack_factor)`——把沿输出维的打包转成 16 行一组的 tile 布局；
-- 另有 `awq_marlin_moe_repack` 带 `perm` 的专家版本。
+- `awq_marlin_moe_repack` 签名虽带 perm，本快照函数体并未使用它，而是逐专家调用普通 AWQ repack；参数出现不等于实际执行了置换。
 
-这解释了为什么 [AWQ 实现页](awq-implementation.md) 与 [GPTQ 实现页](gptq-implementation.md) 里都出现「加载时还要再转换一次」：AWQ 与 GPTQ 的原生布局都不是 marlin tile 布局，差别只是 GPTQ 需要额外的置换张量。
+这解释了为什么 [AWQ 实现页](awq-implementation.md) 与 [GPTQ 实现页](gptq-implementation.md) 里都出现「加载时还要再转换一次」：AWQ 与 GPTQ 的原生布局都不是 marlin tile 布局，GPTQ 是否实际执行额外的列置换还取决于 perm 是否非空。
 
 ## 7. SGLang：模板空间与线程配置
 
@@ -113,17 +161,17 @@ _GET_IF(W_TYPE, THREAD_M_BLOCKS, THREAD_N_BLOCKS, THREAD_K_BLOCKS,
 
 另有两条硬约束写在源码里：`marlin.cuh` 中 `default_threads = 256`；`gptq_marlin.cuh` 检查 `num_threads` 至少 128（4 个 warp），并用 `thread_m_blocks * 16` 计算 M 方向的 tile 高度，对 `__CUDA_ARCH__ < 800` 直接不编译。
 
-**对复现的含义：** 加载一份量化权重时，「位宽、分组大小、零点是否为浮点、是否激活重排」这些配置不仅是数值参数，还决定能否命中模板——配置解析错了不是精度略差，而是直接没有内核可用。这与 [GPTQ 实现页](gptq-implementation.md) 记录的加载期组合处理（`desc_act` 与 `group_size=-1` 互斥）互相印证。
+**对复现的含义：** 加载一份量化权重时，「位宽、分组大小、零点是否为浮点、是否激活重排」这些配置不仅是数值参数，还决定能否命中模板——配置解析错了不是精度略差，而是直接没有内核可用。这与 [GPTQ 实现页](gptq-implementation.md) 记录的加载期组合处理（单组场景下归一化推理期 desc_act 标志，不是禁止量化时采用 act-order）互相印证。
 
 ## 8. 三种实现形态对照
 
 | 维度 | AWQ：预编译 CUDA 扩展 | SGLang：JIT CUDA 模板 | 参考：Triton 路径 |
 |---|---|---|---|
 | 交付形态 | `setup.py` 编译的 `.so`，pybind 注册固定名字 | 运行时按 dtype 编译，`load_jit` 声明源文件与包装 | Python 侧 JIT，内核以 DSL 书写 |
-| 变体选择 | 主机端 `if (group_size == 64/128)` 启动不同 kernel | 由模板参数与运行时配置共同匹配 `_GET_IF` | 由 Python 侧参数与编译选项决定 |
+| 变体选择 | 旧 GEMV 按 g64/g128；新版 GEMV 固定 g128，GEMM 再按 M 分派 | 由模板参数与运行时配置共同匹配 `_GET_IF` | 由 Python 侧参数与编译选项决定 |
 | 反量化 | 手写 PTX 位技巧（`lop3`／`sub.f16x2`／`fma.rn.f16x2`） | 在模板中按权重类型实例化（含 dequant 头文件） | 由编译器生成 |
-| 布局要求 | 权重量化器自己的打包 + 元数据对齐 | 必须经 repack 进入 16 行 tile 布局（GPTQ 还需 perm） | 视内核实现而定 |
-| 调试与移植成本 | 需要重新编译扩展；指令级细节不可见 | 首次运行编译、版本敏感；模板空间显式可见 | 最易读，但性能通常受限 |
+| 布局要求 | 权重量化器自己的打包 + 元数据对齐 | 必须经 repack 进入 16 行 tile 布局（GPTQ 的 act-order 置换可为空） | 视内核实现而定 |
+| 调试与移植成本 | 需要重新编译扩展；内联 PTX 可从源码检查，最终指令仍需查看编译产物 | 首次运行编译、版本敏感；模板空间显式可见 | DSL 隐去部分硬件细节，需结合生成代码与测量判断；不能仅凭语言预判性能 |
 
 这张表的用途不是排名，而是提醒：**「同一个量化格式」在不同引擎下意味着不同的内核契约**，跨引擎复用时至少要重新核对布局、模板命中条件与融合算子是否一起移植。
 
@@ -139,9 +187,9 @@ _GET_IF(W_TYPE, THREAD_M_BLOCKS, THREAD_N_BLOCKS, THREAD_K_BLOCKS,
 ## 10. 验证状态与待验证
 
 - 全部为 code-read：未编译、未运行、未测性能，也未核对任何数值输出；本页不给出任何加速比。
-- AWQ 的 `quantization_new/` 另一套内核、`gemm_cuda_gen.cu` 的内层循环细节、以及 `marlin_template.h` 的主循环与流水线实现均未逐行审查。
-- SGLang 侧只读了 JIT 包装、repack 几何与模板分派宏；`dequant.h`、`marlin_dtypes.cuh` 与设备端主循环未展开。
-- 三种形态对照中的 Triton 一列来自本 Wiki 其它页面的既有记录，本轮没有重新核对 SGLang 或 vLLM 的 Triton 实现细节。
+- 已核对 AWQ 新版 GEMV 的主要加载、解包、乘加和归约路径，以及 GEMM 主机配置、搬运/MMA 与部分合并代码；尚未逐行验证全部同步、边界和运行时错误处理。
+- SGLang 已读普通 AWQ JIT 反量化的主机与设备函数、Marlin 的参数准备和相关包装；Marlin 的完整设备主循环、`dequant.h` 与 `marlin_dtypes.cuh` 尚未系统研读。
+- 已定向读取 vLLM Triton AWQ 的反量化索引、GEMM K 循环和 split-K 包装；没有执行或证明它与 SGLang/CUDA 版本逐位等价。
 
 ## 来源身份
 
@@ -151,3 +199,4 @@ _GET_IF(W_TYPE, THREAD_M_BLOCKS, THREAD_N_BLOCKS, THREAD_K_BLOCKS,
 | --- | --- | --- |
 | [mit-han-lab/llm-awq](https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61) | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |
 | [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |
+| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton AWQ 的设备与包装路径 |

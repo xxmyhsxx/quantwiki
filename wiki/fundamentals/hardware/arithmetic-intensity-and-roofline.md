@@ -9,7 +9,7 @@ sources:
   - raw/repositories/2026-09-21/cs336-lectures/source/lecture_02.py
   - raw/papers/2026-09-21/marlin/paper.pdf
   - raw/papers/2026-09-21/qserve/paper.pdf
-updated: 2026-09-17
+updated: 2026-09-22
 ---
 
 # 算术强度与 roofline 分析
@@ -29,16 +29,16 @@ updated: 2026-09-17
 
 ## 2. 两个强度量
 
-讲义把一次计算抽象为三步：输入从内存送到加速器、执行计算、结果写回内存。假设计算与通信可以完全重叠，则耗时是两者的较大值：
+讲义把一次计算抽象为三步：输入从内存送到加速器、执行计算、结果写回内存。假设计算与通信可以完全重叠，忽略启动等成本时，理想耗时取两者的较大值；实际耗时通常不小于这个下界：
 
-$$t=\max\left(t_{\mathrm{compute}},\ t_{\mathrm{memory}}\right),\qquad t_{\mathrm{compute}}=\frac{\mathrm{FLOPs}}{P_{\mathrm{peak}}},\qquad t_{\mathrm{memory}}=\frac{\mathrm{Bytes}}{B}.$$
+$$t_{\mathrm{ideal}}=\max\left(t_{\mathrm{compute}},\ t_{\mathrm{memory}}\right),\qquad t_{\mathrm{compute}}=\frac{\mathrm{FLOPs}}{P_{\mathrm{peak}}},\qquad t_{\mathrm{memory}}=\frac{\mathrm{Bytes}}{B}.$$
 
 于是有两个可以比较的量：
 
 - **加速器强度** $I_{\mathrm{acc}}=P_{\mathrm{peak}}/B$：硬件每搬一字节能算多少浮点运算；
 - **算术强度** $I=\mathrm{FLOPs}/\mathrm{Bytes}$：这次计算每搬一字节实际做了多少。
 
-判定规则是：$I<I_{\mathrm{acc}}$ 时受内存带宽限制（memory-bound），$I>I_{\mathrm{acc}}$ 时受算力限制（compute-bound）。讲义给出的 H100 数值是 $P_{\mathrm{peak}}=989.5$ TFLOP/s（BF16，不含稀疏）与 $B=3.35$ TB/s，对应 $I_{\mathrm{acc}}\approx295$ FLOP/Byte。
+在这个双资源模型中，判定规则是：$I<I_{\mathrm{acc}}$ 时受内存带宽限制（memory-bound），$I>I_{\mathrm{acc}}$ 时受算力限制（compute-bound）。讲义给出的 H100 数值是 $P_{\mathrm{peak}}=989.5$ TFLOP/s（BF16，不含稀疏）与 $B=3.35$ TB/s，对应 $I_{\mathrm{acc}}\approx295$ FLOP/Byte。
 
 ## 3. 常见算子的算术强度
 
@@ -52,15 +52,15 @@ $$t=\max\left(t_{\mathrm{compute}},\ t_{\mathrm{memory}}\right),\qquad t_{\mathr
 | 矩阵向量乘（$n\times n$） | $n(2n-1)$ | $2n+2n^2+2n$ | 约 $1$ | 内存 |
 | 大矩阵乘（$n\times n$ 乘 $n\times n$） | $n^2(2n-1)$ | $6n^2$ | 约 $n/3$ | 计算（$n$ 大时） |
 
-讲义据此给出两条结论：**只有矩阵足够大时才受算力限制**；**推理中的矩阵向量乘天然受带宽限制**。它还提醒，GELU 的算术强度高于 ReLU，但两者都受带宽限制，因此「单独看」时 ReLU 并不比 GELU 快——局部优化的收益取决于瓶颈是否移动。
+这些结果是流量与峰值模型的判断：较大的 GEMM 才可能充分发挥计算吞吐；大权重矩阵的 GEMV 常受带宽限制。GELU 与 ReLU 都落在该模型的带宽侧，因此不能仅按 FLOPs 数量推断加速倍数；这也不保证两者实测延迟相同。小尺寸、低并行度或特殊函数吞吐可能改变实际瓶颈。
 
 ## 4. roofline 与 MFU
 
-把「算术强度—性能」画成图就是 roofline：横轴是算术强度，每个硬件的可用性能是一条先上升后水平的折线，**拐点就是该硬件的加速器强度**（讲义对 roofline 图的三点说明）。由它可以直接读出模型浮点利用率：
+把「算术强度—性能」画成图就是 roofline：横轴是算术强度，每个硬件的可用性能是一条先上升后水平的折线，**拐点就是该硬件的加速器强度**（讲义对 roofline 图的三点说明）。按这个模型，可用性能的上界为
 
-$$\mathrm{MFU}=\min\left(1,\ \frac{I}{I_{\mathrm{acc}}}\right),$$
+$$P_{\mathrm{roof}}=\min(P_{\mathrm{peak}},BI),\qquad U_{\mathrm{roof}}=\min\left(1,\frac{I}{I_{\mathrm{acc}}}\right).$$
 
-即实际 FLOP/s 与规格峰值的比值，忽略通信与其它开销。讲义的经验判断是 MFU 达到 0.5 已经相当好——这提醒我们规格峰值是上限，而不是可达目标。
+$U_{\mathrm{roof}}$ 是理想利用率上界，不是测量得到的 MFU。讲义 `tensor_operations_flops` 所讨论的实际利用率需要实测耗时：对约定好的运算量 F，有 $U_{\mathrm{measured}}=F/(t_{\mathrm{measured}}P_{\mathrm{peak}})$；模型层面称 MFU 时还要明确模型 FLOPs 的计数口径。高算术强度只说明带宽上界不再更紧，不保证寄存器、指令吞吐、并行度和启动成本都能达到峰值。讲义给出的 MFU 经验值也不能视为每种 kernel 都应达到的指标。
 
 ## 5. 由它导出量化研究的两个常用判断
 
@@ -70,16 +70,20 @@ $$\mathrm{MFU}=\min\left(1,\ \frac{I}{I_{\mathrm{acc}}}\right),$$
 
 $$I\approx\frac{2b}{w/8}=\frac{16b}{w},\qquad \text{受内存限制当且仅当}\quad b<\frac{I_{\mathrm{acc}}\,w}{16}.$$
 
-代入检验：A10 的加速器强度约 200 FLOP/Byte，4 位权重给出 $b<50$——与 MARLIN 论文按「读完一个 4 位权重的时间可执行约 100 次浮点运算」得到的 $b_{opt}\approx50$ 一致；同一算法在 H100（$I_{\mathrm{acc}}\approx295$）上给出 $b<74$。位宽越低的权重每个字节能承载更多权重，因此同样批量下更可能落在受带宽限制的一侧；批量增大后这个不等式反过来，转向受算力限制，此时低比特的价值从「省流量」变成「用更高吞吐的计算单元」。这正是 QServe 论文用 W4A16 与 W8A8 的交叉点（其估算中 $m\approx78$）讨论精度组合的原因。
+代入检验：A10 的加速器强度约 200 FLOP/Byte，4 位权重给出 $b<50$——与 MARLIN 论文按「读完一个 4 位权重的时间可执行约 100 次浮点运算」得到的 $b_{opt}\approx50$ 一致；同一算法在 H100（$I_{\mathrm{acc}}\approx295$）上给出 $b<74$。在相同 P_peak 与 B 口径下，位宽越低，同样批量的算术强度越高，反而更接近或进入受算力限制的一侧；批量增大后这个不等式反过来，转向受算力限制，此时低比特的价值从「省流量」变成「用更高吞吐的计算单元」。这正是 QServe 论文用 W4A16 与 W8A8 的交叉点（其估算中 $m\approx78$）讨论精度组合的原因。
+
+比较 W4A16 与 W8A8 等不同执行路径时，P_peak 也可能改变，必须分别重新计算 I_acc，不能只改变位宽而沿用另一计算单元的峰值。
 
 以上换算是本页依据讲义定义与两篇论文同类推导整理，用于量级判断；真实内核还受元数据、启动延迟与访存模式影响，不能直接当作加速比预测。
 
 ## 6. 测量口径
 
-- **峰值不等于实测。** 规格数值需与 MFU 一起报告，否则「加速比」没有可比基准。
+- **峰值不等于实测。** 加速比需要相同任务和计时范围下的基线延迟；若另报告利用率，须说明 FLOPs 与峰值口径，不能从规格直接推定。
 - **必须绑定数据类型。** 峰值算力随 dtype 变化（BF16／INT8／INT4 不同），带宽通常不变，因此加速器强度也随精度改变；跨精度的 FLOP/s 不能直接比较。
 - **必须绑定批量与阶段。** 同一模型在 prefill（大矩阵乘形态）与 decode（矩阵向量形态）下处于 roofline 的不同位置，批量改变算术强度。
 - **roofline 是上界模型。** 它忽略启动延迟、内存局部性、调度与内核融合，因此能判断瓶颈方向，不能替代实测；量化工作里频频出现的「理论 4 倍、实测要打折扣」都发生在这些被忽略的项上。
+
+块内复用怎样改变流量见 [分块矩阵乘与融合](../operators/gpu-kernel-computation-patterns.md)；异步执行、缓存策略和有效带宽怎样测量见 [算子正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md)。
 
 ## 7. 局限与未验证
 

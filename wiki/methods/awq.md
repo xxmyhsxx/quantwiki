@@ -7,6 +7,9 @@ tags:
   - equivalent-transform
   - calibration
 sources:
+  - raw/repositories/2026-09-21/llm-awq/source/awq/entry.py
+  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemm/gemm_cuda.cu
+  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemv/gemv_cuda.cu
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/awq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
@@ -21,7 +24,7 @@ sources:
 paper_version: arXiv:2306.00978v6
 code_commit: d6e797a42b9ef7778de8ee2352116e0f48a78d61
 verification: 原文研读与定向代码核对；补充材料缺件；未运行模型实验
-updated: 2026-09-14
+updated: 2026-09-22
 ---
 
 # AWQ：激活感知的权重量化
@@ -201,11 +204,11 @@ $$
 
 C0 `pre_quant.py:102`、quantizer.py:106。C0 在当前 block 的缩放／裁剪前就缓存下一 block 输入，因此不能把它写成自动用前面所有量化误差重新传播校准数据的流程。
 
-当前实际量化路径要求 zero-point 配置，`WQLinear` 只实现 4 bit，并有输入分组、输出通道和打包对齐约束。模块保存 `qweight`、`scales`、`scaled_zeros` 和可选 bias；`qweight` 的 int16 是打包容器，不代表每个原始权重仍占 16 bit。当前 forward 依据输入 token 数是否小于 8 分派到相应 GEMV／GEMM CUDA 入口。这些都是版本相关实现，不是 AWQ 数学定义。quantizer.py:125、qmodule.py:78。底层 CUDA 内核、布局解包及运行正确性未在本轮验证。
+当前实际量化路径要求 zero-point 配置，`WQLinear` 只实现 4 bit，并有输入分组、输出通道和打包对齐约束。模块保存 `qweight`、`scales`、`scaled_zeros` 和可选 bias；`qweight` 的 int16 是打包容器，不代表每个原始权重仍占 16 bit。当前 forward 依据输入 token 数是否小于 8 分派到相应 GEMV／GEMM CUDA 入口。这些都是版本相关实现，不是 AWQ 数学定义。quantizer.py:125、qmodule.py:78。本次进一步核对该调用：新版 GEMV 只分派 g128，GEMM 主机分支也固定 `G=128`；模拟量化支持其他分组不能推导出此真实路径同样支持。新旧内核的布局区别见实现页。底层完整循环、布局解包数值及运行正确性尚未验证。
 
 ### 5.4 校准数据不是一个默认数字
 
-P0 §5.1 给出从 Pile 取小校准集、20 点搜索；图 8 的消融明确每条序列为 2048 tokens。C0 `run_awq` 默认 `n_samples=512,seqlen=512`，数据函数筛选文本后拼接再切块；输入文本条数不等于最终块数。这些代码默认值不能填回原文所有实验。calib_data.py:5。
+P0 §5.1 给出从 Pile 取小校准集、20 点搜索；图 8 的消融明确每条序列为 2048 tokens。C0 `run_awq` 默认 `n_samples=512,seqlen=512`，数据函数筛选文本后拼接再切块；输入文本条数不等于最终块数。CLI `entry.py` 又显式覆盖为 `n_samples=128,seqlen=512`，因此函数默认、实际调用与论文实验是三个层次。具体产物和加载顺序见 [实现页](../implementation/awq-implementation.md#2-原仓库从搜索到加载的状态变化)。这些代码设置不能填回原文所有实验。calib_data.py:5。
 
 ## 6. 与相关方法的关系
 

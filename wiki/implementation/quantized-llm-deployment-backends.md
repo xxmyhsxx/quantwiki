@@ -7,12 +7,14 @@ tags:
   - data-format
   - serving
 sources:
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/__init__.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_awq.py
   - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/__init__.py
   - raw/repositories/2026-09-21/tensorrt-llm/source/examples/quantization/README.md
   - raw/repositories/2026-09-21/mlc-llm/source/docs/compilation/configure_quantization.rst
   - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md
   - raw/repositories/2026-09-21/omniserve/source/omniserve/modeling/layers/quantized_linear/w4a8_linear.py
-updated: 2026-09-16
+updated: 2026-09-22
 ---
 
 # 量化模型的部署框架与后端支持
@@ -57,7 +59,7 @@ online（含 fp8_per_tensor、fp8_per_block 等在线量化简写）
 
 两个值得注意的命名模式：
 
-**同一算法的不同内核各有一个名字。** `gptq` 与 `gptq_marlin`、`awq` 与 `awq_marlin` 是并列条目。前者对应各自的原生内核，后者走 [Marlin](marlin-batched-w4a16-gemm.md) 的批处理内核。选择哪一个属于性能决策，不改变权重所表示的量化方案；对比加速比时必须写明用的是哪一个。
+**量化方法名不与内核一一对应。** 此快照非 CPU 的 AWQ checkpoint 可把 `awq`、`awq_marlin` 等选择统一为 `auto_awq`，随后按配置和层形状选择普通 AWQ 或 MPLinear 路径；后者再选择可实现的 kernel。`AutoAWQMarlinLinearMethod` 的类名也不保证最终调用 Marlin。性能记录需保留最终后端、环境开关和输入规模；具体加载与执行条件见 [AWQ 实现](awq-implementation.md#5-跨引擎vllm)，不能从注册名称清单直接推断运行路径。
 
 **格式名与生态来源并不统一。** `compressed-tensors`、`modelopt`、`quark`、`bitsandbytes`、`torchao`、`inc` 对应各自的工具链与序列化格式，`fp8` 与 `fbgemm_fp8` 则区分了 FP8 的两条实现路径。看到「vLLM 支持 X」时，需要进一步确认是哪条内核路径。
 
@@ -102,7 +104,7 @@ llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_
 
 ## 7. 加载之外：运行时对量化的额外要求
 
-这一节的约束都来自服务系统的内存与调度结构：缓存被切成固定大小的块、批量按迭代粒度调整、显存不足时需要抢占。这些机制本身的工作原理见 [推理服务的内存管理与批处理](serving-memory-and-batching.md)；理解它们才能判断某个量化方案是「能加载」还是「能在服务里跑出收益」。
+这一节的约束都来自服务系统的内存与调度结构：缓存被切成固定大小的块、批量按迭代粒度调整、显存不足时需要抢占。这些机制本身的工作原理见 [推理服务的内存管理与批处理](serving-memory-and-batching.md)；理解它们才能判断某个量化方案是「能加载」还是「能在服务里跑出收益」。 vLLM 从 token 调度、KV 分配到紧凑输入的源码链见 [vLLM 推理执行](vllm-inference-execution.md)；Attention 的缓存契约、后端接口、分段归约与图执行见 [vLLM 算子设计](vllm-attention-operator-design.md)。
 
 **KV cache 的量化参数存放在哪里。** [QServe](../methods/qserve.md) 采用与 vLLM、TensorRT-LLM 相同的分页 KV 布局，但因为 KV 位宽更低而使用逐 head 动态量化，于是把每个 head 的 fp16 尺度与零点放在分页中量化 KV 特征之后，支持运行时更新。这说明「KV4」不只是一个位宽，还包含一套页内布局约定；换成静态逐张量量化可以省掉动态估计，但精度条件随之变化。
 

@@ -8,7 +8,7 @@ tags:
 sources:
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/awq/paper.pdf
-updated: 2026-09-14
+updated: 2026-09-22
 ---
 
 # 线性层与输入通道
@@ -87,6 +87,8 @@ $$
 矩阵乘法、加法和归一化描述“计算什么”，属于算子层面的概念；计算图还描述张量在算子之间怎样流动、被哪些分支使用。kernel 是在特定设备上执行一段计算的程序：多个算子可以融合进一个 kernel，一个算子也可能由多个 kernel 实现。
 
 因此，改写单个线性层公式与优化整个计算图是两件事。例如把输入除以缩放值、再把权重对应列乘回去，能保持未量化的线性结果，但若输入还供其他分支使用，就必须维护那些分支的结果；不能直接更改共享张量。具体条件见[对角缩放与等价变换](../../theory/diagonal-scaling-equivalent-transform.md)。AWQ 的实际融合案例见原论文 §4.2。
+
+从公式走向实现时，还需将逻辑下标映射到实际地址，明确 stride、dtype、设备和输出别名；这些约定见 [张量布局与算子接口](tensor-layout-and-kernel-contracts.md)。逐元素、归约和矩阵乘怎样组织工作，见 [GPU 算子的计算模式](gpu-kernel-computation-patterns.md)。
 
 ## 5. 对后续量化研究的用途
 

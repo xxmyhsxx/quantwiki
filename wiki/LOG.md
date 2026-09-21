@@ -2,6 +2,51 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-09-22 · vLLM 推理框架与算子设计 ingest
+
+- 结合已有 PagedAttention、AWQ 与算子基础页面，选取 raw 中 vLLM `568afb3a` 的 V1 调度、KV 管理、GPU model runner、Attention 接口、FlashAttention 接入、Triton unified attention 与 CUDA Graph 设计材料；完整版本与具体文件登记在知识页。
+- 新增“vLLM 推理执行：从 token 调度到变长批次”，解释计算进度与 token 预算、chunked prefill、KV 分配与抢占、前缀身份和引用生命周期，以及 query 边界、历史长度、位置、块表和写入槽位的联系。
+- 新增“vLLM 算子设计：Attention 后端、分页计算与图执行”，解释模型层组织、缓存副作用与编译依赖、后端能力契约、GQA 行映射、分页加载、在线 softmax、分段归约和动态图批次的捕获规格匹配。
+- 已有服务页保留原始论文口径并链接代码主线，澄清迭代接纳仍受资源约束、逻辑紧凑批次与图执行 padding 可以同时存在；部署页与 INDEX 接入新阅读路径。共新增 2 个知识页、修改 2 个已有知识页，并更新 INDEX 与本日志。raw 和 Skill 未改动。
+- 验证：CPU 教学计算通过 token 预算、紧凑批次/槽位、绝对位置因果 mask、跨页分配、GQA 映射、padding 写入模型及在线/分段 softmax 检查；构造反例确认直接平均分段输出不等于统一 softmax。61 个知识页、443 条来源登记、834 条本地链接检查通过，无错误、警告或跳过；差异空白检查通过。
+- 边界：本轮完成所选主线的代码研读与知识写入；未启动 vLLM、编译 GPU kernel、运行模型、验证 CUDA Graph 或测量性能。多模态 encoder、Mamba、分布式 KV、完整异步/推测执行与特殊 Attention 分支未作为已覆盖成果。
+
+## 2026-09-22 · 从算子 Skill 展开配置与流水知识
+
+- 选择 kernel-skills 中的 `Choose Tile Size and Work Partitioning`、`Optimize Triton Block Parameters`、`Optimize Shared Memory Tiling`，将其凝练建议展开为通用机制、假设和反例。结合既有 raw 的 Triton 教程/runtime、CUDA 文档及 CuTe SM80 流水代码补充依据，版本仅用于来源追溯，不展开版本迁移或接口兼容问题。
+- 新增“Kernel 配置选择与自动调优”“GPU 异步拷贝与多级流水”两页：说明数据复用、累加器与 shared 预算、理论/实际 occupancy、尾块面积利用率、persistent 工作分配、调优的输入状态，以及拷贝组完成与缓冲复用的两个依赖方向。
+- 补充 GPU 基础页的 word/bank 区分和步长的模运算推导，避免将连续 half 的同 word 读取直接判为 bank 冲突；计算模式与验证页接入资源选择、带状态的重复试跑及流水启动/收尾检查。共新增 2 个知识页、修改 3 个已有知识页，更新 INDEX 与本日志；raw 与项目 Skill 均未改写。
+- 验证：CPU 教学模型通过资源上界、尾块利用率、persistent 完整覆盖、word/bank 映射和流水启动/轮换/排空检查，并检出读早与覆盖未释放缓冲的反例；重复调用的初始状态差异也完成教学核对。59 个知识页、424 条来源登记、812 条本地链接检查通过，无错误、警告或跳过；差异空白检查通过。
+- 边界：模型验证的是正文列出的假设与顺序关系，不代表 GPU 内存模型或性能验证。未进行 CUDA/Triton 编译、GPU autotune、竞争诊断或实际基准；TMA 和异步 MMA 等机制未纳入本轮展开。
+
+## 2026-09-22 · 算子开发基础 ingest
+
+- 从既有 raw 选择 Triton `81a46fa0` 官方教程 01/02/03/05 与 testing.py、CUDA 文档 `snapshot-2026-07-02`、CUDA Samples `b7c5481c`，以及 Hugging Face kernels `5c2cf07f` 初始化模板；沿用 CS336 讲义核对 roofline。完整版本、快照时间和具体文件登记在相应知识页。
+- 新增 3 页：张量布局与算子接口、GPU 算子的计算模式、算子正确性与性能测量。解释 stride/视图、CUDA 与 Triton 的工作分配、mask 与归约中性值、softmax/LayerNorm 前向、分块 GEMM、融合、数值容限及异步计时。
+- 更新 GPU 基础页，补充 warp 下标、存储作用域、两次块内屏障、合并访存与 shared-memory bank 冲突；修正 roofline 页中低位宽改变瓶颈方向的反向表述，区分理论利用率上界与实际 MFU，并收紧由 FLOPs 直接断言实测性能的表述。
+- 线性层与量化误差诊断页新增必要衔接，INDEX 增加“学习算子开发”路径，连接基础知识、验证与已有 AWQ/Marlin 实现。共新增 3 个知识页、修改 4 个已有知识页，并更新导航与本日志；raw 原始资料保持不变。
+- 验证：独立 Python 标准库 CPU 教学计算的 8 组检查通过，涉及布局、尾块覆盖、warp 映射、访存模型、softmax/LayerNorm padding、非整除分块 GEMM、资源记账和 FP32 舍入反例。57 个知识页、410 条来源登记、792 条本地链接检查通过，无错误、警告或跳过；Git 差异空白检查通过。
+- 边界：完成上述基础知识与固定代码片段的 ingest；没有编译或运行 CUDA/Triton，没有验证 GPU 数值、竞争诊断或性能。LayerNorm backward、完整框架集成和架构专用高级优化不在本轮覆盖范围。
+
+## 2026-09-22 · AWQ 代码与服务后端 ingest
+
+- 基于 raw 中 llm-awq `d6e797a4`、vLLM `568afb3a`、SGLang `2f730e29` 的固定快照，增量更新 AWQ 方法页、AWQ 实现页、权重量化反量化内核页与部署后端页，共 4 页；完整版本见页面来源身份表。
+- 补齐官方搜索记录、fake/real 量化、TinyChat v2 打包与加载链，区分 CLI 校准配置和函数默认值；记录对称分支、group_size、clip 抽样与 GEMM 输出列分块的源码边界。
+- 追踪 vLLM auto_awq 的平台与内核选择、普通 AWQ 的 token 阈值和 Triton/CUDA 分派；对照 SGLang 显式 awq 的选择行为、逐次反量化和 Marlin 加载期重排，分别解释权重、scale、zero-point 的布局转换。
+- 内核正文补充新版 GEMV 的加载、解包、局部乘加与归约，以及 GEMM 的 CTA、流水阶段、split-K 和 FP16/BF16 累加差异。方法名称、实现类名、实际执行内核分别说明。
+- 验证：独立教学计算通过 AutoAWQ 位序、权重/零点轴转换与 TinyChat 交织打包往返；这些计算没有执行原仓库的 PyTorch 打包器。54 个知识页、391 条来源登记、759 条本地链接检查通过，无错误或警告；Git 差异空白检查通过。
+- 范围：完成上述主链的代码研读与知识写入，未编译 GPU 内核、运行模型或测量性能；完整 Marlin 设备主循环、MoE 专家路由、跨引擎数值一致性等仍按正文标明未验证。算子开发 Skill 仓库的收录另记 raw/LOG.md。
+
+## 2026-09-22 · 既有内容复习 ingest
+
+- 从 23 个方法主页面复习核心解释，并对解释缺口、公式疑点和实现描述定向重读本地固定论文版本、作者 TeX 与代码。实际修订 16 个知识页：9 个方法页、5 个实现页、2 个共通知识页；原始资料与目录结构保持不变。已有解释充分的内容复用，不重复建页。
+- 实现链：修正 TinyChat AWQ 新旧内核的布局与分派混用，补齐 SGLang 普通 AWQ 与 Marlin 路径差异；更正原始 GPTQ 3-bit 打包、可选列置换与加载配置解释；区分 SmoothQuant 平滑因子、动态激活尺度和 INT8 重缩放系数。
+- 重构目标与实验条件：补明 AdaRound 的教师/量化前缀非对称输入及软舍入初始化，澄清 BRECQ 梯度平方与首末层 8-bit 条件；更正 LLM.int8() 零点约定、离群维度选择及计时口径；保留 ZeroQuant 正文 3.1 小时、表格 1.1 小时与成本百分比的冲突。
+- KV 与服务：补齐 KIVI 两类缓存窗口、统一 softmax 和 scale/min 偏移；补读 SAW-INT4 已展开子模块的 KV 写入与解码主机路径，明确 Q/K 配对旋转、V 还原和跨后端性能比较限制。补充 KV 字节数推导，修正分页注意力块公式的指数/求和顺序及分页集成条件。
+- QServe：区分 W4A8KV4 与 FlatQuant 的 W4A4KV4，补明两级量化误差与 epilogue 输入替换近似；指出 v3 保护范围推导的算术不一致及代码中已注释的 119 范围断言，保留条件与未核验部分；局部注意力内核加速不再写成模型端到端收益。
+- 验证：54 个知识页、372 条来源登记、758 条本地链接的结构、元数据、路径及锚点检查通过，无错误或警告；Git 差异空白检查通过。另以教学计算核对 GPTQ 3-bit 跨字布局、QServe 条件整数范围、跨块 softmax 归一化及 KV 字节数边界，均通过。
+- 范围：这是针对既有解释的增量 ingest，不代表全部论文附录、所有实验表和代码分支均在本轮重新验证。AWQ 补充材料缺件、尚未研读的设备端分支与既有开放问题仍按各页记录保留；未构建 GPU 内核、运行模型、复现性能或核验跨引擎数值一致性。未提交或推送。
+
 ## 2026-09-22 · 检查工具归入 Skill
 
 - 按用户确认，将结构检查脚本作为 wiki-review Skill 的随包工具保存，使用说明由 Skill 维护，项目根目录不恢复 scripts/。

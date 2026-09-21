@@ -7,8 +7,9 @@ tags:
   - reconstruction
   - second-order
 sources:
+  - raw/papers/2026-09-21/brecq/source.eprint
   - raw/papers/2026-09-21/brecq/paper.pdf
-updated: 2026-09-16
+updated: 2026-09-22
 ---
 
 # BRECQ：块级重构与二阶误差的粒度选择
@@ -65,17 +66,17 @@ $$\arg\min_{\widehat\theta}\Delta\theta^{\mathsf T}\overline{\mathbf H}^{(\theta
 
 $$\overline{\mathbf F}^{(\theta)}=\mathbb E\left[\nabla_\theta\log p_\theta(y|x)\nabla_\theta\log p_\theta(y|x)^{\mathsf T}\right],$$
 
-其对角元素等于各元素梯度的平方。于是优化目标成为
+其对角元素是梯度平方的期望，样本梯度平方是相应估计信号。不能用批量平均梯度再平方替代：不同样本的梯度可能相互抵消。于是优化目标成为
 
 $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mathrm{diag}\left(\left(\frac{\partial\mathcal L}{\partial \vec z^{(\ell)}_1}\right)^2,\dots\right)\Delta\vec z^{(\ell)}\right].$$
 
-直观差别是：梯度绝对值大的输出通道在重构中被赋予更大权重，而常数对角假设一视同仁。论文引用 Lee 等的结果说明，当模型分布与真实数据分布一致时损失 Hessian 等于 FIM；并承认这个条件无法严格满足，只是在模型已收敛的前提下能做到的最好近似。这里的「最好」是相对该近似框架而言，不是对任务损失的全局保证。
+直观差别是：梯度绝对值大的输出元素在重构中被赋予更大权重，而常数对角假设一视同仁。论文引用 Lee 等的结果说明，当模型分布与真实数据分布一致时损失 Hessian 等于 FIM；并承认这个条件无法严格满足，只是在模型已收敛的前提下能做到的最好近似。这里的「最好」是相对该近似框架而言，不是对任务损失的全局保证。
 
 ## 5. 算法与实现
 
 **权重侧用自适应舍入。** 论文直接沿用 [AdaRound](adaround.md) 的做法：权重先向下取整，再由可学习变量经 sigmoid 决定是否进位，配合退火的正则项迫使变量收敛到 0 或 1。BRECQ 的增量在于把它放在块级目标与 FIM 加权之下。
 
-**激活侧只能学步长。** 论文指出激活不能使用自适应舍入，因为它们随输入变化；能调整的是量化步长。论文给出步长梯度的分情况表达（按输入与裁剪阈值的大小关系分三段），并对块内所有步长一起优化。
+**激活侧学习步长。** 激活随输入变化，不能直接沿用为每个固定权重保存一个舍入变量的参数化；本文因此选择学习激活步长。这是该算法的选择，不代表所有激活量化方法只能调整步长。论文给出步长梯度的分情况表达（按输入与裁剪阈值的大小关系分三段），并对块内所有步长一起优化。
 
 **实现设置（论文实现细节一节）：** 校准集为 ImageNet 中 1024 张 224×224 图像；量化前把 BN 折叠进卷积并冻结统计量；Adam 优化，权重学习率 $10^{-3}$、激活步长 $4\times10^{-5}$，每个块迭代 $2\times10^{4}$ 次、batch size 32；不实现原论文的梯度缩放。不属于任何块的层（第一个卷积、最后一个全连接，以及 MobileNetV2 的最后一个卷积）退回逐层重构。重构后把每层的敏感度与硬件性能存进查找表，2 bit 时额外保存块内敏感度。
 
@@ -83,7 +84,7 @@ $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mat
 
 ## 6. 实验
 
-**仅权重量化（论文主结果表，ImageNet 验证精度；列依次为 ResNet-18、ResNet-50、MobileNetV2、RegNet-600MF、RegNet-3.2GF、MnasNet-2.0）。**
+**仅权重量化（论文主结果表，ImageNet 验证精度；下表摘录四个模型）。** 首层和末层保留 8 bit，因此表中 2/32 不是全模型每层均为 2-bit 权重；4/32、3/32 同样有该例外。主表与后文研究首末层的单独消融须区分。
 
 | 方法 | 位宽 | ResNet-18 | ResNet-50 | MobileNetV2 | RegNet-600MF |
 |---|---|---:|---:|---:|---:|
@@ -102,7 +103,7 @@ $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mat
 
 方法间的差距随位宽下降而拉大：4 bit 时 BRECQ 相对 AdaRound 约高 1 到 2 个点，3 bit 时大致持平或更高，2 bit 时 AdaRound 已接近不可用（MobileNetV2 32.54），BRECQ 仍有 59.67。这正是论文声称「首次把 PTQ 推到 INT2」的依据所在。
 
-**权重与激活同时量化（4 bit 激活）。**
+**权重与激活同时量化（4 bit 激活，沿用主实验首末层权重 8 bit 的设置）。**
 
 | 方法 | 位宽 | ResNet-18 | ResNet-50 | MobileNetV2 |
 |---|---|---:|---:|---:|
