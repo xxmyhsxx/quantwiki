@@ -19,6 +19,7 @@ sources: []
 - **优化算子配置与流水**：[GPU 算子的计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md) → [Kernel 配置选择与自动调优](implementation/kernel-configuration-and-autotuning.md) → [异步拷贝与多级流水](implementation/gpu-async-copy-pipelines.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **理解 KV cache 与服务**：[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) → [KIVI](methods/kivi.md) → [SAW-INT4](methods/saw-int4.md) → [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)。
 - **理解推理框架与算子设计**：[内存管理与批处理](implementation/serving-memory-and-batching.md) → [vLLM 的 token 调度与变长批次](implementation/vllm-inference-execution.md) → [vLLM Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) → [AWQ 实现](implementation/awq-implementation.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
+- **理解 SGLang 的缓存与算子**：[Radix 缓存、批次与重叠执行](implementation/sglang-inference-execution.md) → [KV 索引、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) → [AWQ 的 SGLang 路径](implementation/awq-implementation.md#6-跨引擎sglang)。
 - **判断误差与运行收益**：[量化误差诊断与验证](implementation/quantization-error-diagnosis.md) → [算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) → [VLM 压缩评测框架](implementation/lvlm-compression-benchmark.md) → [量化与可靠性](theory/quantization-reliability-and-selective-prediction.md)。
 
 ## 全部知识页
@@ -94,6 +95,8 @@ sources: []
 | --- | --- |
 | [vLLM 推理执行：从 token 调度到变长批次](implementation/vllm-inference-execution.md) | 请求如何分配 token 与 KV 空间，再变成算子的紧凑输入。 |
 | [vLLM 算子设计：Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) | 分页状态与元数据如何进入 Attention，设备端怎样复用、归约并适配图执行。 |
+| [SGLang 推理执行：Radix 缓存、批次调度与重叠执行](implementation/sglang-inference-execution.md) | 前缀复用如何连接缓存保护、请求映射、批次与跨轮结果。 |
+| [SGLang 算子设计：索引化 KV、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) | 历史前缀和当前输入如何进入 Attention，分段输出怎样按 LSE 合并。 |
 | [Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 如何权衡数据复用、资源预算、并行工作量与调优成本。 |
 | [GPU 异步拷贝与多级流水：等待完成和缓冲复用](implementation/gpu-async-copy-pipelines.md) | 数据何时可以读取，缓冲何时可以覆盖，怎样安全地重叠搬运和计算。 |
 | [算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 怎样选择验证用例，并正确解释 GPU 计时和吞吐。 |

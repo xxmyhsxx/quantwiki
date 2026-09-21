@@ -129,6 +129,8 @@ $$\mathrm{slot}(i,p)=\mathrm{block\_table}[i,\lfloor p/b\rfloor]\,b+(p\bmod b).$
 
 在上面的 A/B 例子中，prefill 与 decode 可以共用一次模型前向，但其 Attention 访存与可利用的 query 复用不同。算子分派、图执行和测量需要保留这种工作负载差异；实现见[Attention 后端、在线 softmax 与图执行](vllm-attention-operator-design.md)。权重量化的格式转换和内核选择复用[AWQ 实现页](awq-implementation.md)，避免将调度机制重复写成另一份 AWQ 分析。
 
+SGLang 对同类问题的组织见 [Radix 缓存、批次与重叠执行](sglang-inference-execution.md)：可沿前缀身份、受保护缓存、输入索引与跨轮结果四个问题继续阅读，而不将两套框架的字段名称直接等同。
+
 本轮完成固定源码主线研读及 token/槽位教学计算；未启动 vLLM、运行模型或测量服务延迟。多模态 encoder、Mamba、分布式 KV 传输、推测解码和完整异步调度不在本页的机制覆盖范围。
 
 ## 来源身份

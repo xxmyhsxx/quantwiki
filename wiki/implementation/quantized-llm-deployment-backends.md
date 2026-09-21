@@ -104,7 +104,7 @@ llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_
 
 ## 7. 加载之外：运行时对量化的额外要求
 
-这一节的约束都来自服务系统的内存与调度结构：缓存被切成固定大小的块、批量按迭代粒度调整、显存不足时需要抢占。这些机制本身的工作原理见 [推理服务的内存管理与批处理](serving-memory-and-batching.md)；理解它们才能判断某个量化方案是「能加载」还是「能在服务里跑出收益」。 vLLM 从 token 调度、KV 分配到紧凑输入的源码链见 [vLLM 推理执行](vllm-inference-execution.md)；Attention 的缓存契约、后端接口、分段归约与图执行见 [vLLM 算子设计](vllm-attention-operator-design.md)。
+这一节的约束都来自服务系统的内存与调度结构：缓存被切成固定大小的块、批量按迭代粒度调整、显存不足时需要抢占。这些机制本身的工作原理见 [推理服务的内存管理与批处理](serving-memory-and-batching.md)；理解它们才能判断某个量化方案是「能加载」还是「能在服务里跑出收益」。 vLLM 从 token 调度、KV 分配到紧凑输入的源码链见 [vLLM 推理执行](vllm-inference-execution.md)；Attention 的缓存契约、后端接口、分段归约与图执行见 [vLLM 算子设计](vllm-attention-operator-design.md)。 SGLang 的对应执行链从 [Radix 缓存与调度](sglang-inference-execution.md)进入 [KV 索引和 Attention 算子](sglang-attention-operator-design.md)，解释前缀命中、缓存保护与 extend/decode 形状怎样影响实际工作。
 
 **KV cache 的量化参数存放在哪里。** [QServe](../methods/qserve.md) 采用与 vLLM、TensorRT-LLM 相同的分页 KV 布局，但因为 KV 位宽更低而使用逐 head 动态量化，于是把每个 head 的 fp16 尺度与零点放在分页中量化 KV 特征之后，支持运行时更新。这说明「KV4」不只是一个位宽，还包含一套页内布局约定；换成静态逐张量量化可以省掉动态估计，但精度条件随之变化。
 

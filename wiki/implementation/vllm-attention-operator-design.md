@@ -117,6 +117,8 @@ query 很少、历史很长时，仅按 query block × KV head 分工可能无�
 $$m=\max_s m_s,\qquad
 o=\frac{\sum_s e^{m_s-m}a_s}{\sum_s e^{m_s-m}l_s}.$$
 
+另一种等价中间表示是段内归一化输出与 log-sum-exp，[SGLang decode 归约](sglang-attention-operator-design.md)解释其加权公式。两种表示表达相同的全局 softmax，但缓冲语义不同，不能直接互换。
+
 这正是 `reduce_segments` 的重缩放与归约关系，不能将各段的归一化输出直接平均。一个反例是两段各有一个 value，分别为 0 和 10，对应 score 为 0 和 $\log3$：正确输出为 7.5，平均两段输出会得到 5。
 
 分段提供更多并行工作，代价是临时结果写读、额外归约 kernel 和不同的浮点求和次序。历史短或请求数本已足够时，新增开销可能得不偿失。源码中的条件是设计取舍的实例，未测量前不能声称多分段总会更快。与 tile/资源的关系可继续读[配置选择与自动调优](kernel-configuration-and-autotuning.md)。

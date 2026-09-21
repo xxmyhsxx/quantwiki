@@ -2,6 +2,15 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-09-22 · SGLang 推理框架与算子设计 ingest
+
+- 结合既有 vLLM、PagedAttention、AWQ 与算子基础，选取 raw 中 SGLang `2f730e29` 的 Scheduler/PrefillAdder、Python RadixCache、请求与 KV pool、批次转换和 overlap 转交，以及 RadixAttention/Triton extend/decode 与普通 decode 图准备。完整版本和来源文件登记在知识页，未展开版本迁移。
+- 新增“SGLang 推理执行：Radix 缓存、批次调度与重叠执行”，解释前缀匹配与节点拆分、路径锁与淘汰、接纳预算、请求到槽位映射、EXTEND/DECODE/MIXED，以及 CPU/GPU 重叠如何保留自回归依赖。
+- 新增“SGLang 算子设计：索引化 KV、Extend 与 Decode 归约”，解释变长 KV 索引、缓存前缀与当前输入共用 softmax、GQA 工作划分、已归一化段输出与 LSE 的合并，以及图内外元数据和 padding 契约。
+- 已有服务页、部署页和两篇 vLLM 页接入新解释；vLLM 页增加另一种分段中间量表示的衔接，不把两套缓冲语义混用。共新增 2 个知识页、修改 4 个已有知识页，更新 INDEX 与本日志；raw 和项目 Skill 未改动。
+- 验证：CPU 教学模型通过前缀身份/页对齐、共享路径保护与容量、请求/变长索引、prefix+extend 因果归一化、LSE 分段合并与错误平均反例，以及理想重叠时间关系。63 个知识页、463 条来源登记、856 条本地链接检查通过，无错误、警告或跳过；差异空白检查通过。
+- 边界：本轮为所选固定源码的知识整合，教学模型没有执行 SGLang 原实现；未启动服务、编译 GPU kernel、验证实际 overlap/CUDA Graph 或测量性能。HiCache、SWA/Mamba、推测执行、分布式 KV 与全部 Attention 后端没有作为已覆盖成果。
+
 ## 2026-09-22 · vLLM 推理框架与算子设计 ingest
 
 - 结合已有 PagedAttention、AWQ 与算子基础页面，选取 raw 中 vLLM `568afb3a` 的 V1 调度、KV 管理、GPU model runner、Attention 接口、FlashAttention 接入、Triton unified attention 与 CUDA Graph 设计材料；完整版本与具体文件登记在知识页。

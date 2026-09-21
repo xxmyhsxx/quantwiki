@@ -19,7 +19,7 @@ updated: 2026-09-22
 
 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。同一个量化模型接进不同的引擎，有效批量不同，吞吐就不同——这也是为什么「量化之后快了多少」不能只由模型和内核决定。本页整理部署侧第一层知识：KV cache 的内存管理、批处理与调度。
 
-本页依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留原始论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；这不代表已研读 Sarathi-Serve 或 prefill/decode 分离的相关论文。
+本页依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留原始论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。这些源码分析不代表已研读对应服务论文。
 
 ## 1. 为什么服务受显存而不是算力限制
 
@@ -87,7 +87,7 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 ## 8. 局限与未验证
 
-- 本页服务调度的原始依据为 vLLM 论文；量化接口另外核对了 QServe v3 §5.1 与 SAW-INT4 v1 §2，本地还有 SGLang（前缀树式共享）、Sarathi-Serve（chunked prefill）与 DistServe（prefill/decode 分离）三篇服务论文未研读，因此本页不覆盖这些论文的专有机制，也不做系统间排序。vLLM 源码中的分段 prefill 已由 [推理执行页](vllm-inference-execution.md)解释，论文证据与代码证据分别保留。
+- 本页服务调度的原始依据为 vLLM 论文；量化接口另外核对了 QServe v3 §5.1 与 SAW-INT4 v1 §2，本地还有 SGLang（前缀树式共享）、Sarathi-Serve（chunked prefill）与 DistServe（prefill/decode 分离）三篇服务论文未研读，因此本页不覆盖这些论文的专有机制，也不做系统间排序。vLLM 源码中的分段 prefill 已由 [vLLM 推理执行页](vllm-inference-execution.md)解释；SGLang 的设备内 RadixCache、extend/decode 与重叠调度已由 [SGLang 推理执行页](sglang-inference-execution.md)解释，论文证据与代码证据分别保留。
 - 论文的对比基线中，Orca 是作者自行实现的版本（论文说明 Orca 未公开，并给出 Oracle／Pow2／Max 三种预留假设），其中 Oracle 在实践中不可达；引用这些倍数时必须带上假设。
 - 未运行任何服务或基准，本页所有数值均为论文报告；硬件与软件版本以论文为准，与当前 vLLM 版本的行为可能不同。
 
