@@ -7,6 +7,9 @@ tags:
   - performance
   - numerics
 sources:
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/batch_invariant.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/activation.cuh
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/fused_add_rmsnorm.cuh
   - raw/repositories/2026-09-21/triton/source/python/triton/runtime/autotuner.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/02-fused-softmax.py
@@ -44,6 +47,12 @@ updated: 2026-09-22
 NaN/Inf、全部被屏蔽的 softmax 行等需要先定义预期，再测试；不是每个算子都必须支持。若只声明 contiguous 输入，就应检查非连续输入是否被拒绝，而不是替实现扩张支持范围。
 
 Triton 向量加法教程只展示一个随机向量的差异，softmax 则测试 1823×781 的不规则形状。这些示例教会一种检查方式，不是完整覆盖证明。HF 模板中“输入连续但没有检查输出连续”的边界，是接口用例有必要的具体原因。
+
+### 从推理库算子选择具体用例
+
+[门控激活](gated-activation-cuda-triton-kernels.md)要分别核对 gate/up 的两段布局、向量整除与列尾 mask、激活前后裁剪，以及 MoE 过滤行是否保持未写；不能把跳过的输出当作零。[残差 RMSNorm](rmsnorm-cuda-triton-kernels.md)则要同时比较归一化输出和残差写回，在低精度加法的舍入临界处构造输入，并检查不足一个 warp 的有效向量如何参加归约。
+
+读到 Triton/CUDA 源码只能确认所选分支的计算设计。实际验证还需确认框架选择了该分支；例如 batch-invariant 包装遇到 residual 可能转交另一实现。运行 native 参考通过，不能证明被绕过的设备 kernel 已通过。
 
 ## 3. 容限怎样解释
 
@@ -115,3 +124,5 @@ Triton 向量加法教程明确指出：主机函数返回张量时，GPU 工作
 | --- | --- | --- |
 | [Triton 官方教程与工具](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | [Hugging Face kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc) | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
+| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | batch-invariant RMSNorm 在有无 residual 时的路径选择。 |
+| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 门控过滤的未写语义，以及残差 norm 的舍入和归约边界。未运行 GPU 实现。 |

@@ -27,6 +27,8 @@ SGLang 的模型层通过 RadixAttention 接入具体 Attention backend。Radix 
 
 本页沿[SGLang 推理执行](sglang-inference-execution.md)继续，选择所收录源码的普通 Llama/MHA/GQA 与 Triton extend/decode 路径。张量布局和在线 softmax 的共同基础分别复用[算子接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)与[vLLM Attention 设计](vllm-attention-operator-design.md)；本页补足 SGLang 的读取接口、两阶段 extend 和 decode 中间量语义。
 
+普通 Llama decoder 在 Attention 两侧还维护残差与 RMSNorm，MLP 则沿 gate/up 投影、门控激活和 down 投影执行。学习这些较小的现成算子，可以先看[RMSNorm 的 CUDA/Triton 行归约](rmsnorm-cuda-triton-kernels.md)和[门控激活的工作映射与融合](gated-activation-cuda-triton-kernels.md)，再回到下面带 KV 状态的 Attention。
+
 ## 1. 从模型层到 Backend 的分工
 
 `models/llama.py` 的普通 `forward_prepare_native` 执行 QKV projection、拆分 Q/K/V，再按 positions 对 Q/K 做 RoPE；`forward` 将它们连同 `ForwardBatch` 传给 `RadixAttention`，最后做输出投影。权重量化配置如何落到线性层与 Marlin，沿用[AWQ 的 SGLang 实现](awq-implementation.md#6-跨引擎sglang)。

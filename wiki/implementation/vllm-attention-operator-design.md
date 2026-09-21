@@ -27,6 +27,8 @@ updated: 2026-09-22
 
 本页接续[vLLM 推理执行](vllm-inference-execution.md)，选择 Llama 模型层、通用 Attention 接口、FlashAttention 接入和 Triton unified attention 的普通因果注意力路径。重点是框架与算子怎样衔接，不罗列全部后端或追踪版本迁移。张量的 shape/stride 基础见[张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)，归约与分块基础见[GPU 算子的计算模式](../fundamentals/operators/gpu-kernel-computation-patterns.md)。
 
+普通 Llama decoder 在 Attention 两侧还维护残差与 RMSNorm，MLP 则沿 gate/up 投影、门控激活和 down 投影执行。学习这些较小的现成算子，可以先看[RMSNorm 的 CUDA/Triton 行归约](rmsnorm-cuda-triton-kernels.md)和[门控激活的工作映射与融合](gated-activation-cuda-triton-kernels.md)，再回到下面带 KV 状态的 Attention。
+
 ## 1. 模型层先组织计算，再交给具体 Kernel
 
 `model_executor/models/llama.py` 的 `LlamaAttention.forward` 是一条可读的主线：

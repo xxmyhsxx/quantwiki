@@ -6,6 +6,9 @@ tags:
   - data-layout
   - gpu
 sources:
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/activation_kernels.cu
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/activation.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/activation.cuh
   - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/03-matrix-multiplication.py
   - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/kernel_cuda/kernel.cu
@@ -65,6 +68,20 @@ $$i=pB+r,\qquad 0\le r<B,\qquad p<\lceil n/B\rceil.$$
 
 对归约，失效位置不仅不能访问内存，还必须有合适的填充值；求和填 0、最大值填 $-\infty$ 的原因见 [归约与分块](gpu-kernel-computation-patterns.md)。
 
+### 同一张量可以采用不同工作划分
+
+以连续的逐元素输出 $Y\in\mathbb R^{M\times D}$ 为例，先定义输出拥有者，再选择执行参数：
+
+| 分工 | 拥有者如何定位输出 | 适用条件 |
+| --- | --- | --- |
+| 每行一个 CUDA block | block 选 m，线程 t 以 $j=t+kT$ 遍历列 | 行内每列独立，或 block 内能完成该行所需协作 |
+| 全局展平向量任务 | 一线程负责 V 个元素，用行内向量数 Q=D/V 拆出 $m=t/Q$、$q=t\bmod Q$ | D 可整除 V，输出片段不重叠；尾部全局任务另作保护 |
+| Triton 二维 program 网格 | program ID 选 m 和列块 p，逻辑列为 $j=pB+\mathrm{arange}(0,B)$ | 列块能够独立计算，读写均按有效列 mask |
+
+表中 t 在第一行是 block 内线程号，在第二行是全局线程号；整数除法向下取整。真实例子见[两库的门控激活](../../implementation/gated-activation-cuda-triton-kernels.md)：vLLM 的 CUDA 门控、SGLang 的 JIT CUDA 门控与 vLLM 的 Triton 裁剪变体分别采用这些划分。三种映射相近不代表数学变体相同。
+
+B 决定一个 program 的逻辑工作范围，V 决定一次向量任务的元素数，T 决定线程数，三者不能互换。向量化也不同于合并访存：前者描述一个线程处理的一组元素，后者取决于同一 warp 的线程访问地址如何组成内存事务。需要行统计时，不能把同样的列块拆分直接套上独立归一化；[RMSNorm 的分段与归约](../../implementation/rmsnorm-cuda-triton-kernels.md)说明如何先得到整行统计，再写各列。
+
 ## 4. 布局支持必须沿包装层和设备函数一起看
 
 Triton 的矩阵乘设备函数使用 A/B/C 的各维 stride，但同时对其作正值假设，包装层还要求 A 连续。不能据“签名里有 stride”就宣布支持零步长广播、负步长或任意视图。
@@ -96,3 +113,5 @@ flowchart LR
 | --- | --- | --- |
 | [Triton 官方教程与工具](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | [Hugging Face kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc) | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
+| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | CUDA 门控与 Triton 列块的工作映射。 |
+| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 门控的全局向量任务映射。未运行 GPU 实现。 |

@@ -7,6 +7,8 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/batch_invariant.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/fused_add_rmsnorm.cuh
   - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/02-fused-softmax.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/03-matrix-multiplication.py
@@ -59,6 +61,14 @@ $$\mu=\frac1N\sum_jx_j,\quad v=\frac1N\sum_j(x_j-\mu)^2,\quad y_j=\frac{x_j-\mu}
 
 本节研读的是前向部分，没有将教程的 backward 或其他归一化算子宣称为已 ingest。
 
+### 推理库中的 RMSNorm：归约范围与数据保留
+
+RMSNorm 使用行内二阶矩 $s=\sum_jx_j^2/D$，再计算 $y_j=x_jw_j/\sqrt{s+\epsilon}$，不减均值。分块只改变统计量的计算方式，不能把整行变成多个各自归一化的小行。若 D=2500、每段 B=1024，三段有效长度为 1024、1024、452，先合并三段平方和，再除以 2500；分别求三个 RMS 后直接拼接通常不等价。
+
+一个实现可以在得到统计量后重新读输入，也可以跨归约保留输入的片上状态。前者增加逻辑读取，后者增加活跃状态与潜在寄存器压力；“一次 kernel”不能推出“只读一次”。残差融合还可能要求返回相加后的中间状态，输出不能只按归一化结果理解。
+
+这些问题在[vLLM 与 SGLang 的 RMSNorm](../../implementation/rmsnorm-cuda-triton-kernels.md)中有具体实现：固定分段的 Triton、整行 Triton、CUB 行归约和显式 warp→block 两级归约。无有效元素的线程也可能必须参加 collective；mask 数据访问与退出线程不是同一操作。
+
 ## 3. 矩阵乘：用一个数据块支撑多个输出
 
 对 $C=AB$，每个输出 $C_{mn}=\sum_kA_{mk}B_{kn}$。Triton `03-matrix-multiplication.py` 把输出分成 $B_M\times B_N$ 的 tile，每个 program 保留这一 tile 的累加器，并以 $B_K$ 遍历归约维：
@@ -107,3 +117,5 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 | --- | --- | --- |
 | [Triton 官方教程与工具](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | [NVIDIA CUDA Samples](https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc) | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | `matrixMul.cu:MatrixMulCUDA` 的共享内存分块和同步。 |
+| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton RMSNorm 的固定分段与两遍读取。 |
+| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 残差 norm 的两级归约与线程参与。未运行 GPU 实现。 |

@@ -2,6 +2,15 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-09-22 · 从推理库算子学习 CUDA 与 Triton
+
+- 按本轮重点，选取已有 raw 中 vLLM `568afb3a` 与 SGLang `2f730e29` 的现成门控激活、RMSNorm 和残差融合实现，沿模型入口、包装分派与设备函数核对。版本仅用于定位；raw 与 Skill 未修改。
+- 新增“门控激活的 CUDA 与 Triton 实现”，解释 gate/up 两段布局、每行 block、展平向量线程和二维 program 网格，补明向量整除、激活前后裁剪、中间舍入与过滤行未写语义。
+- 新增“RMSNorm 的 CUDA 与 Triton 实现”，解释行统计、CUB 与显式两级归约、无有效向量线程的参与、固定分段/整行读取取舍，以及两路残差输出和低精度舍入阶段。区分 SGLang 模型专用 Triton、条件 JIT 路径与普通后端；不将代码存在等同于模型必然执行。
+- 深化张量接口、计算模式和验证方法 3 页，两篇推理框架 Attention 页接入较小算子的学习入口，并更新 INDEX。共新增 2 个知识页、修改 5 个已有知识页，更新导航与本日志。
+- 验证：CPU 教学模型通过三种工作映射与地址覆盖、向量尾部和 warp 部分和、1024 分段与 padding、独立分段归一化反例、half 残差与激活中间舍入、裁剪次序及过滤哨兵检查。65 个知识页、491 条来源登记、881 条本地链接检查通过，无错误、警告或跳过；差异空白检查通过。
+- 边界：完成第一批执行映射、访存、归约与融合知识 ingest；未编译或运行 CUDA/Triton 原实现、执行 GPU 内存竞争诊断或测性能。GEMM/Tensor Core 深化与 profiling 为后续批次，PDL、全部后端和 MoE 路由没有作为已完成范围。
+
 ## 2026-09-22 · SGLang 推理框架与算子设计 ingest
 
 - 结合既有 vLLM、PagedAttention、AWQ 与算子基础，选取 raw 中 SGLang `2f730e29` 的 Scheduler/PrefillAdder、Python RadixCache、请求与 KV pool、批次转换和 overlap 转交，以及 RadixAttention/Triton extend/decode 与普通 decode 图准备。完整版本和来源文件登记在知识页，未展开版本迁移。
