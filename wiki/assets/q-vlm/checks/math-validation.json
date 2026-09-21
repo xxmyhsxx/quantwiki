@@ -1,0 +1,39 @@
+{
+  "kind": "teaching_examples_only",
+  "results": {
+    "identical_binary_variables": {
+      "H_U": 1.0,
+      "H_V": 1.0,
+      "H_V_given_U": 0.0,
+      "I_U_V": 1.0
+    },
+    "independent_binary_variables": {
+      "H_U": 1.0,
+      "H_V": 1.0,
+      "H_V_given_U": 1.0,
+      "I_U_V": 0.0
+    },
+    "l2_normalization_sum": 2.0,
+    "uniform_four_state_entropy_bits": 2.0,
+    "local_vs_final_error": {
+      "first_layer_candidates": [
+        1.1,
+        1.2
+      ],
+      "local_squared_errors": [
+        0.010000000000000018,
+        0.03999999999999998
+      ],
+      "final_squared_errors": [
+        0.027777777777777728,
+        0.0
+      ]
+    },
+    "soft_quantization_probabilities": [
+      0.1373486592058835,
+      0.5569762782578591,
+      0.30567506253625737
+    ],
+    "scale_metadata_bits_per_weight": 0.126953125
+  }
+}

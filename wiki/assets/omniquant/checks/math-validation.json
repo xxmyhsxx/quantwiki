@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "scope": "teaching algebra only; no model reproduction or empirical gradient validation",
+  "affine_fusion_max_abs_error": 2.220446049250313e-16,
+  "rope_counterexample": {
+    "original": -1.0,
+    "independent_scales": -0.5,
+    "shared_pair": -1.0
+  },
+  "value_shift_max_abs_error": 2.220446049250313e-16,
+  "unnormalized_attention_error_formula": "verified",
+  "requested_range": [
+    -2.8,
+    2.4
+  ],
+  "represented_range": [
+    -2.971428571428571,
+    2.228571428571428
+  ]
+}

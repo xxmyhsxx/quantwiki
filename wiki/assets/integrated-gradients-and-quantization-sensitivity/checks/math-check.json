@@ -1,0 +1,112 @@
+{
+  "status": "passed",
+  "scope": "Analytic/toy numerical identities and counterexamples only; not paper reproduction.",
+  "checks": [
+    {
+      "name": "signed IG completeness and absolute-value change",
+      "status": "passed",
+      "values": {
+        "ig": [
+          2.000000000000001,
+          -1.0000000000000004
+        ],
+        "signed_sum": 1.0000000000000004,
+        "absolute_sum": 3.0000000000000013
+      }
+    },
+    {
+      "name": "nonzero baseline",
+      "status": "passed",
+      "values": {
+        "IG": 3.0,
+        "F_endpoint": 4,
+        "F_baseline": 1
+      }
+    },
+    {
+      "name": "constant offset does not change IG",
+      "status": "passed",
+      "values": {
+        "offsets_checked": [
+          0,
+          1,
+          7
+        ]
+      }
+    },
+    {
+      "name": "weighted Gram and square-root factors",
+      "status": "passed",
+      "values": {
+        "loss": 3.2829999999999995,
+        "quadratic": 3.2829999999999995,
+        "eigenvalues": [
+          2.9183336736082897,
+          11.08166632639171
+        ]
+      }
+    },
+    {
+      "name": "signed weights can violate PSD",
+      "status": "passed",
+      "values": {
+        "counterexample_eigenvalues": [
+          -1,
+          2
+        ]
+      }
+    },
+    {
+      "name": "IQR changes attribution totals",
+      "status": "passed",
+      "values": {
+        "before": 104.0,
+        "after": 5.0
+      }
+    },
+    {
+      "name": "cluster entropy bound",
+      "status": "passed",
+      "values": {
+        "uniform_four_clusters_bits": 2.0,
+        "hundred_cluster_bound_bits": 6.643856189774724
+      }
+    },
+    {
+      "name": "rotation preserves distances but not coordinate quantization error",
+      "status": "passed",
+      "values": {
+        "original_error": 0.32000000000000006,
+        "rotated_error": 0.18862915010152398
+      }
+    },
+    {
+      "name": "nonmonotone prefix quality",
+      "status": "passed",
+      "values": {
+        "scores": [
+          0.9,
+          0.7,
+          0.86,
+          0.6
+        ],
+        "feasible_k": [
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "name": "nominal mixed parameter bit widths",
+      "status": "passed",
+      "values": {
+        "llava_bits": 2.54,
+        "qwen_bits": 2.7485714285714287,
+        "llava_nominal_reduction": 0.365,
+        "deployment_memory_reduction": 0.2272727272727274,
+        "intel_throughput_ratio": 1.875,
+        "amd_throughput_ratio": 1.326241134751773
+      }
+    }
+  ]
+}

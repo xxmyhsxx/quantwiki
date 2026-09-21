@@ -1,0 +1,38 @@
+{
+  "mbq_mean_gradient_counterexample": {
+    "actual": 2.0,
+    "claimed_bound": 1.0
+  },
+  "token_factor_costs": [
+    1.0,
+    4.0
+  ],
+  "weighted_asymmetric_single_step": {
+    "closed_vs_direct_max_error": 1.1102230246251565e-16,
+    "hessian_finite_difference_max_error": 9.969045322577585e-08,
+    "constraint_error": 5.551115123125783e-17
+  },
+  "zero_residual_mse_gradient": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "vlmq_table12_arithmetic": {
+    "qwen25_32b_gptq": {
+      "printed": "74.20",
+      "recomputed": "66.7675"
+    },
+    "qwen25_32b_gptaq": {
+      "printed": "73.68",
+      "recomputed": "66.70875"
+    },
+    "qwen25_32b_vlmq": {
+      "printed": "74.31",
+      "recomputed": "66.75375"
+    },
+    "llava_05b_fp": {
+      "printed": "63.46",
+      "recomputed": "55.175"
+    }
+  }
+}

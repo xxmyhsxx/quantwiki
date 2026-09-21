@@ -1,0 +1,28 @@
+{
+  "mixing_example": {
+    "float_output": [
+      0.98,
+      0.0
+    ],
+    "baseline_output": [
+      0.0,
+      0.0
+    ],
+    "transformed_output": [
+      1.0,
+      1.0
+    ],
+    "original_coordinate_weight_sse": [
+      0.48019999999999996,
+      0.5002
+    ]
+  },
+  "smooth_inverse_chain_rule_max_error": 5.922089485466131e-10,
+  "unquantized_two_sided_differential_cancels": true,
+  "gqa_attention_value_head_output_pairing_max_error": 5.551115123125783e-16,
+  "diagonal_and_kronecker_weight_direction": "passed",
+  "full_rank_kronecker_and_nonrepresentable_block_example": "passed",
+  "two_teacher_mse_identity_max_error": 4.440892098500626e-16,
+  "status": "passed",
+  "scope": "New teaching derivations only; no model, discrete-rounding derivative, optimizer convergence, export or kernel benchmark."
+}

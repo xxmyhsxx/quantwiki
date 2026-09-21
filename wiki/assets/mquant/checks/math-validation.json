@@ -1,0 +1,15 @@
+{
+  "kind": "teaching_algebra_only",
+  "checks": {
+    "attention_with_original_positions_and_permuted_mask": 4.440892098500626e-16,
+    "naive_causal_mask_error": 0.8971790753060458,
+    "new_position_ids_error": 0.36734815295628326,
+    "orthogonality": 4.440892098500626e-16,
+    "rotated_linear": 3.552713678800501e-15,
+    "channel_split": 4.440892098500626e-16,
+    "mean_concentration": 1.1102230246251565e-16,
+    "constant_vector_peak_ratio": 1.9999999999999996,
+    "layernorm_centering": 3.3306690738754696e-16,
+    "rms_rotation": 6.661338147750939e-16
+  }
+}

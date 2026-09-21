@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "scope": "Teaching identities and counterexamples only; no model/quantization reproduction.",
+  "checks": {
+    "weighted_svd_tail": {
+      "max_abs_error": 3.410605131648481e-13
+    },
+    "whitening": {
+      "max_abs_error": 8.881784197001252e-16
+    },
+    "invertible_left_product_preserves_rank": {
+      "rank": 5
+    },
+    "ordinary_svd_example_error": {
+      "max_abs_error": 0.0
+    },
+    "weighted_svd_example_error": {
+      "max_abs_error": 6.938893903907228e-18
+    },
+    "mas_weight_activation_residual": {
+      "max_abs_error": 1.7763568394002505e-15
+    },
+    "all_tokens_all_channel_groups": {
+      "max_abs_error": 8.881784197001252e-16
+    },
+    "cws_float_identity": {
+      "max_abs_error": 2.6645352591003757e-15
+    },
+    "splitq_three_residual_terms": {
+      "max_abs_error": 1.1102230246251565e-15
+    },
+    "sqnr_proxy_[10.0, 10.0]": {
+      "max_abs_error": 0.0
+    },
+    "sqnr_proxy_[1.0, 10.0]": {
+      "max_abs_error": 0.0
+    },
+    "aux_weight_storage_ratio": {
+      "max_abs_error": 0.0
+    },
+    "target_raw_hashes_unchanged": {
+      "count": 2
+    }
+  }
+}

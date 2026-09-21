@@ -1,0 +1,45 @@
+{
+  "omniquant_clipping_example": [
+    {
+      "ratio": 1.0,
+      "step": 2.0,
+      "zero": 4.0,
+      "weights": [
+        -8.0,
+        0.0,
+        0.0,
+        6.0
+      ],
+      "weight_sse": 4.0,
+      "output": -0.020000000000000004
+    },
+    {
+      "ratio": 0.5,
+      "step": 1.0,
+      "zero": 4.0,
+      "weights": [
+        -4.0,
+        1.0,
+        1.0,
+        3.0
+      ],
+      "weight_sse": 25.0,
+      "output": 1.99
+    }
+  ],
+  "affine_shift_and_weight_layout_max_error": 1.5543122344752192e-15,
+  "kronecker_row_major_example": [
+    4.0,
+    2.0,
+    18.0,
+    8.0
+  ],
+  "kronecker_inverse_and_condition_identity": "passed",
+  "unit_rows_not_orthogonal": 0.7071067811865475,
+  "strictly_diagonally_dominant_condition_number": 1000000.0,
+  "diagonal_update_can_destroy_invertibility": true,
+  "cayley_and_inverse_transpose": "passed",
+  "post_rope_qk_value_and_gated_scaling_identities": "passed",
+  "status": "passed",
+  "scope": "Teaching algebra and counterexamples only; no model, kernel, optimizer convergence or empirical STE gradient validation."
+}

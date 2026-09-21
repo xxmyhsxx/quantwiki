@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "scope": "Float64 teaching algebra only; not model quantization, optimizer reproduction, or hardware benchmarking.",
+  "seed": 20260915,
+  "results": {
+    "rms_residual_gated_ffn_max_error": 2.1316282072803006e-14,
+    "final_head_max_error": 7.815970093361102e-14,
+    "post_rope_qk_max_error": 4.440892098500626e-16,
+    "quarot_head_factorization_max_error": 2.220446049250313e-16,
+    "quarot_attention_output_max_error": 1.3322676295501878e-15,
+    "spinquant_value_output_max_error": 1.3322676295501878e-15,
+    "cayley_exact_orthogonality_max_error": 7.771561172376096e-16,
+    "cayley_smooth_loss_before": 36.84382068529972,
+    "cayley_smooth_loss_after": 33.85541595468007,
+    "cayley_five_step_vs_exact_max_error": 1.0372813513126466e-06,
+    "cayley_five_step_orthogonality_max_error": 4.376435007724666e-07,
+    "cayley_contraction_factor_bound": 0.23637066057992648,
+    "hadamard_peak_before": 1.0,
+    "hadamard_peak_after": 1.414213562373095
+  }
+}
