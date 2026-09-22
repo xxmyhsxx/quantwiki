@@ -7,6 +7,8 @@ tags:
   - data-format
   - performance
 sources:
+  - raw/papers/2026-09-22/loftq/paper.pdf
+  - raw/papers/2026-09-22/qera/paper.pdf
   - raw/papers/2026-09-21/billm/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/qig/paper.pdf
@@ -28,7 +30,7 @@ sources:
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
   - raw/repositories/2026-09-21/gptq/source/quant.py
   - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 量化矩阵乘法的缩放与执行路径
@@ -222,7 +224,11 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 
 比较这些方法至少应同时给出主体与旁路位宽、实际秩、适用 token、变换成本以及 prefill/decode；不能只按论文的 W/A 标签匹配速度和质量。
 
+[QERA](../methods/qera.md) v2 附录 A.7–A.8 进一步区分了离线分解与推理：exact 比 approx 多计算完整二阶矩与矩阵平方根，但在相同秩、dtype 和执行方式下，都可保存为 $x\widetilde W+(xA)B$。这只说明 exact 没有引入额外种类的在线分支，不说明两者相对无补偿模型没有成本。教学例：$4096\times4096$ 主体、秩 32、FP16 因子，会新增 262,144 个因子元素，即 0.5 MiB，摊到主体参数上增加 0.25 bit/weight；若主体含尺度为 4.25 bit/weight，二者合计 4.50，仍未包含其他模块与运行缓冲。把 $AB$ 合并回主体后再次量化，又会改变残差，不能继续沿用合并前的精度保证。
+
 ## 13. 校准成本与混合格式部署
+
+[LoftQ](../methods/loftq.md) v4 §3.3 冻结量化基座、只更新低秩适配器，可以省去基座参数的梯度与优化器状态；这不免除反量化、激活保存或向前面可训练模块传播梯度。其附录 B、表 9 的 21 秒／43 秒分别是 Xeon E5-2650 v4 @ 2.20GHz CPU 对单个 $4096\times4096$／$5120\times5120$ 矩阵做 5 轮 NF4 初始化的时间，不能当作整模型初始化或推理延迟。附录 A 的压缩比例则把主体与适配器一起除以原预训练大小，属于存储保留比例，不能替代训练峰值显存。
 
 [QIG](../methods/qig.md) v1 表 6 报告的是 A800 上收集激活、归因及缩放搜索的总时间，不能当作推理速度。其固定快照的 W/A 路径使用浮点缓冲区和 `F.linear`；推理不用重新计算 IG，不意味着当前代码已经实现了实际 W4A8 加速。
 
@@ -240,6 +246,8 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 冻结主体训练、单矩阵初始化计时与存储口径 |
+| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 离线分解与在线低秩运算的边界 |
 | [BiLLM: Pushing the Limit of Post-Training Quantization for LLMs](https://arxiv.org/abs/2402.04291v2) | `arXiv:2402.04291v2` | — |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
 | [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |

@@ -7,6 +7,7 @@ tags:
   - rotation
   - optimization
 sources:
+  - raw/papers/2026-09-22/ostquant/paper.pdf
   - raw/repositories/2026-09-21/spinquant/source/scripts/10_optimize_rotation.sh
   - raw/repositories/2026-09-21/spinquant/source/scripts/2_eval_ptq.sh
   - raw/papers/2026-09-21/spinquant/paper.pdf
@@ -24,7 +25,7 @@ sources:
   - raw/repositories/2026-09-21/spinquant/source/utils/data_utils.py
   - raw/repositories/2026-09-21/spinquant/source/utils/quant_utils.py
   - raw/repositories/2026-09-21/spinquant/source/utils/process_args.py
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # SpinQuant：用最终模型损失学习正交旋转
@@ -162,12 +163,15 @@ TTFT 是首 token 延迟，TTIT 是后续 token 间隔。低比特导出和真�
 
 这个比较不能简化成谁的矩阵空间更大谁就更好。正交条件让 SpinQuant 的全局 R1 能跨 RMSNorm 工作；[FlatQuant](flatquant.md) 的一般可逆变换作用于不同局部配对位置，不能直接拿来替换 R1。二者的任务目标、图位置与部署策略共同变化，研究选择需要将这些因素分别对照，而不是仅比较论文排名。（SpinQuant §3–4；QuaRot §4；FlatQuant §3、附录 B。）
 
+[OSTQuant](ostquant.md) v1 §4 在相关旋转位置进一步学习对角尺度，以浮点教师的 KL-Top 输出目标优化整个量化网络；它没有把 QSUR 直接当训练损失。其附录表 8 在 LLaMA-3-8B 的九任务评测中，将 KL-Top 加入 SpinQuant 后均分由 64.10 变成 64.07，而 OSTQuant 从 65.13 变成 65.37。这个对照支持损失与参数空间需要共同考察，不能把新损失视为可独立替换的普遍增益；九任务均值也不与本页原文八任务结果直接比较。OSTQuant v1 的 top-k 归一化和 RoPE 尺度约束仍有待实现核对，详见其方法页。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | 与正交加尺度及 KL-Top 的对照 |
 | [facebookresearch/SpinQuant](https://github.com/facebookresearch/SpinQuant/tree/8f47aa3f00e8662caf1a484153920a07e5281c3a) | `8f47aa3f00e8662caf1a484153920a07e5281c3a` | — |
 | [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
 | [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |

@@ -6,12 +6,15 @@ tags:
   - equivalent-transform
   - outliers
 sources:
+  - raw/papers/2026-09-22/ostquant/paper.pdf
+  - raw/papers/2026-09-21/quip/source.eprint
+  - raw/papers/2026-09-21/quip-sharp/source.eprint
   - raw/papers/2026-09-21/spinquant/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
   - raw/papers/2026-09-21/quarot/paper.pdf
   - raw/papers/2026-09-21/slicegpt/paper.pdf
   - raw/papers/2026-09-21/mquant/paper.pdf
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 正交旋转与量化：等价条件、离群值和在线代价
@@ -105,12 +108,41 @@ $$
 
 正交矩阵的逆是转置且条件数为 1，一般可逆矩阵允许额外拉伸，也可能放大数值扰动。FlatQuant 的 U/V 因子正交，不意味着含可学习对角值的整个矩阵也正交；相关代数与反例见 [可逆变换的数值条件](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md)。这提供了比较固定 Hadamard 与学习变换的另一维度，不据此断言某一类普遍更优。
 
+## 7. QSUR 的椭球解释与白化边界
+
+[OSTQuant](../methods/ostquant.md) v1 §3 用置信椭球与量化立方体的体积比 QSUR 解释正交加缩放。它关注分布如何占用网格，但原文式 3–7 用主轴端点代表坐标极值，不能当成一般精确公式。下面按其零均值高斯椭球模型作独立教学推导，避免把这个指标直接当量化误差或训练目标。
+
+令 $\Sigma\succ0$，椭球为 $E=\{\Sigma^{1/2}u:\|u\|_2\le\sqrt c\}$，$c>0$ 是置信水平对应常数。第 $j$ 个坐标的极值是 $\pm\sqrt{c\Sigma_{jj}}$，因为 $e_j^{\mathsf T}\Sigma^{1/2}u$ 的最大值由两个向量对齐取得。采用所有坐标共用的对称范围，立方体边长为 $2\sqrt{c\max_j\Sigma_{jj}}$。记单位球体积 $v_d=\pi^{d/2}/\Gamma(d/2+1)$，则
+
+$$\mathrm{QSUR}_{ellipsoid}=\frac{v_d\sqrt{\det\Sigma}}{2^d(\max_j\Sigma_{jj})^{d/2}}.$$
+
+**主轴端点反例。**取二维特征值 $(4,1)$，特征向量为 45 度旋转。此时 $\Sigma_{11}=\Sigma_{22}=2.5$，$c=1$ 时坐标极值为 $\sqrt{2.5}$；只取长轴端点得到 $\sqrt2$，会低估范围。真实体积比为 $\pi/5\approx0.62832$，该端点近似给出 $\pi/4\approx0.78540$。误差不是由浮点舍入造成。
+
+正交 $R$ 保持 $\det\Sigma$ 和谱，只能改变分母中的坐标方差。若 $\Sigma=U\Lambda U^{\mathsf T}$ 且维度支持归一化 Hadamard $H$，列向量变换 $T=HU^{\mathsf T}$ 得到 $T\Sigma T^{\mathsf T}=H\Lambda H^{\mathsf T}$，各对角值均为 $\operatorname{tr}(\Sigma)/d$。任意正交变换后最大对角值至少为此均值，所以这一构造在上述零均值椭球、共享范围口径下达到最优正交方向。它均衡坐标方差，但不改变特征值，也未把各向异性高斯变为球形高斯。行 token 的变换需转置。
+
+进一步允许缩放，可取 $T=\Lambda^{-1/2}U^{\mathsf T}$，得到白化协方差 $I$。由正定矩阵的行列式不超过对角元素之积，
+
+$$\det\Sigma\le\prod_j\Sigma_{jj}\le(\max_j\Sigma_{jj})^d,$$
+
+可得这个体积比不超过 $v_d/2^d$，白化达到该值。这给 OSTQuant v1 式 8、附录 A.2.3 的白化结论一个条件明确的证明，不能顺带证明其原式 7 的一般正确性。
+
+边界也明确：非零均值和范围定义会改变分母；奇异经验协方差使全维体积为零且无法直接白化；小特征值求逆可能放大扰动。真实模型的重尾、不同量化组、有限网格相位、裁剪、逆变换后权重和多分支共享都未被这个单分布体积比控制。保持一侧 QSUR 高，不代表另一侧量化容易或输出误差小；OSTQuant 实际用整网 KL-Top 学习，而非直接最大化 QSUR。
+
+## 非相干性与码本的进一步联系
+
+[QuIP](../methods/quip.md) 进一步区分权重元素的集中程度与 Hessian 特征向量相对坐标轴的集中程度：正交变换保持谱，却改变二阶误差反馈可以利用的坐标结构。这不能简单替换成“激活最大值下降”，相关定义、谱界和有限网格限制由方法页展开。
+
+[QuIP#](../methods/quip-sharp.md) 将 RHT 与 8 维 E8P 码本结合：变换让权重分布更适合固定码本，规则码本又降低解码存储成本。微调将符号向量放松为实数后，最终参数不再自动满足初始随机正交理论；理解时应分别保留变换保证与微调实证。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
+| [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
+| [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |
 | [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
 | [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
 | [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |

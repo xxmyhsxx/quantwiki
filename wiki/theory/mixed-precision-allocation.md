@@ -7,9 +7,12 @@ tags:
   - memory
   - deployment
 sources:
+  - raw/papers/2026-09-22/loftq/paper.pdf
+  - raw/papers/2026-09-21/spqr/source.eprint
+  - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/billm/paper.pdf
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 混合精度分配：选择变量、预算与部署口径
@@ -27,6 +30,8 @@ $$\min_{\boldsymbol b}\mathcal E(\boldsymbol b)\quad
 
 层间、层内通道和 token 精度分配的执行代价不同。层间选择通常较容易映射到每层可用的内核；“存在对应内核”仍不保证选择代价可逐层简单相加。共享缓冲区、内存带宽、调度和输入形状会改变收益，见 [量化矩阵乘法的执行路径](../implementation/quantized-matmul-scaling-execution.md)。
 
+[SpQR](../methods/spqr.md) 和 [SqueezeLLM](../methods/squeezellm.md) 将额外精度分配到零散权重，分别按可补偿误差与任务敏感性等依据选择。此时高精度值之外还需保存位置，并执行稀疏修正；细粒度分配的预算分析见 [低比特表示设计空间](../research/low-bit-representation-design.md)。
+
 ## 2. 平均位宽和完整内存必须分别计算
 
 参数加权平均为
@@ -34,6 +39,8 @@ $$\min_{\boldsymbol b}\mathcal E(\boldsymbol b)\quad
 $$\bar b=\frac{\sum_l n_l b_l}{\sum_l n_l}.$$
 
 只有各层参与计算的参数量相同时，才能用层数平均。完整模型文件还包括元数据及未量化参数；运行峰值还包括激活、KV cache、视觉端、工作区和临时副本。
+
+[LoftQ](../methods/loftq.md) v4 表 5 将前 16／8／4 层用 4 bit、其余用 2 bit 的方案标为“3／2.5／2.25 bit”。这是固定前缀配置，不是已求得最优的敏感性分配。教学上，对 $L$ 个等参数量层、前 $k$ 层高位宽，有 $\bar b=2+2k/L$；同样前 4 层，$L=32$ 时为 2.25，$L=40$ 时为 2.20。例子说明标签不能脱离层数与参数量直接用于存储预算；LoRA 因子和量化元数据还需另计。
 
 其中 KV cache 随批量与上下文增长，且有自己的粒度与布局选择，不能并入「权重平均位宽」一起换算，见 [KV cache 量化的对象与粒度](kv-cache-quantization-objects-and-granularity.md)。
 
@@ -78,5 +85,8 @@ LUQ 附录 D 将 BiLLM/GPTQ 所选的层配置映射到 IQ1_M/Q4_K_M 来测试 C
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 前缀混合精度的名义标签与实际预算 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
 | [BiLLM: Pushing the Limit of Post-Training Quantization for LLMs](https://arxiv.org/abs/2402.04291v2) | `arXiv:2402.04291v2` | — |
+| [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1) | `arXiv:2306.03078v1` | 细粒度例外预算 |
+| [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4) | `arXiv:2306.07629v4` | 敏感值与尾部保留 |

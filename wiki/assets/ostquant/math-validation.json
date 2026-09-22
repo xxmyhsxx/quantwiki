@@ -1,0 +1,55 @@
+{
+  "scope": "NumPy float64 CPU teaching calculations; no official optimizer, model training, export, or GPU runtime",
+  "source": "arXiv:2501.13987v1",
+  "date": "2026-09-22",
+  "numpy_version": "2.3.5",
+  "checks": [
+    {
+      "name": "ordered_transform_and_head_pair",
+      "passed": true,
+      "wrong_inverse_error": 9.775843574644913,
+      "condition_number": 6.0
+    },
+    {
+      "name": "rms_and_rope_fusion_boundaries",
+      "passed": true,
+      "original_dot": -1.0,
+      "untied_scale_dot": -0.5
+    },
+    {
+      "name": "ellipsoid_extrema_womi_and_whitening",
+      "passed": true,
+      "true_ratio": 0.6283185307179586,
+      "axis_endpoint_ratio": 0.7853981633974483,
+      "true_extent": 1.5811388300841898,
+      "endpoint_extent": 1.4142135623730951
+    },
+    {
+      "name": "ffn_scaling_hadamard_order",
+      "passed": true,
+      "nonlinear_commutation_error": 0.9232384514044839
+    },
+    {
+      "name": "partial_vs_conditional_kl",
+      "passed": true,
+      "partial_gradient": [
+        -0.32352370285335147,
+        -0.13230864909673717,
+        0.4558323519500886
+      ],
+      "conditional_gradient": [
+        -0.04420733546481215,
+        0.04420733546481209,
+        0.0
+      ],
+      "top_one_partial_loss": -0.17260924347106862,
+      "top_one_conditional_loss": 0.0
+    },
+    {
+      "name": "reported_metric_arithmetic",
+      "passed": true,
+      "llama2_7b_w4_retention": 0.9871185401012116,
+      "llama3_8b_gap_reduction": 0.31829573934837274
+    }
+  ]
+}

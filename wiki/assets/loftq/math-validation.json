@@ -1,0 +1,36 @@
+{
+  "scope": "NumPy float64 CPU examples with a custom absmax quantizer; not official LoftQ or model validation",
+  "date": "2026-09-22",
+  "checks_passed": 6,
+  "checks": [
+    {
+      "name": "one_iteration_svd_optimum_and_tail",
+      "loss": 0.2680321475138723
+    },
+    {
+      "name": "svd_improves_subproblem_but_iteration_can_worsen",
+      "first": 0.2680321475138723,
+      "second": 0.4653816359840354,
+      "second_before_svd": 0.5296709424784226
+    },
+    {
+      "name": "replace_residual_and_pair_same_iteration",
+      "accumulated_rank": 2
+    },
+    {
+      "name": "zero_factor_training_gradient_and_finite_difference",
+      "b_gradient_norm": 9.324439334260104
+    },
+    {
+      "name": "equal_products_not_equal_factor_gradients_and_adapter_scale",
+      "scale": 3.0
+    },
+    {
+      "name": "prefix_bit_budget_retained_ratio_and_reported_delta",
+      "bits_32_layers": 2.25,
+      "bits_40_layers": 2.2,
+      "storage_reduction": 0.71,
+      "table_5_delta_pp": 5.6
+    }
+  ]
+}

@@ -6,6 +6,7 @@ tags:
   - outliers
   - quantization-error
 sources:
+  - raw/papers/2026-09-22/ostquant/paper.pdf
   - raw/papers/2026-09-21/splitq/paper.pdf
   - raw/papers/2026-09-21/masquant/paper.pdf
   - raw/papers/2026-09-21/affinequant/paper.pdf
@@ -21,7 +22,7 @@ sources:
   - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/auto_scale.py
   - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/qmodule.py
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/smooth.py
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 对角缩放与等价变换
@@ -172,6 +173,8 @@ $$
 
 RoPE 定义来自 RoFormer，上述交换条件与反例是本页推导。[正交旋转页](orthogonal-rotation-and-hadamard-quantization.md) 给出 QuaRot v2 Stage 1d 的相关实例：为避开位置编码阻碍，在 RoPE 后在线变换 Q/K。[OmniQuant](../methods/omniquant.md) 的固定代码则在投影层写入 Q/K 缩放，须结合这一条件核对，不能只凭点积处的恒等式宣称整个融合图等价。
 
+[OSTQuant](../methods/ostquant.md) v1 §4.1 同样声称 Q/K 尺度可以并入 RoPE 前的投影权重，但没有完整说明配对尺度约束。上面的交换条件因此也是核对该方法的必要问题，不能仅依据“位置编码是乘法”宣布融合成立。它的全局残差使用正交旋转，Norm 后再单独配对尺度；缩放能放入 Norm 的输出增益，不等于缩放能穿过 RMS 归一化。其 FFN 对角尺度与固定在线 Hadamard 的顺序见方法页。
+
 ## 8. 从对角尺度到一般可逆变换
 
 非对角项可以混合通道，但不能直接继承逐通道尺度的全部融合性质。[AffineQuant](../methods/affinequant.md) v1 §3.3 在 W4A4 的 Norm 后限制为对角形式；完整矩阵选项需另保留在线运算。[FlatQuant](../methods/flatquant.md) v4 §3 则用两个小矩阵表示变换，并融合在线变换与量化，在更多位置承担这项计算。
@@ -193,6 +196,7 @@ RoPE 定义来自 RoFormer，上述交换条件与反例是本页推导。[正�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | 正交与尺度位置、RoPE 融合条件 |
 | [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
 | [MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2603.04800v1) | `arXiv:2603.04800v1` | — |
 | [AffineQuant: Affine Transformation Quantization for Large Language Models](https://arxiv.org/abs/2403.12544v1) | `arXiv:2403.12544v1` | — |

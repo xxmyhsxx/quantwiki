@@ -6,13 +6,14 @@ tags:
   - equivalent-transform
   - low-rank
 sources:
+  - raw/papers/2026-09-22/qera/paper.pdf
   - raw/papers/2026-09-21/splitq/paper.pdf
   - raw/papers/2026-09-21/masquant/paper.pdf
   - raw/papers/2026-09-21/cayley-stiefel/paper.pdf
   - raw/papers/2026-09-21/affinequant/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
   - raw/articles/2026-09-21/pytorch-orthogonal/article.md
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 可逆变换、数值条件与 Kronecker 乘积
@@ -173,6 +174,12 @@ $$\|A(D-L)\|_F^2=\operatorname{tr}((D-L)^\mathsf TA^\mathsf TA(D-L))=\|T(D-L)\|_
 
 [SplitQ](../../methods/splitq.md) v1 式 21 使用另一类约束：固定截断奇异子空间、学习对角门控，并配合可学习逆变换。它限制可用方向，不等价于上面的加权最佳低秩解；因子再次量化、加入激活误差后，也没有自动继承上述最优性。
 
+### 从有限激活矩阵到分布二阶矩
+
+[QERA](../../methods/qera.md) v2 §3.2 将目标写成 $\mathbb E_x\|x(D-L)\|_2^2$，度量由 $R=\mathbb E[x^{\mathsf T}x]$ 决定。$R$ 是未中心化二阶矩，不是默认减去均值的协方差；经验估计 $X^{\mathsf T}X/N$ 与本节的有限数据目标只差一个不影响最优解的正比例因子。正定时可用对称平方根 $R^{1/2}$，也可用任意满足 $T^{\mathsf T}T=R$ 的可逆因子。后二者承担同样的加权作用，但并非每个这样的 $T$ 都能称为矩阵的对称平方根。
+
+QERA-approx（v2 §3.3、附录 A.2）用逐通道 RMS 构造对角因子。它对完整目标精确成立的条件是 $\mathbb E[x_ix_j]=0$（$i\ne j$），不是只要求中心化协方差为零。因为 $\mathbb E[x_ix_j]=\operatorname{Cov}(x_i,x_j)+\mathbb E[x_i]\mathbb E[x_j]$，非零均值仍会产生交叉项。条件不满足时，这是改变度量后的低秩解；主方法页给出相同 RMS 下忽略交叉项会损失补偿效果的教学反例。
+
 
 ## 来源身份
 
@@ -180,6 +187,7 @@ $$\|A(D-L)\|_F^2=\operatorname{tr}((D-L)^\mathsf TA^\mathsf TA(D-L))=\|T(D-L)\|_
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 二阶矩目标、exact 与对角近似条件 |
 | [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
 | [MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2603.04800v1) | `arXiv:2603.04800v1` | — |
 | [Efficient Riemannian Optimization on the Stiefel Manifold via the Cayley Transform](https://arxiv.org/abs/2002.01113v1) | `arXiv:2002.01113v1` | — |

@@ -6,6 +6,7 @@ tags:
   - granularity
   - serving
 sources:
+  - raw/papers/2026-09-21/llm-qat/paper.pdf
   - raw/repositories/2026-09-21/kivi/source/models/llama_kivi.py
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/papers/2026-09-21/saw-int4/paper.pdf
@@ -124,11 +125,17 @@ KV cache 量化与权重量化正交、可以叠加，这一点在两篇论文�
 
 [混合精度分配](mixed-precision-allocation.md) 讨论的按层选择位宽属于第一类；本页讨论的对象是第二类。把两者合并成一个「平均位宽」会掩盖 KV cache 随序列长度增长这一结构差异。
 
+### 在训练中适应 KV 量化
+
+[LLM-QAT](../methods/llm-qat.md) 提供另一种补偿来源：训练前向同时量化权重、线性层输入及 K/V，以浮点教师的输出分布监督学生。K/V 都按 token 量化，推理时当前 token 连同尺度追加；训练时则对整段 K/V 张量施加同一粒度的量化。流式追加是推理条件，不能据此说训练也是逐 token 解码。（LLM-QAT v1 §2.2.2、图 2/3。）
+
+这与冻结模型后改变粒度或施加等价旋转的路线不同：模型参数本身参与适应误差。因此比较时除位宽、布局、窗口，还要记录训练数据、教师和训练成本。LLM-QAT 的 v1 不含低比特硬件实现，不能用其质量结果证明分页缓存或融合注意力性能已验证。
+
 ## 9. 未验证与边界
 
 - 本页的框架来自 KIVI（已发表）与 SAW-INT4（预印本）两篇的全文研读，不构成对 KV cache 量化领域的综述；Kitty、KVQuant、AKVQ-VL 等本地存在的材料本轮未研读。
 - 两篇论文的硬件、模型、任务与测量口径不同，本页不给出跨论文的方法排序，也不把某一篇的结论外推到其它模型族。
-- 未运行任何实验，本页所有数值均转引自对应方法页，其原始出处与条件以那两页为准。
+- 未运行任何实验，本页所有模型与性能数值均转引自对应方法页，其原始出处与条件以各方法页为准。
 
 ## 来源身份
 
@@ -139,3 +146,5 @@ KV cache 量化与权重量化正交、可以叠加，这一点在两篇论文�
 | [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750v2) | `arXiv:2402.02750v2` | — |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
 | [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6) | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |
+
+- [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；训练中适应逐 token KV 量化。

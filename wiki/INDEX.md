@@ -12,8 +12,11 @@ sources: []
 
 - **理解模型与数值**：[Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) → [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md)。
 - **建立共同基础**：[线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) → [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [校准数据与量化范围选择](theory/calibration-and-range-selection.md)。
+- **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [LSQ 的步长学习](methods/lsq.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
+- **理解低秩误差修正**：[激活加权低秩近似](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6-激活加权的低秩近似) → [LoftQ 的交替初始化](methods/loftq.md) → [QERA 的解析补偿](methods/qera.md) → [MASQuant 的模态残差](methods/masquant.md) / [SplitQ 的双补偿](methods/splitq.md) → [低秩分支的执行成本](implementation/quantized-matmul-scaling-execution.md#12-低秩辅助分支不是免费或统一位宽)。
 - **理解量化方法**：[AWQ](methods/awq.md) → [GPTQ](methods/gptq.md) → [SmoothQuant](methods/smoothquant.md) → [AWQ、GPTQ 与 SmoothQuant](methods/awq-gptq-smoothquant-comparison.md)。
-- **理解变换与研究抽象**：[对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) → [OmniQuant](methods/omniquant.md) → [AffineQuant](methods/affinequant.md) → [FlatQuant](methods/flatquant.md) → [OmniQuant、AffineQuant 与 FlatQuant](research/omniquant-affinequant-flatquant-comparison.md) → [QuaRot](methods/quarot.md) → [SpinQuant](methods/spinquant.md)。
+- **理解变换与研究抽象**：[对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) → [OmniQuant](methods/omniquant.md) → [AffineQuant](methods/affinequant.md) → [FlatQuant](methods/flatquant.md) → [OmniQuant、AffineQuant 与 FlatQuant](research/omniquant-affinequant-flatquant-comparison.md) → [QuaRot](methods/quarot.md) → [SpinQuant](methods/spinquant.md) → [OSTQuant 的正交与缩放联合学习](methods/ostquant.md)。
+- **理解极低比特表示**：[二阶重构](theory/layer-reconstruction-second-order-compensation.md) → [QuIP](methods/quip.md) → [码本量化](theory/codebook-quantization-and-bit-budget.md) → [QuIP#](methods/quip-sharp.md) → [AQLM](methods/aqlm.md) → [SpQR](methods/spqr.md) / [SqueezeLLM](methods/squeezellm.md) → [坐标、码本与例外预算](research/low-bit-representation-design.md)。
 - **研究多模态量化**：[视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) → [MBQ](methods/mbq.md) → [VLMQ](methods/vlmq.md) → [MBQ 与 VLMQ](research/mbq-vlmq-comparison.md) → [QIG](methods/qig.md) → [LUQ](methods/luq.md)。
 - **学习算子开发**：[张量布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [GPU 执行与存储](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) → [逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) → [roofline](fundamentals/hardware/arithmetic-intensity-and-roofline.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md) → [AWQ 反量化内核](implementation/weight-only-dequant-kernels.md)。
 - **从算法走向部署**：[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) → [AWQ 的实现核对](implementation/awq-implementation.md) → [GPTQ 的实现核对](implementation/gptq-implementation.md) → [SmoothQuant 的实现核对](implementation/smoothquant-implementation.md) → [权重量化反量化内核的契约](implementation/weight-only-dequant-kernels.md) → [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md)。
@@ -49,6 +52,7 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [码本量化：标量、向量、加性表示与位宽预算](theory/codebook-quantization-and-bit-budget.md) | 码字集合、激活感知距离、残差编码和真实存储开销怎样联系。 |
 | [积分梯度与量化敏感性：基线、路径和归因边界](theory/integrated-gradients-and-quantization-sensitivity.md) | 积分梯度（Integrated Gradients，IG）把一个标量输出相对参考输入的变化分配给输入坐标。 |
 | [量化与可靠性：选择性预测评测](theory/quantization-reliability-and-selective-prediction.md) | 多模态模型常常「很有把握地答错」。 |
 | [KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) | 权重可以离线反复优化，激活随输入即时产生，KV cache 与两者都不同：它随输入在推理中追加，数值在线产生；策略可以离线校准，历史保留、重算与回收受服务成本约束。 |
@@ -62,6 +66,17 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [LLM-QAT：生成数据蒸馏与联合量化](methods/llm-qat.md) | 前缀覆盖、软标签与 W/A/KV 量化怎样共同进入训练。 |
+| [QERA：激活二阶矩加权的低秩量化误差修正](methods/qera.md) | 固定量化主体下的最佳低秩修正、对角近似条件与初始化／推理成本。 |
+| [LoftQ：量化主体与低秩适配器的交替初始化](methods/loftq.md) | 先减去旧补偿再量化、重算残差 SVD，最后冻结主体做任务适配。 |
+| [OSTQuant：正交与缩放联合学习、QSUR 与 KL-Top](methods/ostquant.md) | 哪些变换可以学习与融合，分布体积指标、教师损失和量化效果怎样区分。 |
+| [EfficientQAT：逐块全参数训练与整网尺度微调](methods/efficientqat.md) | 局部自由度、固定整数编码与整网目标怎样降低训练成本。 |
+| [LSQ：任务驱动的步长学习与梯度缩放](methods/lsq.md) | 舍入位置、共享尺度梯度与训练协议怎样共同决定网格。 |
+| [QuIP：非相干处理与 LDLQ](methods/quip.md) | 谱方向、线性反馈与有限网格的保证边界。 |
+| [QuIP#：RHT、BlockLDLQ 与 E8P](methods/quip-sharp.md) | 快速变换、格编码与微调如何兼顾质量和解码成本。 |
+| [AQLM：激活感知加性量化](methods/aqlm.md) | 多个学习码本、联合索引和块内微调怎样工作。 |
+| [SpQR：敏感权重与两级元数据](methods/spqr.md) | 动态例外选择、小组网格和稀疏修正怎样计账。 |
+| [SqueezeLLM：加权非均匀量化](methods/squeezellm.md) | 任务 Fisher、标量 LUT 与稠密稀疏分解如何配合。 |
 | [AdaRound：面向任务损失的自适应舍入](methods/adaround.md) | 权重量化的最后一步通常是最舍入：把每个浮点权重放到最近的网格点上。 |
 | [BRECQ：块级重构与二阶误差的粒度选择](methods/brecq.md) | 逐层重构把每层的输出误差压到最小，但在位宽继续下降时反而不再有效：单层看上去接近无损，整网输出却偏得很远。 |
 | [AffineQuant：可学习仿射变换与渐进掩码](methods/affinequant.md) | AffineQuant 把量化前的可学习逐通道缩放扩展为可逆矩阵，使一个通道可以与其他通道混合；与逆矩阵配对后，浮点线性计算不变，量化后的网格适配可能更好。 |
@@ -91,6 +106,7 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [低比特表示的设计空间](research/low-bit-representation-design.md) | 坐标、码本、目标和例外预算构成哪些可检验选择。 |
 | [MBQ 与 VLMQ：重要性怎样进入量化目标](research/mbq-vlmq-comparison.md) | 两种方法都认为，直接平等处理全部 token 的重构误差，可能没有准确表达视觉语言任务的需求。 |
 | [OmniQuant、AffineQuant 与 FlatQuant：可学习变换路线比较](research/omniquant-affinequant-flatquant-comparison.md) | 这三篇共同研究：冻结基座权重，以少量校准数据学习量化前的表示与网格，减少 Transformer block 输出误差。 |
 

@@ -6,6 +6,10 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/loftq/paper.pdf
+  - raw/papers/2026-09-22/efficientqat/paper.pdf
+  - raw/papers/2026-09-21/llm-qat/paper.pdf
+  - raw/papers/2026-09-22/lsq/paper.pdf
   - raw/papers/2026-09-21/spinquant/paper.pdf
   - raw/papers/2026-09-21/omniquant/paper.pdf
   - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/quantizer.py
@@ -13,7 +17,7 @@ sources:
   - raw/papers/2026-09-21/q-vlm/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # PTQ、QAT 与代理梯度
@@ -41,6 +45,19 @@ W §3.4 将通过软舍入变量优化局部重构的 AdaRound 归入 PTQ。[GPT
 
 
 [SpinQuant](../../methods/spinquant.md) 把“冻结原权重”和“整网反向”组合在一起：学习残差与 Value 的正交旋转，目标是最终 next-token 交叉熵；主流程学习时使用 W16 与低比特激活，之后才以 GPTQ 量化权重。它仍被作者归为 PTQ，但明显超出了仅做局部层重构的成本模型。这说明记录优化变量、梯度传播范围、目标和前向位宽，比只标 PTQ/QAT 更能解释方法。（SpinQuant v4 §3.2、§4.2、表 3。）
+
+[LLM-QAT](../../methods/llm-qat.md) 展示整网输出蒸馏路线：量化学生使用生成文本，匹配浮点教师的词表概率分布，并把 K/V 量化放进训练前向。其“Data-Free”免除的是访问原始训练集的要求，仍有数据生成、教师计算和学生训练成本；主方法按极值计算尺度，并不等于采用 LSQ 学习步长。
+
+[EfficientQAT](../../methods/efficientqat.md) 则把两种训练范围串联：先逐块更新潜在权重与网格参数，拟合浮点块输出；再固定整数权重和零点，整网只训练分组尺度。局部阶段自由度大，整网阶段可训练参数少，但仍需整网反向；两阶段的损失与内存来源不能合并为一个“QAT 成本”。
+
+| 机制实例 | 量化对象与主要变量 | 目标与梯度范围 |
+|---|---|---|
+| LSQ | CNN 权重、激活；潜在权重与逐层步长 | 任务损失；整网训练，步长采用 STE 和专门的梯度缩放 |
+| LLM-QAT | LLaMA 权重、激活、K/V；量化学生权重 | 生成前缀上的浮点教师分布蒸馏；整网训练 |
+| EfficientQAT Block-AP | 主实验为权重量化；当前块权重、尺度、零点 | 当前块输出重构；梯度限于当前块 |
+| EfficientQAT E2E-QP | 固定低比特整数表示；默认只训练分组尺度 | 最终模型目标；整网传播，尺度改变恢复后的权重 |
+
+这组对照用于辨认优化问题，不是跨模型精度排行榜。量化对象、整数编码是否重新计算、数据监督与梯度传播范围均不同。（LSQ v3 §2；LLM-QAT v1 §2；EfficientQAT v3 §3。）
 
 ## 2. 前向模拟什么，部署执行什么
 
@@ -88,17 +105,23 @@ $$
 
 内部项来自外部乘以 $\Delta$ 的导数与内部除以 $\Delta$ 的导数相减；饱和处只剩端点倍数。若仿射零点用连续潜变量、反向近似其舍入导数，则零点的代理导数在非饱和区为 0，在饱和区为 $-\Delta$。改变参数化、裁剪次序或梯度缩放后，公式也可能变化。（W 式 (36)–(40)。）
 
-步长必须保持正值，零点与部署编码范围也要满足约束。W 讨论的 LSQ 等方法还会调整梯度尺度；本页没有完整研读这些方法的原论文，不把上述基本链式法则写成某个完整训练算法。代理梯度的有效性仍需模型实验，而不是仅检查公式可计算。
+步长必须保持正值，零点与部署编码范围也要满足约束。[LSQ](../../methods/lsq.md) 将这种步长代理与专门的梯度缩放组合：每层共享尺度的梯度汇聚多个元素，因而用 $1/\sqrt{NQ_P}$ 调整尺度梯度，前向网格保持不变。其推导依赖梯度相关性、饱和比例等启发式假设，激活侧还讨论了前置 BN；不能只把 scale 设为可训练，就认为复现了完整 LSQ，也不能把此缩放当成任意模型的最优规则。（LSQ v3 §2、附录 A/B。）
 
 代理规则应核对到具体计算节点。OmniQuant 官方 commit `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` 的 `quantize/quantizer.py:round_ste` 使用 `(round(x)-x).detach()+x`，前向仍取整，反向近似为恒等；权重零点却使用普通 `.round()`，其梯度为零。其学习步长来自 sigmoid 强度与当前权重极值的组合，不是直接套用一个独立可训练步长。不能把“使用 STE”扩写成所有离散节点都使用同一种反向规则。
 
 代理梯度的选择并非无关紧要。[AdaRound](../../methods/adaround.md) 在同一局部重构目标上比较过直通估计器与带显式正则的软松弛，前者精度为 66.63、后者为 68.60（ResNet18，ImageNet），作者把差距归因于 STE 的有偏梯度限制了受限空间中的优化；[BRECQ](../../methods/brecq.md) 则指出激活无法使用舍入式参数化，因为它们随输入变化，只能学习步长。两处都说明：代理规则要与被代理的离散结构匹配，不能只看反向是否可计算。
+
+### 固定整数编码时，不要继续套舍入代理
+
+如果训练直接保留整数 $q,z$，只更新 $s$，前向为 $\widehat w=(q-z)s$，于是 $\partial\widehat w/\partial s=q-z$。这里是精确的连续导数，不再出现重新计算整数编码的 $\operatorname{round}(w/s)-w/s$ 代理项。同组所有权重的梯度共同汇聚到一个尺度，尺度更新会改变恢复权重，但不能重新选择组内整数索引。EfficientQAT v3 §3.3 的 E2E-QP 就是这一参数化；它说明“学习步长”尚不足以确定训练规则，必须同时记录哪些量固定、哪些节点仍在前向中。
 
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
 
 W 表 9 的 MobileNetV2 per-tensor W4A8 案例中，基础初始化从 0.10 开始，QAT 后仍为 0.10；加入跨层均衡后初始为 12.99，QAT 后为 70.13；再加偏置校正初始为 46.90，QAT 后为 70.07。它说明这个困难配置中初始化重要，同时说明更高的初始分数并不保证更高的最终分数。表 8 的另一些配置则在训练后缩小了 min–max 与 MSE 初始化的差距。均为作者报告，不能写成 QAT 必须或完全不必做 PTQ 初始化。
+
+[LoftQ](../../methods/loftq.md) v4 §3 把初始化与适配器训练分开：先用量化和残差 SVD 共同构造低比特主体与低秩分支，再冻结主体，按任务损失训练适配器。前一阶段只需要原始权重，后一阶段需要任务数据；不能把“无数据初始化”扩写为“全流程无需数据”。基座不重新量化时，适配器反向不需要穿过舍入，也无需对离线 SVD 求导，但仍有整网激活梯度传播。其低秩因子不是 LSQ 的尺度变量，也不同于 EfficientQAT 默认的整网尺度微调。
 
 J §3.1 延迟启用激活量化，并用指数移动平均跟踪范围，以避免训练初期分布剧烈变化；附录 D 的多项任务使用 500,000 步延迟。该数量依赖长训练协议、batch 与异步工作进程，不能直接移植到另一模型。[校准与范围页](../../theory/calibration-and-range-selection.md)解释统计与数据用途的区别。
 
@@ -124,6 +147,7 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 权重分解初始化与固定基座的适配器训练 |
 | [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
 | [OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models](https://arxiv.org/abs/2308.13137v3) | `arXiv:2308.13137v3` | — |
 | [OpenGVLab/OmniQuant](https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/quantizer.py) | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
@@ -131,3 +155,7 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 | [Q-VLM: Post-training Quantization for Large Vision-Language Models](https://arxiv.org/abs/2410.08119v3) | `arXiv:2410.08119v3` | — |
 | [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
 | [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
+
+- [Learned Step Size Quantization](https://arxiv.org/abs/1902.08153v3)，arXiv:1902.08153v3；步长代理与梯度缩放。
+- [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据、教师输出与联合量化。
+- [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。

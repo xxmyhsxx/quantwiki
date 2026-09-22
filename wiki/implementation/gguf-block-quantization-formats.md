@@ -95,6 +95,8 @@ $$\widehat w = d_1 q - m_1,\qquad d_1 = d\cdot sc,\quad m_1 = d_{\min}\cdot m,\q
 
 ## 4. 码本路线：i-quant
 
+码本索引为何能同时表示多个权重、固定格与可学习加性码本如何区别，见 [码本量化与位宽预算](../theory/codebook-quantization-and-bit-budget.md)。该基础解释帮助阅读以下格式，不表示 GGUF 的 i-quant 与 QuIP# 或 AQLM 使用相同码本、训练流程或二进制布局。
+
 i-quant 走的是另一条路：不再对每个权重独立均匀取整，而是用网格／码本表示一组权重，并在超块级保留尺度或位移。源码注释给出了各界面的有效位宽：
 
 | 类型 | 注释与结构要点 | 每权重位宽 |

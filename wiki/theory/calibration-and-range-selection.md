@@ -6,6 +6,8 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/papers/2026-09-22/qera/paper.pdf
+  - raw/papers/2026-09-21/llm-qat/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/qig/paper.pdf
   - raw/papers/2026-09-21/splitq/paper.pdf
@@ -20,7 +22,7 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-15
+updated: 2026-09-22
 ---
 
 # 校准数据与量化范围选择
@@ -91,6 +93,12 @@ $$
 
 这种做法依赖模型中可用的 BN 统计。LayerNorm/RMSNorm 的输入相关归一化没有相同的固定总体统计，不能照抄 BN 范围公式；[等价变换页](diagonal-scaling-equivalent-transform.md)进一步区分固定 BN 融合与归一化输出侧缩放。缺少真实数据时，应降低对部署分布覆盖的确信程度，而不是宣称“无需数据所以没有分布风险”。
 
+### 生成数据解决访问限制，仍需验证覆盖
+
+[LLM-QAT](../methods/llm-qat.md) 将“无需原始预训练数据”与“无需样本”区分开：用 LLaMA-7B 生成文本，再让量化学生匹配浮点教师输出。前缀采样改变输入覆盖，教师软标签改变监督内容，两者不能合并成一个“无数据”属性。其 v1 表 3 中，W4A6 的 7B 用 WikiText-2 微调得到较低的同域 PPL，却不如混合生成数据的常识任务均分；这说明分布适配与单一任务拟合应分别评估。
+
+该方法包含学生权重训练，不是把生成语料用于范围统计就完成了 LLM-QAT。生成器、教师、随机策略、有效 token 和独立测试都应记录；生成器未掌握的分布也不因合成而自动覆盖。（LLM-QAT v1 §2.1–2.2、§3.1、表 3。）
+
 ## 5. 校准、训练、验证与测试怎样分工
 
 校准用于估计网格、统计或局部调整；训练用于拟合模型参数；验证用于选择配置；独立测试用于评价选择后的结果。名称并不决定用途：反复查看测试分数来选裁剪比例，已经使测试集参与了选择。
@@ -135,6 +143,8 @@ SpinQuant 表 11 在所测模型中，128 与 800 样本的 PPL 都约 6.2，100
 
 白化补偿还使用激活二阶矩，见 [激活加权低秩近似](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md)。校准未覆盖的方向既可能影响数值求逆，也可能在部署数据上突然重要。需要记录变换学习与补偿统计分别使用的数据及模型状态；不能只记录“128 个样本”而省略模态组成、有效 token 数与测试独立性。MASQuant 的公开音频数据路径存在测试来源待核对项，具体证据与未确定部分在其方法页保留。
 
+[QERA](../methods/qera.md) v2 §3 把完整二阶矩与逐通道 RMS 分别用于 exact 和 approx 补偿。统计应保留输入均值的贡献，不能把未中心化二阶矩替换成协方差，也不能把 RMS 替换成标准差。图 3 的样本量增加后 PPL 改善是特定实验观察，不是任务质量单调改善定理。附录 A.6 中，SST2 校准与 WikiText2 校准造成不同训练曲线；作者将原因假设为 padding 比例及预处理差异，尚未隔离验证该因果解释。实际复用需要核对哪些位置进入统计，以及下游输入是否仍对应所估计的分布。
+
 ## 9. 归因目标、数据混合与位宽选择
 
 [QIG](../methods/qig.md) v1 §3、附录 B 将归因目标设为浮点/量化输出差异，沿参考激活积分；这与回答 CE 的单点梯度不是同一个敏感性。附录 C 使用 InfoVQA 校准并评价 OCR 任务，说明特定数据—任务组合的效果，不证明部署后分布漂移已解决。需要记录基线、有效 token、目标归约与权重后处理，不能只记录校准样本数。
@@ -151,6 +161,7 @@ SpinQuant 表 11 在所测模型中，128 与 800 样本的 PPL 都约 6.2，100
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 二阶矩、校准规模与 padding 假设 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
 | [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
 | [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
@@ -165,3 +176,5 @@ SpinQuant 表 11 在所测模型中，128 与 800 样本的 PPL 都约 6.2，100
 | [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
 | [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
 | [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
+
+- [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据与蒸馏目标。

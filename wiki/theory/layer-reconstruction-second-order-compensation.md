@@ -6,6 +6,13 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/papers/2026-09-22/efficientqat/paper.pdf
+  - raw/repositories/2026-09-22/efficientqat/source/quantize/block_ap.py
+  - raw/papers/2026-09-21/quip/source.eprint
+  - raw/papers/2026-09-21/quip-sharp/source.eprint
+  - raw/papers/2026-09-21/aqlm/source.eprint
+  - raw/papers/2026-09-21/spqr/source.eprint
+  - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/qig/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
   - raw/repositories/2026-09-21/flatquant/source/flatquant/train_utils.py
@@ -185,11 +192,21 @@ GPTAQ v3 §4.1 与附录 A.1 提供非对称框架，§4.2 又通过残差的通
 
 [FlatQuant](../methods/flatquant.md) v4 式 4 与固定代码 `9d88ffcb` 的 `flatquant/train_utils.py:cali_flat_quant` 提供一个不同实例：教师和量化块接收相同的浮点前缀输入，每完成一块以教师输出推进下一块。它仍是块重构，却没有上述量化前缀输入路径。因此讨论累积误差补偿时，必须记录谁产生输入、谁产生目标；不能仅凭“逐块校准”判断目标相同。三种学习变换的具体比较见 [可学习变换路线比较](../research/omniquant-affinequant-flatquant-comparison.md)。
 
+[EfficientQAT](../methods/efficientqat.md) 的 Block-AP 同样将量化前缀输入与浮点参考目标分开推进，但允许当前块的权重和量化参数共同变化。固定代码 `39175493b2d14617d342a0a7956875e6ac16221b` 的 `quantize/block_ap.py:block_ap` 用缓存目标与 `MSELoss()` 实现这一局部训练。随后 E2E-QP 固定整数编码，整网训练尺度；这一步更换了梯度范围和目标，不是继续逐块最小化同一个 MSE。局部重构提供初始化，最终任务仍需独立验证。（EfficientQAT v3 §3、表 4。）
+
 ## 9. 路径归因怎样变成二阶系数
 
 [QIG](../methods/qig.md) v1 §4.3 进一步把量化差异的积分梯度用于 token 加权 GPTQ。沿用本页 token 为列的输入 $X$，若非负误差系数为 $\lambda_n$，则 Gram 矩阵为 $X\operatorname{diag}(\lambda)X^\mathsf T$，Hessian 为其两倍；等价于把第 $n$ 列乘以 $\sqrt{\lambda_n}$。直接乘 $\lambda_n$ 再取 Gram 会把系数平方，不能与前文范数内部的因子混用。
 
 非负性确保半正定，却不保证可逆或模型效果最优。[积分梯度](integrated-gradients-and-quantization-sensitivity.md) 的原始贡献可以有正负，QIG 公开代码取绝对值后才归一化；这一步不继承有符号完整性。归因目标、系数构造、MSE/MAE 选择和输入是否对称要分别核对。其缩放搜索允许 MAE，而上述二阶推导针对平方重构，不能因为同属 QIG 就自动合并；具体论文/代码差别由方法页承接。
+
+## 10. 改变补偿规则、表示集合或例外预算
+
+[QuIP 的 LDLQ](../methods/quip.md) 用三角反馈重新表述顺序补偿，并结合非相干处理分析谱结构；对应条件下它与 GPTQ 的反馈等价。[QuIP#](../methods/quip-sharp.md) 则把一次固定一列推广为一次固定一个向量块，配合固定格码本。
+
+[AQLM](../methods/aqlm.md) 保留同类层输出重构目标，但改变可表示的权重集合，以多个学习码本之和编码，并联合优化离散索引和连续码本；输入 Gram 的非对角项使组间选择耦合。[SpQR](../methods/spqr.md) 把单步可补偿误差用于识别值得高精度保留的权重，同时让实际压缩后的 scale/zero 参与主体量化。
+
+[SqueezeLLM](../methods/squeezellm.md) 的敏感性来自任务梯度外积的对角近似，不是本页固定输入线性重构的精确 Hessian。两类目标的来源、耦合和近似应分别说明；方法之间更一般的联系见 [低比特表示设计空间](../research/low-bit-representation-design.md)。
 
 ## 来源身份
 
@@ -197,6 +214,13 @@ GPTAQ v3 §4.1 与附录 A.1 提供非对称框架，§4.2 又通过残差的通
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3) | `arXiv:2407.11062v3` | 局部重构与整网尺度训练 |
+| [OpenGVLab/EfficientQAT](https://github.com/OpenGVLab/EfficientQAT/tree/39175493b2d14617d342a0a7956875e6ac16221b) | `39175493b2d14617d342a0a7956875e6ac16221b` | `block_ap.py` 的输入、目标与 MSE；2026-09-22 获取 |
+| [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
+| [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |
+| [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4) | `arXiv:2401.06118v4` | 量化机制与适用条件 |
+| [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1) | `arXiv:2306.03078v1` | 量化机制与适用条件 |
+| [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4) | `arXiv:2306.07629v4` | 量化机制与适用条件 |
 | [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
 | [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
 | [ruikangliu/FlatQuant](https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1) | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
