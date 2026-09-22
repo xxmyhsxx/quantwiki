@@ -1,0 +1,72 @@
+{
+  "date": "2026-09-22",
+  "evidence": "CPU-only checks; no CUDA/NVIDIA tool execution",
+  "python": "3.9.6",
+  "passed": 9,
+  "checks": [
+    {
+      "name": "sample_statistics",
+      "status": "passed",
+      "detail": "Known synthetic values; raw order retained; not GPU timings"
+    },
+    {
+      "name": "round_away_reference_near_tie",
+      "status": "passed",
+      "detail": "FP64 addition preserves the FP32 scaled value below a tie"
+    },
+    {
+      "name": "reject_invalid_timings",
+      "status": "passed",
+      "detail": "Empty, zero, negative and nonfinite inputs rejected"
+    },
+    {
+      "name": "stateful_repetition_contract",
+      "status": "passed",
+      "detail": "Stateful batches rejected; explicit prepare and repeats=1 required"
+    },
+    {
+      "name": "syntax_and_cli",
+      "status": "passed",
+      "detail": "All Python sources parsed; help works without importing CUDA or framework factories"
+    },
+    {
+      "name": "no_cuda_and_result_preservation",
+      "status": "passed",
+      "detail": "Subprocess with CUDA-unavailable stub produces no timing; old output preserved"
+    },
+    {
+      "name": "rmsnorm_byte_accounting",
+      "status": "passed",
+      "detail": {
+        "ideal_unique_bytes": 67584,
+        "scope": "algorithmic lower-bound model, not measured HBM traffic"
+      }
+    },
+    {
+      "name": "quantized_gemm_byte_accounting",
+      "status": "passed",
+      "detail": {
+        "hypothetical_w4_unique_bytes": 606208,
+        "w8_activation_intermediate_write_bytes": 16448,
+        "w8_intermediate_write_plus_read_bytes": 32896,
+        "scope": "excludes unspecified metadata/padding/cache effects; not measured DRAM traffic"
+      }
+    },
+    {
+      "name": "overlap_and_end_to_end_counterexamples",
+      "status": "passed",
+      "detail": {
+        "abstract_sum_vs_union": [
+          20,
+          15
+        ],
+        "synthetic_stage_speedup": 1.6666666666666667
+      }
+    }
+  ],
+  "sha256": {
+    "benchmark_operator.py": "a9ef954aace662e66f09da1493637010066c4ae3bd287579b718ae0431a4e2b3",
+    "performance_cases.py": "e0a1daeecc3d566c664a5cc7af9c80fee0039cfc2d9f3fb4718427fadeae7656",
+    "check_analysis.py": "d9c7a2959e446d4ed721c620e03f5af8a39d8dfcac7076effba715c45821090f"
+  }
+}

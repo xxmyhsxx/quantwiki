@@ -91,6 +91,8 @@ $$I\approx\frac{2b}{w/8}=\frac{16b}{w},\qquad \text{受内存限制当且仅当}
 - 临界批量的公式是本页的换算，只在「权重读取主导、忽略激活与输出流量、忽略元数据」的前提下成立；前缀元数据会改变每字节可承载的权重数，见 [FP8 与 Microscaling 数值格式](../numeric-formats/fp8-and-mx-data-formats.md) 与 [GGUF 与块量化存储格式](../../implementation/gguf-block-quantization-formats.md) 的位宽口径。
 - 讲义是教学材料，其算子代数强度按「单独执行该算子」计算；真实模型中的算子会融合执行，融合后的算术强度需按融合后的数据流重新计算。
 
+使用实测 DRAM/L2 字节、硬件计数器与时间线检验这些上界时，见 [GPU 算子性能分析](../../implementation/gpu-kernel-performance-analysis.md)。算法最少字节与 profiler 实际流量需要分开，远低于上界也可能由启动、工作不足或依赖等待造成。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。

@@ -1,0 +1,142 @@
+{
+  "date": "2026-09-22",
+  "evidence": "CPU NumPy teaching reference; no upstream/GPU execution",
+  "numpy": "2.3.5",
+  "script_sha256": "cb02f74b5cc85c7635bdfc175d676a01ef2e3535158da117d3c66191d2013b22",
+  "passed": 9,
+  "checks": [
+    {
+      "name": "rounding_and_static_zero_point_order",
+      "status": "passed",
+      "detail": {
+        "ties_even": [
+          -0.0,
+          0.0,
+          -2.0,
+          2.0,
+          -2.0,
+          2.0
+        ],
+        "ties_away": [
+          -1.0,
+          1.0,
+          -2.0,
+          2.0,
+          -3.0,
+          3.0
+        ],
+        "round_then_add": 1,
+        "add_then_round": 2
+      }
+    },
+    {
+      "name": "zero_row_scale_storage",
+      "status": "passed",
+      "detail": {
+        "sglang_fp32": 7.874016109271631e-13,
+        "sglang_fp16": 0.0,
+        "vllm_dynamic_symmetric": 0.0
+      }
+    },
+    {
+      "name": "integer_epilogue_identity_and_range",
+      "status": "passed",
+      "detail": {
+        "MKN": [
+          7,
+          129,
+          11
+        ],
+        "raw_overflow_example": 2419350000,
+        "corrected_example": 0
+      }
+    },
+    {
+      "name": "fp32_scale_association",
+      "status": "passed",
+      "detail": {
+        "different_fp32_results": 3480,
+        "example": [
+          -9281807.0,
+          0.17771528661251068,
+          0.9684594869613647
+        ],
+        "outputs": [
+          -1597492.25,
+          -1597492.375
+        ],
+        "scope": "No compiler FMA or GPU instruction emulation"
+      }
+    },
+    {
+      "name": "qoq_lane_coverage_and_boundary_counterexamples",
+      "status": "passed",
+      "detail": {
+        "unique_16x16_positions": 256,
+        "unmasked_columns_for_M9_N63": 9,
+        "short_K_example": {
+          "K": 128,
+          "CTA_K": 128,
+          "stages": 3
+        }
+      }
+    },
+    {
+      "name": "marlin_16x64_repack",
+      "status": "passed",
+      "detail": {
+        "positions": 1024,
+        "permuted_and_unpermuted": true
+      }
+    },
+    {
+      "name": "marlin_u4b8_half_bit_constants",
+      "status": "passed",
+      "detail": {
+        "decoded": [
+          -8.0,
+          -7.0,
+          -6.0,
+          -5.0,
+          -4.0,
+          -3.0,
+          -2.0,
+          -1.0,
+          0.0,
+          1.0,
+          2.0,
+          3.0,
+          4.0,
+          5.0,
+          6.0,
+          7.0
+        ]
+      }
+    },
+    {
+      "name": "act_order_pairing_and_sorted_group_precondition",
+      "status": "passed",
+      "detail": {
+        "paired_permutation_equal": true,
+        "weight_only_equal": false,
+        "unsorted_endpoint_counterexample": [
+          0,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "name": "marlin_partial_storage_and_scale_order",
+      "status": "passed",
+      "detail": {
+        "fp16_handoff": 0.0,
+        "fp32_handoff": 1.0,
+        "cast_before_scale": "inf",
+        "scale_before_cast": 70.0
+      }
+    }
+  ],
+  "original_script_sha256": "cbce28c7da0cef29b6e9d0cb256eac215fdf13254fffc020d7b9bde91fd937b2",
+  "format_only_update": "Removed trailing blank line; numerical code and recorded results unchanged."
+}

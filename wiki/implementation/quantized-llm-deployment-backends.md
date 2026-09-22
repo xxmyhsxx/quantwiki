@@ -14,14 +14,20 @@ sources:
   - raw/repositories/2026-09-21/mlc-llm/source/docs/compilation/configure_quantization.rst
   - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md
   - raw/repositories/2026-09-21/omniserve/source/omniserve/modeling/layers/quantized_linear/w4a8_linear.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/__init__.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/qoq.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/w8a8_int8.py
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/gptq.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_gptq.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors.py
 updated: 2026-09-22
 ---
 
 # 量化模型的部署框架与后端支持
 
-量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。同一个算法名在不同框架里可能对应不同内核，同一位宽标签在不同框架里可能对应不同的量化粒度。本页把这条链路拆开，并记录四个主流推理框架在固定快照下实际暴露的量化支持面。
+量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。同一个算法名在不同框架里可能对应不同内核，同一位宽标签在不同框架里可能对应不同的量化粒度。本页把这条链路拆开，并记录多个主流推理框架在固定快照下实际暴露的量化支持面。
 
-本页依据 vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。所有内容为单一快照的只读核对，本轮没有构建、导出或运行任何框架。
+本页依据 SGLang（快照 `2f730e29`）、vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。所有内容为单一快照的只读核对，本轮没有构建、导出或运行任何框架。
 
 部署时还需核对 [张量并行的分片与量化元数据](tensor-parallel-quantization.md)。后端能够加载后，按 [模型质量协议](model-quality-evaluation.md)与 [服务性能协议](serving-performance-evaluation.md)分别确认质量和收益，不能只用“支持该格式”作为完成依据。
 
@@ -41,6 +47,7 @@ updated: 2026-09-22
 | 框架 | 主要存储与格式 | 典型位宽配置 | 加载方式 |
 |---|---|---|---|
 | llama.cpp | GGUF，含 k-quant／i-quant 与 MXFP4／NVFP4 块 | 由块结构与层间混合决定 | 单文件加载，按张量类型分派 |
+| SGLang | 框架注册的量化配置，如 GPTQ、W8A8、QoQ | 位宽、分组、对称性及设备约束按具体配置 | 方法配置 → 参数加载/重排 → 内核 |
 | vLLM | 框架内定义的多种量化配置 | 由方法名决定，含 W4A16、W8A8、FP8、MXFP4 等 | 方法名或自动探测 |
 | TensorRT-LLM | 量化 toolkit 产出 checkpoint，再编译为引擎 | qformat 指定，含 FP8、INT8 SQ、INT4 AWQ、W4A8 | 量化后需 `trtllm-build` 编译 |
 | MLC-LLM | 编译产物，量化模式写在编译配置里 | 权重 q3f16／q4f16／q4f16_awq，W/A 为 FP8 | 先编译再运行，可插入校准步骤 |
@@ -64,6 +71,20 @@ online（含 fp8_per_tensor、fp8_per_block 等在线量化简写）
 **量化方法名不与内核一一对应。** 此快照非 CPU 的 AWQ checkpoint 可把 `awq`、`awq_marlin` 等选择统一为 `auto_awq`，随后按配置和层形状选择普通 AWQ 或 MPLinear 路径；后者再选择可实现的 kernel。`AutoAWQMarlinLinearMethod` 的类名也不保证最终调用 Marlin。性能记录需保留最终后端、环境开关和输入规模；具体加载与执行条件见 [AWQ 实现](awq-implementation.md#5-跨引擎vllm)，不能从注册名称清单直接推断运行路径。
 
 **格式名与生态来源并不统一。** `compressed-tensors`、`modelopt`、`quark`、`bitsandbytes`、`torchao`、`inc` 对应各自的工具链与序列化格式，`fp8` 与 `fbgemm_fp8` 则区分了 FP8 的两条实现路径。看到「vLLM 支持 X」时，需要进一步确认是哪条内核路径。
+
+### 3.1 已核对到实现的算法与表示
+
+下表限定 vLLM `568afb3a` 和 SGLang `2f730e29` 的内置代码，并区分算法名与消费格式。有论文、有官方仓库、有注册项、能够实际运行，是四种不同证据；本表不宣称已完成最后一项。
+
+| 已有方法与代码 | vLLM 的已核对路径 | SGLang 的已核对路径 | 接入时最重要的边界 |
+| --- | --- | --- | --- |
+| [GPTQ](gptq-implementation.md)，IST-DASLab/gptq | gptq/gptq_marlin/auto_gptq → AutoGPTQConfig → 后端选择器；该入口接受对称 4/8-bit | 原生 GPTQ 配置声明 2/3/4/8-bit，Marlin 对称 4/8-bit；仍受形状/设备约束 | 原始仓库保存入口是专用 3-bit 格式，不能当作通用服务 checkpoint；g_idx、零点版本和 TP 要匹配 |
+| [SmoothQuant/W8A8](smoothquant-implementation.md)，smoothquant + torch-int | compressed-tensors 的 INT8 W8A8 scheme；静态 tensor 或动态 token 激活 | w8a8_int8 Dense 使用动态逐 token 激活、逐输出通道权重 | 两者都不是在 loader 中重跑 SmoothQuant；官方 OPT/torch-int 导出与服务格式不直接等价 |
+| [QServe/QoQ](qserve-implementation.md)，OmniServe | 该快照内置注册表没有 qoq 项 | qoq → QoQLinearMethod → 两种 W4A8 GEMM，g=-1/128、FP16、SM80+ | 文件必须已经按内核布局重排；这里只实现 Linear 消费，不等于论文整套 KV4 系统 |
+
+AWQ 的官方代码、格式转换与内核链已在[既有实现页](awq-implementation.md)展开。上表三个对象是本批新增深度的范围，不是框架全部算法名单；内置注册表没有某个论文名，也不能据此否定其可经其他表示或插件接入，必须另核对转换与加载证据。
+
+其中 vLLM 的 GPTQ 分派修正了“两个配置名就是两种固定内核”的简化：最终后端还受能力检查、逐层设置、设备和显式后端选项影响。SGLang 原生 GPTQ 甚至可能随 token 数切换到先重建 FP16 权重再用 cuBLAS，故性能记录需要保存实际执行路径。
 
 ## 4. TensorRT-LLM：量化格式与自动搜索
 
@@ -90,7 +111,7 @@ KV cache 通过独立的 `--kv_cache_dtype` 选择 `int8`、`fp8` 或不量化�
 
 MLC-LLM 的量化模式写成短代码（快照 `6474f7db` 的文档）。权重侧格式为 `qAfB(_id)`：`A` 是权重位数、`B` 是激活存储位数、`_id` 区分算法（对称、非对称、AWQ 等）。当前可选 `q0f16`、`q0f32`、`q3f16_1`、`q4f16_1`、`q4f32_1` 与标注为不稳定的 `q4f16_awq`。权重与激活都量化时，CUDA 上提供 `e4m3_e4m3_f16` 与 `e5m2_e5m2_f16`，即两种 FP8（见 [FP8 与 MX 数值格式](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md)），层输出保持 FP16 后重新量化为 FP8。文档把默认分组量化算法的来源指向 k-bit inference scaling laws 与 LUT-GEMM 两篇工作。
 
-它的校准流程值得单独记录，因为这是本页四个框架中唯一把校准暴露为独立运行阶段的：
+它的校准流程值得单独记录，因为它明确把校准暴露为独立运行阶段：
 
 1. 以校准模式（如 `e4m3_e4m3_f16_max_calibrate`）生成配置并转换权重；
 2. 用 `mlc_llm calibrate` 在 ShareGPT 一类数据上运行校准模型，**把统计结果就地写回权重文件**；文档说明该阶段需要关闭 CUDA graph；
@@ -128,9 +149,9 @@ llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_
 
 ## 9. 局限与未验证
 
-- 本页只读取了各框架的量化方法清单、工具文档与配置说明，未构建或运行任何框架；「支持」指该快照下存在对应条目，不代表其在所有硬件上可用或高效。
+- 本页读取各框架的量化清单/配置，并对表 3.1 所列路径继续核对实现；未构建或运行框架。注册条目、消费格式和可用内核分别说明，不代表所有硬件/形状都可用。
 - 各框架的版本迭代较快，格式清单与默认配置随版本变化；引用时应固定快照或版本号。
-- 未核对 vLLM 各方法对应的具体内核选择逻辑、TensorRT-LLM 的插件实现、MLC-LLM 的后端代码生成，也未验证跨框架的格式互转是否保真。
+- vLLM/SGLang 的 AWQ、GPTQ、INT8 W8A8 与 QoQ 按对应实现页保留核验范围；未穷尽其余方法，也未核对 TensorRT-LLM 插件、MLC-LLM 后端代码生成或验证跨框架格式互转。
 - 未收集各框架在统一硬件与场景下的对照性能数据，本页不给出性能排序。
 
 ## 来源身份
@@ -144,3 +165,4 @@ llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_
 | [mlc-ai/mlc-llm](https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008) | `6474f7dbfa9bf18fdfd3ef468b227c0706eb9008` | — |
 | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b) | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |
 | [mit-han-lab/omniserve](https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8) | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | — |
+| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | 注册项与本批算法/格式路径 |

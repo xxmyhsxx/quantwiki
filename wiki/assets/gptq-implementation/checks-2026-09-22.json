@@ -1,0 +1,18 @@
+{
+  "evidence": "NumPy CPU teaching, no upstream module/CUDA/model executed",
+  "seed": 20260922,
+  "checks_passed": 4,
+  "checks": [
+    "3bit packing and dequantized dot",
+    "invalid code corrupts neighbor",
+    "group sorting coordinate consistency",
+    "Hessian sequence normalization"
+  ],
+  "packing_shape": [
+    24,
+    7
+  ],
+  "dequant_dot_max_abs_error": 5.684341886080802e-14,
+  "consistent_group_sort_max_abs_error": 1.4210854715202004e-14,
+  "wrong_group_sort_max_abs_error": 100.91646241246067
+}

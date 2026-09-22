@@ -32,7 +32,7 @@ SmoothQuant 面向同时量化权重与激活的 W8A8 推理。它利用输入�
 
 本页依据 SmoothQuant v7（2024-03-29，论文标注 ICML 2023，以下简称 P），完整阅读 13 页、附录 A、10 图、11 表。v7 包含较晚加入的模型结果，不能将全部内容归为最初投稿时的实验。代码采用 `c61476d728e42ae0d8a35e7e78494edcac3237b5`（以下简称 C），以及按需查阅的 torch-int `65266db1eadba5ca78941b789803929e6e6c6856`（以下简称 T）。代码只做定向静态核对，未执行。
 
-**实现层深入入口：** 平滑统计与融合的实际写法、torch-int 的 INT8 线性接口，以及动态激活量化与离线平滑的区别见 [SmoothQuant 的实现核对](../implementation/smoothquant-implementation.md)。
+**实现层深入入口：** 平滑前后两次统计、fake-quant 与真实 OPT 导出的差别，以及 vLLM／SGLang 的 W8A8 格式和内核边界见 [SmoothQuant 的实现核对](../implementation/smoothquant-implementation.md)。
 
 前置阅读：[均匀量化与分组](../fundamentals/quantization/uniform-quantization-and-groups.md)、[对角缩放与等价变换](../theory/diagonal-scaling-equivalent-transform.md)。本页保留理解方法所需的推导；更完整的内外维缩放解释见[执行路径页](../implementation/quantized-matmul-scaling-execution.md)。
 

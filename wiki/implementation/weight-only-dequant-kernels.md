@@ -25,6 +25,9 @@ sources:
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/awq_marlin_repack.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin.cuh
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin.cuh
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin_template.h
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/dequant.h
+  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin_dtypes.cuh
 updated: 2026-09-22
 ---
 
@@ -186,11 +189,72 @@ _GET_IF(W_TYPE, THREAD_M_BLOCKS, THREAD_N_BLOCKS, THREAD_K_BLOCKS,
 5. 模板内核要把「配置 → 实例」的匹配条件写进文档，因为不匹配是硬失败而非降级；
 6. 量化内核的收益与相邻融合算子强相关，移植时要连同归一化/激活/量化融合一起评估。
 
-## 10. 验证状态与待验证
+## 10. GPTQ → 现代 Marlin：repack 后怎样参与计算
 
-- 全部为 code-read：未编译、未运行、未测性能，也未核对任何数值输出；本页不给出任何加速比。
+本节限定 SGLang 固定 commit 的对称 4-bit GPTQ，即 `kU4B8`，激活为 FP16/BF16。它与原始独立 Marlin、AWQ 非对称 `kU4`、FP4 和 FP8 模板不是同一核验范围。`marlin_template.h`、`dequant.h` 与 `marlin_dtypes.cuh` 将以下各阶段连接起来。
+
+### 10.1 Repack 必须匹配寄存器的消费顺序
+
+`gptq_marlin_repack.cuh` 以 $16\times64$ 权重 tile 为单元。对四个工作 warp 的 lane $\ell$，令 `tc_row=(lane%4)*2`、`tc_col=lane/4`；每个 lane 取 K 偏移 $\{0,1,8,9\}$，以及两列 `warp_id*16+tc_col` 和其加 8 的位置，得到 8 个 u4 码。
+
+这 8 个码按 `pack_idx={0,2,4,6,1,3,5,7}` 装入一个 uint32，存至 tile 内 `lane*4+warp_id`。有 perm 时，K 坐标先映射到原权重行，码的位置由原始 K 下标模 pack factor 决定。repack 保存的是相同量化权重的置换表示，不重新估计尺度或求解 GPTQ。
+
+计算内核每个线程从 shared 读取已经安排好的 `int4`，`matmul` 对一个 packed word 及其右移 8 位的版本分别调用 dequant。把 “16 行 tile 的 shape 对了” 当成完整布局正确还不够：上述 lane、nibble 和元数据置换必须一起对应。
+
+### 10.2 U4B8 的减 8 融在位转换里
+
+`dequant<half2,kU4B8,false>` 用 `lop3` 将 nibble 拼到 FP16 的指数/尾数位中，随后用 half2 subtract 和 FMA 得到 $q-8$。常量 `0x6400` 对应 FP16 的 1024 基底；`SUB=0x64086408` 把偏置 8 合并进减法，高 nibble 路径用 `MUL=0x2c002c00` 和 `ADD=0xd480d480` 恢复同样的整数值。
+
+BF16 用不同指数基底 `0x4300` 与 `SUB=0x43084308`，不能直接复制 FP16 的常量。这里 `has_zp=false` 表示没有独立加载的 zero-point tensor，**不是说 u4 码无需减 8**。GPTQ 对称编码与位转换语义由 `kU4B8` 一起规定。
+
+分组尺度乘入恢复后的 FP16/BF16 B fragment，再执行 `mma.sync.aligned.m16n8k16.row.col.f32.f16.f16.f32` 或对应 BF16 指令。`FragC` 是 4 个 FP32 元素；不存在这条路径先物化完整浮点权重矩阵的阶段。
+
+### 10.3 Act-order：加载期重排与前向置换各做什么
+
+加载期权重按 perm repack；前向 `gptq_marlin.cuh` 若 `has_act_order`，先运行 `permute_cols_kernel` 写出 `A_tmp[m,k]=A[m,perm[k]]`。同一置换同时作用于 A 的列和 W 的行，维持矩阵乘语义；只改权重会把输入通道配错。
+
+若拥有完整 K，排序后完整原组已连续，host 在置换 A 后将 `has_act_order=false`，主循环可以使用规则分组。若 K 分片不能恢复完整组，则 `group_blocks=0` 走动态组索引路径：
+
+- 将当前 K tile 的 `g_idx` 搬入 shared，并缓存接下来需要的尺度组区间；
+- `fetch_scales_to_registers` 按 MMA 的 K 坐标 $\{0,1,8,9\}$ 为四个元素读取对应组尺度；
+- `init_same_group` 用 tile 首尾 group id 判断是否可复用同一尺度。这依赖加载期排序后组号单调，不能对任意乱序 `g_idx` 只比较首尾。
+
+所以“不再启用 act-order 模板”不代表在线输入置换从未发生；完整 K 与 TP 局部 K 的元数据成本也不同。
+
+### 10.4 Shared ring 与两套寄存器缓冲
+
+`fetch_to_shared` 通过 `cp_async4` 搬运打包 B，对 A 的越界行使用 predicated 拷贝。规则组只在对应组边界加载尺度；动态组路径还搬运 `g_idx`。没有新有效 tile 时仍执行 fence，以保持排空阶段的 copy-group 计数。
+
+`start_pipes` 预取 `stages-1` 个 tile，`wait_for_stage` 等待 `stages-2` 并 CTA 同步。`fetch_to_registers` 用 ldmatrix 读取 A，直接读取 B 的 `int4`；寄存器用 `k%2` 轮换。稳态先准备 `k+1` 的片段，在倒数第二个 K 子步提交下一 shared stage、等待并切换，再对当前片段解包、缩放和 MMA。循环结束先 wait 0，随后才能做 shared-memory 归约。
+
+host 按候选 `thread_k/thread_n` 检查 K/N 整除和 shared-memory 容量；这是本主循环整 tile 访问的前提，不存在“任意尾块因为 A 有 predicate 就安全”的推论。流水的共享概念见 [异步拷贝](gpu-async-copy-pipelines.md)。
+
+### 10.5 两层归约决定最终精度
+
+CTA 的工作划分采用跨 K/N 的 stripe，使部分输出列 tile 可能由多个 CTA 合作；它不是每个 CTA 都独立完成整个 K，也不是每个输出都一定需要跨 CTA 合并。
+
+先由 `thread_block_reduce` 在 shared 中按树形合并同一 CTA 的 FP32 部分和，再根据 `slice_count` 与两个 flag 选择：
+
+| 条件 | 跨 CTA 合并 | 不能忽略的数值步骤 |
+| --- | --- | --- |
+| 只有一个 slice | 直接写结果 | 最终转输出 dtype |
+| 多 slice，非 atomic，`use_fp32_reduce=false` | 锁按 `slice_idx` 串行接续，用 C 存中间结果 | 每段结果转输出 dtype，下一个 CTA 再转 FP32 加 |
+| 多 slice，非 atomic，`use_fp32_reduce=true` | 同样锁定次序，用 C_tmp 存 FP32 | 避免中间 FP16/BF16 存储舍入，仍有 FP32 加法顺序 |
+| 多 slice，`use_atomic_add=true` | 初始化输出和锁后，各 CTA 将结果转输出 dtype 再 atomicAdd | 加法的顺序与低精度中间结果不同 |
+
+源码函数名 `global_reduce_fp16` 对 BF16 模板同样通过 `scalar_t` 转换；不能因函数名断言只存 FP16。Python JIT 包装的 `use_fp32_reduce` 默认是 false，但上层 `marlin_utils.py` 的 `USE_FP32_REDUCE_DEFAULT=True`，因此不能只读低层签名判断常用路径。上层 atomic 选择器要求 CUDA、N<2048、K≥2048，并排除 SM90 前的 BF16；源码注释虽说默认关闭，实际环境开关分支写成 `if not True`，不能按注释解释为已经关闭。host 还要求 `ceil(M_split/64)*N<=2048` 才为该分块实际启用 atomic。
+
+对称 **W4 逐通道**还有一个容易漏掉的顺序：`write_result` 先将 FP32 部分和转输出 dtype，再用 half2/BF16 pair 乘列尺度；规则分组/动态组则在 MMA 前乘 B 的组尺度。前者即使采用 FP32 跨 CTA 临时缓冲，也不能自动避免最终“先转低精度、后缩放”的溢出。W8 逐通道源码另有先缩放 FP32 部分和的分支，不应把该分支套到 W4。
+
+例如 FP32 部分和 70,000 配 FP16 尺度约 0.001：先缩放再转 FP16 可得到约 70，先转 FP16 已成为无穷。这个反例只是说明算术顺序的范围差异，不表示已在某个真实模型上复现故障。
+
+[CPU 教学脚本](../assets/w8a8-quantization-gemm-kernels/check_contracts.py)与[结果](../assets/w8a8-quantization-gemm-kernels/checks-2026-09-22.json)检验 16×64 repack 的坐标覆盖和往返、u4→FP16 的位常量、两路置换恒等式、分段低精度存储与 FP32 合并反例。它不执行上游 JIT/CUDA，也不证明所有模板实例正确。
+
+## 11. 验证状态与待验证
+
+- 上游核对为 code-read：未编译、未运行 GPU、未测性能；新增 CPU 教学算例只检验布局和数值顺序，不构成上游输出验证。
 - 已核对 AWQ 新版 GEMV 的主要加载、解包、乘加和归约路径，以及 GEMM 主机配置、搬运/MMA 与部分合并代码；尚未逐行验证全部同步、边界和运行时错误处理。
-- SGLang 已读普通 AWQ JIT 反量化的主机与设备函数、Marlin 的参数准备和相关包装；Marlin 的完整设备主循环、`dequant.h` 与 `marlin_dtypes.cuh` 尚未系统研读。
+- SGLang 已读普通 AWQ JIT 反量化，以及现代 Marlin 对称 W4 GPTQ 的 repack、反量化、尺度选择、主流水和两层归约。未逐一展开 AWQ 零点、W8、FP4/FP8 全部模板，也未覆盖全部线程配置的同步与越界正确性。
 - 已定向读取 vLLM Triton AWQ 的反量化索引、GEMM K 循环和 split-K 包装；没有执行或证明它与 SGLang/CUDA 版本逐位等价。
 
 ## 来源身份

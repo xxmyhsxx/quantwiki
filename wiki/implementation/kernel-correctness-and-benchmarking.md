@@ -18,6 +18,13 @@ sources:
   - raw/repositories/2026-09-21/triton/source/python/triton/testing.py
   - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/kernel_cuda/kernel.cu
   - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/torch-ext/torch_binding.cpp
+  - raw/articles/2026-09-22/compute-sanitizer/article.md
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-bench.md
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-event.md
+  - raw/articles/2026-09-22/nsight-compute/pages/ncu-guide.md
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-profiler.md
+  - raw/articles/2026-09-22/nsight-systems/article.md
+  - raw/articles/2026-09-21/cutlass-profiler/article.md
 updated: 2026-09-22
 ---
 
@@ -112,9 +119,93 @@ Triton 向量加法教程明确指出：主机函数返回张量时，GPU 工作
 
 若单 kernel 快 2 倍，但只占原调用链耗时的 20%，其余部分不变且没有额外成本，则整体加速最多为 $1/(0.8+0.2/2)\approx1.11$ 倍。这是教学推导，不是本项目实测。瓶颈方向的理论判断见 [roofline](../fundamentals/hardware/arithmetic-intensity-and-roofline.md)，实际性能仍需测量。
 
-## 7. 本轮验证范围
+## 7. 标准工具分别验证什么
+
+| 工具 | 适合回答的问题 | 证据边界 |
+| --- | --- | --- |
+| 参考实现与断言 | 输出、误差、布局和副作用是否符合契约 | 一组输入通过不保证没有越界/竞争 |
+| Compute Sanitizer | 设备访问、未初始化读、shared-memory 竞争和同步误用 | 按子工具与架构支持解释，不是性能计时器 |
+| CUDA Events / Triton testing | 指定 stream/调用范围的重复设备计时 | 需同步、预热与定义缓存状态；不自动包含所有主机成本 |
+| `torch.utils.benchmark.Timer` | PyTorch 语句的可重复测量与结果比较 | 会预热、按需同步设备并控制线程数；同步墙钟与设备 event 口径不同 |
+| PyTorch Profiler / Nsight Systems | 框架操作、CUDA launches、拷贝、间隙和依赖 | 诊断采集有开销；聚合 kernel 时间不是多 stream 的关键路径耗时 |
+| Nsight Compute | 定向 kernel 的硬件资源、流量、指令与调度 | replay、缓存/时钟控制会改变执行条件，不能用 profile 下的整段墙钟当正常延迟 |
+
+工具用法依据来源身份中的官方文档快照。**测量和诊断分开运行**，得到疑似瓶颈后按 [性能分析流程](gpu-kernel-performance-analysis.md)设计对照；工具启动成功本身不是性能结论。
+
+GEMM 还可用 CUTLASS Profiler 作为已编译 CUTLASS 实例的测试/基准入口；存量官方文档快照说明它可运行 GEMM 等实例，并按构建选项决定实际生成哪些配置。它与 Nsight Compute 的硬件计数器分析职责不同，也不能直接代表任意自定义 W4 格式或框架完整 Linear。先核对数据类型、布局、累加与 epilogue 相同，再把库实现作为对照。
+
+### 设备正确性检查
+
+在 NVIDIA 主机上，以正常优化构建加 `-lineinfo` 提供源码行信息。先用小而有区分力的用例检查，再覆盖真正支持的 shape、dtype、stride 和候选配置。
+
+~~~bash
+compute-sanitizer --tool memcheck --error-exitcode 1 \
+  python3 wiki/assets/gpu-kernel-performance-analysis/benchmark_operator.py \
+  --factory performance_cases:rmsnorm --mode check \
+  --config '{"m":3,"k":784,"dtype":"float16"}'
+
+compute-sanitizer --tool racecheck --error-exitcode 1 \
+  python3 wiki/assets/gpu-kernel-performance-analysis/benchmark_operator.py \
+  --factory performance_cases:rmsnorm --mode check \
+  --config '{"m":3,"k":784,"dtype":"float16"}'
+~~~
+
+这两条调用的是安装的 PyTorch 示例；测试自己的 kernel 时必须替换 factory，并确认实际被调用的路径。没有自己 kernel 的执行，就没有对它的 Sanitizer 证据。
+
+`memcheck` 检查越界和错位访问；`racecheck` 主要检查 shared-memory 访问 hazard，不承诺发现所有 global-memory 数据竞争。`initcheck` 检查未初始化的 global-memory 访问；`synccheck` 检查受支持同步原语的非法用法。后两者可分别替换 `--tool` 执行。官方文档建议先消除 memcheck 错误，再分析其他工具结果。
+
+`--error-exitcode 1` 使工具发现错误时能让自动化检查失败，不能只看被测程序返回了 0。报告还需记录工具版本、是否发现 unsupported/跳过项、测试的实际 kernel 与形状；没有报错不等于对所有架构/并发行为的证明。带 instrumentation 的耗时不用于速度排名。
+
+## 8. 一份可复用的测量记录怎样取得
+
+[采集脚本](../assets/gpu-kernel-performance-analysis/benchmark_operator.py)把检查、独立 benchmark 和 profiler 诊断分成不同模式；[示例 factory](../assets/gpu-kernel-performance-analysis/performance_cases.py)包含 RMSNorm 与固定 API 契约的 SGLang W8A8。需要目标主机已有 PyTorch CUDA，W8A8 还需要匹配的 sglang/sgl-kernel；脚本不自动安装依赖。
+
+~~~bash
+mkdir -p /tmp/kernel-perf-example
+
+python3 wiki/assets/gpu-kernel-performance-analysis/benchmark_operator.py \
+  --factory performance_cases:rmsnorm --mode bench --timer event \
+  --config '{"m":16,"k":1024,"dtype":"float16"}' \
+  --warmup 10 --samples 30 --repeats 20 \
+  --output /tmp/kernel-perf-example/rmsnorm-event.json
+
+python3 wiki/assets/gpu-kernel-performance-analysis/benchmark_operator.py \
+  --factory performance_cases:sglang_w8a8 --mode bench --timer event \
+  --config '{"m":16,"n":1024,"k":1024,"dtype":"float16"}' \
+  --warmup 10 --samples 30 --repeats 20 \
+  --output /tmp/kernel-perf-example/w8a8-event.json
+~~~
+
+这里 `warmup`、`samples`、`repeats` 是脚本定义的**次数**，不同于上一节 Triton `do_bench` 的毫秒预算。数字只是可调整的示例，不保证已达到稳定状态。脚本先建立参考/检查、预热，再交错测量不同候选；event 在创建和初始化后复用，记录结束 event 完成后才取时间。每个样本是连续 repeats 次调用的平均值。
+
+event 测量保留开始与结束之间的 stream 空闲：极短 kernel 遇到主机提交不及时，结果仍可能受提交间隙影响。它不是把 profiler 中每条 kernel duration 相加。单独改为 `--timer wall`、另存结果，可以观察包含主机提交和设备完成等待的口径。依赖多个 stream 的 kernel 不在这个简化模板的默认契约内。
+
+模板重复使用相同分配，不显式冲刷 cache，记录为“复用工作集”，不声称必然完全热缓存。若目标是冷权重、轮换 KV 或 Graph replay，应建立对应测量模式并单独标注；不能给同一个数字同时贴“冷/热”或“普通/Graph”标签。不要在 ncu 下运行 bench 模式取正常延迟；诊断应使用 trace 模式，命令见分析页。
+
+有状态算子要通过 factory 的 `prepare` 恢复输入，并设置 `repeat_safe=False, --repeats 1`；prepare 在计时外仍会影响缓存。如果用户实际每次调用也必须清零/重排，则应把那项工作纳入完整算子成本，不能只因为 benchmark 可以提前做就省略。
+
+### 保存什么，怎样判断变化超过噪声
+
+| 类别 | 最少应保存的信息 |
+| --- | --- |
+| 工作负载 | shape、stride、dtype、布局、量化组大小/格式、bias/residual、输入分布与 seed |
+| 正确性 | 参考语义、容限、最大误差、实际候选路径；Sanitizer 工具/范围另记 |
+| 环境 | GPU 型号/能力、驱动、CUDA、PyTorch/Triton/框架版本、源码 commit、编译选项 |
+| 计时 | event/同步墙钟/Graph、首调/稳态、预热与重复次数、缓存/工作集、分配/转换是否包含 |
+| 结果 | 原始样本、median 与分布、运行次序、配置；多个独立进程复跑的差异 |
+| 诊断 | 原始 nsys/ncu 报告、选择的 kernel/NVTX 范围、sections、replay/cache/clock 设置 |
+
+脚本自动记录其中可取得的字段、脚本与 factory 哈希，但不自动证明空闲环境、频率稳定或与生产版本一致。时钟/功耗可读信息只是采样，不是锁频证明。
+
+采集器的 q25/q75 是**重复调用平均值**的分位数；不能用它报告服务请求 p95/p99。短 kernel 批量计时能降低部分噪声，也会隐藏单次延迟尖峰。不同候选交错次序、在独立进程中复跑，有助于发现热身、频率、allocator 和后台负载造成的偏差；不以最快一次或未定义的“提高 1%”宣称稳定胜出。
+
+SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段的孤立中位数不保证能相加为完整 Linear。W4A16/W8A8 的数据与操作量口径、真实归约成本见 [量化 GEMM 性能案例](gpu-kernel-performance-analysis.md)。
+
+## 9. 本轮验证范围
 
 已核对教程的地址、mask、FP32 累加、包装限制与 benchmark 工具实现；独立 CPU 教学计算覆盖地址映射、尾块覆盖、softmax/LayerNorm padding 反例、分块 GEMM 等价关系和 FP32 结合顺序差异。它们验证正文中的推理，不验证 CUDA/Triton 编译、原实现运行、GPU 数值或速度。
+
+新增采集模板在当前编辑主机上仅完成 CLI、语法与 CPU 逻辑核对；NVIDIA 工具命令及 CUDA 路径尚未执行。后续 RMSNorm 和 W8A8 实验将在具备 NVIDIA GPU 和 CUDA 环境的目标设备上开展，执行正确性、内存与竞争诊断、计时和性能分析；本次 CPU 检查记录只代表准备阶段的验证范围。
 
 这组基础用于理解并验证真实实现；可继续沿 [AWQ 实现链](awq-implementation.md) 和 [反量化 kernel](weight-only-dequant-kernels.md) 检查输入到内核的完整对应关系。
 
@@ -126,3 +217,8 @@ Triton 向量加法教程明确指出：主机函数返回张量时，GPU 工作
 | [Hugging Face kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc) | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
 | [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | batch-invariant RMSNorm 在有无 residual 时的路径选择。 |
 | [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 门控过滤的未写语义，以及残差 norm 的舍入和归约边界。未运行 GPU 实现。 |
+| [Compute Sanitizer](https://docs.nvidia.com/compute-sanitizer/ComputeSanitizer/index.html) | snapshot-2026-09-22 | 子工具范围、lineinfo 与错误退出码；未运行工具。 |
+| [PyTorch Benchmark](https://docs.pytorch.org/docs/2.14/benchmark_utils.html) 与 [CUDA Event](https://docs.pytorch.org/docs/2.14/generated/torch.cuda.Event.html) | URL 版本 2.14，snapshot-2026-09-22 | 预热、同步、重复样本及事件计时 API。 |
+| [Nsight Compute Profiling Guide](https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html) | snapshot-2026-09-22 | profiler 开销与独立计时边界。 |
+| [CUTLASS Profiler](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/profiler.html) | 存量 snapshot-2026-07-02 | 实例库的测试/基准入口与编译范围；未运行。 |
+| [PyTorch Profiler](https://docs.pytorch.org/docs/2.14/profiler.html) 与 [Nsight Systems](https://docs.nvidia.com/nsight-systems/UserGuide/) | snapshot-2026-09-22；PyTorch URL 版本 2.14 | 算子关联与 CUDA 时间线的工具分工。 |

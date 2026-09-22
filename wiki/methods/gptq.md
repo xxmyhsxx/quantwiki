@@ -29,7 +29,7 @@ GPTQ 对训练好的模型做逐层权重量化。每固定一列的量化值，
 
 本页依据 GPTQ v2（2023-03-22，ICLR 2023，以下简称 P），完整阅读 16 页、附录 A.1–A.4、4 图、22 表和算法 1。官方代码快照 `2d65066eeb06a5c9ff5184d8cebdf33662c67faf`（以下简称 C）仅定向静态阅读。所有模型质量、耗时与速度数字均为作者报告。
 
-**实现层深入入口：** 量化器参数、权重位打包布局，以及 vLLM／SGLang 的加载与 repack 路径见 [GPTQ 的实现核对](../implementation/gptq-implementation.md)。
+**实现层深入入口：** Llama 校准与原始 3-bit 保存限制、服务 checkpoint 协议、vLLM 后端选择及 SGLang 的 repack/fallback 路径见 [GPTQ 的实现核对](../implementation/gptq-implementation.md)。
 
 前置阅读：[线性层与输入通道](../fundamentals/operators/linear-layer-input-channel.md)、[均匀量化与分组](../fundamentals/quantization/uniform-quantization-and-groups.md)。[层输出重构与二阶误差补偿](../theory/layer-reconstruction-second-order-compensation.md)提供完整的约束优化推导与教学例子。
 

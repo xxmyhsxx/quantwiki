@@ -115,6 +115,8 @@ triton.Config(
 
 本轮核对了上述源码，完成资源、尾块与 persistent 分工的 CPU 教学计算；未运行 Triton GPU 编译、autotune 搜索或实际性能测量。
 
+如何从 Nsight 时间线和计数器判断应改变 tile、warp 数还是 stages，以及怎样检验等待减少是否真的缩短延迟，见 [GPU 算子性能分析](gpu-kernel-performance-analysis.md)。
+
 ## 来源身份
 
 | 来源 | 固定版本或快照 | 使用范围 |

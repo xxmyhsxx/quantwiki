@@ -123,6 +123,8 @@ SGLang `fused_dual_residual_rmsnorm_kernel` 进一步计算 $z=r+\mathrm{RMSNorm
 
 本页已用 CPU 教学模型核对覆盖、归约中性值与舍入反例；没有编译 CUDA/Triton、运行模型、执行 GPU race 检查或测性能。PDL、全部 norm 后端、所有 batch-invariant 保证和分布式融合不在本页展开范围。
 
+将这里的行归约、二次加载和寄存器保留机制转成可执行的测量问题，见 [RMSNorm 性能分析案例](gpu-kernel-performance-analysis.md)。该案例提供采集方法和教学基线，尚无 GPU 实测结果。
+
 ## 来源身份
 
 | 来源 | 固定版本 | 核对范围 |

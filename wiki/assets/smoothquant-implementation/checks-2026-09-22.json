@@ -1,0 +1,14 @@
+{
+  "evidence": "NumPy float64 teaching; no CUDA rounding equivalence asserted",
+  "seed": 20260922,
+  "checks_passed": 4,
+  "checks": [
+    "shared-consumer smoothing and LayerNorm bias",
+    "INT8 output-grid epilogue",
+    "per-token/per-channel outer scales",
+    "static clipping versus dynamic range"
+  ],
+  "smoothing_max_abs_error": 4.440892098500626e-15,
+  "omitted_bias_max_abs_error": 1.4958747712327742,
+  "epilogue_max_abs_error": 1.1368683772161603e-13
+}

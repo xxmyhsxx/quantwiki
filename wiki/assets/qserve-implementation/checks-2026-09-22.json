@@ -1,0 +1,22 @@
+{
+  "evidence": "NumPy CPU packing/algebra, no converter/model/GPU execution",
+  "seed": 20260922,
+  "checks_passed": 5,
+  "checks": [
+    "tile packing against coordinate oracle and roundtrip",
+    "metadata channel permutation",
+    "byte multiply no-carry and overflow counterexamples",
+    "negative scaled-zero addition",
+    "original-input-sum correction error identity"
+  ],
+  "logical_shape": [
+    64,
+    256
+  ],
+  "packed_shape": [
+    64,
+    128
+  ],
+  "input_sum_approximation_max_abs_error": 0.015307086614173094,
+  "error_identity_residual": 8.153200337090993e-17
+}

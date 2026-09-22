@@ -20,6 +20,8 @@ updated: 2026-09-22
 
 本页依据 QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（arXiv:2405.04532，下称论文，全文含 artifact 附录研读），并定向核对官方实现固定快照 02b2925a 的 W4A8 线性层与内核目录。论文中的所有速度与精度数字均为作者在特定硬件与版本下的测量，本轮没有运行任何实验。
 
+**实现层深入入口：** [QServe/QoQ 的实现核对](../implementation/qserve-implementation.md) 连接 converter、打包布局、SGLang 加载与 W4A8 内核，并核对两种零点符号及输入求和近似。SGLang 的 QoQ 线性层支持不能直接当作完整 W4A8KV4 系统支持。
+
 ## 1. 研究对象与精度选择问题
 
 论文 §1 把既有整数量化分为三类：W8A8、W4A16、W4A4。前两类被视为几乎无损，W4A4 精度损失明显，但预期能通过 4 bit 张量核心获得更高吞吐。作者指出这一预期在当时的 GPU 上没有兑现：当时最好的 W4A4 服务系统 Atom 在 A100 上跑 Llama-2-7B 时，性能反而比 TensorRT-LLM 的 W4A16／W8A8 低 20%–25%。
@@ -149,7 +151,7 @@ $$ \mathbf O=(\mathbf Q_{\mathbf X}\mathbf Q_{\mathbf W})\odot(\mathbf s_{\mathb
 ## 10. 局限与未验证
 
 - 未运行 QServe 或任何基线系统；本页速度、精度与显存数字全部来自论文报告。
-- 代码核对包括 W4A8 线性层的范围检查、打包入口与内核目录划分，`kernels/csrc/qgemm` 下的 CUDA 与 PTX 实现未逐行审查。
+- 本方法页的原始代码核对限于 W4A8 线性层。进一步的 converter、SGLang QoQ 解码/PTX 与分派核对见[实现页](../implementation/qserve-implementation.md)；OmniServe 自身全部 CUDA 内核、KV4 与系统调度仍未完整审查。
 - 论文的 4 bit 基线对照使用普通按组量化，且部分模型因不支持而被跳过，因此优于 Atom 或 QuaRot 的范围受限。
 - artifact 附录给出的复现要求（A100 或 L40S、Docker、约 512 GB 磁盘）说明该验证门槛较高；本轮未搭建该环境或执行复现。
 

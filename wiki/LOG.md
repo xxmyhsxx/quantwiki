@@ -2,6 +2,37 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-09-22 · 算子测试工具、性能分析与采集示例
+
+- 深化既有正确性与性能测量页：补充 Compute Sanitizer 四类检查、CUDA Events/PyTorch Timer 的计时边界、CUTLASS Profiler 的职责、采样统计、有状态恢复与结果记录。新增 GPU 算子性能分析页，连接时间线、硬件 sections、Roofline、瓶颈假设与对照实验。
+- 用 RMSNorm 和量化 GEMM 组织案例：区别输入二次读取/寄存器保留、工作量与驻留、激活量化/GEMM/完整 Linear，以及 W4 元数据与跨 CTA 归约成本。案例是待在 GPU 执行的实验设计，没有填入虚构性能数据。
+- 提供教学采集器和两个 factory：RMSNorm 的 eager FP32/PyTorch 路径、SGLang W8A8 的 quant/gemm/linear；独立 check、bench、trace、torch-profiler 模式，保留样本、环境、测量范围与脚本哈希，拒绝无 CUDA 伪测量和已有输出覆盖。
+- 新收录 4 份官方文档条目，共 8 个网页正文快照：Nsight Compute、Nsight Systems、Compute Sanitizer、PyTorch 性能工具；保留获取时间、URL 和文本哈希。复用既有 CUTLASS Profiler 与固定版本框架代码，不改写上游源码。
+- 内容复核覆盖两份核心页面全文、采集脚本与两份 factory、相关入口增量。重点核对 NVTX push/pop 过滤、计数器与计时的区别、profile 重放/缓存条件、stateful 语义、整数参考与误差容限；修正 CPU 舍入参考在半整数邻近位置的 FP32 加法问题。
+- 验证：9 项 CPU 检查通过，包含 CLI/语法、状态约束、无 CUDA 退出/结果保留、统计与教学预算；6 个受影响知识页的 144 个数学表达式通过 KaTeX；全库结构检查通过：87 个知识页、653 条来源（632 本地、21 固定 commit 外链）、1,157 条本地链接，无错误、警告或跳过。内容判断与机械检查分别完成。
+- 范围：本次编辑与 CPU 检查在 Darwin arm64 主机完成；没有运行上游 GPU kernel、两个 CUDA factory、Sanitizer 或 Nsight。已确认后续实验将在具备 NVIDIA GPU 和 CUDA 环境的目标设备上执行；当前编辑主机的硬件条件不限制后续实验环境，CPU 检查不能替代 GPU 正确性与性能实测。同步 INDEX、RMSNorm、W8A8、配置调优和 Roofline 入口。
+
+
+## 2026-09-22 · W8A8、QoQ 与 GPTQ/Marlin 算子深化及 review
+
+- 新增 W8A8 算子页，连接 SGLang/vLLM 激活量化、整数主循环、尺度/bias visitor 与激活零点校正；补充两框架半整数舍入、全零行尺度和 FP32 输出运算次序的差异。
+- 在 QServe/QoQ 既有实现页展开 g128 的线程分工、shared swizzle、寄存器解包、多级流水、CTA 内 INT32 合并和 half2 写回；明确列尾块与短 K 预取条件，不能把 M 方向 guard 或组大小检查当成全部边界验证。
+- 在权重反量化页展开现代 SGLang Marlin 的对称 W4 GPTQ：16×64 repack、U4B8 常量、输入置换、组尺度缓存、设备主流水及跨 CTA 归约。核对低层/上层 FP32 reduce 默认值差异和 atomic 选择器的实际分支，保留输出 dtype 临时存储与先转换后缩放的数值边界。
+- 同步 GPTQ、SmoothQuant 实现入口与 INDEX。SGLang CUTLASS 依赖按 CMake 指定 commit 定向取得并阅读三份模板文件，以固定 commit 外链登记，没有替换已有不同版本的 raw 仓库；补充 CUDA 12.9.1 libdevice roundf 的小范围原文摘录。
+- 内容 review 覆盖新增 W8A8 页全文、QoQ/Marlin 本批新增节及两份入口页增量，按量化→搬运→计算→归约→写回回查具体源函数，区分 CUDA predicate 跳过与 CUTLASS 补零、CTA 内 K 分片与跨 CTA 合并、模板参数与真正启用条件。
+- 验证：9 项 NumPy CPU 教学检查通过，脚本与结果保存于 W8A8 页 assets；5 个受影响实现页的 212 个数学表达式通过 KaTeX；全库结构检查通过：86 个知识页、635 条来源（614 本地、21 固定 commit 外链）、1,135 条本地链接，无错误、警告或跳过。没有重跑未改变的上一批教学脚本。
+- 边界：未编译或运行上游 GPU 内核、未复现模型加载/精度/性能；CUTLASS 的 SM80 threadblock 主流水已追踪，SM90 TMA/WGMMA、全部 lane iterator、vLLM 各架构主循环及所有 Marlin 数据类型仍不能视为完整核验。上述数值反例是教学参考，不是已复现的模型故障。
+
+
+## 2026-09-22 · GPTQ、SmoothQuant/W8A8、QServe/QoQ 实现深化与 review
+
+- 按“优先 vLLM/SGLang 有明确消费路径、且已有代码库”的范围，深化 GPTQ、SmoothQuant 两个既有实现页，新增 QServe/QoQ 实现页。全部使用现有固定 commit；更新三个方法页入口、部署映射与 INDEX，不改原始材料。
+- GPTQ 补齐 Llama 校准顺序、Hessian 归约、原始 3-bit 保存限制、CUDA GEMV、服务格式、TP 尺度和 SGLang fallback；修正 vLLM 配置别名不等于固定内核、act-order 与推理组排序的关系。SmoothQuant 区分两次校准、浮点 fake quant、真实 OPT INT8 图及服务格式，深入 SGLang Triton/CUTLASS 与 vLLM compressed-tensors 包装。
+- QServe/QoQ 连接上游 fake-quant 输入、converter、tile/nibble 与元数据重排、SGLang 加载、两种零点符号、字节恢复及 INT8 MMA；核对原始输入和校正的近似，保留保护范围未被 converter 强制、TP/尾块未验证、Linear 支持不等于整套 KV4 系统等边界。
+- 内容 review 覆盖三个实现页全文、部署页和三个方法页的本批增量，按量化/导出/加载/执行顺序回看具体函数、形状、符号与分派条件。修正 SGLang Marlin 自动提升的用户选项条件，避免把配置声明、实际内核支持和模型运行混成同一证据。
+- 验证：13 项 NumPy CPU 教学检查通过，三个脚本及固定日期 JSON 结果保存在各实现页 assets；132 个数学表达式通过 KaTeX；全库结构检查通过，85 个知识页、618 条来源（600 条本地、18 条固定 commit 外链）、1,117 条本地链接，无错误/警告/跳过。git diff 空白检查通过；机械检查不代替内容 review。
+- 边界：没有执行上游量化器、模型导出/加载、GPU 编译或性能基准。教学检查只验证所列布局与代数条件；本批不是全部方法实现闭环，也不宣称跨框架 checkpoint 已可直接互换。
+
 ## 2026-09-22 · OSTQuant 可学习正交与缩放 ingest 和 review
 
 - 核对现有 SpinQuant、正交旋转和尺度机制覆盖，选择既有 raw 的 OSTQuant v1（2501.13987）作为可学习变换路线的下一篇。新增方法页，解释各图位置的学习变量、正交与尺度相消、WOMI 初始化、整网教师目标、KL-Top 与实际执行条件。
