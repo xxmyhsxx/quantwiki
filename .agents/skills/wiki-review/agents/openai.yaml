@@ -1,0 +1,12 @@
+interface:
+  display_name: "wiki review"
+  short_description: "审核 Wiki 的事实、引用、深度与知识缺口，给出有依据的修改建议"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+policy:
+  products:
+    - "chatgpt"
+    - "codex"
+    - "api"
+    - "atlas"
+  allow_implicit_invocation: true
