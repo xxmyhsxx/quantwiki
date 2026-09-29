@@ -17,12 +17,21 @@
 | 任务 | Skill | 适用边界 |
 | --- | --- | --- |
 | 明确查询项目 Wiki，定位知识、关系或覆盖情况 | [wiki-query](.agents/skills/wiki-query/SKILL.md) | 交付定位结果；普通解释性问答不自动触发 |
+| 结合 Wiki 研究真实问题、解释现象、比较路线或设计与验证方法 | [wiki-research](.agents/skills/wiki-research/SKILL.md) | 判断知识是否够用，执行求解与证据迭代，按授权反馈可复用认识 |
 | 研读论文并整合到 Wiki，或结合论文核查和补充知识 | [wiki-ingest](.agents/skills/wiki-ingest/SKILL.md) | 读取来源、核对已有覆盖、增量写入并复核 |
 | 审查全库、主题、页面或一次 ingest 的质量 | [wiki-review](.agents/skills/wiki-review/SKILL.md) | 检查解释深度、证据边界与知识关联；写后例行自检不自动启动正式审查 |
+| 精简 Wiki、去除重复内容、合并碎片页面或整理重叠解释 | [wiki-prune](.agents/skills/wiki-prune/SKILL.md) | 按解释作用剪枝，保留独特知识与证据，复核承接位置和阅读路径 |
 | 实现或优化 CUDA/Triton Kernel | [wiki-kernel-writing](.agents/skills/wiki-kernel-writing/SKILL.md) | 建立基线，验证正确性并测量性能；遵循其工作流程，不额外强制查询 Wiki |
 | 创建、修改 Skill，或整理可复用工作方法 | [skill-creator](.agents/skills/skill-creator/SKILL.md) | 使用本项目的设计与实现流程，沿用对应阶段的有效授权 |
 
 普通研究、解释和工程工作可以直接开展，不必强行归入某个 Skill。任务确实跨越多个职责时再组合使用，不因关键词或相邻用途启动额外流程。发现知识缺口不自动授予 ingest、重构或修改 Skill 的权限。
+
+## 云端环境
+
+- 服务器：A00，`xiao@10.196.85.11`，已确认配有两张 NVIDIA A100 80GB，用于需要 GPU 的实验、验证与开发。
+- Codex 版本：由 0.123.0 升级至 0.155.1（本次查询到的官方最新稳定版）。
+- Codex 安装位置：`/home/xiao/bin/codex`。
+- 云端工作目录：`/data/xiao/quant-lab`。
 
 ## 分析与查证
 

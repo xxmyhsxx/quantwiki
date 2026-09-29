@@ -22,7 +22,7 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-28
 ---
 
 # 校准数据与量化范围选择
@@ -114,6 +114,8 @@ OmniQuant v3 表 A10–A11 比较几个文本校准集与样本数量，说明�
 J §3.1 在训练时对激活范围使用指数移动平均，并在部分配置中延迟启用激活模拟量化；这是处理训练初期分布变化的策略，不能据此给所有 PTQ 任务规定相同样本数或预热步数。训练范式见 [PTQ、QAT 与代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)。
 
 完成范围选择后，应在未用于选择的数据上查看层误差与任务质量，并核对实际执行的网格是否一致。[量化误差诊断与验证](../implementation/quantization-error-diagnosis.md)说明如何分离图变换、量化和后端实现的问题。本页没有模型实验，不提供校准规模充分性的实证保证。
+
+配置选择还会让同一批数据承担候选排序职责。[Quantization Price](../methods/quantization-price-prediction.md) 用参考模型统计给局部候选评分，节省组装完整模型的搜索成本，但实际梯度来源、MSE 归约以及校准/测试划分都决定代理含义；选择成本与最终量化、评测成本应分别报告。
 
 ## 6. 图文校准增加的是数据与目标条件
 

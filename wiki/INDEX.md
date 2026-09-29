@@ -24,10 +24,22 @@ sources: []
 - **深入矩阵乘与多卡执行**：[Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) → [W8A8 量化、GEMM 与校正](implementation/w8a8-quantization-gemm-kernels.md) → [配置与自动调优](implementation/kernel-configuration-and-autotuning.md) → [张量并行与量化](implementation/tensor-parallel-quantization.md)。
 - **优化算子配置与流水**：[GPU 算子的计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md) → [Kernel 配置选择与自动调优](implementation/kernel-configuration-and-autotuning.md) → [异步拷贝与多级流水](implementation/gpu-async-copy-pipelines.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **建立算子测试与性能分析流程**：[正确性、Sanitizer 与计时](implementation/kernel-correctness-and-benchmarking.md) → [时间线、硬件指标与瓶颈定位](implementation/gpu-kernel-performance-analysis.md) → [配置选择与对照实验](implementation/kernel-configuration-and-autotuning.md)。
-- **理解 KV cache 与服务**：[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) → [KIVI](methods/kivi.md) → [SAW-INT4](methods/saw-int4.md) → [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)。
+- **贯通量化的公共知识**：[二阶统计与加权距离](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7-二阶统计如何定义误差距离) → [Attention 误差传播](theory/attention-quantization-error-propagation.md) → [码本与率失真](theory/codebook-quantization-and-bit-budget.md#10-从失真目标推导标量量化器) → [缓存格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式) → [模拟到实际执行](implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
+- **理解 KV cache 与服务**：[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) → [KIVI](methods/kivi.md) → [KVQuant](methods/kvquant.md) / [QJL](methods/qjl.md) → [SAW-INT4](methods/saw-int4.md) → [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)。
 - **理解推理框架与算子设计**：[内存管理与批处理](implementation/serving-memory-and-batching.md) → [vLLM 的 token 调度与变长批次](implementation/vllm-inference-execution.md) → [vLLM Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) → [AWQ 实现](implementation/awq-implementation.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **理解 SGLang 的缓存与算子**：[Radix 缓存、批次与重叠执行](implementation/sglang-inference-execution.md) → [KV 索引、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) → [AWQ 的 SGLang 路径](implementation/awq-implementation.md#6-跨引擎sglang)。
 - **判断误差与运行收益**：[量化误差诊断与验证](implementation/quantization-error-diagnosis.md) → [模型质量评测](implementation/model-quality-evaluation.md) → [量化与可靠性](theory/quantization-reliability-and-selective-prediction.md) → [服务性能评测](implementation/serving-performance-evaluation.md)。
+- **理解误差方向与配置选择**：[激活引导补偿](methods/activation-guided-compensation.md) → [曲率加权误差](theory/curvature-weighted-quantization-error.md) / [RGSQ](methods/rgsq.md) → [HAWQ-V2](methods/hawq-v2.md) → [CASA](methods/casa.md) → [Quantization Price](methods/quantization-price-prediction.md)。
+- **连接编码与阶段执行**：[码本量化](theory/codebook-quantization-and-bit-budget.md) → [QTIP](methods/qtip.md) → [SPHQuant](methods/sphquant.md) → [Disaggregated Quantization](methods/disaggregated-quantization.md)。
+
+- **诊断平均分之外的损害**：[排序稳定性与间隔](theory/quantization-ranking-stability.md) → [多模态对齐诊断](theory/multimodal-alignment-diagnostics.md) → [模型质量评测](implementation/model-quality-evaluation.md)。
+- **连接低比特方案与真实执行**：[PRQuant 的残差拼接](methods/prquant.md) → [RAMP 的 CPU 图成本](methods/ramp.md) → [FoldQuantVLA 的共享输入与整数投影](methods/foldquantvla.md)。
+
+- **理解视觉 token 删除**：[视觉 token 基础](fundamentals/model/vision-language-model-tokens-and-quantization.md) → [CoRePrune 的条件可删除性](methods/coreprune.md) → [LayerPos 的位置策略](methods/layerpos.md) → [QAPruner 的量化感知选择](methods/qapruner.md)。
+- **核验校准图谱迁移**：[排序稳定性](theory/quantization-ranking-stability.md) → [BOS-Sink 图谱](theory/attention-sink-map-transfer.md)。
+- **评估跨架构低比特部署**：[混合精度分配](theory/mixed-precision-allocation.md) → [TTS 敏感性与质量判据](implementation/tts-quantization-evaluation.md) → [缩放与真实执行](implementation/quantized-matmul-scaling-execution.md)。
+
+- **比较低比特 KV 的目标与布局**：[QJL](methods/qjl.md) → [TurboQuant](methods/turboquant.md) → [NOVA-KV](methods/nova-kv.md) → [Kitty](methods/kitty.md)；多模态保护见 [AKVQ-VL](methods/akvq-vl.md)。
 
 ## 全部知识页
 
@@ -53,9 +65,14 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [Attention sink 选头图谱](theory/attention-sink-map-transfer.md) | 全局相关、集合边界、域迁移及重校准的证据范围。 |
+| [量化后的排序稳定性](theory/quantization-ranking-stability.md) | 分数间隔、原有正确结果损失、校准保证与检索精度分配。 |
+| [多模态对齐诊断](theory/multimodal-alignment-diagnostics.md) | 共享投影、主角度谱、视觉干预与几何代理的边界。 |
+| [曲率加权量化误差](theory/curvature-weighted-quantization-error.md) | Fisher 与经验代理的区别、双侧度量、阻尼及量化集合的坐标变换。 |
 | [码本量化：标量、向量、加性表示与位宽预算](theory/codebook-quantization-and-bit-budget.md) | 码字集合、激活感知距离、残差编码和真实存储开销怎样联系。 |
 | [积分梯度与量化敏感性：基线、路径和归因边界](theory/integrated-gradients-and-quantization-sensitivity.md) | 积分梯度（Integrated Gradients，IG）把一个标量输出相对参考输入的变化分配给输入坐标。 |
 | [量化与可靠性：选择性预测评测](theory/quantization-reliability-and-selective-prediction.md) | 多模态模型常常「很有把握地答错」。 |
+| [Attention 量化误差传播](theory/attention-quantization-error-propagation.md) | 从查询加权误差、softmax 和 Value 交互，理解局部重构为何不能直接代表生成质量。 |
 | [KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) | 权重可以离线反复优化，激活随输入即时产生，KV cache 与两者都不同：它随输入在推理中追加，数值在线产生；策略可以离线校准，历史保留、重算与回收受服务成本约束。 |
 | [对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) | 对角缩放通过改变中间特征与权重的数值范围，给量化器提供更合适的输入。 |
 | [层输出重构与二阶误差补偿](theory/layer-reconstruction-second-order-compensation.md) | 量化改变权重，但我们关心的是这种改变怎样影响计算结果。 |
@@ -67,6 +84,26 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [QAPruner：量化与 token 选择](methods/qapruner.md) | 误差/范围代理、语义融合、删除重要性与局部 scale 边界。 |
+| [TurboQuant：旋转码本与残差修正](methods/turboquant.md) | 球面边缘、MSE 与无偏内积、有限维下界及位宽核对。 |
+| [NOVA-KV：查询加权变换与分组 VQ](methods/nova-kv.md) | 精确加权距离、等体积分组、校准与编码/读取成本。 |
+| [AKVQ-VL：多模态 token 精度保护](methods/akvq-vl.md) | TSA/PSA、pivot 代理、Hadamard 与实际混合位宽。 |
+| [Kitty：动态通道提精度与缓存页](methods/kitty.md) | 幅值选通道、双 2-bit 位面、模拟/内核差异与真实字节。 |
+| [CoRePrune：条件可删除性](methods/coreprune.md) | 删除失真、集合方向交互、深度刷新与两阶段视觉剪枝。 |
+| [LayerPos：逐层位置策略](methods/layerpos.md) | 稀疏/连续编号、定位校准和 prefill/decode 的坐标一致性。 |
+| [PRQuant：置换与低比特残差拼接](methods/prquant.md) | 门控 FFN 的等价重排、尺度位置、残差与实际扩宽成本。 |
+| [RAMP：CPU 混合精度与图成本](methods/ramp.md) | 单层 logits 敏感度、质心阈值和融合损失怎样影响选择。 |
+| [FoldQuantVLA：共享输入折叠与整数投影](methods/foldquantvla.md) | 变换顺序、动态范围、代码执行路径与动作/闭环证据。 |
+| [KVQuant：pre-RoPE 与敏感度码本](methods/kvquant.md) | 静态通道尺度、非均匀码本、稀疏离群值和真实缓存位宽。 |
+| [QJL：二值投影与分数估计](methods/qjl.md) | 非对称无偏估计、概率保证边界、范数开销与单层测速。 |
+| [激活引导补偿与正交残差](methods/activation-guided-compensation.md) | 权重补偿的可达空间、随机符号残差界与 L2 缩放的代理推导。 |
+| [RGSQ：模态曲率与稀疏旋转](methods/rgsq.md) | 双侧误差、模态融合及白化量化的成立边界与代码差异。 |
+| [HAWQ-V2：trace 与混合精度](methods/hawq-v2.md) | 如何估计平均曲率、压缩配置搜索并结合 QAT；方向假设与 Pareto 边界。 |
+| [CASA：方向敏感分配与跨层交换](methods/casa.md) | 标量失真界、对角因子 MCKP、跨层上界提案及校准接受的保证边界。 |
+| [Quantization Price：部署前配置定价](methods/quantization-price-prediction.md) | forward KL 的局部价格、trace 简化条件、配置预算与实验实现差别。 |
+| [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
+| [SPHQuant：球面方向与半径编码](methods/sphquant.md) | 半径投影、角度训练、实际2.25位布局与吞吐/内存取舍。 |
+| [Disaggregated Quantization：分阶段格式与权重](methods/disaggregated-quantization.md) | QADD、两阶段状态衔接、ODP借用恢复及真实计时边界。 |
 | [LLM-QAT：生成数据蒸馏与联合量化](methods/llm-qat.md) | 前缀覆盖、软标签与 W/A/KV 量化怎样共同进入训练。 |
 | [QERA：激活二阶矩加权的低秩量化误差修正](methods/qera.md) | 固定量化主体下的最佳低秩修正、对角近似条件与初始化／推理成本。 |
 | [LoftQ：量化主体与低秩适配器的交替初始化](methods/loftq.md) | 先减去旧补偿再量化、重算残差 SVD，最后冻结主体做任务适配。 |
@@ -115,6 +152,7 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [TTS 量化敏感性与评测](implementation/tts-quantization-evaluation.md) | 组件消融、统计等价、模拟与真实低比特图及系统成本。 |
 | [模型质量评测](implementation/model-quality-evaluation.md) | PPL 的有效计数、任务协议与风险—覆盖率怎样定义和比较。 |
 | [推理服务评测](implementation/serving-performance-evaluation.md) | 负载、TTFT、TPOT、吞吐与 SLO 下的 goodput 如何共同解释量化收益。 |
 | [张量并行与量化](implementation/tensor-parallel-quantization.md) | 列/行分片、GQA 复制、collective 与 group/scale/zero 如何配合。 |

@@ -9,10 +9,11 @@ tags:
   - performance
 sources:
   - raw/papers/2026-09-21/qserve/source.eprint
+  - raw/papers/2026-09-23/disaggregated-quantization/paper.pdf
   - raw/papers/2026-09-21/saw-int4/source.eprint
   - raw/papers/2026-09-21/pagedattention/source.eprint
   - raw/papers/2026-09-21/pagedattention/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-28
 ---
 
 # 推理服务的内存管理与批处理
@@ -79,6 +80,12 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 **量化元数据必须与分页访问保持一致。** [QServe](../methods/qserve.md) v3 §5.1 将逐 head 动态尺度与零点随页保存；这是一种布局选择，不构成“只能随页保存或放弃动态估计”的二选一。其他设计也需定义元数据索引和更新规则，并计入访问成本。对于按固定块回收的池，token 淘汰若没有腾空块或执行压缩搬移，就不会释放整个物理块；算法压缩与实际内存回收需分别测量。
 
+### 分阶段权重也有生命周期
+
+[Disaggregated Quantization](../methods/disaggregated-quantization.md) 为prefill和decode训练独立权重，prompt状态由前者产生、生成由后者消费。ODP借用prefill暂不用的decode权重空间，用双缓冲从SSD逐块装入prefill权重，结束前恢复被覆盖内容。其零额外设备**权重**驻留不包含新增SSD副本、host缓冲、KV和工作区；短提示可能无法隐藏装入时间。
+
+与同权重模型的缓存重算还存在语义区别：已经缓存的assistant状态由decode权重产生，若把相同token历史重跑prefill，会换成另一套权重生成的状态。形状兼容不足以证明数值/任务等价，原论文尚未验证多轮cache策略。不能直接继承分页系统的重算假设。（DQ §2.5、§5；其训练、原型实现与计时限制见方法页。）
+
 ## 7. 证据与口径
 
 论文的端到端结果：在相同延迟水平下，vLLM 相对 FasterTransformer 与 Orca 提升吞吐 **2–4×**（摘要与结论口径）；在 ShareGPT 合成负载上可支撑的请求速率相对 Orca（Oracle，假设已知输出长度）为 1.7–2.7×、相对 Orca（Max，按最大长度预留）为 2.7–8×、相对 FasterTransformer 最高 22×；OPT-13B 同时处理的请求数比 Orca(Oracle) 多 2.2×、比 Orca(Max) 多 4.3×；聊天场景相对三个 Orca 基线约 2× 请求速率。
@@ -102,3 +109,4 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 | [Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180v1) | `arXiv:2309.06180v1` | — |
 | [QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving](https://arxiv.org/abs/2405.04532v3) | `arXiv:2405.04532v3` | 分页量化元数据布局 |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
+| [Disaggregated Quantization](https://arxiv.org/abs/2609.26333v1) | `arXiv:2609.26333v1` | §2.5与§5，阶段权重驻留与多轮cache边界 |

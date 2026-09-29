@@ -7,12 +7,16 @@ tags:
   - memory
   - deployment
 sources:
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
+  - raw/papers/2026-09-28/foldquantvla/paper.pdf
+  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf
+  - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
   - raw/papers/2026-09-22/loftq/paper.pdf
   - raw/papers/2026-09-21/spqr/source.eprint
   - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/billm/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 混合精度分配：选择变量、预算与部署口径
@@ -63,6 +67,10 @@ LUQ §3.2–3.3 以层输出的 K-means 簇频率熵升序构造 $\pi$。它用�
 
 不能把二者都写成“满足内存上限后继续取最大 $k$”，那会偏向全低精度。LUQ 的 LLaVA 和 Qwen 配置分别用质量门槛与容量场景选择，不是同一个多任务优化准则。
 
+另一类有序分配见 [HAWQ-V2](../methods/hawq-v2.md)，它使用多档有序分组：按平均 Hessian trace 排序，只允许敏感度高的层位宽不低，再以“平均曲率乘候选量化扰动能量”的总和选择存储—误差 Pareto 前沿。固定排序缩小搜索空间但仍可能排除更优配置；trace 估计准确不能补回它丢失的误差方向。其最终结果还包含 QAT，不能直接当作无需训练的 PTQ 结果。
+
+同样的预算求解器不保证同样的分配质量：[CASA](../methods/casa.md) 用候选误差的方向加权代价替代标量敏感度，实际以对角因子建立 MCKP，再用跨层上界筛选交换、校准损失决定接受。连续高码率模型的闭式位宽公式与实际离散配置搜索是两个层次，不能以连续最优性证明局部搜索全局最优。
+
 ## 4. 二分搜索需要可检验的单调性
 
 LUQ §3.3 提到二分以减少候选评价。对于名义存储，降低某层位宽通常给出明确的单调减少；对于任务分数，并无普遍的单调下降保证。量化误差抵消、生成答案变化和有限评测样本都可能造成非单调。
@@ -79,6 +87,16 @@ LUQ 附录 D 将 BiLLM/GPTQ 所选的层配置映射到 IQ1_M/Q4_K_M 来测试 C
 
 不同部署框架对格式、粒度与 KV 位宽的支持并不一致，选定配置前需要核对目标后端的支持面与实际内核路径，见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)；块结构层面的位宽口径与元数据组织见 [GGUF 块量化存储格式](../implementation/gguf-block-quantization-formats.md)。
 
+## 6. 任务敏感度与图执行成本要分别连接
+
+[检索间隔分配](quantization-ranking-stability.md) 用固定浮点 top-1/top-2 文档对的分数差变化，衡量单层 W3 对决策边界的影响，再按每参数收益提升到 W4。它与局部 MSE 或分类 logits 散度优化的对象不同；对较小层除以参数量只是预算启发式，不能证明跨层最优。
+
+[RAMP](../methods/ramp.md) 在 CPU 图像分类上，用逐层 FP32→INT8 干预后的最终 logits 分布 JSD 聚类。原算法按敏感度不超过选中簇的质心量化，不等于把整簇全部量化；聚类质量也不是任务质量保证。它还展示 Q/DQ 边界和失去算子融合的图切分成本，故真实延迟通常不是独立层耗时的简单和，需要对候选完整执行图测量。
+
+[FoldQuantVLA](../methods/foldquantvla.md) 的输出投影升到 INT8 又提供另一类选择：按共享输入站点及残差路径制定精度预设。部分 checkpoint 同时换了校准预设，必须先看匹配预设的对照，才能把变化归因于位宽。由此，选择配置至少需分清敏感度计算对象、选择单元、完整预算、图执行和受控质量对照，不能以“混合精度”统一解释不同方法。
+
+[跨 TTS 系统的组件消融](../implementation/tts-quantization-evaluation.md) 又说明，敏感组件随模型及量化对象变化：OmniVoice 权重量化与 per-tensor 激活量化的瓶颈不同，两个组件一起量化的损失也可能大于独立损失之和。应先分开测量权重、激活和粒度，再复测联合配置；按模型类别或参数占比直接分配精度没有足够依据。保护组件或 GPTQ 校准后的均值改善，还须满足预先声明的质量区间，并在目标 runtime 上验证成本。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -90,3 +108,9 @@ LUQ 附录 D 将 BiLLM/GPTQ 所选的层配置映射到 IQ1_M/Q4_K_M 来测试 C
 | [BiLLM: Pushing the Limit of Post-Training Quantization for LLMs](https://arxiv.org/abs/2402.04291v2) | `arXiv:2402.04291v2` | — |
 | [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1) | `arXiv:2306.03078v1` | 细粒度例外预算 |
 | [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4) | `arXiv:2306.07629v4` | 敏感值与尾部保留 |
+
+- [The Undetected Damage of Quantization on Retrieval and How to Fix It](https://arxiv.org/abs/2609.24322v1)，arXiv:2609.24322v1；排序稳定性、间隔分配与校准保证。
+- [RAMP](https://arxiv.org/abs/2609.28262v1)，arXiv:2609.28262v1；CPU 混合精度、敏感度聚类与图切分成本。
+- [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
+
+- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。

@@ -7,9 +7,15 @@ tags:
   - equivalent-transform
   - performance
 sources:
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/models/qwen3/modeling_qwen3.py
+  - raw/papers/2026-09-21/nova-kv/paper.pdf
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
+  - raw/repositories/2026-09-21/kitty/source/src/kitty_sim/kitty_simulate.py
+  - raw/repositories/2026-09-21/kitty/source/src/kitty_sim/utils_quant.py
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 量化误差诊断与验证
@@ -78,6 +84,48 @@ J 图 1.1c、4.1–4.3 比较的部分曲线改变网络宽度与分辨率，反
 
 本页保存可复用判断方法与历史证据边界。没有本项目模型评测、训练或性能实测结果。
 
+## 7. 低比特 KV 从模拟到真实执行的对齐
+
+低比特缓存同时包含数学近似、字节格式和随时间变化的状态。只有三者一致，模拟与部署才是在比较同一个方法。以下是依据 Kitty 固定实现及 NOVA-KV v1 系统讨论整理的定位流程；按当前差异选择必要步骤，不要求每次都重跑完整模型。
+
+### 7.1 先建立包含实际精度的参考计算
+
+对固定输入，分别保留浮点原值、参考编码后的整数码、参考解码值和实际解码值。参考必须采用目标实现的归约轴、范围下限、舍入、饱和、元数据 dtype 和读取乘加精度。否则“实际解码减 fake quant”会混合量化规则差异与实现错误。
+
+一个真实例子是 Kitty：`kitty_sim/utils_quant.py` 使用 `round()`，中点按偶数舍入；`kvcache/kernels/kitty_quant_pack.py` 对非负码坐标使用 $\lfloor u+0.5\rfloor$。在 $u=0.5$ 时分别得到 0 和 1。模拟在 FP16/BF16 输入时对范围先夹到 $10^{-4}$ 再除以级数（其他 dtype 的下限为 $10^{-6}$），kernel 对除法后的 scale 夹到 $10^{-6}$，常数输入附近也不等价。还需计入元数据存为 FP16 后的变化。这些是静态确认的规则差异，不能仅据此断言实际任务分数下降多少。
+
+对码本还应区分：编码使用全精度中心选最近邻、读取使用低精度中心，与编码读取都使用低精度中心。两者可能连索引都不同。比较前明确真实执行的选择；查询变换、范数和 group 顺序也属于格式契约，见 [码本预算](../theory/codebook-quantization-and-bit-budget.md)。
+
+### 7.2 先验证字节，再验证 attention
+
+打包/解包先用已知整数码验证，避开浮点容限争议。小位宽可以枚举单码和相邻组合；安排不重复的 token、通道、head 与页标识，以暴露转置、步长或页索引错误。只测试全零或相同元素，往往发现不了顺序问题。支持的尾部形状、提升通道选择及边界应覆盖；不把实现并不支持的任意形状当作既有契约。
+
+| 观察到的差异 | 优先隔离的对象 | 有意义的对照 |
+|---|---|---|
+| 整数码已不同 | 量化网格、舍入、归约轴、元数据精度 | 固定输入的逐元素码与范围 |
+| 码相同，解包后码不同 | 位移、布局、通道映射、页表 | 打包前整数与解包后整数精确相等 |
+| 解包码相同，还原值不同 | scale/offset 读取、dtype、乘加 | 同一元数据下的标量还原 |
+| 单页正确，跨页或某一步错误 | 缓存更新、保护区、有效长度、位置 | 每步 token 身份与页/缓冲状态 |
+| 缓存一致，attention 不同 | Q 变换、mask、GQA 映射、归约精度 | 固定 Q/K/V 的 logits、概率与输出 |
+
+随后固定 Q、mask、位置和缓存内容，对照“浮点原始 attention”“参考解码 attention”“实际 kernel”。第一与第二之差估计指定输入下的量化影响，第二与第三之差定位执行偏差。若算子采用不同浮点归约顺序，容限应结合 dtype、尺度和归约长度，不能要求所有输出逐位相等。其误差传播关系见 [Attention 量化误差传播](../theory/attention-quantization-error-propagation.md)。
+
+### 7.3 把缓存更新纳入参考
+
+单页往返正确还不足够。在 sink 填满、K 第一页写入、V 最近窗口首次挤出、V 第一页写入以及后续跨页时，记录本步 attention 读取的 token 身份、浮点/量化分区和有效计数。重点比较“本步先读还是先压缩”，不能仅比较函数返回后的页表。数量与身份不变量见 [缓存生命周期](../theory/kv-cache-quantization-objects-and-granularity.md#12-缓存的生命周期会改变数值路径)。
+
+Kitty 的模拟与系统正好说明这一步不可省：模拟在 `VCache_BitDecoding=False` 分支中，V 超出最近窗口就逐步量化，系统则让挤出的 V 留在待编码缓冲，凑满一页才压缩；K 的模拟触发点与返回精确副本的顺序也和系统满页后压缩有差别（`kitty_simulate.py` 对照 `kitty.py`）。即使统一舍入，整段轨迹仍不自动一致。这里应先选定希望部署的语义，再建立对应参考，而非随意调容限掩盖差异。
+
+prefill 也要固定整段或 chunked 协议、chunk 大小及写入时机。错误只在第二个 chunk 出现时，优先追踪它实际读到的历史精度，而不是直接归因为 kernel 不稳定。
+
+### 7.4 从固定输入走到模型质量和性能
+
+局部对齐后，再用相同 token 序列进行 teacher-forced 逐层、逐步对照，寻找最早发生偏离的位置。相同 token 仅锁定输入序列，前层误差仍会改变后层 Q/K/V；诊断某个算子时还需注入相同的张量输入。自由生成适合最终任务评价，却会在首次 token 分歧后改变全部后续上下文，不适合作为定位某一层误差的唯一依据。
+
+性能测量最后绑定同一实现与精度配置。明确编码、缓存初始化、prefill、decode、同步和结果搬运分别是否在计时区间；记录有效载荷、实际分配与峰值临时空间。独立 attention 加速、decode-only 吞吐和整段生成时间是不同问题。异步计时细节沿用 [算子测量](kernel-correctness-and-benchmarking.md)，请求负载沿用 [服务评测](serving-performance-evaluation.md)，避免另造一套含混指标。
+
+上述步骤分别回答格式是否正确、缓存语义是否一致、模型质量是否可接受、系统是否获益。CPU 教学计算与代码阅读只覆盖前两项中的简化关系；本页未执行实际 Kitty/NOVA 模型、CUDA/Triton kernel 或性能基准。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -86,3 +134,7 @@ J 图 1.1c、4.1–4.3 比较的部分曲线改变网络宽度与分辨率，反
 | --- | --- | --- |
 | [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
 | [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
+
+- [Kitty 官方实现](https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1)，固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
+
+- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；系统路径、码本读取与 chunked prefill 条件。

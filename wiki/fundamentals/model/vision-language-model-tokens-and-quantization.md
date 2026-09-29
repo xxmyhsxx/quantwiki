@@ -7,6 +7,10 @@ tags:
   - weight-quantization
   - activation-quantization
 sources:
+  - raw/papers/2026-09-21/qapruner/paper.pdf
+  - raw/papers/2026-09-21/akvq-vl/paper.pdf
+  - raw/papers/2026-09-23/coreprune/paper.pdf
+  - raw/papers/2026-09-23/layer-aware-position-embeddings/paper.pdf
   - raw/papers/2026-09-21/splitq/paper.pdf
   - raw/papers/2026-09-21/masquant/paper.pdf
   - raw/papers/2026-09-21/q-vlm/paper.pdf
@@ -14,7 +18,7 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/repositories/2026-09-21/mbq/source/qmllm/models/qwen2_vl/qwen2_vl.py
-updated: 2026-09-15
+updated: 2026-09-29
 ---
 
 # 视觉语言模型中的 token 与量化对象
@@ -110,6 +114,17 @@ $$
 
 MASQuant 的主要实验只量化语言部分，Qwen2.5-Omni 限于 Thinker；SplitQ 主实验也以语言部分为中心，附录 A.4 才增加视觉编码器 W4A4 的有限测试。因此“多模态量化”可能指多模态输入进入共享语言层后的量化，不应自动解释为视觉、连接器、语言、音频生成和缓存全部低比特化。比较前应逐模块列出对象，而不只记模型名称。
 
+## 7. 剪枝额外改变序列集合、深度与位置
+
+降低位宽通常保留 token 集合，视觉剪枝则删除序列中的向量。[CoRePrune](../../methods/coreprune.md) 表明，局部删除影响由 attention、Value 与当前输出的偏差、删除集合的方向抵消及重归一化共同决定；单 token 分数不能直接相加，早删与晚删也改变后续表示和传播长度。因此小梯度或小 attention 都不能直接证明可删除。
+
+物理 gather 后还需决定 position IDs。[LayerPos](../../methods/layerpos.md) 区分原编号的稀疏位置与重新连续编号；它们改变幸存 token 的相对 RoPE 距离，并在感知和定位任务上产生不同取舍。位置策略需贯穿每层 prefill 与 decode，不能仅靠保持序列顺序保证计算关系不变。删除数、删除深度、删除集合与位置策略是四个应分别控制的变量。
+
+## 8. 难量化、不可删除与值得保护不能互相替代
+
+[QAPruner](../../methods/qapruner.md) 把模拟 INT4 重构误差及通道范围与语义分数融合，用来选择保留视觉 token。这个代理直接测数值可量化性，不直接测删除该 token 后的任务损失；若 scale 在每 token 内独立计算，删掉别的 token 也不会在特征固定时改变它的 scale。它为量化与剪枝的联合选择提供实证，不能把难量化自动当成不可删除的定理。
+
+[AKVQ-VL](../../methods/akvq-vl.md) 则保留 token 集合，按 attention 层模式保护文本或 pivot 的 KV 精度：TSA 层的文本主要 4 bit，PSA 层的 pivot 与 recent 用 16 bit，其余历史主要 2 bit。它的早层文本显著、后层枢纽显著是特定模型观测，原文中也有不出现 TSA 的骨干。模态标签、attention 代理、激活幅值、可删除性和量化敏感度应各自说明证据，不能共用一个“重要性”标签便认为可以直接交换策略。
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -123,3 +138,8 @@ MASQuant 的主要实验只量化语言部分，Qwen2.5-Omni 限于 Thinker；Sp
 | [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
 | [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
 | [thu-nics/MBQ](https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1) | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
+
+- [CoRePrune](https://arxiv.org/abs/2609.26484v1)，v1；删除集合与深度条件。
+- [Layer-Aware Position Embeddings](https://arxiv.org/abs/2609.23715v1)，v1；剪枝后的位置策略。
+- [QAPruner](https://arxiv.org/abs/2604.02816v1)，v1；§3–4，剪枝与数值敏感度评分。
+- [AKVQ-VL](https://arxiv.org/abs/2501.15021v1)，v1；§III、图 2、表 I，按模式保护 KV。

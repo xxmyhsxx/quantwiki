@@ -7,6 +7,7 @@ tags:
   - reconstruction
   - calibration
 sources:
+  - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/qig/paper.pdf
   - raw/papers/2026-09-21/splitq/paper.pdf
@@ -16,7 +17,7 @@ sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale.py
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/pre_quant.py
-updated: 2026-09-15
+updated: 2026-09-28
 ---
 
 # MBQ 与 VLMQ：重要性怎样进入量化目标
@@ -72,6 +73,8 @@ VLMQ 表 6 在无分组 INT3、Qwen2-VL-7B 上报告：常数权重 69.03，Fast
 
 [MQuant](../methods/mquant.md) 提供另一个比较维度：它按模态分别校准激活网格，并通过序列重排改善执行布局，不依赖这里的梯度重要性目标。因而“模态感知”至少应区分误差目标、量化网格与运行布局，不能只按名称归为同一种方法；MQuant 的组件与运行证据见其 §3.1、表 7/10，跨方法质量仍需统一位宽、对象和协议。
 
+[RGSQ](../methods/rgsq.md) 把模态差异进一步放到输入与输出梯度二阶矩中，关注通道方向而非只给 token 一个系数。但其因子化、模态融合及白化后的量化集合都有独立条件，不能因为使用 Fisher 名称就把它视作真实任务损失的精确替代。
+
 ## 5. 哪些认识可以进入后续研究
 
 - **已有工作已覆盖重要性加权重构。** 仅提出“感知模态/token 重要性并加权量化误差”，还不足以支持新的创新主张。需要更具体的问题、差异和证据。
@@ -93,6 +96,12 @@ VLMQ 表 6 在无分组 INT3、Qwen2-VL-7B 上报告：常数权重 69.03，Fast
 
 [LUQ](../methods/luq.md) v3 §3.3 则补上前文尚未解决的层间预算问题：用簇频率熵固定排序，前缀层使用 BiLLM，其余用 GPTQ 4 bit。它的选择变量是层配置，不能把这一熵分数直接当作 MBQ/VLMQ/QIG 的 token 损失系数。是否把两类方法结合，需要先说明预算、底层量化器和评测条件；当前文献没有验证任意组合都能叠加增益。
 
+## 8. 几何对齐能否直接用作量化目标
+
+[多模态对齐诊断](../theory/multimodal-alignment-diagnostics.md) 提供另一个代理失效案例：同一低有效秩投影可能将语义不同的输入推向共同方向，因此“视觉与文本更接近”不自动说明视觉信息保留得更好。主角度谱能帮助区分单方向塌缩与多方向重合，但只看前两个奇异值之差仍可能混淆整体不重合与充分重合。
+
+这不推翻 MBQ/VLMQ 的条件化消融，也没有证明用 PA gap 替换其重构损失会更好。若将几何指标用于量化研究，需要在相同模型、数据与量化器上检验它对量化损害的预测能力，再用独立任务结果判断优化它是否有效；Alignment Illusion 原文没有做这项量化实验。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -107,6 +116,8 @@ VLMQ 表 6 在无分组 INT3、Qwen2-VL-7B 上报告：常数权重 69.03，Fast
 | [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
 | [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
 | [thu-nics/MBQ](https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1) | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
+
+- [The Alignment Illusion in Multimodal Large Language Models](https://arxiv.org/abs/2609.30210v1)，arXiv:2609.30210v1；主角度诊断与视觉干预。
 
 ## 教学计算材料
 

@@ -7,6 +7,10 @@ tags:
   - data-format
   - performance
 sources:
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
+  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf
+  - raw/papers/2026-09-28/foldquantvla/paper.pdf
+  - raw/papers/2026-09-23/prquant/paper.pdf
   - raw/papers/2026-09-22/loftq/paper.pdf
   - raw/papers/2026-09-22/qera/paper.pdf
   - raw/papers/2026-09-21/billm/paper.pdf
@@ -30,7 +34,7 @@ sources:
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
   - raw/repositories/2026-09-21/gptq/source/quant.py
   - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 量化矩阵乘法的缩放与执行路径
@@ -119,6 +123,8 @@ $$
 上面的理想模型只预测瓶颈方向，能否维持由内核实现决定。Marlin 的测量给出一个具体刻度：A10 的算力带宽比约为 200 时，batch 小于约 50 仍受权重读取限制，但既有单 token 内核在 batch 增大后收益迅速消失，只有针对批处理重新设计的调度才能在该区间维持接近理论上限的加速（[Marlin](marlin-batched-w4a16-gemm.md) §3.1 与内核基准图）。因此“低比特权重加大 batch”不会自动得到低比特级别的加速。
 
 再往下还差一层：内核要求的数据布局与配置匹配条件（反量化位技巧、元数据对齐、模板命中）属于实现契约，见 [权重量化反量化内核的契约](weight-only-dequant-kernels.md)。
+
+[Disaggregated Quantization](../methods/disaggregated-quantization.md) 把阶段瓶颈用于格式选择：prefill采用原生NVFP4计算，decode保留紧凑weight-only表示；进一步可训练独立权重。必须区分存储格式、临时计算格式与完整转换链；其附录部分LUT计时仅估计激活量化调用开销，不代表权重重转换已包含。
 
 ## 5. 应怎样记录性能证据
 
@@ -240,6 +246,16 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 
 > 来源维护（2026-09-21）：上列固定 commit 的外部代码引用对应已移除的本地快照；保留原版本身份，本轮未重新审查相关代码结论。
 
+## 14. 规则化残差、融合边界与整图延迟
+
+[PRQuant](../methods/prquant.md) 把敏感通道移到尾部，将这些列的低比特权重残差与重复激活拼接，目标是让两路乘积进入同一个规则 GEMM。浮点拼接恒等式成立，但块尺度会使“分别量化再拼接”与“拼接后量化”不同；扩宽的输入、权重、上游生产者与中间张量都有代价。原文没有实际延迟/吞吐表，不能从连续布局直接推出端到端加速。
+
+[FoldQuantVLA](../methods/foldquantvla.md) 同时给出论文与固定代码的对应：目标投影使用 INT4 输入、INT32 累加，按 token/输出通道尺度恢复；FWHT 分支融合变换与激活量化，dense rotation 分支则有排列、块旋转和量化等多个调用。“一个插件”不等于“一个 kernel”，代码路径核对也不是本机编译运行。其速度应对比相同 checkpoint 的编译浮点引擎，不能把编译收益全部算到量化名下。
+
+[RAMP](../methods/ramp.md) 的 CPU 图切分消融进一步表明，插入精度边界除 Q/DQ 本身，还可能破坏 Conv/BN/激活融合；某些模型延迟上升时，Q/DQ 数目甚至不增加。这种成本属于完整图的执行关系，不能仅靠减少位宽或降低局部量化误差预测。
+
+[TTS 的真实 INT4/INT8 对照](tts-quantization-evaluation.md) 提供了算子覆盖的具体例子：满足约束的 $1\times1$ Conv 可转成 MatMul，使 Supertonic flow estimator 的更多权重进入 `MatMulNBits`。权重覆盖率仍不等于执行时间覆盖率，保留浮点 vocoder 也意味着系统不是全 INT4。同一研究中存在质量通过却更慢的 INT8，也存在更快却未通过预设质量带的 INT4，必须联合报告实际图、质量约束和时间/内存/能耗口径。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -270,6 +286,11 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 | [IST-DASLab/gptq](https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf) | `2d65066eeb06a5c9ff5184d8cebdf33662c67faf` | — |
 | [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
 
+- [PRQuant](https://arxiv.org/abs/2609.22106v1)，arXiv:2609.22106v1；置换、残差拼接与门控 FFN。
+- [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
+- [RAMP](https://arxiv.org/abs/2609.28262v1)，arXiv:2609.28262v1；CPU 混合精度、敏感度聚类与图切分成本。
+
+- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
 ## 教学计算材料
 
 保留已有教学计算脚本及当时结果，供核对推导与反例；这些材料不代表模型复现或性能实验。

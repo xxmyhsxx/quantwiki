@@ -6,6 +6,7 @@ tags:
   - equivalent-transform
   - low-rank
 sources:
+  - raw/papers/2026-09-21/nova-kv/paper.pdf
   - raw/papers/2026-09-22/qera/paper.pdf
   - raw/papers/2026-09-21/splitq/paper.pdf
   - raw/papers/2026-09-21/masquant/paper.pdf
@@ -13,7 +14,7 @@ sources:
   - raw/papers/2026-09-21/affinequant/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
   - raw/articles/2026-09-21/pytorch-orthogonal/article.md
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 可逆变换、数值条件与 Kronecker 乘积
@@ -181,6 +182,55 @@ $$\|A(D-L)\|_F^2=\operatorname{tr}((D-L)^\mathsf TA^\mathsf TA(D-L))=\|T(D-L)\|_
 QERA-approx（v2 §3.3、附录 A.2）用逐通道 RMS 构造对角因子。它对完整目标精确成立的条件是 $\mathbb E[x_ix_j]=0$（$i\ne j$），不是只要求中心化协方差为零。因为 $\mathbb E[x_ix_j]=\operatorname{Cov}(x_i,x_j)+\mathbb E[x_i]\mathbb E[x_j]$，非零均值仍会产生交叉项。条件不满足时，这是改变度量后的低秩解；主方法页给出相同 RMS 下忽略交叉项会损失补偿效果的教学反例。
 
 
+## 7. 二阶统计如何定义误差距离
+
+前面的加权低秩近似可以抽象成同一个问题：一个误差向量经过后续线性读取后，哪些方向更贵？采用行误差 $e\in\mathbb R^{1\times d}$，对固定读取矩阵 $A$，
+
+$$\|eA\|_2^2=eMe^\top,\qquad M=AA^\top\succeq0.$$
+
+M 是误差空间中的度量矩阵。误差二次型开平方后，若 M 正定便得到范数；若只是半正定，则为半范数，非零的零空间误差也可能被当前 A 完全看不见。校准没看见与真实任务永远不重要并不相同。[Attention 误差传播](../../theory/attention-quantization-error-propagation.md)中 K 的 query 二阶矩，就是这一结构的具体实例。
+
+### Gram、二阶矩与协方差
+
+若 X 的每行是一个样本，经验 Gram 是 $X^\top X$，未中心化二阶矩估计是 $M=X^\top X/N$。令 $\mu$ 为样本均值，采用分母 N 的中心化协方差为
+
+$$\Sigma=\frac1N\sum_i(x_i-\mu)^\top(x_i-\mu),\qquad M=\Sigma+\mu^\top\mu.$$
+
+这里故意使用 N 而非无偏估计的 N−1，才能得到所写经验恒等式。RMS 的平方对应 M 的对角，标准差的平方对应 $\Sigma$ 的对角。一个始终为 10 的标量具有二阶矩 100、方差 0；若它负责乘一个误差，影响显然不会因为方差为零就消失。
+
+除以 N 在单一最优化目标中可能只是常数，但把不同数据组的 Gram 相加时，会改变各组权重。按 token 累加、先按序列平均、再按模态或 head 平均，是不同统计目标；必须先选计费单位再计算矩阵。
+
+### 把加权距离转成欧氏距离
+
+令 $M=U\Lambda U^\top\succ0$，可取 $R=U\Lambda^{1/2}$，或对称平方根 $R=M^{1/2}$，两者均满足 $RR^\top=M$。因此
+
+$$\|eR\|_2^2=eMe^\top.$$
+
+R 不是唯一的，右乘任意正交 O 仍满足同一关系。选择 O 可以改变变换后的分布和分组结构，而不改变所表示的误差度量。给定行向量编码 $r=xR$，合成应为 $\widehat x=\widehat rR^{-1}$；若读取 query 也用行向量，则需 $q'=qR^{-\top}$，因为 $q'(xR)^\top=qx^\top$。
+
+教学例：$M=\operatorname{diag}(4,1)$，误差 $(1,0)$ 与 $(0,1)$ 的普通平方范数都是 1，加权误差为 4 与 1。取 $R=\operatorname{diag}(2,1)$ 后，欧氏误差直接反映这种差异。它放大昂贵方向，不是把所有方向压到同样数值范围。
+
+### 距离欧氏化、白化与 PCA 的区别
+
+| 操作 | 行向量变换及条件 | 得到什么 |
+| --- | --- | --- |
+| 欧氏化加权距离 | $R R^\top=M$ | 变换域欧氏误差等于原加权误差 |
+| 白化输入分布 | 中心化输入协方差 $\Sigma\succ0$，取 $W=\Sigma^{-1/2}$ | $W^\top\Sigma W=I$ |
+| PCA 旋转 | $\Sigma=U\Lambda U^\top$，输入乘 U | 协方差变为对角，方差仍是 $\Lambda$ |
+| 截断 PCA | 仅保留部分特征向量 | 丢弃子空间，变换不再可逆 |
+
+例如同一 $\operatorname{diag}(4,1)$，欧氏化该误差度量乘 $(2,1)$，白化该输入协方差却乘 $(1/2,1)$。两者指数相反，因为一个在表达“错误有多贵”，另一个在调整“样本有多分散”。一般情况下，M 与输入协方差也不是同一个矩阵。
+
+PCA 只保证二阶不相关；只有联合 Gaussian 等额外条件下，不相关才能推出独立。[NOVA-KV](../../methods/nova-kv.md)先欧氏化查询度量，再对变换后的 K 统计选择旋转，而非简单对 K 白化。
+
+### 零空间、小特征值与量化约束
+
+M 奇异时仍有平方根，但没有普通逆矩阵。可以明确限制在受观测子空间内，或改变目标使它正定；不能默默用伪逆后仍宣称整个原空间无损可逆。加 $\lambda I$ 会让代价增加 $\lambda\|e\|^2$；对特征值设下限则只抬升小特征方向，与所有方向加同一个数不同。
+
+若变换系数重构误差为 $\delta r$，映回有 $\|\delta x\|_2\le\|\delta r\|_2\|R^{-1}\|_2$。所以变换域误差小不保证普通坐标误差小；在指定 M 下仍可有精确等式。这两种评价必须并列说明，有限精度矩阵与求逆又会加入额外误差。
+
+最后，改变距离不自动保留可行集合：可逆变换保持矩阵秩，因而能用于上节的低秩问题；通常不保持逐元素整数网格。变换后直接使用原量化器，是设计新的可表示集合，而不是无条件求解原网格约束下的最优问题。对应反例见 [曲率加权误差](../../theory/curvature-weighted-quantization-error.md#4-欧氏化必须同时搬运约束)。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -195,6 +245,8 @@ QERA-approx（v2 §3.3、附录 A.2）用逐通道 RMS 构造对角因子。它�
 | [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
 | [PyTorch orthogonal parametrization](https://docs.pytorch.org/docs/2.14/generated/torch.nn.utils.parametrizations.orthogonal.html) | `snapshot-2026-09-15` | 获取：None；标识：orthogonal-parametrization-snapshot-2026-09-15 |
 
+- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1 §3、附录 F；查询二阶矩与加权变换。第 7 节的统一记号、统计恒等式、变换对照和数值例子为整理者教学推导，沿用 QERA 等既有来源的距离定义。
+
 ## 教学计算材料
 
 保留已有教学计算脚本及当时结果，供核对推导与反例；这些材料不代表模型复现或性能实验。
@@ -203,3 +255,5 @@ QERA-approx（v2 §3.3、附录 A.2）用逐通道 RMS 构造对角因子。它�
 - [check_supplement_math.py](../../assets/invertible-transforms-and-kronecker-products/checks/check_supplement_math.py)
 - [math-validation.json](../../assets/invertible-transforms-and-kronecker-products/checks/math-validation.json)
 - [supplement-math-validation.json](../../assets/invertible-transforms-and-kronecker-products/checks/supplement-math-validation.json)
+
+- [公共量化机制计算](../../assets/attention-quantization-error-propagation/check_mechanisms.py)：补充第 7 节统计与变换例子，Python 3 + NumPy。

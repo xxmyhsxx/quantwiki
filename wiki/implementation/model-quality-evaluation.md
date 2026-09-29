@@ -6,9 +6,12 @@ tags:
   - numerical-error
   - reliability
 sources:
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
+  - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
+  - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
   - raw/articles/2026-09-22/perplexity/article.md
   - raw/papers/2026-09-21/quantization-reliable-vqa/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 模型质量评测：PPL、任务协议与选择性预测
@@ -82,7 +85,26 @@ $$\Phi_c(\tau)=\frac{n_{\mathrm{accepted,correct}}-c\,n_{\mathrm{accepted,wrong}
 
 本页没有新增模型分数；公式例子只验证计数、归约和指标边界。已有可靠性页的特定结果仍以对应论文为准。
 
+## 7. 平均质量、排序保持与几何诊断分别回答什么
+
+[检索排序稳定性](../theory/quantization-ranking-stability.md) 把“第一名改变”“浮点原本正确的结果丢失”和 Recall/nDCG 净变化分开：新获得的正确答案会抵消旧答案损失，所以只报平均质量不够。但保持浮点答案也不保证正确，必须保留有标签质量指标。
+
+该论文的校准保证控制 $P(\text{接受}\cap\text{翻转})$，本页的选择性风险控制的是 $P(\text{错误}\mid\text{接受})$。两者既有事件差别，也有分母差别。教学例：100 次请求只接受 10 次，其中 2 次翻转，则联合频率 2%，已接受集合的翻转率却是 20%；不能把前者作为后者的保证。阈值顺序统计量的原文问题与纠正在排序页保留。
+
+[多模态对齐诊断](../theory/multimodal-alignment-diagnostics.md) 则说明共享投影可以让几何相似度上升，而视觉任务能力仍下降。完整主角度谱、图像替换/噪声对照和任务分数应一起看；单个 PA gap 也不是量化后任务质量的替代指标。对于动作策略，可沿 [FoldQuantVLA](../methods/foldquantvla.md) 区分固定噪声下动作一致性、坐标幅值误差和闭环成功率，不能把高余弦或少量成功样本升级成部署可靠性保证。
+
+## 8. 无显著差异不等于满足质量等价
+
+[TTS 量化评测](tts-quantization-evaluation.md) 给出一个具体判据：量化减浮点的 UTMOS 均值差的 paired 95% 区间必须全部位于 $[-0.05,0.05]$，同时 WER 差值区间的上界不超过 0.01。这些阈值属于该论文的英文代理评测，不能自动成为所有任务的标准。
+
+区间包含零只表示数据与零差异相容，宽区间并不能证明差异足够小；均值差小于阈值也不足以满足整个区间都在等价带内。必须配对相同输入、平台与生成预算，并区分逐句均值和按词数加权的语料误差。代理自然度、转录正确性、人工偏好与系统开销分别回答不同问题；选择最优配置后的抽样区间也不自动校正配置搜索偏差。
+
 ## 来源身份
 
 - [Perplexity of fixed-length models](https://huggingface.co/docs/transformers/en/perplexity)，Transformers main，2026-09-22 获取，`perplexity-20260922-03be86a2`；定义、固定窗口与滑动窗口示例。
 - [Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs](https://arxiv.org/abs/2602.13289v1)，arXiv:2602.13289v1；使用 §3 的置信度、评测指标和 held-out 阈值设置，二值公式与算例为整理者解释。
+
+- [The Undetected Damage of Quantization on Retrieval and How to Fix It](https://arxiv.org/abs/2609.24322v1)，arXiv:2609.24322v1；排序稳定性、间隔分配与校准保证。
+- [The Alignment Illusion in Multimodal Large Language Models](https://arxiv.org/abs/2609.30210v1)，arXiv:2609.30210v1；主角度诊断与视觉干预。
+
+- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。

@@ -1,0 +1,14 @@
+{
+  "scope": "Analytic special case of QJL v2 Lemma 3.5; fixed orthogonal unit vectors and iid Gaussian rows.",
+  "epsilon": 0.1,
+  "claimed_delta": 0.05,
+  "paper_required_m": 542,
+  "exact_variance": 0.0028981482044186284,
+  "exact_failure_probability": 0.06323343560642361,
+  "conclusion": "Printed sample-size constant does not meet claimed failure probability in this case.",
+  "not_tested": [
+    "orthogonalized practical transform",
+    "model quality",
+    "GPU kernels"
+  ]
+}

@@ -6,18 +6,28 @@ tags:
   - granularity
   - serving
 sources:
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/models/qwen3/modeling_qwen3.py
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
+  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/utils_kv_per_layer.py
+  - raw/papers/2026-09-21/turboquant/paper.pdf
+  - raw/papers/2026-09-21/nova-kv/paper.pdf
+  - raw/papers/2026-09-21/akvq-vl/paper.pdf
+  - raw/papers/2026-09-21/kitty/paper.pdf
+  - raw/papers/2026-09-22/qjl/paper.pdf
+  - raw/papers/2026-09-22/kvquant/paper.pdf
   - raw/papers/2026-09-21/llm-qat/paper.pdf
   - raw/repositories/2026-09-21/kivi/source/models/llama_kivi.py
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/papers/2026-09-21/saw-int4/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # KV cache 量化的对象与粒度
 
 权重可以离线反复优化，激活随输入即时产生，KV cache 与两者都不同：它在推理过程中逐 token 追加，具体取值依赖当前输入，在线重算或优化受延迟预算限制；量化策略、旋转等参数仍可离线校准。同一个「4 bit KV cache」的说法，可能指不同的量化方向、不同的元数据组织，以及不同的系统代价。本页整理这一对象的共同结构，作为各具体方法的比较框架。
 
-本页的框架来自 [KIVI](../methods/kivi.md)（arXiv:2402.02750）对分布与误差传播的分析，以及 [SAW-INT4](../methods/saw-int4.md)（arXiv:2604.19157）对服务系统约束的梳理；两篇均为全文研读并有独立方法页，本页不重复它们的实验细节。涉及其它方法的条目按各自页面为准，本页只做归类。
+本页的框架来自 [KIVI](../methods/kivi.md)（arXiv:2402.02750）对分布与误差传播的分析，以及 [SAW-INT4](../methods/saw-int4.md)（arXiv:2604.19157）对服务系统约束的梳理；两篇均为全文研读并有独立方法页；新增的 [KVQuant](../methods/kvquant.md) 与 [QJL](../methods/qjl.md) 分别补充离线码本与直接分数估计，本页不重复实验表格。涉及其它方法的条目按各自页面为准，本页只做归类。
 
 ## 1. 为什么 KV cache 要单独讨论
 
@@ -27,7 +37,7 @@ $$\vec o=\mathrm{softmax}\left(\frac{\vec q\,\mathbf X_K^{\mathsf T}}{\sqrt d}\r
 
 与权重量化相比，KV cache 有三个特殊之处：
 
-1. **流式到达。** 每生成一个 token，缓存追加一行；任何需要跨 token 统计的量化参数都必须处理「尾部不足一组」的问题。
+1. **流式到达。** 每生成一个 token，缓存追加一行；在线按 token 组统计参数时必须处理「尾部不足一组」的问题；离线固定通道尺度则转为校准分布与动态范围覆盖问题。
 2. **在线预算有限。** 缓存是推理产物，反复优化或重算历史会增加成本，因此通常采用便宜的在线量化。这里是成本约束，并非数学上不能重算，也不禁止离线选择参数。
 3. **与注意力结构耦合。** 键和值进入注意力的方式不同（一个进 softmax 前的分数，一个进加权求和），因此它们的误差传播路径不同——这是粒度选择的根本依据。
 
@@ -39,16 +49,18 @@ $$\vec o=\mathrm{softmax}\left(\frac{\vec q\,\mathbf X_K^{\mathsf T}}{\sqrt d}\r
 
 **键的误差先进分数再进 softmax。** 键的量化误差 $\delta\mathbf k$ 改变的是注意力分数，再经过指数归一化，因此影响「谁被关注」。KIVI 在 Llama-2-13B 上测得，逐 token 量化键的相对重构误差为 13.67、逐通道为 4.55，而传到注意力分数后的相对误差为 47.00 与 9.60——差距被放大到约 5 倍。SAW-INT4 用同一思路构造了以分数误差为目标的校准量 $\delta\mathbf k^{\mathsf T}\mathbf M\delta\mathbf k$，其中 $\mathbf M$ 是查询二阶矩。
 
-**值的误差线性进入输出。** 输出是值的加权和，$[\mathbf A\mathbf X_V]_{i*}=\sum_j\mathbf A_{ij}[\mathbf X_V]_{j*}$。KIVI 说明，由于注意力稀疏（该论文测得 84.3%），输出实际上由少数重要 token 决定，因此逐 token 量化把误差限制在单 token 内部，不会污染重要 token；逐通道量化则跨 token 混合误差。实测中值的重构误差在两种粒度下接近（4.57 对 3.73），但传到输出后相差约 14 倍（3.55 对 49.89）。
+**值的误差线性进入输出。** 输出是值的加权和，$[\mathbf A\mathbf X_V]_{i*}=\sum_j\mathbf A_{ij}[\mathbf X_V]_{j*}$。KIVI 说明，由于注意力稀疏（该论文测得 84.3%），输出实际上由少数重要 token 决定，逐 token 量化避免其他 token 的极端值通过共享尺度拉粗重要 token 的网格；逐通道量化则可能出现这种跨 token 的范围耦合。这不意味着逐 token 量化的重要位置没有误差。实测中值的重构误差在两种粒度下接近（4.57 对 3.73），但传到输出后相差约 14 倍（3.55 对 49.89）。
 
 **更一般的判据是同时看分布与误差传播。** KIVI 的未旋转、2 bit 分组设置支持 K 逐通道、V 逐 token；不能把它提升为所有 KV 量化的唯一方案，SAW-INT4 的旋转与 4 bit 设置就是不同设计条件。
+
+完整的 logit、softmax、V 加权和与联合误差推导见 [Attention 量化误差传播](attention-quantization-error-propagation.md)；其中区分相对误差变化与绝对范数界。
 
 ## 3. 粒度：四个可选方向
 
 | 粒度 | 共享范围 | 流式兼容性 | 典型用法与代价 |
 |---|---|---|---|
 | 逐 token（按行） | 参数不跨 token 共享；一个 head 内可以整体共享，也可以沿通道进一步分组 | 天然兼容，可直接按 token 追加 | KIVI 用于值；SAW-INT4 用于键与值的统一布局 |
-| 逐通道（按列） | 同一通道沿 token 轴共享，可限制在一个 token 组内 | 跨 token，需要分组与残差窗口 | KIVI 用于键，每 G=32 个 token 分组 |
+| 逐通道（按列） | 同一通道沿 token 轴共享，可限制在一个 token 组内 | 在线组统计需尾部缓冲；离线固定尺度可直接追加 | KIVI 按 G=32 分组；KVQuant 离线逐通道校准 |
 | 沿任一轴分组 | 组内共享，组大小 $g$ | 取决于分组轴 | [QuaRot](../methods/quarot.md) 对 KV 用 group 128 非对称量化 |
 | 逐 head | 每个 KV head 一组参数 | 兼容，但尺度需随 head 动态估计与存放 | [QServe](../methods/qserve.md) 的 KV4 用逐 head 动态量化 |
 
@@ -131,11 +143,64 @@ KV cache 量化与权重量化正交、可以叠加，这一点在两篇论文�
 
 这与冻结模型后改变粒度或施加等价旋转的路线不同：模型参数本身参与适应误差。因此比较时除位宽、布局、窗口，还要记录训练数据、教师和训练成本。LLM-QAT 的 v1 不含低比特硬件实现，不能用其质量结果证明分页缓存或融合注意力性能已验证。
 
-## 9. 未验证与边界
+## 9. 量化坐标与读取接口也是选择变量
 
-- 本页的框架来自 KIVI（已发表）与 SAW-INT4（预印本）两篇的全文研读，不构成对 KV cache 量化领域的综述；Kitty、KVQuant、AKVQ-VL 等本地存在的材料本轮未研读。
-- 两篇论文的硬件、模型、任务与测量口径不同，本页不给出跨论文的方法排序，也不把某一篇的结论外推到其它模型族。
-- 未运行任何实验，本页所有模型与性能数值均转引自对应方法页，其原始出处与条件以各方法页为准。
+[KVQuant](../methods/kvquant.md) 使用 RoPE 前的逐通道 Key、离线固定尺度与敏感度加权非均匀码本；新增 token 可以直接编码，读取时查表恢复并补位置旋转。它避免了 KIVI 式在线组统计的等待，但引入校准依赖、稀疏离群分支和首 token 保留。首 token 与最近 token 窗口不是同一种精度预算，码本索引也不是原生低比特 attention 算术。
+
+[QJL](../methods/qjl.md) 进一步不要求逐坐标恢复 Key：保存随机投影的符号与范数，结合浮点 Query 投影估计内积。位预算是投影数相对原 head 维度的比例，再加范数及离群分支，不能称为整个 KV 每元素一位。它的高斯随机估计与保持内积的可逆正交旋转不同；理论中的固定向量保证不能直接覆盖依赖压缩结果生成的整条轨迹。
+
+因此跨方法比较需要补充两问：缓存的是 pre/post-RoPE 的什么表示；读取时是在恢复向量、查表乘加，还是直接估计分数。容量上限、长上下文质量和全模型时延也要分别验证：KVQuant 的百万/千万上下文是容量估算，QJL 的主要速度图是单层 attention；两者都不能直接作为千万上下文服务已验证的依据。
+
+## 10. 进一步比较失真目标、保护轴与读取成本
+
+[TurboQuant](../methods/turboquant.md) 区分 MSE 码本与无偏内积修正：低重构误差仍可收缩内积，无偏内积经过 softmax 也不再自动无偏。[NOVA-KV](../methods/nova-kv.md) 用 $M_q=Q^\top Q$ 和 $RR^\top=M_q$ 把校准 logit 误差变成变换域 MSE，再用固定宽度分组 VQ；这依赖校准分布，并非无需数据的普遍最优变换。
+
+保护精度还可以沿不同轴：[AKVQ-VL](../methods/akvq-vl.md) 根据模态/层模式保护文本、pivot、recent；[Kitty](../methods/kitty.md) 在每个 token 页内选择部分 K 通道从 INT2 提到 INT4。前者要计入 token 混合比例，后者要计高位数组和通道映射；两者都保留所有 token，却有不同布局与调度需求。所谓“2 bit”不是统一的有效预算。
+
+读取也有两个有用反例。Kitty 的分页低/高位面支持动态通道提升，但其固定原型仍物化 attention scores、以独立 QK/softmax/SV 执行；NOVA 将逆 K 变换移到每步 query，只在历史读取中查码本并恢复 scale。前者说明混合精度并非不可分页，后者说明 VQ 不必对每条历史 K 单独逆变换，但各自仍付出编码、元数据和内核代价。
+
+比较质量时还要明确 **何时量化**：整段 prefill 结束后压缩，与每个 prefill chunk 写入后压缩，会使后续 chunk 看到不同历史；为保护 prefill 保存精确副本则提高瞬时内存。比较吞吐时，NOVA 的 decode-only 窗口、Kitty 的短 prompt 整段生成和 AKVQ 的容量极限批量结果不能直接混成一个排序。
+
+## 11. 从位宽到可执行存储格式
+
+位宽只是整数码集合的大小。一个可读取的缓存还要定义：哪个逻辑元素对应哪个字节、字节内哪几位、用哪个 scale/offset 还原，以及不足一页时从哪里读取。下面以 Kitty 固定代码的 `kitty_quant_pack.py`、`utils_kv_per_layer.py` 为实例，算术是整理者推导。
+
+**码与字节分两层。** 四个 2-bit 码 $[0,1,2,3]$，按位移 $[0,2,4,6]$ 打包，得到 $0+4+32+192=228$，即 `0xe4`。解码为 $(u\gg 2i)\mathbin{\&}3$。这是字节内的位序约定；即使双方都使用 `uint8` 和相同张量形状，位序或轴不同仍会读错。Kitty 的 K 沿 token 轴打包，V 沿通道轴打包；“存储 INT2”也不意味着 attention 使用原生 INT2 乘法。
+
+**提升精度不一定增加第二套尺度。** 对提升到 4 bit 的通道，先在 16 个码上量化，再把同一个码拆为低两位与高两位。例如 $13=1+4\times3$，读出低码 1、高码 3 后组合，再用该通道的 4-bit scale 还原。低位不是独立的 2-bit 近似，两位面不应各自反量化后相加。Kitty 将全部通道的低位密集保存、高位只存提升通道，另用每通道一个字节映射高位位置；未提升通道以哨兵标记，读取时高位取零。
+
+**元数据中的零点可能是实数偏移。** Kitty 保存 FP16 scale 与最小值 $m$，读取 $\widehat x=sq+m$；变量名 `zero_point` 不代表这里存的是整数零点 $z$。两种形式 $s(q-z)$ 与 $sq+m$ 只有在 $m=-sz$ 时等价；将任意浮点最小值转换成整数 $z$ 并舍入，会改变网格。编码时使用的尺度精度、存下来的尺度精度、读取时的乘加精度也要分别说明。
+
+**完整页可以逐项计费。** 设一个 KV head、页内 $G$ 个 token、通道数 $D$，K 提升通道比例为 $r$，且 $rD$ 为整数。Kitty 固定布局的量化 K 页包含：$2GD$ 位低位、$2rGD$ 位高位、$8D$ 位通道映射、$32D$ 位尺度/最小值；V 页包含 $2GD$ 位码和 $32G$ 位元数据。因此以 K/V 合计 $2GD$ 个元素平均，
+
+$$b_{\rm page}=\frac{4GD+2rGD+40D+32G}{2GD}=2+r+\frac{20}{G}+\frac{16}{D}.$$
+
+当 $G=D=128,r=1/4$ 时，K/V 一对完整页分别为 5,760 / 4,608 字节，合计 10,368 字节，即 2.53125 bit/元素。这里只有页内载荷和元数据，还没有页表、sink、尾部缓冲、V 最近窗口、对齐与临时张量。码本方法还需另外计算共享码本；共享一次的固定开销和每页增长的开销不能按同一比例外推。
+
+Kitty 的 `KVCache_Layer.__init__` 按最大 batch 和最大长度预分配页与缓冲。因而“当前 token 的逻辑字节数”“已分配缓存容量”和“运行峰值显存”是三个不同结果。压缩能让同一容量容纳更多 token，但有效 token 减少时，预分配空间并不会因此自动释放。动态页池与请求回收是另一层机制，见 [服务内存管理](../implementation/serving-memory-and-batching.md)。
+
+## 12. 缓存的生命周期会改变数值路径
+
+对一类带 sink、K 分组缓冲、V 最近窗口的设计，单步可以按以下顺序理解：追加当前 K/V → attention 读取当前完整历史 → 满组缓冲编码入页 → 清空缓冲计数，复用原有内存。Kitty 的 `update`、`quantize_decode` 与模型侧调用属于这一顺序。另一实现若在本步 attention **之前**压缩满组，本步就已经读取量化值，二者不能只因最终字节格式相同而视为数值等价。
+
+用 token 身份而非浮点取值追踪，能先发现漏读、重复或错位。设当前累计 $T$ 个 token，sink 实际已有 $s_t$ 个；K/V 已编码整页数分别为 $P_K,P_V$，待编码缓冲计数为 $q_K,q_V$，V 最近窗口实际长度为 $\ell_t$，则每步应满足
+
+$$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
+
+这只是数量守恒，还必须验证每个 token 出现恰好一次、逻辑顺序正确、K/V 位置配对。K 新 token 进入待编码缓冲；V 新 token 先进入最近窗口，最旧 V 被挤出后才进入待编码缓冲。因此 V 的浮点区域一般是“最近窗口 + 待凑满页的旧 token”，不能只算一个固定窗口。两侧满页时刻可以不同，分别维护页计数是有意义的。
+
+一个缩小的教学例子取 $S=2,G=4,R=2$，不是 Kitty 内核支持的配置。第 6 个 token 到来时，K 的待编码区是 token 3–6，attention 使用它们的浮点值，随后写为一页；此时 V 最近区是 5–6，待编码区是 3–4。到第 8 步，V 的 3–6 才凑满一页。若只检查第 8 步的页数，便看不到第 6、7 步 K/V 精度区域不同的事实。
+
+同样的区别出现在 prefill。整段浮点 prefill 后压缩，压缩不影响这次 prefill 内部的 attention；逐 chunk 写入压缩历史，则后续 chunk 已经读取量化 KV，其隐藏状态、后来产生的 K/V 也可能改变。即使最后采用同一种缓存格式，缓存内容也未必一致。NOVA-KV v1 的 chunked prefill 讨论和精确副本策略体现了这个取舍：保护正在使用的历史可以降低数值变化，但副本计入瞬时内存，不能只报压缩页大小。
+
+这也解释了为什么离线 fake quant 的质量不能直接证明实际缓存的质量。需要同时对齐量化公式、保护区域、触发时刻、mask 与位置，再对齐读取实现；具体步骤见 [从模拟到真实执行的对齐](../implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
+
+## 13. 未验证与边界
+
+- 本页的框架来自 KIVI（已发表）与 SAW-INT4（预印本）两篇的全文研读，不构成对 KV cache 量化领域的综述；已补充 KVQuant、QJL、TurboQuant、NOVA-KV、AKVQ-VL、Kitty 的表示、度量与布局差异，具体深度和核验边界见各方法页。
+- 各篇论文的硬件、模型、任务与测量口径不同，本页不给出跨论文的方法排序，也不把某一篇的结论外推到其它模型族。
+- 未运行模型或性能实验；本页所有模型与性能数值均转引自对应方法页，其原始出处与条件以各方法页为准。
+
 
 ## 来源身份
 
@@ -148,3 +213,12 @@ KV cache 量化与权重量化正交、可以叠加，这一点在两篇论文�
 | [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6) | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |
 
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；训练中适应逐 token KV 量化。
+
+- [KVQuant](https://arxiv.org/abs/2401.18079v6)，arXiv:2401.18079v6；离线逐通道尺度、pre-RoPE、码本与稀疏预算。
+- [QJL](https://arxiv.org/abs/2406.03482v2)，arXiv:2406.03482v2；Key 符号投影、范数与分数估计。
+- [TurboQuant](https://arxiv.org/abs/2504.19874v1)，v1；MSE 与内积估计。
+- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；查询度量、向量码本和 chunked prefill。
+- [AKVQ-VL](https://arxiv.org/abs/2501.15021v1)，v1；模态/层模式与保护预算。
+- [Kitty](https://arxiv.org/abs/2511.18643v1)，v1；通道提精度与双位面布局；代码细节见方法页登记。
+
+- [Kitty 官方实现](https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1)，固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。

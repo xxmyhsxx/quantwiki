@@ -6,6 +6,8 @@ tags:
   - equivalent-transform
   - outliers
 sources:
+  - raw/papers/2026-09-21/turboquant/paper.pdf
+  - raw/papers/2026-09-21/nova-kv/paper.pdf
   - raw/papers/2026-09-22/ostquant/paper.pdf
   - raw/papers/2026-09-21/quip/source.eprint
   - raw/papers/2026-09-21/quip-sharp/source.eprint
@@ -14,7 +16,7 @@ sources:
   - raw/papers/2026-09-21/quarot/paper.pdf
   - raw/papers/2026-09-21/slicegpt/paper.pdf
   - raw/papers/2026-09-21/mquant/paper.pdf
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 正交旋转与量化：等价条件、离群值和在线代价
@@ -54,6 +56,8 @@ $$
 随机符号对角矩阵 $D_s=\operatorname{diag}(s_i)$、$s_i\in\{-1,+1\}$ 可与 $H$ 组合，所得矩阵仍正交。符号放在左侧还是右侧应与行/列向量约定对应：例如列向量使用 $HD_s$，行向量对应 $D_sH^\top$。随机化意在降低信号与固定基底的对齐；不能把其统计性质直接套到每一个确定性在线 $H$ 上。（QuaRot §3.1；MQuant §3.2、附录 A.3）
 
 **教学例子：**$(4,0)H_2=(2\sqrt2,2\sqrt2)$，峰值降低；但 $(1,1)H_2=(\sqrt2,0)$，峰值反而增大。二范数都不变，所以保持能量与分散峰值是两个问题。
+
+[激活引导补偿与正交残差](../methods/activation-guided-compensation.md) 进一步用持续离群通道的相干叠加解释固定与随机 Hadamard 的区别，并给出采样候选集合的概率界。其实际选择依据是验证 PPL，而非直接最小化理论离群项；无裁剪假设与实验裁剪的差别也在该页保留。
 
 ## 3. 归一化和残差为什么重要
 
@@ -134,6 +138,11 @@ $$\det\Sigma\le\prod_j\Sigma_{jj}\le(\max_j\Sigma_{jj})^d,$$
 
 [QuIP#](../methods/quip-sharp.md) 将 RHT 与 8 维 E8P 码本结合：变换让权重分布更适合固定码本，规则码本又降低解码存储成本。微调将符号向量放松为实数后，最终参数不再自动满足初始随机正交理论；理解时应分别保留变换保证与微调实证。
 
+## 8. 球面分布与查询加权距离是不同目标
+
+[TurboQuant](../methods/turboquant.md) 用 Haar 随机正交变换把固定单位输入变为均匀球面点，单坐标均值零、方差 $1/d$；有限维坐标受总平方和为 1 的约束，并非独立。单个固定 Hadamard 或随机符号 Hadamard 不自动具有完全相同的边缘分布。因此“保持范数”“减小峰值”“产生特定随机分布”是三种不同主张。
+
+[NOVA-KV](../methods/nova-kv.md) 则希望重构误差按 query 二阶矩 $M_q$ 计费。行向量变换满足 $RR^\top=M_q$ 时，$\|eR\|_2^2=eM_qe^\top$；它一般不保持欧氏范数，却把指定 logit 误差精确变成变换域 MSE。K 乘 $R$、Q 乘 $R^{-\top}$ 才保持未量化内积；不能因为两侧都存在变换就一律同乘 $R$。精确的代数恒等式与高分辨率最优性、有限精度实现、实际任务质量仍应分开验证。
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -155,3 +164,5 @@ $$\det\Sigma\le\prod_j\Sigma_{jj}\le(\max_j\Sigma_{jj})^d,$$
 
 - [algebra-check.json](../assets/orthogonal-rotation-and-hadamard-quantization/checks/algebra-check.json)
 - [verify_algebra.py](../assets/orthogonal-rotation-and-hadamard-quantization/checks/verify_algebra.py)
+- [TurboQuant](https://arxiv.org/abs/2504.19874v1)，v1；引理 1、算法 1，Haar 球面边缘与标量码本。
+- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；§3、附录 F，查询加权变换及其满秩条件。
