@@ -13,12 +13,12 @@ sources:
   - raw/repositories/2026-09-24/disaggregated-quantization/source/qad/training/qad.py
   - raw/repositories/2026-09-24/disaggregated-llama-cpp/source/src/llama-odp.cpp
   - raw/repositories/2026-09-24/disaggregated-llama-cpp/source/src/llama-context.cpp
-updated: 2026-09-28
+updated: 2026-10-06
 ---
 
 # Disaggregated Quantization：分阶段格式、权重与流式 prefill
 
-DQ 将 prefill 与 decode 的量化选择拆开：长提示处理优先利用原生低精度矩阵乘，小batch生成优先减少权重读取。进一步可以给两个阶段训练不同权重，并在单设备上从SSD逐块加载只在prefill使用的副本。它既包含无需重新训练的格式切换，也包含成本显著的量化感知蒸馏，不能统称一种训练免费PTQ。
+DQ 将 prefill 与 decode 的量化选择拆开：长提示处理优先利用原生低精度矩阵乘，小 batch 生成优先减少权重读取。进一步可以给两个阶段训练不同权重，并在单设备上从 SSD 逐块加载只在 prefill 使用的副本。这种流式方案称为 ODP（offloaded disaggregated prefill）。DQ 既包含无需重新训练的格式切换，也包含需要额外训练的量化感知蒸馏，两者应分别说明。
 
 依据 arXiv:2609.26333v1，以及主仓库 `4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba`、ODP fork `a0557fcf59e50a3bcd241e1a7de7b151d315720b` 的定向源码阅读。本文未运行训练、服务或性能测量。前置知识见 [阶段计算瓶颈](../implementation/quantized-matmul-scaling-execution.md#4-为什么-token-数改变瓶颈) 和 [服务内存与批处理](../implementation/serving-memory-and-batching.md)。
 
@@ -38,7 +38,7 @@ LUT转NVFP4通常改变数值网格，不是无损dtype转换。单纯重转换�
 
 ## 2. 响应损失怎样训练 prompt 侧权重
 
-QADD 用SFT位置标签决定每个token走哪条路径：prompt/system的忽略标签位置走prefill，assistant位置走decode；在teacher forcing的一次前反向中最小化响应位置上的 $D_{KL}(p_{teacher}\|p_{student})$。teacher固定，主权重FP32、前向fake quant、反向STE。（§2.1、附录A.1。）
+QADD（quantization-aware distillation with disaggregation）是结合阶段分离的量化感知蒸馏。它用 SFT 位置标签决定每个 token 走哪条路径：prompt/system 的忽略标签位置走 prefill，assistant 位置走 decode；在 teacher forcing 的一次前反向中最小化响应位置上的 $D_{KL}(p_{teacher}\|p_{student})$。teacher 固定，主权重 FP32、前向 fake quant、反向 STE。（§2.1、附录A.1。）
 
 路径mask取决于**输入位置t的角色**，而损失用隐藏状态t预测标签t+1。最后一个prompt位置仍走prefill，却负责第一个response token的预测。因此prefill权重至少有两条梯度来源：边界处预测，以及后续响应通过attention访问prompt K/V的梯度。
 
@@ -108,6 +108,8 @@ prefill按层顺序消费权重，一层输出计算完后该层权重可被下�
 ## 8. 质量提升的范围与负例
 
 表1的速度/设备量分别来自Qwen3-8B与Gemma3-12B，质量列却是多个模型尺寸的**家族平均**，并对最后五个checkpoint平均，不能把同一行所有数字归到单个模型。
+
+DH（decode-heavy）是以解码为主的 GSM8K、MATH-500、MMLU-Pro 平均准确率；Qwen3 还平均启用与关闭 reasoning 的两种模式。PH（prefill-heavy）是以 prefill 为主的 RULER 13 个任务在 4K、8K、16K、32K 上下文下的平均准确率。下列 DH/PH 数字均以百分比计，沿用表 1 的家族与 checkpoint 平均口径。
 
 以Qwen3家族LUT2为例：未分离DH/PH=34.8/61.3，格式分离37.2/61.0，完全分离45.5/76.6，weight-only38.4/64.1。这里格式分离主要改善decode-heavy，PH略降；完全分离的prefill容量才有更大改善。正文§3.2对Qwen3 LUT2的PH增幅写5.3，与表中76.6−61.3=15.3不符，本页以原表算术为准并保留差异。
 

@@ -8,7 +8,7 @@ tags:
   - calibration
 sources:
   - raw/papers/2026-09-21/nova-kv/paper.pdf
-updated: 2026-09-29
+updated: 2026-10-06
 ---
 
 # NOVA-KV：查询加权变换与等体积分组向量量化
@@ -33,7 +33,7 @@ $$\|S-\widehat S\|_F\leq\frac{1}{2\sqrt d}\|Q(K-\widehat K)^\top\|_F.$$
 
 $$\|Q(K-\widehat K)^\top\|_F^2=\sum_j(k_j-\widehat k_j)M_q(k_j-\widehat k_j)^\top.$$
 
-这是精确恒等式，$M_q$ 是未去均值的二阶矩，不是中心化 covariance。GQA 下应把共享同一 KV head 的 query heads 的二阶矩相加。它描述校准查询的加权方向，无法保证未来自回归查询分布不漂移。
+这是全配对矩阵误差的精确恒等式。本页沿用论文的未归一化写法：$M_q=Q^\top Q$ 是 Gram 矩阵，对应误差求和；有 $N$ 个等权 query 时，经验未中心化二阶矩为 $M_q/N$，仍不同于中心化协方差。GQA 下应把共享同一 KV head 的 query heads 的 Gram 矩阵相加。归一化约定见 [Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#gram二阶矩与协方差)。它描述校准查询的加权方向，无法保证未来自回归查询分布不漂移。
 
 ## 2. K 的变换为什么通常不是正交矩阵
 

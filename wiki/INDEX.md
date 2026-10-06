@@ -11,6 +11,7 @@ sources: []
 ## 从哪里开始
 
 - **理解模型与数值**：[Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) → [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md)。
+- **理解 MoE/MLA 与量化对象**：[稠密 decoder 主干](fundamentals/model/transformer-autoregressive-inference.md) → [MoE 的专家选择与容量](fundamentals/model/mixture-of-experts-and-routing.md) / [MLA 的联合缓存与位置分支](fundamentals/model/multi-head-latent-attention.md) → [排序稳定性](theory/quantization-ranking-stability.md) / [KV cache 量化](theory/kv-cache-quantization-objects-and-granularity.md)。
 - **建立共同基础**：[线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) → [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [校准数据与量化范围选择](theory/calibration-and-range-selection.md)。
 - **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [LSQ 的步长学习](methods/lsq.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
 - **理解低秩误差修正**：[激活加权低秩近似](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6-激活加权的低秩近似) → [LoftQ 的交替初始化](methods/loftq.md) → [QERA 的解析补偿](methods/qera.md) → [MASQuant 的模态残差](methods/masquant.md) / [SplitQ 的双补偿](methods/splitq.md) → [低秩分支的执行成本](implementation/quantized-matmul-scaling-execution.md#12-低秩辅助分支不是免费或统一位宽)。
@@ -48,6 +49,8 @@ sources: []
 | 页面 | 主要问题 |
 | --- | --- |
 | [Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) | 从 token、QKV、残差和 LM head 解释 prefill/decode、GQA 与 KV 复用。 |
+| [MoE 与专家路由](fundamentals/model/mixture-of-experts-and-routing.md) | 共享与路由专家、设备限制、负载、总容量与量化路由误差怎样连接。 |
+| [MLA：联合潜变量、位置分支与缓存表示](fundamentals/model/multi-head-latent-attention.md) | 联合压缩、矩阵吸收、解耦 RoPE 如何改变量化对象与缓存预算。 |
 | [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
 | [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | shape、stride、dtype 和执行接口怎样决定正确读写。 |
 | [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解并行分工、mask、复用和融合。 |

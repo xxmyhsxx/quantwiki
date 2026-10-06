@@ -11,7 +11,7 @@ sources:
   - raw/papers/2026-09-22/qjl/paper.pdf
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/kivi/paper.pdf
-updated: 2026-09-29
+updated: 2026-10-06
 ---
 
 # Attention 量化误差传播：从 KV 重构到输出与生成
@@ -43,7 +43,7 @@ $$\|\Delta Z\|_F^2=\frac1d\operatorname{tr}(E_KM_qE_K^\top),\qquad M_q=Q^\top Q.
 
 这说明相同的 K-MSE 可以产生不同 logit 误差。教学例：$q=(10,0)$，两个 key 误差 $e_a=(0.1,0)$、$e_b=(0,0.1)$ 的范数相同，点积误差却分别为 1 和 0。范围或通道幅值只能作为代理，不能代替读取方向。
 
-$M_q$ 是未中心化二阶矩。GQA 的一个 KV head 被多个 query heads 读取时，对总平方误差目标应累加各 head 的 $Q_h^\top Q_h$；若希望不同 heads 等权、不同长度样本等权，必须先定义并归一化相应权重。
+$M_q=Q^\top Q$ 是未归一化的 Gram 矩阵，对应误差求和；有 $N$ 个等权 query 时，经验未中心化二阶矩为 $M_q/N$。GQA 的一个 KV head 被多个 query heads 读取时，对总平方误差目标应累加各 head 的 $Q_h^\top Q_h$；若希望不同 heads 等权、不同长度样本等权，必须先定义并归一化相应权重。统计约定见 [Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#gram二阶矩与协方差)。
 
 **因果可见性会改变精确度量。** 若第 $j$ 个 key 只被集合 $I_j$ 内的 query 读取，可见 logits 的精确平方误差为
 

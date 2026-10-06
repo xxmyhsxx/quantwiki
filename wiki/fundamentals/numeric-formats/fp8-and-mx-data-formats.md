@@ -9,7 +9,7 @@ sources:
   - raw/papers/2026-09-21/fp8-formats/paper.pdf
   - raw/papers/2026-09-21/microscaling-formats/paper.pdf
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
-updated: 2026-09-22
+updated: 2026-10-06
 ---
 
 # FP8 与 Microscaling 数值格式
@@ -112,9 +112,11 @@ M §2 把 MX 的基本单元定义为“一个共享尺度加 $k$ 个元素”�
 | MXFP4 | 32 | E8M0 | 8 | FP4（E2M1） | 4 |
 | MXINT8 | 32 | E8M0 | 8 | INT8 | 8 |
 
-**转换算法（M 算法 1）。** 记 $\mathrm{emax}_{elem}$ 为元素格式中最大规格数的指数，则
+**转换算法（M 算法 1）。** 记 $\mathrm{emax}_{elem}$ 为元素格式中最大规格数的指数。对输入均为有限数、最大幅值大于零，且下面的共享尺度可由 E8M0 表示的块，有
 
 $$shared\_exp=\left\lfloor \log_2\left(\max_i|V_i|\right)\right\rfloor-\mathrm{emax}_{elem},\qquad X=2^{shared\_exp},\qquad P_i=\mathrm{quantize}(V_i/X).$$
+
+全零块不能直接代入 $\log_2 0$；特殊值与共享尺度超出可编码范围的情况需要另行处理。论文算法 1 没有展开这些分支。
 
 减去 $\mathrm{emax}_{elem}$ 的作用是把输入的指数上界对齐到元素格式最大的 binade，从而用满元素格式的指数范围。M §3 补充三处实现细节：量化 $V_i/X$ 时，超出元素范围的正规数按符号饱和，无穷与 NaN 不裁剪；该实现把 FP32 次规格数对应的 $P_i$ 置零，这一步不在 OCP 规范中，只是为简化算法；规范允许实现定义其他转换流程，算法 1 只是可用示例。
 

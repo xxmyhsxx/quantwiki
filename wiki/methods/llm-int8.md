@@ -10,7 +10,7 @@ tags:
 sources:
   - raw/papers/2026-09-21/llm-int8/source.eprint
   - raw/papers/2026-09-21/llm-int8/paper.pdf
-updated: 2026-09-22
+updated: 2026-10-06
 ---
 
 # LLM.int8()：向量级量化与混合精度分解
@@ -37,11 +37,15 @@ $$s=\frac{x_{\max}-x_{\min}}{254},\qquad z=\operatorname{round}\!\left(-127-\fra
 
 s 是反量化步长，z 是整数零点；原文的 $nd_x=1/s$ 是正向缩放系数。若按原文乘法展开采用 $q+zp$ 的加法记号，则对应 $zp=-z$。保持符号约定一致，才能判断该减去还是加回零点。
 
-论文指出 zeropoint 的实际代价：它需要把零点一起送进特殊指令；若硬件没有对应的 16 bit 乘法指令（GPU 与 TPU 属于这种情况），就得把乘积展开成
+论文 §2 讨论 zeropoint 的实际代价：它需要把零点一起送进特殊指令；在作者讨论的 GPU 与 TPU 路径中，需要把两个标量的乘积展开成
 
 $$C_{i32}=A_{i8}B_{i8}+A_{i8}zp_{b_{i16}}+B_{i8}zp_{a_{i16}}+zp_{a_{i16}}zp_{b_{i16}},$$
 
-其中只有第一项是 Int8 精度，其余在 Int16 或 Int32 完成。这条代价在后面的证据里会反复出现。
+其中 $A_{i8}$、$B_{i8}$ 是两个整数标量，只有第一项的乘法输入为 Int8，其余项在 Int16 或 Int32 完成。用于矩阵乘时，还要沿归约维累加。对 $A\in\mathbb Z^{M\times K}$、$B\in\mathbb Z^{K\times N}$ 和张量级加法偏移 $zp_a,zp_b$，按同一符号约定展开为（整理者推导）：
+
+$$C_{mn}=\sum_{k=1}^{K}A_{mk}B_{kn}+zp_b\sum_{k=1}^{K}A_{mk}+zp_a\sum_{k=1}^{K}B_{kn}+K\,zp_a zp_b.$$
+
+最后一项也累加了 $K$ 次；不能把标量公式中的 $zp_a zp_b$ 直接当成矩阵乘的完整修正项。
 
 16 bit 输入输出下的 8 bit 矩阵乘写作
 

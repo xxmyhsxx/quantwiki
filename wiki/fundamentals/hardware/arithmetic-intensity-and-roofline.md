@@ -9,12 +9,12 @@ sources:
   - raw/repositories/2026-09-21/cs336-lectures/source/lecture_02.py
   - raw/papers/2026-09-21/marlin/paper.pdf
   - raw/papers/2026-09-21/qserve/paper.pdf
-updated: 2026-09-22
+updated: 2026-10-06
 ---
 
 # 算术强度与 roofline 分析
 
-「这个算子受什么限制」是决定优化方向的第一问题。低比特权重在解码阶段有效、在大批量下收益消失，本质上都是同一条判断在不同参数下的结果。本页给出这条判断的记账方法：两个强度量的定义、常见算子的取值、以及由它导出的临界批量。
+判断算子主要受带宽还是算力限制，可以帮助选择优化方向。当解码中的权重读取占主导时，压缩权重可能缩短耗时；批量增大、计算成本占主导后，仅减少权重流量的收益可能变小。具体结果还取决于实际计算精度和内核开销。本页给出这类判断的记账方法：两个强度量的定义、常见算子的取值，以及由它导出的临界批量。
 
 定义与算例以 Stanford CS336 讲义（本地快照 `lecture_02.py`，含算子算术强度的逐项计算与 roofline 图）为准；临界批量的换算在 MARLIN 论文 §3.1 中给出同形推导（A10、$b_{opt}\approx50$），QServe 论文 §3.1 用同一框架比较 W4A16／W8A8／W4A8。硬件层级结构见 [GPU 的执行模型与存储层次](gpu-execution-and-memory-hierarchy.md)，量化侧的执行分类见 [量化矩阵乘法的缩放与执行路径](../../implementation/quantized-matmul-scaling-execution.md)。
 
