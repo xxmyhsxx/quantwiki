@@ -28,14 +28,28 @@ sources:
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin_template.h
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/dequant.h
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin_dtypes.cuh
-updated: 2026-09-22
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_awq.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/__init__.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/mixed_precision/marlin.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/marlin_utils.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/quant_utils.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/_custom_ops.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/envs.py
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin.cu
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/gptq_marlin_repack.cu
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_template.h
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/dequant.h
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_mma.h
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_dtypes.cuh
+  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/generate_kernels.py
+updated: 2026-10-07
 ---
 
 # 权重量化反量化内核的契约：AWQ 与 marlin 两种实现
 
 W4A16 的执行可以概括成一句话：权重以低比特打包存放，内核在读回它们时反量化到 FP16/BF16 再参与矩阵乘，具体 dtype 由实现路径决定。执行路径的分类见 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md)，Marlin 的批处理设计见 [Marlin](marlin-batched-w4a16-gemm.md)。本页补的是更靠底层的一层：**内核入口要求什么样的张量、怎样把 4 位反量化成 fp16、线程与模板怎样配置**，以及这些约定在不同实现形态（预编译扩展、JIT 编译）下的差别。
 
-比较对象是 AWQ 官方仓库的内核（`llm-awq` `d6e797a4`）、SGLang 的 JIT AWQ/Marlin（`2f730e29`），并参照 vLLM 的 Triton AWQ（`568afb3a`）。本页是源码核对；未编译或运行 GPU 内核，未做性能测量。位布局的独立教学计算另见 AWQ 实现页。
+比较对象是 AWQ 官方仓库的内核（`llm-awq` `d6e797a4`）、SGLang 的 JIT AWQ/Marlin（`2f730e29`），并参照 vLLM 的 Triton AWQ 与 Dense 非对称 AWQ Marlin（`568afb3a`）。本页是源码核对；未编译或运行 GPU 内核，未做性能测量。位布局的独立教学计算另见 AWQ 实现页。
 
 ## 1. 内核契约包含哪几件事
 
@@ -250,12 +264,104 @@ CTA 的工作划分采用跨 K/N 的 stripe，使部分输出列 tile 可能由�
 
 [CPU 教学脚本](../assets/w8a8-quantization-gemm-kernels/check_contracts.py)与[结果](../assets/w8a8-quantization-gemm-kernels/checks-2026-09-22.json)检验 16×64 repack 的坐标覆盖和往返、u4→FP16 的位常量、两路置换恒等式、分段低精度存储与 FP32 合并反例。它不执行上游 JIT/CUDA，也不证明所有模板实例正确。
 
-## 11. 验证状态与待验证
+## 11. 非对称 AWQ → vLLM Marlin：整数零点怎样参与计算
+
+本节使用固定 vLLM 源码，限定 **已选中 `MarlinLinearKernel` 的 Dense `kU4`、整数独立零点、G128、FP16/BF16 激活与同 dtype 尺度、无 act-order、SM80+**，不启用 INT8/FP8 input override。K、N 指 TP 本分片的逻辑输入/输出宽度，取 $K\ge256$、$K\bmod128=0$、$N\bmod8=0$，因此组数 $G=K/128>1$。配置类名字包含 Marlin 不保证最终 backend 为 Marlin，选择条件见 [AWQ 加载与后端](awq-implementation.md#5-跨引擎vllm)。
+
+### 11.1 三种布局保存同一组整数码与零点
+
+`auto_awq.py::_convert_awq_to_standard_format` 先撤销 AutoAWQ 的 nibble 位序。Marlin 的准备阶段再分别转换权重、尺度和零点；它们是配套的布局变换，没有重新量化模型。令 $N'=64\lceil N/64\rceil$；在本节 K 已按128整除的条件下，`marlin_padded_nk` 只补 N，$K'=K$。
+
+| 阶段 | qweight，int32 | qzeros，int32 | scales，T=FP16/BF16 |
+| --- | --- | --- | --- |
+| AutoAWQ checkpoint | `[K,N/8]`，沿 N 打包且有 AWQ 位序 | `[G,N/8]`，沿 N 打包且有 AWQ 位序 | `[G,N]` |
+| MPLinear 标准输入 | `[K/8,N]`，沿 K 标准打包 | `[N/8,G]`，沿 N 标准打包后转置 | `[G,N]` |
+| Marlin 设备输入 | `[K/16,2N']`，16行 tile 的 repack | `[G,N'/8]`，列置换再 interleave/打包 | `[G,N']`，组尺度列置换 |
+
+权重调用 `gptq_marlin_repack`，空 g_idx/perm 表示不做 act-order；GPTQ 名称描述输入协议。零点的实际链为 `x.t() → unpack_cols → marlin_pad_scales → marlin_zero_points`，其中传给 `marlin_zero_points` 的 `size_k` 是 G。它保持整数 $z\in[0,15]$，不加1、不减8，也不预先改成 TinyChat 的 `-s*z` 浮点偏移。此前已撤销 AWQ 位序，此处不能再调用带 AWQ 逆置换的转换来重复解包。
+
+`apply_gptq_marlin_linear` 展平输入，经 `ops.marlin_gemm → torch.ops._C.marlin_gemm` 调用设备端；这与 第10节 SGLang 的导出名不同。host 由 scales 的 G 行推回组长128，选 `group_blocks=8`、`has_zp=true`、`is_zp_float=false`、`has_act_order=false`。无 act-order 时 `is_k_full=true` 也可用于 K 的 TP 分片，该 flag 不表示模型未分片。补齐后的 tile、连续 packed 参数与向量加载约束仍由 host 检查；输出最后裁回 N，恢复输入前缀维度。
+
+### 11.2 零点列序必须对齐 B fragment 与 scale
+
+`get_scale_perms` 的组尺度置换把每个自然64列块按 $r=0,\ldots,7$ 排为 $[r,r+8,\ldots,r+56]$。`marlin_zero_points` 先用同一64元素置换，再把每8个值按 `[0,2,4,6,1,3,5,7]` interleave。因而块内 word r 的低到高 nibble 对应：
+
+$$
+[r,\ r+16,\ r+32,\ r+48,\ r+8,\ r+24,\ r+40,\ r+56].
+$$
+
+设备令 `lane=threadIdx.x%32`、`w=(threadIdx.x/32)%tb_n_warps`、`r=lane/4`（整数除法），`tb_n_warps=thread_n/64`。每线程按 `zp_sh_rd=8w+r` 读取一个 int32 word；同一 warp 中负责不同 K 行的四个 lane 共用该 word。设当前64列块的全局基点为 $c_{64}=\text{slice\_col}\cdot\text{thread\_n}+64w$，则解包后的 `frag_zp[j]` 两个分量对应列
+
+$$
+c_{64}+r+16j,\qquad c_{64}+r+16j+8,\qquad j=0,1,2,3.
+$$
+
+`matmul` 对 packed word 与 `word>>8` 分别反量化。B 的两套 fragment 对应这两列；每列包含 lane 所拥有的 K 偏移 $\{0,1,8,9\}$，加上 `2*(lane%4)`。`sub_zp` 将该列零点广播到它的四个 K 元素，`scale` 再乘同列尺度。这解释了为什么只重排 qweight，或把 qzeros 当成自然列序直接读取，会破坏数值对应。shared 中尺度的读索引也为 `8w+r`，但其单位是 int4；零点索引的单位是 int32，两者不能混用。
+
+### 11.3 规则组边界怎样接入四阶段流水
+
+本节候选的 `thread_k∈{64,128}`，故 `thread_k_blocks=thread_k/16≤group_blocks=8`。令 $h=128/\text{thread\_k}$，则 h 为2或1；每个量化组覆盖 h 个 CTA K tile。零点的 global/shared stride 分别为 `N'/32`、`thread_n/32`，单位均为16-byte int4；scale 用 T 存储，零点用4-bit码存储，字节量不同。
+
+`marlin_template.h:394–401` 先将 stripe 的 `iters` 向上对齐到 h 的倍数，避免从组中间开始；slice 初始零点行按 `floor(thread_k_blocks*slice_row/8)` 定位。起点与 stripe 的组对齐保证下面以局部 `pipe%h` 判断组首有意义。
+
+`fetch_to_shared` 只在 `pipe%h==0` 的组首用 `cp_async4` 搬运一行零点，并推进全局组地址。shared ring 有4个槽：`thread_k=64` 时槽0/1消费同组零点、槽2/3消费下一组；`thread_k=128` 时每槽对应一组。未在组首重新复制的槽使用组首槽的数据。
+
+`fetch_zp_to_registers` 在新组首 K 子步读取 `h*(pipe/h)` 的 shared 槽；`matmul` 同样只在新组恢复 `frag_zp`，其余子步复用。零点与尺度的组推进一致，且遵守 A/B 主流水的 wait/sync；两套 packed 寄存器缓冲并不意味着每个 MMA 都重新加载零点。shared ring、预取/排空与寄存器轮换的共同概念见 第10.4节和 [异步拷贝流水](gpu-async-copy-pipelines.md)，本节仅补零点接入点。
+
+### 11.4 共同浮点基底先抵消，再乘组尺度与 MMA
+
+`marlin_template.h` 为本节 FP16、BF16 两种 `kU4` 都选择 `dequant_skip_flop=true`。`dequant.h` 的 `lop3` 将4-bit码装到浮点 pair 的尾数，保留下面的基底；整数零点用相同分支恢复。
+
+| 类型 T | 两个分量的指数常量 | 权重、零点恢复值 | `sub_zp` 后 |
+| --- | --- | --- | --- |
+| FP16 | `0x64006400` | $1024+q,\ 1024+z$ | $q-z$ |
+| BF16 | `0x43004300` | $128+q,\ 128+z$ | $q-z$ |
+
+这两个基底所在指数的 ULP 都为1，$q,z\in[0,15]$ 可精确嵌入；pair 减法消掉共同基底，所得 $q-z\in[-15,15]$ 也可精确表示。随后 `scale` 用 half2/BF16 pair 乘法恢复组尺度，**在 T 中舍入后**才参与 MMA。用 $\operatorname{RN}_T$ 表示转换/舍入到 T，逻辑反量化值可概括为：
+
+$$
+\widetilde W_{k,n}
+=\operatorname{RN}_T\!\left[
+(q_{k,n}-z_{\lfloor k/128\rfloor,n})s_{\lfloor k/128\rfloor,n}
+\right].
+$$
+
+其中 $q,z,s$ 是正确布局还原后的逻辑值，$s$ 本身已经按 T 存储。基底1024/128是位转换技巧，不是量化零点；本分支使用实际 z，不能套用 第10节的 `kU4B8` 固定减8，也不走旁边 `!dequant_skip_flop` 的 `scale_and_sub` FMA。
+
+**教学例，非 GPU 结果。** 在 K≥256、N≥64 的矩阵中取组0、lane0。列0/8/16/24/32/40/48/56的零点为1/2/3/4/5/6/7/8，打包为 `0x86427531`；恢复后的四个零点 pair 为 `(1,2),(3,4),(5,6),(7,8)`，尚未相减时各分量另加上述基底。列0的 K 偏移0/1/8/9码取3/4/5/6，列8取7/8/9/10，权重 word 为 `0xa8649753`。两列减各自零点后为 `[2,3,4,5]`、`[5,6,7,8]`；若尺度为0.5、0.25，送入 MMA 的 B 值分别为 `[1,1.5,2,2.5]`、`[1.25,1.5,1.75,2]`。这些局部数可由两种 T 精确表示，例子说明列对应，不证明整个 GEMM 数值。
+
+SM80+ 的普通 M tile 使用 `mma.sync.aligned.m16n8k16` 的 FP16/BF16 输入、FP32累加形式；M8 采用转置 MMA 映射。它们直接消费寄存器内恢复的 B，没有完整浮点权重矩阵。FP32 MMA 不会撤销 B 的尺度乘法舍入，也不保证与另一种归约顺序逐位一致。
+
+### 11.5 归约、bias 与版本边界
+
+CTA 内先在 shared 树形合并 FP32部分和；需要跨 CTA 时，采用 第10.5节所解释的锁顺序缓冲或 atomic。**此固定 vLLM 的默认值为 `use_fp32_reduce=True`、`VLLM_MARLIN_USE_ATOMIC_ADD=0`**：前者使用 FP32 `C_tmp` 避免中间 T 存储舍入，后者实际读取环境开关并默认关闭，与 第10节所读 SGLang 的 `if not True` 不同。
+
+若显式开启 atomic，还需 CUDA、$N'<2048$、$K'\ge2048$，BF16需SM90+；host 对各 M split 再要求 $\lceil M_{\rm split}/64\rceil N'\le2048$。atomic 将各段结果转换为输出 T 后相加，`use_fp32_reduce` 不能把它改成 FP32 atomic。
+
+所选多组 G128 的 scale 已在 MMA 前乘入 B。`write_result` 把最终 FP32部分和转换为输出 T；若有 bias，在代表最后 slice 的那一项上用 T pair 加法加一次 bias。atomic 下这一 slice 的编号不保证最后到达，bias 随该项参与 atomic。bias 在加载期补列并单独置换，不能把它的列序当作组尺度列序。最后切掉 padded N 输出列并恢复输入 shape；“FP32归约”不代表 bias 在 FP32 中相加。
+
+两条相邻分支必须分开：
+
+- **K=128 的单组。** 尽管配置是 G128，host 由一行 scales 判为 `group_size=-1`。W4改在输出转换为 T 后乘列尺度，不能套用本节多组路径的 MMA 前缩放顺序。
+- **SM75 的 FP16。** 此 vLLM 版本另有二阶段流水和多组 W4 的 FP16 MMA accumulation，slice 结束才转 FP32归约；BF16不支持SM75。它不属于本节 SM80+ 主线，不能因同为 Marlin 就统一为四阶段/FP32 MMA。
+
+本节直接源码定位如下；Python 路径相对 `vllm/`，设备路径相对 `csrc/libtorch_stable/quantization/marlin/`。
+
+| 结论 | 源码定位 |
+| --- | --- |
+| AWQ 标准化与最终 backend | `model_executor/layers/quantization/auto_awq.py:93–168,457–536`；`model_executor/kernels/linear/__init__.py:689–758` |
+| 准备、列置换、包装与环境开关 | `model_executor/kernels/linear/mixed_precision/marlin.py:104–245`；`model_executor/layers/quantization/utils/marlin_utils.py:220–242,434–507,607–740`；`model_executor/layers/quantization/utils/quant_utils.py:782–836`；`_custom_ops.py:1200–1241`；`envs.py:1437–1442` |
+| Repack、host 条件与模板来源 | `gptq_marlin_repack.cu:129–209,285–350`；`marlin.cu:340–412,523–566,623–878`；`generate_kernels.py:65–72,173–287`，本轮仅读生成规则，未生成或编译实例 |
+| 零点流水/坐标/恢复与缩放 | `marlin_template.h:339–353,394–401,583–703,842–947,968–1134,1164–1289,1748–1812`；`dequant.h:108–148,173–205` |
+| MMA 与输出 | `marlin_mma.h:9–75,138–207`；`marlin_dtypes.cuh:31–35,67–71`；`marlin_template.h:294–304,1402–1680,1848–1861,2001–2025` |
+
+## 12. 验证状态与待验证
 
 - 上游核对为 code-read：未编译、未运行 GPU、未测性能；新增 CPU 教学算例只检验布局和数值顺序，不构成上游输出验证。
 - 已核对 AWQ 新版 GEMV 的主要加载、解包、乘加和归约路径，以及 GEMM 主机配置、搬运/MMA 与部分合并代码；尚未逐行验证全部同步、边界和运行时错误处理。
 - SGLang 已读普通 AWQ JIT 反量化，以及现代 Marlin 对称 W4 GPTQ 的 repack、反量化、尺度选择、主流水和两层归约。未逐一展开 AWQ 零点、W8、FP4/FP8 全部模板，也未覆盖全部线程配置的同步与越界正确性。
 - 已定向读取 vLLM Triton AWQ 的反量化索引、GEMM K 循环和 split-K 包装；没有执行或证明它与 SGLang/CUDA 版本逐位等价。
+- 已核固定 vLLM Dense 非对称 `kU4/G128/A16/no-act-order/SM80+` 的加载、零点布局/组边界/shared/寄存器恢复、共同基底抵消、尺度/MMA、归约/bias 与输出裁剪；明确 K=128 单组、SM75 和 atomic 的条件差异。教学 word 只做独立位序核对，未执行上游脚本或生成 selector，未全面覆盖浮点零点、W8/A8、FP4/FP8、MoE、任意线程/tail 组合或其他 backend。
 
 ## 来源身份
 
@@ -265,4 +371,4 @@ CTA 的工作划分采用跨 K/N 的 stripe，使部分输出列 tile 可能由�
 | --- | --- | --- |
 | [mit-han-lab/llm-awq](https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61) | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |
 | [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton AWQ 的设备与包装路径 |
+| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton AWQ；所选 Dense AWQ Marlin 的加载、零点设备消费与输出 |

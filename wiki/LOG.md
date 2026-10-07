@@ -1,5 +1,14 @@
 # Wiki 变动记录
 
+## 2026-10-07 · AWQ Marlin 零点设备源码 ingest 和 review
+
+- 接续既有 AWQ 加载与对称 GPTQ Marlin 主线，在[内核契约页](implementation/weight-only-dequant-kernels.md#11-非对称-awq--vllm-marlin整数零点怎样参与计算)增补固定 vLLM `568afb3a13806beb53bb2e6bd518269357b237c0` 的 Dense `kU4/G128/A16/no-act-order/SM80+`。核 checkpoint→MPLinear 标准化→Marlin 权重/scale/packed zeros 配套布局→host/template→设备消费，限定本分片 K≥256且按128整除、N按8整除；本范围只补 N 至64倍数，没有重新量化模型。
+- 核零点64列置换与 nibble interleave、shared ring 组首复制/复用和 lane→列/尺度对应。FP16/BF16 的 q 与整数 z 分别恢复为1024/128的共同基底，相减抵消后在低精度 B fragment 上乘组尺度，再做 FP32 MMA。区分对称 GPTQ 的固定减8、TinyChat scaled-zero 与未选 float-zp 分支。
+- 明确 vLLM atomic 环境开关实际生效且默认关闭、FP32跨CTA缓冲默认开启；bias先转换到输出类型再加一次。保留 K=128单组后乘scale、SM75 FP16多组低精度MMA/二阶段流水、atomic条件与不同舍入顺序，未把这些相邻分支混入 SM80+ 多组主线。
+- 同步 AWQ 承接页、INDEX/READING/SELF；沿用同一 vLLM 研读记录，85条有依据、60条范围待核实不变。下一项可执行代码库P1为单设备W4A16 MoE的专家配对/两次GEMM/零点尺度/gate汇合，所需固定来源已存在；OnPTQ/WUSH-KV仍待匹配实现材料。
+- 三组独立内容 review 回查加载/host、零点流水/位恢复/公式、尺度/MMA/归约/bias 与跨页范围。修正 checkpoint 零点位序的阶段描述，补 AWQ 页的直接设备来源、repack 坐标/打包定位和 stripe 组对齐前提；修正后复核无剩余必修问题，必要前置由已有正文承接。
+- 验证：本轮使用的15个 vLLM源码文件与固定ZIP逐字节一致；独立教学计算核256组 q/z 的共同基底抵消、8个零点列映射word与2个教学word。全库131个知识页、1160项来源、2471处本地链接检查通过，六个成果文件中35个数学表达式通过KaTeX，SELF的55条本地链接/锚点与差异空白/换行检查通过；原有15个未提交文件保持原哈希。本轮没有安装、生成/编译selector、JIT、GPU、模型、服务或性能实验，原有工作区改动保留。
+
 ## 2026-10-07 · DeepGEMM 专家设备源码 ingest 和 review
 
 - 接续所选 MoE EP/DeepEP 主线，新增 [DeepGEMM 专家设备执行](implementation/deepgemm-moe-expert-execution.md)。核定 SGLang 默认 `sgl-deep-gemm==0.1.3` 与官方 `v0.1.3` tag commit `b4296edce3cd07e3b6392c8eb390cee9c41a6b70`；每个 PyPI/cu129 x86_64 wheel 的 870 项非binary文件与固定父树/子模块相符。6,923 blob 的完整保存与哈希/类型/执行位检查另记 raw，不把host二进制身份或默认依赖当成实际部署证明。

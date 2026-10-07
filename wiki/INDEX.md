@@ -219,7 +219,7 @@ sources: []
 | [量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) | 同样写着低比特量化，实际可能是浮点模拟、压缩权重配合即时反量化，或整数输入参与矩阵乘法。 |
 | [GPU 算子性能分析：从时间线到瓶颈假设](implementation/gpu-kernel-performance-analysis.md) | 怎样选择 profiling 工具、解释计数器，并用 RMSNorm/量化 GEMM 对照检验瓶颈。 |
 | [W8A8 算子：激活量化、整数 GEMM 与输出校正](implementation/w8a8-quantization-gemm-kernels.md) | 两框架的舍入、零行尺度、CUTLASS 主流水和零点校正怎样影响数值与成本。 |
-| [权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | W4A16 的执行可以概括成一句话：权重以低比特打包存放，内核在读回它们时反量化到 fp16 再参与矩阵乘。 |
+| [权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | AWQ/TinyChat 与现代 Marlin 的打包、元数据和设备消费；区分对称 GPTQ 固定偏置与非对称 AWQ 整数零点，以及尺度、MMA、归约和输出顺序。 |
 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) | 多模态模型压缩的评测常停在几个 VQA 分数上。 |
 | [量化误差诊断与验证](implementation/quantization-error-diagnosis.md) | 量化后结果变差，可能来自图变换错误、网格与分布不匹配、局部误差传播，也可能来自整数后端与模拟规则不一致。 |
 | [AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang](implementation/awq-implementation.md) | 方法页回答 AWQ 为什么这样设计、证据支持什么；本页回答代码层面的事情：量化脚本产出什么形状的权重、打包约定是什么、内核从哪里进入、同一个 AWQ checkpoint 在 vLLM 与 SGLang 里各走哪条路径。 |
