@@ -30,7 +30,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
-| [SAW-INT4](https://arxiv.org/abs/2604.19157v1)<br>arXiv:2604.19157v1 | 本轮定向回查section3的Hessian结果/因果措辞、section5的4×与0.25×容量说法、TTFT与两类吞吐解释；两tex与固定源包一致 | [SAW方法/服务证据](methods/saw-int4.md) | 只确认本轮所列局部核对，历史全文/附录研读范围与日期仍未知；未复现质量或服务数据 | [2026-10-08](LOG.md#2026-10-08--saw-int4-writer-与-gqa-decode-ingest-和-review) |
+| [SAW-INT4](https://arxiv.org/abs/2604.19157v1)<br>arXiv:2604.19157v1 | 本轮定向回查section3的Hessian结果/因果措辞与Mean/Drop冲突、section5的4×与0.25×容量说法、TTFT与两类吞吐解释；两tex与固定源包一致 | [SAW方法/服务证据](methods/saw-int4.md) | 只确认本轮所列局部核对，历史全文/附录研读范围与日期仍未知；未复现质量或服务数据 | [2026-10-08](LOG.md#2026-10-08--saw-int4-prefill-恢复与全量材料队列) |
 | [StagQ](https://arxiv.org/abs/2610.05977v1)<br>arXiv:2610.05977v1 | 正文与附录 A–G，H 用于背景；核 dyadic/affine 公式、pair/floor 目标、guard/完整重建、rate、kernel/代表实验表与 PDF 页图 | [StagQ](methods/stagq.md)；[多精度预算](theory/mixed-precision-allocation.md#8-多个可读精度与逐层位宽分配是不同选择)；[前缀与例外](research/low-bit-representation-design.md#7-多精度前缀使主体与例外一起承担约束) | 未取得作者实现或运行质量/性能；全部任务附表未逐格重算；性能为合成权重 batch-one，真实 decode 数值检查仅 Llama 两位局部 blocks；可变长 side record/生产运行时切换尚待实现 | [2026-10-07](LOG.md#2026-10-07--moemla-与预算表示的源码-ingest-和-review) |
 | [Differentiable Bit-Widths](https://arxiv.org/abs/2610.06026v1)<br>arXiv:2610.06026v1 | 正文方法/实验及附录 A/C/D.3/E/F，定向 PDF 页图；成对 rank/bit、预算/Hamilton/STE/LBQ、训练、packing/GEMM、代表表与性能条件 | [DBW](methods/dbw.md)；[rank/bit 计费](theory/mixed-precision-allocation.md#7-改变因子宽度时rank-与-bit-必须共同计费)；[主体因子宽度](research/low-bit-representation-design.md#6-主体也可以改变因子宽度) | 未复现训练/模型/速度或逐格核验全部任务表；论文与代码的目标/packing/GEMM/trunc 口径有差异；表 19 的加权 Bit 与表尾未裁决 | [2026-10-07](LOG.md#2026-10-07--moemla-与预算表示的源码-ingest-和-review) |
 | [Calibrate the Decisions That Change the Future](https://arxiv.org/abs/2609.36828v1)<br>arXiv:2609.36828v1 | 正文 §3–5、算法与理论附录；实验参数、来源、正确性 flip 定义及必要补充分析/限制；核对式 (3)–(21)、表 1–2/4–5 | [OnPTQ](methods/onptq.md)；[前缀状态校准](theory/calibration-and-range-selection.md#11-自回归校准还需要选择前缀状态)；[生成状态比较](research/mbq-vlmq-comparison.md#9-从静态-token-重要性到生成状态与后果) | 未取得作者实现或运行训练/模型；θ 参数化及底层更新配置未给完整细节；完整诊断附表未逐格复算 | [2026-10-07](LOG.md#2026-10-07--量化优化变换与生成行为逐论文-ingest) |
@@ -119,8 +119,8 @@ updated: 2026-10-08
 | [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5)<br>c61476d728e42ae0d8a35e7e78494edcac3237b5 | 平滑、两次校准、浮点模拟与 OPT INT8 图 | [SmoothQuant 的实现核对：平滑融合、INT8 接口与离线边界](implementation/smoothquant-implementation.md)；[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) | 未运行模型、导出或基准；其他骨干和分支不作完整覆盖 | [2026-09-22](LOG.md#2026-09-22--gptqsmoothquantw8a8qserveqoq-实现深化与-review) |
 | [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)<br>2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc | Scheduler/RadixCache/请求与 KV pool、overlap 与 extend/decode；AWQ、GPTQ/Marlin、W8A8、QoQ；本轮贯通普通 MLA 的投影/联合缓存/分派与 FlashInfer 调用端，及单设备 FP8 MoE 的 top-k、配对排序、专家尺度/两次 GEMM/共享汇合；续核 DeepEP normal/LL 的 group、expert 映射、接收排列/量化、DeepGEMM 调用、gate/rho/shared 与 handle/event/hook；续核默认DeepEP recipe及所选设备接续；续核DeepGEMM 0.1.3 pin、真实定制init/FFI、contiguous/masked caller、scale布局/中间舍入、padding消费与暖编译接口 | [SGLang 推理执行](implementation/sglang-inference-execution.md)；[Attention 设计](implementation/sglang-attention-operator-design.md)；[MLA 执行](implementation/mla-cache-and-attention-execution.md)；[MoE 执行](implementation/moe-routing-and-quantized-expert-execution.md)；[EP 执行](implementation/moe-expert-parallel-execution.md)；[DeepEP 设备](implementation/deepep-moe-communication-execution.md)；[DeepGEMM 专家设备](implementation/deepgemm-moe-expert-execution.md) | 无服务/GPU 实测；未选 DeepEP/DeepGEMM 分支、EPLB/其他 EP 分支、DSA/DCP、TMA/graph、HiCache、SWA/Mamba、分布式 KV 和全部量化/Attention 类型未全面覆盖；调用端依赖 FlashInfer 0.6.12 | [2026-10-07](LOG.md#2026-10-07--deepgemm-专家设备源码-ingest-和-review) |
 | [FutureMLS-Lab/OSCAR](https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437)<br>41ebcdba3db5f0ce1339c3727caea80df575d437 | eval配置/rotation接口与vendored SGLang；所选BF16/TP1/GQA/D128/G128、affine INT2 mixed缓存的writer、裁剪、slot/arena、extend/flush、FA3 prefill调用、Triton decode四分区恢复/舍入/softmax/split合并与输出逆旋转 | [OSCAR混合缓存执行](implementation/oscar-mixed-kv-cache-execution.md)；[KV格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md)；[WUSH-KV](methods/wush-kv.md)的前置接口 | 未取得WUSH-KV作者改版；未核全部Lloyd-Max/多组/其他dtype/backend/共享前缀/graph/多设备或FA3库内device；未取RotationZoo/模型或运行/编译/GPU/测性能。完整归档8191个blob不表示整仓研读 | [2026-10-08](LOG.md#2026-10-08--oscar-混合缓存源码-ingest-和-review) |
-| [togethercomputer/saw-int4](https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0)<br>e51bfa7291d52cd14b86e4c6ded6c002d0444ff0 | README/BDR配置、子模块pin；既有子模块host研读与本轮设备接续的准确child身份分列下一行 | [SAW-INT4](methods/saw-int4.md) | parent版本记录不能代替child文件身份；未运行模型或服务 | [2026-10-08](LOG.md#2026-10-08--saw-int4-writer-与-gqa-decode-ingest-和-review) |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84)<br>0fcc241961f9c79c27f6bad9a456bf10c8554a84 | 所选BF16/TP1/GQA4/D128/H128/K-only/FUSE1的host分派、K融合FWHT writer/V普通writer、two-half INT4/FP32元数据、GQA恢复/概率舍入/online softmax/共同split几何与FP32合并→BF16输出；必要FA3 prefill gate/先写后flatten调用 | [SAW设备链](methods/saw-int4.md#41-所选配置与实际调用)；[KV格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md)；[旋转舍入](theory/orthogonal-rotation-and-hadamard-quantization.md#4-离线旋转与在线旋转各处理哪里) | FA3 flatten/device、其他dtype/order/MHA/MLA/ROTATE_V/backend、多设备/graph未全面核；未运行、编译或测质量/性能。固定身份按实际使用的7个child文件比对，不表示重验全部7487项存档 | [2026-10-08](LOG.md#2026-10-08--saw-int4-writer-与-gqa-decode-ingest-和-review) |
+| [togethercomputer/saw-int4](https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0)<br>e51bfa7291d52cd14b86e4c6ded6c002d0444ff0 | README/BDR配置、子模块pin；既有子模块host研读与本轮设备接续的准确child身份分列下一行 | [SAW-INT4](methods/saw-int4.md) | parent版本记录不能代替child文件身份；未运行模型或服务 | [2026-10-08](LOG.md#2026-10-08--saw-int4-prefill-恢复与全量材料队列) |
+| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84)<br>0fcc241961f9c79c27f6bad9a456bf10c8554a84 | 所选BF16/TP1/GQA4/D128/H128/K-only/FUSE1的host分派、K融合FWHT writer/V普通writer、two-half INT4/FP32元数据、GQA恢复/概率舍入/online softmax/共同split几何与FP32合并→BF16输出；FA3 prefill gate/先写后flatten、page_size=1 页表/slot与逻辑输出、FP32恢复/逆FWHT后BF16、完整已用历史工作缓冲 | [SAW设备链](methods/saw-int4.md#41-所选配置与实际调用)；[KV格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md)；[旋转舍入](theory/orthogonal-rotation-and-hadamard-quantization.md#4-离线旋转与在线旋转各处理哪里) | FA3库内及其他分页组合、dtype/order/MHA/MLA/ROTATE_V/backend、多设备/graph未全面核；未运行、编译或测质量/性能。固定身份按实际使用的8个child文件比对，不表示重验全部7487项存档 | [2026-10-08](LOG.md#2026-10-08--saw-int4-prefill-恢复与全量材料队列) |
 | [mit-han-lab/omniserve](https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8)<br>02b2925aa6fa3b92b06316a1524b7f38922cd9c8 | QServe/QoQ converter、tile/nibble 与元数据重排 | [QServe/QoQ 的实现核对：两级编码、离线重排与 SGLang W4A8](implementation/qserve-implementation.md)；[量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | TP/尾块及整套 KV4 系统未运行验证 | [2026-09-22](LOG.md#2026-09-22--gptqsmoothquantw8a8qserveqoq-实现深化与-review) |
 | [llm-awq / TinyChat](https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61)<br>d6e797a42b9ef7778de8ee2352116e0f48a78d61 | 搜索/裁剪、fake/real 量化、TinyChat v2 打包、加载与 GEMV/GEMM 链 | [AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang](implementation/awq-implementation.md)；[权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | 未编译/运行模型或测性能；未核验全部数据类型和分支 | [2026-09-22](LOG.md#2026-09-22--awq-代码与服务后端-ingest) |
 | [IST-DASLab/gptq](https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf)<br>2d65066eeb06a5c9ff5184d8cebdf33662c67faf | Llama 校准、Hessian、列置换、3-bit 保存及 CUDA GEMV | [GPTQ 的实现核对：校准、导出协议与服务内核选择](implementation/gptq-implementation.md)；[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) | 未运行量化/导出；服务互换与数值一致性未实测 | [2026-09-22](LOG.md#2026-09-22--gptqsmoothquantw8a8qserveqoq-实现深化与-review) |
@@ -206,3 +206,166 @@ updated: 2026-10-08
 | [ChangyuanWang17/QVLM](https://github.com/ChangyuanWang17/QVLM/tree/191bdc9a833b7ed273c234d9f7b69ceb51d33b6f)<br>191bdc9a833b7ed273c234d9f7b69ceb51d33b6f | [Q-VLM：熵驱动的联合校准与视觉编码器优化](methods/q-vlm.md) |
 | [facebookresearch/SpinQuant](https://github.com/facebookresearch/SpinQuant/tree/8f47aa3f00e8662caf1a484153920a07e5281c3a)<br>8f47aa3f00e8662caf1a484153920a07e5281c3a | [SpinQuant：用最终模型损失学习正交旋转](methods/spinquant.md) |
 | [NVIDIA/TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM/tree/d567f924b729dc81465f2d2f762cabb893e28602)<br>d567f924b729dc81465f2d2f762cabb893e28602 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) |
+
+## 待逐项核查与 ingest 的已收录材料
+
+2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
+
+以下140个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 CentriQ，随后 PIVOT-Q 与 SAPrune；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+
+### 论文（65条）
+
+| 来源 | 固定版本或收录快照 |
+| --- | --- |
+| [Atom: Low-bit Quantization for Efficient and Accurate LLM Serving](https://arxiv.org/abs/2310.19102v3) | `arXiv:2310.19102v3` |
+| [Attention Is All You Need](https://arxiv.org/abs/1706.03762v7) | `arXiv:1706.03762v7` |
+| [CalibQuant: 1-Bit KV Cache Quantization for Multimodal LLMs](https://arxiv.org/abs/2502.14882v2) | `arXiv:2502.14882v2` |
+| [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4) | `arXiv:2410.13056v4` |
+| [CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs](https://arxiv.org/abs/2509.15455v2) | `arXiv:2509.15455v2` |
+| [CudaForge: An Agent Framework with Hardware Feedback for CUDA Kernel Optimization](https://arxiv.org/abs/2511.01884v2) | `arXiv:2511.01884v2` |
+| [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948v2) | `arXiv:2501.12948v2` |
+| [DeepSeek-V3 Technical Report](https://arxiv.org/abs/2412.19437v2) | `arXiv:2412.19437v2` |
+| [DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving](https://arxiv.org/abs/2401.09670v3) | `arXiv:2401.09670v3` |
+| [FastKernels: Benchmarking GPU Kernel Generation in Production](https://arxiv.org/abs/2605.23215v1) | `arXiv:2605.23215v1` |
+| [FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness](https://arxiv.org/abs/2205.14135v2) | `arXiv:2205.14135v2` |
+| [FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning](https://arxiv.org/abs/2307.08691v1) | `arXiv:2307.08691v1` |
+| [FlashInfer-Bench: Building the Virtuous Cycle for AI-driven LLM Systems](https://arxiv.org/abs/2601.00227v1) | `arXiv:2601.00227v1` |
+| [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2) | `arXiv:2508.04405v2` |
+| [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1) | `arXiv:2608.15602v1` |
+| [Formal Algorithms for Transformers](https://arxiv.org/abs/2207.09238v1) | `arXiv:2207.09238v1` |
+| [GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245v3) | `arXiv:2305.13245v3` |
+| [Holistic Evaluation of Language Models](https://arxiv.org/abs/2211.09110v2) | `arXiv:2211.09110v2` |
+| [Holding the FP8 Quality Ceiling at 8-Bit Weights and Activations: INT8 and GGUF Post-Training Quantization of Ideogram 4.0 for Consumer GPUs](https://arxiv.org/abs/2606.12280v2) | `arXiv:2606.12280v2` |
+| [KernelBench: Can LLMs Write Efficient GPU Kernels?](https://arxiv.org/abs/2502.10517v1) | `arXiv:2502.10517v1` |
+| [KernelBenchX: A Comprehensive Benchmark for Evaluating LLM-Generated GPU Kernels](https://arxiv.org/abs/2605.04956v2) | `arXiv:2605.04956v2` |
+| [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1) | `arXiv:2606.10531v1` |
+| [The Llama 3 Herd of Models](https://arxiv.org/abs/2407.21783v3) | `arXiv:2407.21783v3` |
+| [LLM-MQ: Mixed-Precision Quantization for Efficient LLM Deployment](https://neurips2023-enlsp.github.io/papers/paper_4.pdf) | `snapshot-sha256-9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0` |
+| [LongBench v2: Towards Deeper Understanding and Reasoning on Realistic Long-context Multitasks](https://arxiv.org/abs/2412.15204v2) | `arXiv:2412.15204v2` |
+| [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685v2) | `arXiv:2106.09685v2` |
+| [Compression Strategies for Efficient Multimodal LLMs in Medical Contexts](https://arxiv.org/abs/2507.21976v3) | `arXiv:2507.21976v3` |
+| [MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark](https://arxiv.org/abs/2406.01574v6) | `arXiv:2406.01574v6` |
+| [Fast Transformer Decoding: One Write-Head is All You Need](https://arxiv.org/abs/1911.02150v1) | `arXiv:1911.02150v1` |
+| [Advancing Multimodal Large Language Models with Quantization-Aware Scale Learning for Efficient Adaptation](https://arxiv.org/abs/2408.03735v1) | `arXiv:2408.03735v1` |
+| [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2) | `arXiv:2309.02784v2` |
+| [Plug-and-Play 1.x-Bit KV Cache Quantization for Video Large Language Models](https://arxiv.org/abs/2503.16257v2) | `arXiv:2503.16257v2` |
+| [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1) | `arXiv:2608.13966v1` |
+| [Qwen2.5-Omni Technical Report](https://arxiv.org/abs/2503.20215v1) | `arXiv:2503.20215v1` |
+| [Qwen2.5-VL Technical Report](https://arxiv.org/abs/2502.13923v1) | `arXiv:2502.13923v1` |
+| [Qwen3 Technical Report](https://arxiv.org/abs/2505.09388v1) | `arXiv:2505.09388v1` |
+| [Qwen3-VL Technical Report](https://arxiv.org/abs/2511.21631v2) | `arXiv:2511.21631v2` |
+| [ResQ: Mixed-Precision Quantization of Large Language Models with Low-Rank Residuals](https://arxiv.org/abs/2412.14363v2) | `arXiv:2412.14363v2` |
+| [Root Mean Square Layer Normalization](https://arxiv.org/abs/1910.07467v1) | `arXiv:1910.07467v1` |
+| [RULER: What's the Real Context Size of Your Long-Context Language Models?](https://arxiv.org/abs/2404.06654v3) | `arXiv:2404.06654v3` |
+| [Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve](https://arxiv.org/abs/2403.02310v3) | `arXiv:2403.02310v3` |
+| [SGLang: Efficient Execution of Structured Language Model Programs](https://arxiv.org/abs/2312.07104v2) | `arXiv:2312.07104v2` |
+| [SharQ: Bridging Activation Sparsity and FP4 Quantization for LLM Inference](https://arxiv.org/abs/2606.26587v1) | `arXiv:2606.26587v1` |
+| [SmoothQuant+: Accurate and Efficient 4-bit Post-Training WeightQuantization for LLM](https://arxiv.org/abs/2312.03788v1) | `arXiv:2312.03788v1` |
+| [SpikeMLLM: Spike-based Multimodal Large Language Models via Modality-Specific Temporal Scales and Temporal Compression](https://arxiv.org/abs/2604.18610v1) | `arXiv:2604.18610v1` |
+| [TritonBench: Benchmarking Large Language Model Capabilities for Generating Triton Operators](https://arxiv.org/abs/2502.14752v1) | `arXiv:2502.14752v1` |
+| [VEQ: Modality-Adaptive Quantization for MoE Vision-Language Models](https://arxiv.org/abs/2602.01037v1) | `arXiv:2602.01037v1` |
+| [FlexRound: Learnable Rounding based on Element-wise Division for Post-Training Quantization](https://arxiv.org/abs/2306.00317v2) | `arXiv:2306.00317v2` |
+| [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2) | `arXiv:2402.15319v2` |
+| [LQ-Nets: Learned Quantization for Highly Accurate and Compact Deep Neural Networks](https://arxiv.org/abs/1807.10029v1) | `arXiv:1807.10029v1` |
+| [LRQ: Optimizing Post-Training Quantization for Large Language Models by Learning Low-Rank Weight-Scaling Matrices](https://arxiv.org/abs/2407.11534v2) | `arXiv:2407.11534v2` |
+| [LSQ+: Improving low-bit quantization through learnable offsets and better initialization](https://arxiv.org/abs/2004.09576v1) | `arXiv:2004.09576v1` |
+| [PACT: Parameterized Clipping Activation for Quantized Neural Networks](https://arxiv.org/abs/1805.06085v2) | `arXiv:1805.06085v2` |
+| [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2) | `arXiv:2405.14852v2` |
+| [Optimize Weight Rounding via Signed Gradient Descent for the Quantization of LLMs](https://arxiv.org/abs/2309.05516v5) | `arXiv:2309.05516v5` |
+| [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2) | `arXiv:2409.17066v2` |
+| [vla.simd: Efficient CPU Inference for Language-Conditioned Manipulation](https://arxiv.org/abs/2609.24274v1) | `arXiv:2609.24274v1` |
+| [MWOP: Modality-aware Width-wise Operation Pruning for Efficient MLLMs](https://arxiv.org/abs/2610.01434v1) | `arXiv:2610.01434v1` |
+| [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1) | `arXiv:2609.34680v1` |
+| [Query Independent Variable Rate Visual Token Coding](https://arxiv.org/abs/2610.00204v1) | `arXiv:2610.00204v1` |
+| [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1) | `arXiv:2610.00432v1` |
+| [CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding](https://arxiv.org/abs/2609.39924v1) | `arXiv:2609.39924v1` |
+| [CentriQ: Calibration-Free Quantization of Diffusion Transformers via Exact Mean Centering](https://arxiv.org/abs/2610.06260v1) | `arXiv:2610.06260v1` |
+| [Beyond In-Distribution Preservation: Recovering Generalization in Quantized VLAs via Vulnerability-Oriented Tuning](https://arxiv.org/abs/2610.05745v1) | `arXiv:2610.05745v1` |
+| [When and What to Prune? Stage-Aware Visual Token Pruning for Efficient VLA](https://arxiv.org/abs/2610.05273v1) | `arXiv:2610.05273v1` |
+
+### 文章与文档（53条）
+
+| 来源 | 固定版本或收录快照 |
+| --- | --- |
+| [CUDA Programming Guide — CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html) | `snapshot-2026-07-02` |
+| [1.2. Programming Model — CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html) | `snapshot-2026-07-02` |
+| [2.4. Writing Tile Kernels — CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html) | `snapshot-2026-07-02` |
+| [Blackwell SM100 GEMMs — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/blackwell_functionality.html) | `snapshot-2026-07-02` |
+| [CuTe DSL — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/pythonDSL/cute_dsl.html) | `snapshot-2026-07-02` |
+| [Efficient GEMM in CUDA — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html) | `snapshot-2026-07-02` |
+| [CUTLASS 3.0 GEMM API — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/gemm_api_3x.html) | `snapshot-2026-07-02` |
+| [Grouped Kernel Schedulers — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/grouped_scheduler.html) | `snapshot-2026-07-02` |
+| [Layouts and Tensors — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/layout.html) | `snapshot-2026-07-02` |
+| [Quickstart — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/quickstart.html) | `snapshot-2026-07-02` |
+| [Synchronization primitives — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/pipeline.html) | `snapshot-2026-07-02` |
+| [Tile Iterator Concepts — NVIDIA CUTLASS Documentation](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/tile_iterator_concept.html) | `snapshot-2026-07-02` |
+| [flashinfer.page.append_paged_kv_cache - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html) | `snapshot-2026-07-02` |
+| [flashinfer.testing.bench_gpu_time - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.testing.bench_gpu_time.html) | `snapshot-2026-07-02` |
+| [flashinfer.quantization.fp4_quantize - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.quantization.fp4_quantize.html) | `snapshot-2026-07-02` |
+| [flashinfer.gemm.gemm_fp8_nt_blockscaled - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.gemm.gemm_fp8_nt_blockscaled.html) | `snapshot-2026-07-02` |
+| [KV-Cache Layout in FlashInfer - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/tutorials/kv_layout.html) | `snapshot-2026-07-02` |
+| [flashinfer.gemm.mm_bf16_fp4 - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_bf16_fp4.html) | `snapshot-2026-07-02` |
+| [flashinfer.gemm.mm_fp4 - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_fp4.html) | `snapshot-2026-07-02` |
+| [flashinfer.quantization.nvfp4_quantize_paged_kv_cache - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html) | `snapshot-2026-07-02` |
+| [Attention States and Recursive Attention - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/tutorials/recursive_attention.html) | `snapshot-2026-07-02` |
+| [Release Release v0.6.17 · flashinfer-ai/flashinfer · GitHub](https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17) | `snapshot-2026-08-20` |
+| [flashinfer.decode.single_decode_with_kv_cache - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.decode.single_decode_with_kv_cache.html) | `snapshot-2026-07-02` |
+| [flashinfer.prefill.single_prefill_with_kv_cache - FlashInfer 0.6.14 documentation](https://docs.flashinfer.ai/generated/flashinfer.prefill.single_prefill_with_kv_cache.html) | `snapshot-2026-07-02` |
+| [CUDA Refresher: The CUDA Programming Model &#124; NVIDIA Technical Blog](https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/) | `snapshot-2026-07-02` |
+| [CUTLASS: Fast Linear Algebra in CUDA C++ &#124; NVIDIA Technical Blog](https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/) | `snapshot-2026-07-02` |
+| [Using Shared Memory in CUDA C/C++ &#124; NVIDIA Technical Blog](https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/) | `snapshot-2026-07-02` |
+| [Programming Tensor Cores in CUDA 9 &#124; NVIDIA Technical Blog](https://developer.nvidia.com/blog/programming-tensor-cores-cuda-9/) | `snapshot-2026-07-02` |
+| [Using CUDA Warp-Level Primitives &#124; NVIDIA Technical Blog](https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/) | `snapshot-2026-07-02` |
+| [Fused Attention — Triton documentation](https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html) | `snapshot-2026-07-02` |
+| [Group GEMM — Triton documentation](https://triton-lang.org/main/getting-started/tutorials/08-grouped-gemm.html) | `snapshot-2026-07-02` |
+| [Introduction — Triton documentation](https://triton-lang.org/main/programming-guide/chapter-1/introduction.html) | `snapshot-2026-07-02` |
+| [Matrix Multiplication — Triton documentation](https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html) | `snapshot-2026-07-02` |
+| [Persistent Matmul — Triton documentation](https://triton-lang.org/main/getting-started/tutorials/09-persistent-matmul.html) | `snapshot-2026-07-02` |
+| [Release v0.26.0 · vllm-project/vllm · GitHub](https://github.com/vllm-project/vllm/releases/tag/v0.26.0) | `snapshot-2026-08-20` |
+| [(CVPR 2026) 从 SmoothQuant 到 MASQuant：多模态量化的新思路](https://mp.weixin.qq.com/s/CQhaOfG9b2PsxVO04pHe-Q?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831938&enterid=1782831938) | `snapshot-2026-06-30` |
+| [CVPR 2026｜从模态均衡到 token 敏感性建模：一文读懂 QIG 如何提升 LVLM 量化精度](https://mp.weixin.qq.com/s/LaDDYRV_vKbCY910dFJ2cg?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831805&enterid=1782831805) | `snapshot-2026-06-30` |
+| [【2026年更新版】大模型研讨课第九期丨大模型系统软件](https://www.bilibili.com/video/BV1R7jc6qEmn/) | `page-description-snapshot-2026-09-24; BV1R7jc6qEmn` |
+| [Learning CUDA by optimizing softmax: A worklog](https://maharshi.bearblog.dev/optimizing-softmax-cuda/) | `indexed-text-snapshot-2026-09-24` |
+| [Supplementary Material for Lectures](https://github.com/gpu-mode/lectures/blob/77a8df418834e5789c12da23e7d2719e0efabef1/README.md) | `77a8df418834e5789c12da23e7d2719e0efabef1` |
+| [Outperforming cuBLAS on H100: a Worklog](https://cudaforfun.substack.com/p/outperforming-cublas-on-h100-a-worklog) | `html-body-snapshot-2026-09-24` |
+| [Systems for Machine Learning — IIT Bombay CS 794](https://www.cse.iitb.ac.in/~mythili/sysml/) | `Spring 2026 course archive; slides exported 2026-09-24` |
+| [GPT-2 (120M) Transformer Block challenge announcement](https://x.com/LeetGPU/status/2028270254863090114) | `public-index-post-snapshot-2026-09-24` |
+| [System for AI — Microsoft AI-System Course](https://microsoft.github.io/AI-System/) | `repository-commit-2a974e1a483eb5c2f714ba5001ac33d8c58998d5` |
+| [ModelOpt Post-Training Quantization Guides](https://github.com/NVIDIA/Model-Optimizer/tree/f2f0d6958eb95374d816f3d6256a0be3738231a3) | `commit-f2f0d6958eb95374d816f3d6256a0be3738231a3` |
+| [NVIDIA Dynamo Architecture and Compatibility Documentation](https://docs.nvidia.com/dynamo/v1.4.2/knowledge-base/overview) | `v1.4.2` |
+| [PyTorch Distributed Tutorials and FSDP2](https://docs.pytorch.org/tutorials/distributed.html) | `PyTorch Tutorials 2.14.0+cu130; FSDP tutorial last verified 2024-11-05` |
+| [Ray Serve LLM Architecture](https://docs.ray.io/en/v2.58.0/serve/llm/architecture/index.html) | `ray-2.58.0-commit-642b00f8c3c5a01cab7c2e2bff8725fa027b23b4` |
+| [Quantization — TensorRT-LLM](https://nvidia.github.io/TensorRT-LLM/latest/features/quantization.html) | `source-commit-a6f4151497372f14a5261113a12be2b406e9b5fc` |
+| [vLLM V1 Architecture Overview](https://docs.vllm.ai/en/latest/design/arch_overview/) | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad` |
+| [vllm v1 源码精读（三）：KV Cache 管理、Chunked Prefill 与异步架构](https://zhuanlan.zhihu.com/p/2060408485595050568) | `snapshot-2026-09-24; article states vLLM ba22152096b2484faa3579624a253d54804d876d (2026-07-06)` |
+| [vla.simd model bundle](https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle) | `2026-09-28 page snapshot` |
+| [TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix](https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html) | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
+
+### 代码条目（22条）
+
+| 来源 | 固定版本或收录快照 |
+| --- | --- |
+| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2) | `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` |
+| [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | `7e3618b1a7a7c86e1c93cc909b1510c046d76ac6` |
+| [Dao-AILab/flash-attention](https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68) | `73c992c8ca746935548df620ef3c1b6238fe6e68` |
+| [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | `a42424d843adffebe4b28ddb62a760cb52b0d2f0` |
+| [Summer-Summer/lm-evaluation-harness](https://github.com/Summer-Summer/lm-evaluation-harness/tree/62617a8cbd7f3beddc2a9c029536e0e387976beb) | `62617a8cbd7f3beddc2a9c029536e0e387976beb` |
+| [GeeeekExplorer/nano-vllm](https://github.com/GeeeekExplorer/nano-vllm/tree/bb823b3e06983d71485a8e1f23715ebd87d98ef8) | `bb823b3e06983d71485a8e1f23715ebd87d98ef8` |
+| [xjjxmu/QSLAW](https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802) | `264dfb081c210a8bab6a3fb5707d827ade7b6802` |
+| [Cornell-RelaxML/QuIP](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184) | `ac92cfc7a22f6100009e2caf53bb72257d3f3184` |
+| [Cornell-RelaxML/quip-sharp](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98) | `1d8f873e9a2a8b86b12bb1064c312c5689b77d98` |
+| [QwenLM/Qwen2.5-Omni](https://github.com/QwenLM/Qwen2.5-Omni/tree/d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42) | `d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42` |
+| [QwenLM/Qwen3-VL](https://github.com/QwenLM/Qwen3-VL/tree/96588727e44c78b25ba03ea03b8e12f7e64fd0da) | `96588727e44c78b25ba03ea03b8e12f7e64fd0da` |
+| [utkarsh-dmx/project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a) | `cb87d0d059455858daaa66f7410da4afebee978a` |
+| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11) | `3cc584fe48e32e59c8b4e37323470dcdd606bb11` |
+| [Vahe1994/SpQR](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e) | `543d10e56f921e5eeb10d5f0aaaccd30b6662d0e` |
+| [Summer-Summer/transformers](https://github.com/Summer-Summer/transformers/tree/37f8b0b53512e6aae0cfd15746c133c101783178) | `37f8b0b53512e6aae0cfd15746c133c101783178` |
+| [gpu-mode/Triton-Puzzles](https://github.com/gpu-mode/Triton-Puzzles/tree/4d794abed02292081500ebf4b1e35cd5fc5fb019) | `4d794abed02292081500ebf4b1e35cd5fc5fb019` |
+| [Maharshi-Pandya/cudacodes](https://github.com/Maharshi-Pandya/cudacodes/tree/9a459b1007c68430c801389f4eaf31cf31b906a6) | `9a459b1007c68430c801389f4eaf31cf31b906a6` |
+| [pranjalssh/fast.cu](https://github.com/pranjalssh/fast.cu/tree/2dfe5e26aecfd9e5f27bf9d5837deea01acda24b) | `2dfe5e26aecfd9e5f27bf9d5837deea01acda24b` |
+| [cair-vinuni/vla.simd](https://github.com/cair-vinuni/vla.simd/tree/7354b6d73b3686395d709202dbb519fd2e101aa0) | `7354b6d73b3686395d709202dbb519fd2e101aa0` |
+| [ernie-research/CoVisco](https://github.com/ernie-research/CoVisco/tree/604cd70d53afc39506682d423c07604a38d37b40) | `604cd70d53afc39506682d423c07604a38d37b40` |
+| [NVIDIA/TensorRT-Edge-LLM](https://github.com/NVIDIA/TensorRT-Edge-LLM/tree/e649dadcbbf049fa4caf2f09f3a3275ca56751db) | `e649dadcbbf049fa4caf2f09f3a3275ca56751db` |
+| [ruanruan-andy/PIVOT-Q](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15) | `74d6e1f8994a03eb45aae5c316a743abda2cba15` |

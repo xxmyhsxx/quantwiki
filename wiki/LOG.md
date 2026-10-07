@@ -1,5 +1,14 @@
 # Wiki 变动记录
 
+## 2026-10-08 · SAW-INT4 prefill 恢复与全量材料队列
+
+- 按用户要求，改由独立 Astra 子代理 review。先复核上一提交，修正公共 KV 页残留的 SAW“全文研读”断言；补 Hessian 原表 Mean 65.52、Drop −10.41 与整理者相减 −10.12 的冲突，保留原表归属，不修改 raw。
+- 接续 fast-rotation `0fcc241961f9c79c27f6bad9a456bf10c8554a84`，核所选 BF16/TP1/GQA4/D128/H128/K-only/FUSE1、page_size=1 普通 causal extend 的 flatten helper：完整已用历史长度、页/slot/逻辑输出、mask、FP32 恢复与 K 逆 FWHT 后 BF16、V 直接恢复、原 Q 的坐标配对，以及 `4096*sum(N_b)` 字节 BF16 工作缓冲。FA3 库内未核。
+- 同步两份公共理论、INDEX/READING/SELF。当前 raw 清点283条（147论文、69文章/文档、67代码条目）；将其中尚未在知识页来源字段登记的140条接入现有 READING 待核队列（65/53/22），不把来源登记或归档计为完整 ingest。已有88条有范围依据、59条历史范围待核记录继续保留，口径不同不相加。下一篇为 CentriQ，随后 PIVOT-Q/匹配代码与 SAPrune。
+- 独立 Astra 复核确认新增恢复链无必修问题，前两项 P2 已解决；283条清点、140条队列和逐项来源关联经其独立复算一致。
+- 验证通过：133个知识页、1245条来源（1224本地/21固定外链）、2509条本地链接；252个数学表达式通过 KaTeX，SELF 59条链接/锚点通过。独立教学核算验证页表到逻辑输出、5 token/20 KiB 缓冲、理想 Hadamard 配对及 Hessian 均值/差值。原15个未提交文件与范围外173份已跟踪 Wiki/SELF 文件哈希不变。
+- 新增使用的 flatten 文件已与官方固定 commit 逐字节及 SHA-256 比对；原7文件复用此前官方固定下载，重新核对本地哈希。未安装、导入或执行上游，未运行模型/GPU/服务或质量/显存/性能实验。
+
 ## 2026-10-08 · SAW-INT4 writer 与 GQA decode ingest 和 review
 
 - 接续现有SAW方法页，固定parent `e51bfa7291d52cd14b86e4c6ded6c002d0444ff0` 与fast-rotation child `0fcc241961f9c79c27f6bad9a456bf10c8554a84`，限定BF16/TP1/GQA4/D128/Hadamard128/K-only/FUSE1。parent HEAD/gitlink与三份配置/版本文件核实，7个实际使用的child源码与官方固定commit逐字节及SHA-256一致；未把缺失child Git元数据写成独立HEAD核验，也未重验全部既有存档。

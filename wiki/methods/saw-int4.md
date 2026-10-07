@@ -21,6 +21,7 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/model_executor/model_runner.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
 updated: 2026-10-08
 ---
 
@@ -28,7 +29,7 @@ updated: 2026-10-08
 
 许多 KV cache 压缩方法在离线精度与压缩率上表现不错，接入生产推理引擎后却拿不到收益。那些引擎围绕分页内存、连续批处理与融合注意力内核构建，留给额外算子与不规则访存的空间很小。SAW-INT4 不再提出更复杂的压缩算法，而是反过来问：在这些约束下，哪些方法还站得住，最简方案能有多简单。
 
-本页依据 SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（arXiv:2604.19157v1，预印本、标注 under review，下称论文；论文解释沿用既有正文，本轮定向复核对照与服务段；历史全文/附录研读范围与日期待核实）与官方仓库固定快照 `e51bfa72` 的 README、环境变量参考与子模块版本记录。论文的正文为 PDF 文本抽取，表格与图形按抽取内容核对；2026-10-08 接续 fast-rotation 子模块 `0fcc241961f9c79c27f6bad9a456bf10c8554a84`，核通所选 BF16、GQA、K-only 配置的融合 writer 与 Triton decode 设备链，FA3 prefill 只核调用与写入次序。未运行任何服务或内核。KV cache 量化的共同框架见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
+本页依据 SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（arXiv:2604.19157v1，预印本、标注 under review，下称论文；论文解释沿用既有正文，本轮定向复核对照与服务段；历史全文/附录研读范围与日期待核实）与官方仓库固定快照 `e51bfa72` 的 README、环境变量参考与子模块版本记录。论文的正文为 PDF 文本抽取，表格与图形按抽取内容核对；2026-10-08 接续 fast-rotation 子模块 `0fcc241961f9c79c27f6bad9a456bf10c8554a84`，核通所选 BF16、GQA、K-only 配置的融合 writer、Triton decode 与 FA3 prefill 前的 flatten 设备链；FA3 库内实现未核。未运行任何服务或内核。KV cache 量化的共同框架见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
 
 ## 1. 问题：离线指标与部署现实之间的落差
 
@@ -71,7 +72,7 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数并重新分配能量。保持注意�
 
 评测在 Qwen3-4B-Thinking-2507 上进行，五个任务为 GPQA-Diamond、HumanEval、LiveCodeBench v6、AIME25、MATH500，最大序列 32k、思考模式，5 次运行的均值与标准差（论文的扩展对照表）：
 
-| 方法 | Mean | 相对 BF16 |
+| 方法 | Mean | 相对 BF16（原表报告） |
 |---|---:|---:|
 | BF16 | 75.64 | 0.00 |
 | 朴素 INT4 | 0.00 | −75.64 |
@@ -88,7 +89,7 @@ $\mathbf H$ 正交，保持 $\ell_2$ 范数并重新分配能量。保持注意�
 
 这组数字支持论文的核心主张，同时也限定了它：**朴素 INT4 在这个设定下完全不可用**（五项全部为 0），说明 4 bit KV 量化本身不是「轻微损失」；旋转把不可能变成可用；在旋转之后，更复杂的方法收益有限——$C$=2048 的向量量化与 KMeans+BDR 都没有明显超过 BDR-128，Hessian 感知反而更差（65.52），作者同时指出它仍需额外校准与离线复杂度，而收益没有兑现；原文未给出精度更差的因果解释。
 
-**原文数字冲突。** 论文正文在描述同一项对照时把 Hessian 感知的均值写作 63.23，而其对照表中该行为 65.52。本页采用表中数值，不替原文统一；引用该结论时应以自己核对到的表格为准。
+**原文数字冲突。** 论文正文在描述同一项对照时把 Hessian 感知的均值写作 63.23，而其对照表中该行为 65.52。本页保留原表报告；该行五项得分的均值为 65.522，支持表中四舍五入后的 Mean，但原表 Drop −10.41 与两个 Mean 相减所得的 −10.12 不符。这里的差值核算是整理者计算，不据此替作者裁决实验记录。（固定源包 `section3.tex` 的 `tab:kv_compare` 与紧邻说明。）
 
 其余模型（论文的另一张对照表）：Qwen3-8B 上 BF16 为 70.84、朴素 INT4 为 0.00、BDR-64（仅 K）为 69.86、BDR-128 为 69.97；GLM-4.7（358B）上 BF16 为 77.89、**朴素 INT4 已经是 77.21**，各 BDR 配置在 77.12 到 77.95 之间。后一组说明不同模型对该类量化的鲁棒性差别很大：对 GLM-4.7 而言旋转几乎只带来边际改善，「需要复杂方法」这一判断是模型相关的。
 
@@ -191,11 +192,38 @@ $$
 
 它不直接平均或相加局部输出；共同推导见 [分段 attention 的合并](../implementation/sglang-attention-operator-design.md#4-decode把历史维拆开再按-lse-合并)。wrapper 用输出 `o.shape[-1]` 给 stage2 推出完整128维，未把 packed V 的64字节末维当成输出维度，也未为此恢复完整历史 V。最终写 BF16 输出；K-only 的 V 保持原坐标，caller 不执行输出逆旋转。attention 核心仍为 stage1/stage2 两次调用，writer 与其他模型算子另算。（`decode_attention.py:1915–2000,2272–2289`；`triton_backend.py:1082–1091`。）
 
-### 4.5 当前 token 与 FA3 prefill 的边界
+### 4.5 FA3 prefill：从分页 INT4 恢复到原 Q 坐标
 
 decode 在 attention 前先调用 `set_kv_buffer` 写当前 K/V，随后从完整 INT4 历史读取，所以当前 token 也已经过量化。FA3 prefill host 同样先写当前 chunk，再取完整缓存交 `flatten_kv_cache_sglang`；FUSE1/K-only 向 helper 传 `fuse_k_hadamard=True / fuse_v_hadamard=False`，FA3 消费原 Q 与 flatten 后的 K/V。不能把 OSCAR 的 dense 当前 chunk 旁路结论套到这里。（`triton_backend.py:1017–1081`；`flashattention_backend.py:769–780,892–951`。）
 
-本轮只核 FA3 的 gate、次序和调用参数，尚未逐行核 flatten device 的 INT4 恢复、页索引、K 逆 Hadamard 与 BF16 输出，也未核 FA3 库内 kernel。这是同固定版本、同配置的下一处必要断点，不能把所选 decode 已核扩写成完整 prefill 或全部后端已核。
+继续固定第4.1节配置，并取普通 causal extend、`save_kv_cache=True`、页大小 $P=1$。`cache_seqlens[b]=N_b` 是请求含前缀和本次 chunk 的完整长度；`cu_seqlens_k` 是这些长度的前缀和，`out_size` 为 $\sum_b N_b$。有前缀时，Q 的累积长度只计本次 extend，K 的累积长度仍计完整历史；两者不能混用。一般页索引公式为
+
+$$
+\mathrm{slot}(b,p)=\mathrm{page\_table}[b,\lfloor p/P\rfloor]P+(p\bmod P),
+\qquad
+\mathrm{out}(b,p)=\mathrm{cuK}[b]+p.
+$$
+
+所选 $P=1$ 时，页表直接来自请求到物理 token 的映射。源码对 $P>1$ 另取每页首 token 并除以 $P$ 形成页号；本节不把该相邻转换扩写成其他分页组合已全面核验。设备 grid 为 $(\lceil N_{\max}/32\rceil,B,8)$，一个 program 处理一个请求、一个 KV head 的32个逻辑 token。整块越过 $N_b$ 就返回，末块按真实长度 mask；无效物理 slot 则被替换为0，并非拒绝请求或排除其贡献，因此合法页表仍是 caller 的前提。（`flashattention_backend.py:644–664,701–715`；`flatten_kv_cache.py:102–174,491–526`。）
+
+设备读取两半 nibble 与各自 K/V 的 FP32 scale/zero，在 FP32 中恢复 $(q-z)s$。K 将两个64维半区重组为自然128维，乘 $1/\sqrt{128}$ 后执行7级 FWHT，**逆旋转之后才转 BF16**；恢复与 FWHT 之间没有额外 BF16 舍入。V 不旋转，FP32 恢复后直接转 BF16。一个 flatten kernel 同时写 K/V，两份输出的实际布局均为 `[sum(N_b),8,128]`；K/V 码、元数据及输出各传自身 stride，不能采用与实际分配矛盾的注释来推断轴顺序。（`flatten_kv_cache.py:26–41,176–260,288–385,515–581`。）
+
+为什么这里可以使用原 Q？令 $H$ 为归一化的对称 Hadamard，$r$ 为旋转坐标中的量化 K 经 FP32 恢复后的行，则精确算术下
+
+$$
+(QH)r^{\mathsf T}=Q(rH)^{\mathsf T}.
+$$
+
+decode 把旋转放在 Q 侧，实际使用 BF16 的 $QH$ 与 BF16 的 $r$；该 prefill 把逆旋转放在 K 侧，实际使用原 BF16 Q 与最终转 BF16 的 $rH$。两个路径的舍入位置和 attention 内核不同，理想点积关系不证明逐位相同。FA3 调用接收原 Q、恢复后的 K/V、各自累积长度、最大长度与 layer scaling；本轮核到此调用端，FA3 库内 kernel 和运行结果仍未验证。（`flashattention_backend.py:904–951`。）
+
+地址教学例取两请求长度 $[3,2]$、`cuK=[0,3,5]`、$P=1$，物理 slot 分别为 $[7,2,19]$ 与 $[5,11]$；输出按逻辑顺序写入行 $[0,1,2]$ 与 $[3,4]$，不按物理地址排序。两份 BF16 工作张量合计为
+
+$$
+B_{\rm flatten}=\left(\sum_b N_b\right)\times8\times128\times2\times2
+=4096\sum_b N_b\ \text{byte}.
+$$
+
+这是本批请求完整已用历史的临时恢复量，不是整个预分配池，也不只是当前 chunk。上述5个 token 的例子为20 KiB。调用期间它与持久 INT4 池共存，后续 FA3 的其他 workspace、Q 与模型激活另算；第4.3节的144字节记录和约3.56倍压缩不能直接解释为 prefill 峰值显存的同比例下降。
 
 ## 5. 服务级证据
 
@@ -224,7 +252,7 @@ decode 在 attention 前先调用 `set_kv_buffer` 写当前 K/V，随后从完�
 ## 8. 未验证
 
 - 未运行论文的实现或任何服务，未复现精度、吞吐与剖析数据；模型/性能数值来自论文，第4节字节预算、地址与教学算例来自静态源码及独立计算。
-- fast-rotation 子模块已核所选 BF16/GQA4/D128/Hadamard128/K-only/FUSE1 的 writer 与 decode 设备链；FA3 flatten/device、kmeans/Hessian、其他 dtype/order/后端、多设备、graph 与特殊 attention 分支未全面研读，未构建或运行。资料已展开、静态链已核与运行验证分别说明。
+- fast-rotation 子模块已核所选 BF16/GQA4/D128/Hadamard128/K-only/FUSE1 的 writer、decode 及第4.5节 page_size=1的 prefill flatten 设备链；FA3 库内、kmeans/Hessian、其他 dtype/order/后端、多设备、graph 与特殊 attention 分支未全面研读，未构建或运行。资料已展开、静态链已核与运行验证分别说明。
 - 论文为预印本，其精度与吞吐结论尚待同行评审与独立复现；本页按预印本状态记录。
 
 ## 来源身份
@@ -235,4 +263,4 @@ decode 在 attention 前先调用 `set_kv_buffer` 写当前 K/V，随后从完�
 | --- | --- | --- |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
 | [togethercomputer/saw-int4](https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0) | `e51bfa7291d52cd14b86e4c6ded6c002d0444ff0` | — |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | fast-rotation 子模块；第4节所选 writer/GQA decode 设备与必要 FA3 host 边界 |
+| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | fast-rotation 子模块；第4节所选 writer/GQA decode/prefill flatten 设备与 FA3 调用边界 |

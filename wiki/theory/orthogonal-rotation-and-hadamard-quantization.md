@@ -22,6 +22,7 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
   - raw/papers/2026-09-21/saw-int4/paper.pdf
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
 updated: 2026-10-08
 ---
 
@@ -99,6 +100,8 @@ QuaRot §4 Stage 1a 将全局残差坐标变换折叠到权重中。Stage 1b 则
 
 同一理想Hadamard也不保证不同浮点执行顺序得到相同码。[SAW所选融合writer](../methods/saw-int4.md#42-写入先核舍入再核码与元数据)先在FP32中预缩放并作FWHT，旋转结果经BF16舍入后才取范围；邻接未融合支路先做BF16预缩放。所选GQA decode对Q采用配套FP32预缩放/FWHT后回BF16，并在每个非空split各自计算；旋转已融合，不表示每请求只计算一次。精确算术下的正交点积关系与这些舍入、量化和调度条件应分开核对。（`fused_hadamard_int4_kv.py:150–191`；`memory_pool.py:1161–1189`；`decode_attention.py:970–998`。）
 
+同样的旋转坐标也可以在读取端还原。[SAW 所选 FA3 prefill](../methods/saw-int4.md#45-fa3-prefill从分页-int4-恢复到原-q-坐标)把量化 K 恢复为 FP32 行 $r$，在 FP32 内逆 Hadamard 后转 BF16，配原 Q；decode 则用旋转后的 Q 配旋转坐标内的 K。归一化对称 Hadamard 满足 $(QH)r^{\mathsf T}=Q(rH)^{\mathsf T}$，说明理想点积为何相同；恢复与逆旋转之间是否先舍入、Q 在何处舍入，则决定实际低精度路径。这里没有证明两个 attention 实现逐位相同。（`flatten_kv_cache.py:190–219`；`decode_attention.py:970–998,1047–1070`。）
+
 ## 5. 旋转也可能制造新的权重离群值
 
 对归一化 $H$ 的全正首行，忽略输出侧其他变换，
@@ -175,7 +178,7 @@ $$
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | K-only块旋转与服务条件；本页采用既有方法页研读 |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取的预缩放与舍入顺序 |
+| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取及prefill逆旋转的预缩放与舍入顺序 |
 | [ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs](https://arxiv.org/abs/2605.10793v2) | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
 | [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
 | [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |

@@ -37,6 +37,7 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_backend.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
 updated: 2026-10-08
 ---
 
@@ -44,7 +45,7 @@ updated: 2026-10-08
 
 权重可以离线反复优化，激活随输入即时产生，KV cache 与两者都不同：它在推理过程中逐 token 追加，具体取值依赖当前输入，在线重算或优化受延迟预算限制；量化策略、旋转等参数仍可离线校准。同一个「4 bit KV cache」的说法，可能指不同的量化方向、不同的元数据组织，以及不同的系统代价。本页整理这一对象的共同结构，作为各具体方法的比较框架。
 
-本页的框架来自 [KIVI](../methods/kivi.md)（arXiv:2402.02750）对分布与误差传播的分析，以及 [SAW-INT4](../methods/saw-int4.md)（arXiv:2604.19157）对服务系统约束的梳理；两篇均为全文研读并有独立方法页；新增的 [KVQuant](../methods/kvquant.md) 与 [QJL](../methods/qjl.md) 分别补充离线码本与直接分数估计，本页不重复实验表格。涉及其它方法的条目按各自页面为准，本页只做归类。
+本页的框架来自 [KIVI](../methods/kivi.md)（arXiv:2402.02750）对分布与误差传播的分析，以及 [SAW-INT4](../methods/saw-int4.md)（arXiv:2604.19157）对服务系统约束的梳理；两篇均有独立方法页，实际研读范围见[资料研读目录](../READING.md)；新增的 [KVQuant](../methods/kvquant.md) 与 [QJL](../methods/qjl.md) 分别补充离线码本与直接分数估计，本页不重复实验表格。涉及其它方法的条目按各自页面为准，本页只做归类。
 
 以下主要采用显式保存 K/V 的注意力结构。[MLA](../fundamentals/model/multi-head-latent-attention.md) 则保存联合 KV 潜变量与共享位置 key，潜变量误差同时影响内容匹配与 Value；其量化对象和容量不能直接套用普通 K/V head 的粒度与形状。这个结构区别来自 DeepSeek-V2 v5 §2.1.3、Appendix C；共同的流式、格式与预算问题仍然适用。
 
@@ -234,13 +235,13 @@ $$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
 
 OSCAR在decode Attention前先把一批旧BF16 recent行量化、remap到QP，再写当前BF16 K/V；当前Attention因此已读到刚移出的量化历史。其FA3 prefill接口虽先更新缓存，本次chunk仍读取dense BF16，仅历史前缀从缓存恢复；二者的量化时刻与读取对象分别核对。[窗口时间线与两tier读取](../implementation/oscar-mixed-kv-cache-execution.md#5-extend-与-decode-怎样移动窗口)进一步给出位置守恒、flush前等待与局部LSE合并，避免仅凭最终格式判定数值等价。（`triton_backend.py:1694–1859`；池的extend/decode写点见该实现页。）
 
-SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残差窗口；FA3 prefill host也先写当前chunk，再把含该chunk的完整缓存交flatten恢复，原Q与恢复后的K/V进入FA3。因而它的当前chunk也走缓存编码/恢复，不能沿用OSCAR的dense旁路结论。所选writer/decode已核；flatten设备内的恢复、页索引与Hadamard配对仍待接续。（`triton_backend.py:1017–1081`；`flashattention_backend.py:769–780,892–951`；[SAW调用边界](../methods/saw-int4.md#45-当前-token-与-fa3-prefill-的边界)。）
+SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残差窗口；FA3 prefill host也先写当前chunk，再把含该chunk的完整缓存交flatten恢复，原Q与恢复后的K/V进入FA3。因而它的当前chunk也走缓存编码/恢复，不能沿用OSCAR的dense旁路结论。所选 BF16/K-only/page_size=1 flatten 按页表 gather 逻辑历史，在 FP32 中恢复并对 K 逆 Hadamard 后转 BF16，V 则直接恢复到 BF16。两份临时张量为 `[sum(N_b),Hkv,D]`，同时保留持久 INT4 池；Hkv8/D128 时合计 `4096*sum(N_b)` 字节，不能把持久记录的压缩倍数直接用作 prefill 峰值显存比。（`triton_backend.py:1017–1081`；`flashattention_backend.py:769–780,892–951`；`flatten_kv_cache.py:143–260,288–385,515–581`；[SAW恢复与工作缓冲](../methods/saw-int4.md#45-fa3-prefill从分页-int4-恢复到原-q-坐标)。）
 
 这也解释了为什么离线 fake quant 的质量不能直接证明实际缓存的质量。需要同时对齐量化公式、保护区域、触发时刻、mask 与位置，再对齐读取实现；具体步骤见 [从模拟到真实执行的对齐](../implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
 
 ## 13. 未验证与边界
 
-- 本页的框架来自 KIVI（已发表）与 SAW-INT4（预印本）两篇的全文研读，不构成对 KV cache 量化领域的综述；已补充 KVQuant、QJL、TurboQuant、NOVA-KV、AKVQ-VL、Kitty 的表示、度量与布局差异，具体深度和核验边界见各方法页。
+- 本页的框架来自 KIVI（已发表）与 SAW-INT4（预印本）两篇的已有整理，不构成对 KV cache 量化领域的综述；已补充 KVQuant、QJL、TurboQuant、NOVA-KV、AKVQ-VL、Kitty 的表示、度量与布局差异，具体深度和核验边界见各方法页。
 - 各篇论文的硬件、模型、任务与测量口径不同，本页不给出跨论文的方法排序，也不把某一篇的结论外推到其它模型族。
 - 未运行模型或性能实验；本页所有模型与性能数值均转引自对应方法页，其原始出处与条件以各方法页为准。
 
@@ -256,7 +257,7 @@ SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残�
 | [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5) | `arXiv:2405.04434v5` | §2.1.3、Appendix C；MLA 缓存对象与显式 K/V 的范围区别 |
 | [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750v2) | `arXiv:2402.02750v2` | — |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | SAW所选INT4记录、GQA恢复与当前chunk写入/读取边界 |
+| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | SAW所选INT4记录、GQA与prefill恢复、当前chunk与临时缓冲边界 |
 | [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6) | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |
 
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；训练中适应逐 token KV 量化。
