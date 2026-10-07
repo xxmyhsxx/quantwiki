@@ -12,7 +12,10 @@ sources:
   - raw/papers/2026-09-21/aqlm/source.eprint
   - raw/papers/2026-09-21/spqr/source.eprint
   - raw/papers/2026-09-21/squeezellm/source.eprint
-updated: 2026-09-22
+  - raw/papers/2026-10-07/dbw/paper.pdf
+  - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
+  - raw/papers/2026-10-07/stagq/paper.pdf
+updated: 2026-10-07
 ---
 
 # 低比特表示的设计空间：坐标、码本与例外预算
@@ -82,9 +85,24 @@ B_{\rm codes}+B_{\rm metadata}+B_{\rm exceptions}+B_{\rm transform}\le B.$$
 
 这里给出的是后续研究的可检验设计，不报告已经执行组合实验。五篇论文支持各自的组件和配置，尚不能替代这些组合的实证。
 
+## 6. 主体也可以改变因子宽度
+
+前面的坐标变换、码本和例外都围绕主体表示工作；[DBW](../methods/dbw.md)增加另一种选择：用两个可训练因子替换整个主权重，每对分量的正位宽控制量化网格，0 bit 减少两次矩阵乘共享的中间宽度。它不是可逆坐标变换，也不是量化主体之外另加一个低秩残差。相同的原矩阵 bpw 可以对应不同因子宽度/位宽组合，必须按两侧因子元素数共同计费。（DBW v1 §2.2–2.3。）
+
+SVD 只初始化因子；训练和量化后的方向不必保持相互正交，保留 $r$ 对分量只保证有效矩阵秩不超过 $r$。因此不能把最佳截断 SVD 的解析结论直接推广到学习后表示。该方法页进一步区分理想载荷、word packing 与每次前向的浮点恢复，避免从“低秩+低 bit”直接推算完整速度。
+
+## 7. 多精度前缀使主体与例外一起承担约束
+
+[StagQ](../methods/stagq.md)用一对共享元数据支持多个 refinement 前缀，把 bit-plane 和 precision-dependent 原点折成普通 affine 整数；新增 plane 不新增一份组尺度。这个取舍限制每精度的独立网格自由度，也让小 group 的元数据成本保持较低。固定元数据的载荷设计与运行 kernel 的重打包/每组查表仍须分别解释。（StagQ v1 §2–3、附录 G。）
+
+该方法的 pre-grid guard 先向内截断极值后重拟合主体，post-grid guard 再保护两位残差：前者可释放组内其他值的网格分辨率，后者只补固定网格留下的损失。保护位置对所有精度固定，后续 plane 不覆盖；因此不能在深精度丢掉记录，也不能把相同两位残差直接加到已细化主体上。完整保护值的定义见方法页。这将第 3 节“保护自身与释放主体容量”的区别扩展到一个主体服务多个精度的情况，而不是提供独立例外收益可相加的证明。（StagQ v1 式 (4)、§3.5–3.6。）
+
 ## 来源身份
 
 - [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2)，arXiv:2307.13304v2；坐标处理、谱界及有限网格边界。
+- [Differentiable Bit-Widths: Co-optimizing Pruning and Quantization via SVD for Ultra-Efficient LLM Compression](https://arxiv.org/abs/2610.06026v1)，`arXiv:2610.06026v1`；主体因子宽度、成对位宽与两阶段执行。
+- [MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a)，`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`；`real_dbw.py::get_uv/forward` 的因子恢复与方向归一化。
+- [StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs](https://arxiv.org/abs/2610.05977v1)，`arXiv:2610.05977v1`；共享 pair 的前缀主体、两阶段 guard 与固定 side record。
 - [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2)，arXiv:2402.04396v2；RHT、E8P 与微调。
 - [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4)，arXiv:2401.06118v4；联合索引、码本优化和存储。
 - [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1)，arXiv:2306.03078v1；小组元数据、动态敏感性与例外。

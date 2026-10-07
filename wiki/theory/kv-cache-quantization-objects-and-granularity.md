@@ -6,6 +6,8 @@ tags:
   - granularity
   - serving
 sources:
+  - raw/papers/2026-09-21/deepseek-v2/paper.pdf
+  - raw/papers/2026-09-21/deepseek-v2/source.eprint
   - raw/repositories/2026-09-21/kitty/source/src/kitty/models/qwen3/modeling_qwen3.py
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
@@ -20,7 +22,9 @@ sources:
   - raw/repositories/2026-09-21/kivi/source/models/llama_kivi.py
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/papers/2026-09-21/saw-int4/paper.pdf
-updated: 2026-09-29
+  - raw/papers/2026-10-03/wush-kv/paper.pdf
+  - raw/papers/2026-10-03/wush-kv/source/main.tex
+updated: 2026-10-07
 ---
 
 # KV cache 量化的对象与粒度
@@ -29,7 +33,11 @@ updated: 2026-09-29
 
 本页的框架来自 [KIVI](../methods/kivi.md)（arXiv:2402.02750）对分布与误差传播的分析，以及 [SAW-INT4](../methods/saw-int4.md)（arXiv:2604.19157）对服务系统约束的梳理；两篇均为全文研读并有独立方法页；新增的 [KVQuant](../methods/kvquant.md) 与 [QJL](../methods/qjl.md) 分别补充离线码本与直接分数估计，本页不重复实验表格。涉及其它方法的条目按各自页面为准，本页只做归类。
 
+以下主要采用显式保存 K/V 的注意力结构。[MLA](../fundamentals/model/multi-head-latent-attention.md) 则保存联合 KV 潜变量与共享位置 key，潜变量误差同时影响内容匹配与 Value；其量化对象和容量不能直接套用普通 K/V head 的粒度与形状。这个结构区别来自 DeepSeek-V2 v5 §2.1.3、Appendix C；共同的流式、格式与预算问题仍然适用。
+
 ## 1. 为什么 KV cache 要单独讨论
+
+[MLA 缓存与 Attention 执行](../implementation/mla-cache-and-attention-execution.md)进一步连接这些结构对象与 SGLang、FlashInfer、vLLM 的具体持久池和读取接口。选择 cache 精度时，还要查清该固定版本在何处恢复尺度、生成什么工作张量，以及 Attention 返回的中间量约定。
 
 设解码阶段当前查询为 $\vec q$，历史键值分别为 $\mathbf X_K,\mathbf X_V$，注意力为
 
@@ -109,6 +117,14 @@ $$\widetilde{\mathbf K}=\mathrm{quant}(\mathbf K\mathbf H),\qquad \mathbf H\ \te
 
 旋转的代价必须在正确的层次上衡量：SAW-INT4 的内核剖析显示，融合后量化写入与反量化内核本身变慢 1.33 到 1.58 倍，但占总运行时仅 0.10% 到 0.28%；未融合的实现则多出约 1.5% 的独立旋转开销。这正是 [执行路径](../implementation/quantized-matmul-scaling-execution.md) 里「融合与否决定成败」的一个 KV 侧实例。
 
+### 从正交混合扩展到可逆缩放
+
+[WUSH-KV](../methods/wush-kv.md) v1 §3–4 用缓存 Gram 与读取侧敏感度共同构造一般可逆 T。采用列向量时，K 乘 T、Q 乘 $T^{-\top}$；V 的变换和 O 的逆变换可折入权重。K 选择在 head normalization/RoPE 后变换，避免历史位置相关的补偿，但新 K 和 Q 保留稠密在线计算。正交时逆转置等于 T，一般可逆变换不能照搬“两侧同乘”。
+
+其双窗口加批量 flush 也说明逐 token 量化与全精度暂存可以同时存在：sink 固定保留、recent 滚动保留，窗口外按 flush 大小移入整数中段。算法描述先计算当前 chunk 再刷新；论文的 SGLang 集成先更新存储，但仍以 BF16 使用当前 chunk。接口核对要包括这一次序与实际读取精度，不能仅看窗口参数相同。（§4.4、算法 2、§5.3。）
+
+同一篇论文的理论与 PPL 使用 QuEST RMS/bin-center 网格，下游 SGLang 使用百分位裁剪的非对称 affine 网格；它们的质量与近最优保证不自动相通。比较时应同时记录变换、量化器、窗口、校准语料和真实后端；局部 L2 更小也不保证自回归任务更好。
+
 ## 7. 怎样衡量 KV cache 量化
 
 四个容易被混用的口径：
@@ -121,11 +137,15 @@ $$M=LBH_{kv}d\left[\frac b8(2T-r_K-r_V)+2(r_K+r_V)\right]+M_{\rm metadata}.$$
 
 元数据还要加每组尺度/偏移、页表和分配碎片；实际峰值显存还包含权重与临时张量。该式解释了短序列时全精度窗口占比高，也解释了“2 bit = 整机省 8 倍显存”为何不成立。
 
+该式以独立 K/V、相同 head 宽度为前提。MLA 的基础元素数是每层、每 token 的 $d_c+d_R$，分别对应联合潜变量与位置 key；不同精度时还要分对象计费，见 [MLA 的容量推导](../fundamentals/model/multi-head-latent-attention.md#4-缓存容量怎样计算)。
+
 **误差指标的层次。** 重构误差不足以判断好坏。KIVI 的表显示值的逐 token 与逐通道重构误差几乎相同，输出误差却相差约 14 倍；因此至少要看键到注意力分数的误差、值到输出的误差，最后才是任务指标。
 
 **任务选择。** KIVI 指出闭式任务（如 MMLU）只有一次解码步、直接取 logits，不适合研究压缩缓存的影响，因此改用生成与长上下文任务。SAW-INT4 的评测集中在思考模式推理与代码任务，其朴素 INT4 完全崩溃也说明该设定对低比特极不友好。
 
 **吞吐指标的选择。** SAW-INT4 的核心方法学提示是：在显存受限时，逐请求输出速度（TPS$_{\mathrm{req}}$）会误导——KV 占用更大的配置被迫用更小批量，反而抬高了单请求速度，同时首 token 延迟急剧恶化（该论文测得 BF16 在并发 128 时首 token 延迟达 113 秒，INT4 为 57 秒）。跨不同显存占用的配置应当比较系统吞吐（总输出 token 除以墙钟时间），并同时报告首 token 延迟。
+
+跨设备分片改变每 rank 的 token 份额，还可能在多个子组复制逻辑历史；[vLLM MLA DCP 的容量与工作张量](../implementation/vllm-mla-context-parallel-execution.md#2-调度-block-与每-rank-的物理-page)分别说明有效载荷、预留页和通信/展开空间。缓存对象与位宽相同，也不能仅按分片数推导整机峰值。
 
 ## 8. 与权重、激活量化的关系
 
@@ -208,6 +228,8 @@ $$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms](https://arxiv.org/abs/2609.38121v1) | `arXiv:2609.38121v1` | 一般可逆 K/V 变换、双窗口与量化器/实现的证据区别 |
+| [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5) | `arXiv:2405.04434v5` | §2.1.3、Appendix C；MLA 缓存对象与显式 K/V 的范围区别 |
 | [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750v2) | `arXiv:2402.02750v2` | — |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
 | [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6) | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |

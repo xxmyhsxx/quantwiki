@@ -18,7 +18,7 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_model_runner.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/cudagraph_dispatcher.py
   - raw/repositories/2026-09-21/vllm/source/docs/design/cuda_graphs.md
-updated: 2026-09-22
+updated: 2026-10-07
 ---
 
 # vLLM 算子设计：Attention 后端、分页计算与图执行
@@ -28,6 +28,8 @@ updated: 2026-09-22
 本页接续[vLLM 推理执行](vllm-inference-execution.md)，选择 Llama 模型层、通用 Attention 接口、FlashAttention 接入和 Triton unified attention 的普通因果注意力路径。重点是框架与算子怎样衔接，不罗列全部后端或追踪版本迁移。张量的 shape/stride 基础见[张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)，归约与分块基础见[GPU 算子的计算模式](../fundamentals/operators/gpu-kernel-computation-patterns.md)。
 
 普通 Llama decoder 在 Attention 两侧还维护残差与 RMSNorm，MLP 则沿 gate/up 投影、门控激活和 down 投影执行。学习这些较小的现成算子，可以先看[RMSNorm 的 CUDA/Triton 行归约](rmsnorm-cuda-triton-kernels.md)和[门控激活的工作映射与融合](gated-activation-cuda-triton-kernels.md)，再回到下面带 KV 状态的 Attention。
+
+[MLA 缓存与 Attention 执行](mla-cache-and-attention-execution.md)另沿同一固定 vLLM 版本解释潜空间 query、联合 cache scale、前缀恢复和 Triton decode 的 split/LSE 契约；本页独立 K/V 的布局与归约说明仍限定为所选普通注意力路径。
 
 ## 1. 模型层先组织计算，再交给具体 Kernel
 
@@ -124,6 +126,8 @@ o=\frac{\sum_s e^{m_s-m}a_s}{\sum_s e^{m_s-m}l_s}.$$
 这正是 `reduce_segments` 的重缩放与归约关系，不能将各段的归一化输出直接平均。一个反例是两段各有一个 value，分别为 0 和 10，对应 score 为 0 和 $\log3$：正确输出为 7.5，平均两段输出会得到 5。
 
 分段提供更多并行工作，代价是临时结果写读、额外归约 kernel 和不同的浮点求和次序。历史短或请求数本已足够时，新增开销可能得不偿失。源码中的条件是设计取舍的实例，未测量前不能声称多分段总会更快。与 tile/资源的关系可继续读[配置选择与自动调优](kernel-configuration-and-autotuning.md)。
+
+MLA 的跨 rank 分片沿同一分母恢复原则，但通信轴和状态 dtype 还需单独核查：[vLLM 普通 DCP](vllm-mla-context-parallel-execution.md)连接 query head gather、本地 latent attention 和 O/LSE 合并，并区分设备内 split 与跨设备分片，以及 decode 与 prefix prefill 的两种执行链。
 
 ## 7. 动态批次怎样使用 CUDA Graph
 

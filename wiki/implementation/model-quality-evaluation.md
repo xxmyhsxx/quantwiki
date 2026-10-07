@@ -11,7 +11,9 @@ sources:
   - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
   - raw/articles/2026-09-22/perplexity/article.md
   - raw/papers/2026-09-21/quantization-reliable-vqa/paper.pdf
-updated: 2026-09-29
+  - raw/papers/2026-10-03/decision-flips/paper.pdf
+  - raw/papers/2026-10-03/decision-flips/source/main.tex
+updated: 2026-10-07
 ---
 
 # 模型质量评测：PPL、任务协议与选择性预测
@@ -99,6 +101,21 @@ $$\Phi_c(\tau)=\frac{n_{\mathrm{accepted,correct}}-c\,n_{\mathrm{accepted,wrong}
 
 区间包含零只表示数据与零差异相容，宽区间并不能证明差异足够小；均值差小于阈值也不足以满足整个区间都在等价带内。必须配对相同输入、平台与生成预算，并区分逐句均值和按词数加权的语料误差。代理自然度、转录正确性、人工偏好与系统开销分别回答不同问题；选择最优配置后的抽样区间也不自动校正配置搜索偏差。
 
+## 9. 输出分布一致性要固定前缀和指标口径
+
+Decision Flips v1 §3–8 说明评测压缩后的输出保真时，需要把浮点与压缩模型放到同一前缀，再比较 forward KL、TV 和 greedy top-1 ID。这是条件计算的一致性，不是自由生成轨迹相同，也不表示答案正确。具体定义、Jensen 聚合差异、间隔界与留出试验见[分布距离到 token 翻转](../theory/quantization-ranking-stability.md#8-语言模型的分布距离怎样变成-token-翻转)。
+
+| 评测目的 | 应报告的量与控制 |
+| --- | --- |
+| 同一模型、同一语料内比较压缩配置 | 任务前缀上的直接 flip，辅以 KL/TV；保留参考版本、序列和位置分母 |
+| 跨语料理解散度大小 | 分语料报告；√平均 KL 与平均逐位置 √KL 不同，不能复用未校准的比例系数 |
+| 输出分布距离 | forward/reverse 方向、温度、完整词表或 top-k 加聚合 tail；聚合会低估 TV |
+| 决策间隔或微小扰动 | output head dtype、并列与 tie-break；BF16 的精确并列不等于连续的零附近密度 |
+| draft 的实际价值 | greedy/采样接受协议、整段一致序列、draft/验证成本与实测延迟 |
+| 最终质量与生成稳定性 | 自由生成、任务正确率、输出长度和停止/预算耗尽；一致性指标仅提供补充 |
+
+当两模型已经可以运行，直接数任务 flip 的成本与计算散度同阶，没有必要用论文经验比代替实测。非有限 logits 应单独作为运行失败记录，不能只在有限样本上给出散度后称整个配置有效。论文只在部分真实后端验证，FP8 明确未通过其试验；本页没有运行这些配置。
+
 ## 来源身份
 
 - [Perplexity of fixed-length models](https://huggingface.co/docs/transformers/en/perplexity)，Transformers main，2026-09-22 获取，`perplexity-20260922-03be86a2`；定义、固定窗口与滑动窗口示例。
@@ -108,3 +125,4 @@ $$\Phi_c(\tau)=\frac{n_{\mathrm{accepted,correct}}-c\,n_{\mathrm{accepted,wrong}
 - [The Alignment Illusion in Multimodal Large Language Models](https://arxiv.org/abs/2609.30210v1)，arXiv:2609.30210v1；主角度诊断与视觉干预。
 
 - [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
+- [How Divergence Becomes Decision Flips in Compressed Language Models](https://arxiv.org/abs/2610.00694v1)，arXiv:2610.00694v1；§3–8 的同前缀输出保真、指标聚合和推测解码评测。

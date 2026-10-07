@@ -6,9 +6,35 @@ sources: []
 
 # 量化知识地图
 
-从问题选择阅读路径。页面按主要职责归入五类目录，同一知识可以出现在不同阅读路径中。维护规范见 [README](README.md)，变动记录见 [LOG](LOG.md)。
+从问题选择阅读路径。页面按主要职责归入五类目录，同一知识可以出现在不同阅读路径中。整体定位、职责边界、当前画像与下一步见 [SELF](../SELF.md)，维护规范见 [README](README.md)，变动记录见 [LOG](LOG.md)。
+
+按资料查看读到哪里、知识整合到哪里及尚未核查内容，见 [资料研读目录](READING.md)。
+
+## 按问题选择量化路线
+
+先确定量化对象和目标，再沿对应机制查看可调整变量、条件与实际执行。下表是阅读入口，具体配置仍需共同协议比较。
+
+| 目标或约束 | 机制与路线入口 | 实现或评测入口 |
+| --- | --- | --- |
+| 降低权重占用，激活保持高精度 | [AWQ/GPTQ 的不同重构目标](methods/awq-gptq-smoothquant-comparison.md)、[极低比特表示设计](research/low-bit-representation-design.md) | [权重反量化 kernel 契约](implementation/weight-only-dequant-kernels.md) |
+| 权重与激活联合量化 | [校准与网格](theory/calibration-and-range-selection.md)、[缩放](theory/diagonal-scaling-equivalent-transform.md)、[旋转](theory/orthogonal-rotation-and-hadamard-quantization.md)、[可学习变换](research/omniquant-affinequant-flatquant-comparison.md) | [尺度位置与矩阵乘执行](implementation/quantized-matmul-scaling-execution.md) |
+| 降低长上下文或多请求的缓存占用 | [KV 对象/粒度](theory/kv-cache-quantization-objects-and-granularity.md)、[误差传播](theory/attention-quantization-error-propagation.md)、[WUSH-KV 的双侧统计](methods/wush-kv.md) | [缓存生命周期](theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)、[服务内存与批处理](implementation/serving-memory-and-batching.md) |
+| 在总预算内选择层或对象的精度 | [混合精度分配](theory/mixed-precision-allocation.md)、[曲率方向](theory/curvature-weighted-quantization-error.md)、[CASA 的配置交互](methods/casa.md) | [服务性能协议](implementation/serving-performance-evaluation.md) |
+| 保留多模态信息与生成行为 | [模态目标比较](research/mbq-vlmq-comparison.md)、[OnPTQ 的状态与后果](methods/onptq.md) | [正确性、分布与生成评测](implementation/model-quality-evaluation.md) |
+| 判断输出分布偏移与原模型不一致 | [间隔、KL/TV 与 token 翻转](theory/quantization-ranking-stability.md#8-语言模型的分布距离怎样变成-token-翻转)、[可靠性与弃答](theory/quantization-reliability-and-selective-prediction.md) | [相同前缀与最终任务的协议](implementation/model-quality-evaluation.md#9-输出分布一致性要固定前缀和指标口径) |
+| 确认方案能否导出、运行并获得收益 | [后端支持边界](implementation/quantized-llm-deployment-backends.md)、[格式与执行](implementation/quantized-matmul-scaling-execution.md) | [模拟与真实执行诊断](implementation/quantization-error-diagnosis.md)、[计时与性能测量](implementation/kernel-correctness-and-benchmarking.md) |
 
 ## 从哪里开始
+
+- **理解秩、位宽与前缀预算**：[混合精度计费](theory/mixed-precision-allocation.md) → [DBW 的成对分量](methods/dbw.md) / [StagQ 的共享前缀](methods/stagq.md) → [主体与例外的表示选择](research/low-bit-representation-design.md)；分清名义精度、保存字段、实际读取和训练/推理工作张量。
+- **贯通 MoE 路由与执行**：[专家选择、容量与误差](fundamentals/model/mixture-of-experts-and-routing.md) → [配对排序、FP8 专家与共享输出](implementation/moe-routing-and-quantized-expert-execution.md) → [EP 映射、通信与输出回传](implementation/moe-expert-parallel-execution.md)；分清模型 gate、本地参数轴、接收行/专家配对、通信尺度和汇合职责。
+- **贯通 MLA 结构与执行**：[联合潜变量与位置分支](fundamentals/model/multi-head-latent-attention.md) → [SGLang 的请求与槽位](implementation/sglang-inference-execution.md) → [投影吸收、联合缓存与 Attention 读取](implementation/mla-cache-and-attention-execution.md) → [vLLM DCP 分片与跨 rank 合并](implementation/vllm-mla-context-parallel-execution.md)；分别核对持久状态、工作张量、通信轴与精度转换。
+- **理解重构的优化行为**：[层输出重构与二阶补偿](theory/layer-reconstruction-second-order-compensation.md) → [损失尺度、分组 RMSE 与参数更新](theory/layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)；区分改变重构对象、损失归约和可训练参数。
+- **理解低位宽的尺度选择**：[校准与范围选择](theory/calibration-and-range-selection.md) → [高斯极限、相对曲率与 GPTQ 尺度](theory/calibration-and-range-selection.md#10-极低位宽为什么更依赖尺度选择) → [旋转的等价条件与代价](theory/orthogonal-rotation-and-hadamard-quantization.md)。
+- **选择旋转的校准目标**：[正交变换的等价条件](theory/orthogonal-rotation-and-hadamard-quantization.md) → [SpinQuant 的模型损失](methods/spinquant.md) / [ConQuR 的顶点距离与 Procrustes 更新](methods/conqur.md)；结合可融合位置、量化器和校准成本判断。
+- **选择 KV 的误差度量与变换**：[K/V 的传播路径](theory/attention-quantization-error-propagation.md) → [NOVA-KV 的 query 加权](methods/nova-kv.md) / [WUSH-KV 的分布与敏感度平衡](methods/wush-kv.md) → [格式、窗口与实际执行](theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。
+- **解释分布误差与生成决策**：[间隔与排序稳定性](theory/quantization-ranking-stability.md) → [KL、TV 与 token 翻转](theory/quantization-ranking-stability.md#8-语言模型的分布距离怎样变成-token-翻转) → [同前缀与实际任务评测](implementation/model-quality-evaluation.md#9-输出分布一致性要固定前缀和指标口径)。
+- **选择生成校准的状态与目标**：[校准数据与前缀覆盖](theory/calibration-and-range-selection.md#11-自回归校准还需要选择前缀状态) → [OnPTQ 的决策与分支后果](methods/onptq.md) → [静态 token 权重与生成状态的比较](research/mbq-vlmq-comparison.md#9-从静态-token-重要性到生成状态与后果)。
 
 - **理解模型与数值**：[Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) → [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md)。
 - **理解 MoE/MLA 与量化对象**：[稠密 decoder 主干](fundamentals/model/transformer-autoregressive-inference.md) → [MoE 的专家选择与容量](fundamentals/model/mixture-of-experts-and-routing.md) / [MLA 的联合缓存与位置分支](fundamentals/model/multi-head-latent-attention.md) → [排序稳定性](theory/quantization-ranking-stability.md) / [KV cache 量化](theory/kv-cache-quantization-objects-and-granularity.md)。
@@ -19,10 +45,11 @@ sources: []
 - **理解变换与研究抽象**：[对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) → [OmniQuant](methods/omniquant.md) → [AffineQuant](methods/affinequant.md) → [FlatQuant](methods/flatquant.md) → [OmniQuant、AffineQuant 与 FlatQuant](research/omniquant-affinequant-flatquant-comparison.md) → [QuaRot](methods/quarot.md) → [SpinQuant](methods/spinquant.md) → [OSTQuant 的正交与缩放联合学习](methods/ostquant.md)。
 - **理解极低比特表示**：[二阶重构](theory/layer-reconstruction-second-order-compensation.md) → [QuIP](methods/quip.md) → [码本量化](theory/codebook-quantization-and-bit-budget.md) → [QuIP#](methods/quip-sharp.md) → [AQLM](methods/aqlm.md) → [SpQR](methods/spqr.md) / [SqueezeLLM](methods/squeezellm.md) → [坐标、码本与例外预算](research/low-bit-representation-design.md)。
 - **研究多模态量化**：[视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) → [MBQ](methods/mbq.md) → [VLMQ](methods/vlmq.md) → [MBQ 与 VLMQ](research/mbq-vlmq-comparison.md) → [QIG](methods/qig.md) → [LUQ](methods/luq.md)。
-- **学习算子开发**：[张量布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [GPU 执行与存储](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) → [逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) → [roofline](fundamentals/hardware/arithmetic-intensity-and-roofline.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md) → [AWQ 反量化内核](implementation/weight-only-dequant-kernels.md)。
+- **学习算子开发**：[张量布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [GPU 执行与存储](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) → [CUDA 编写、编译与接入](implementation/cuda-operator-build-and-integration.md) / [Triton 语言与编译语义](fundamentals/operators/triton-language-and-compilation.md) → [逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **从算法走向部署**：[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) → [AWQ 的实现核对](implementation/awq-implementation.md) → [GPTQ 的实现核对](implementation/gptq-implementation.md) → [SmoothQuant 的实现核对](implementation/smoothquant-implementation.md) → [QServe/QoQ 的实现核对](implementation/qserve-implementation.md) → [权重量化反量化内核的契约](implementation/weight-only-dequant-kernels.md) → [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md)。
 - **从推理库学习 CUDA 与 Triton**：[工作映射与张量接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [vLLM/SGLang 门控激活](implementation/gated-activation-cuda-triton-kernels.md) → [RMSNorm 行归约与残差融合](implementation/rmsnorm-cuda-triton-kernels.md) → [Attention 算子设计](implementation/sglang-attention-operator-design.md)。
 - **深入矩阵乘与多卡执行**：[Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) → [W8A8 量化、GEMM 与校正](implementation/w8a8-quantization-gemm-kernels.md) → [配置与自动调优](implementation/kernel-configuration-and-autotuning.md) → [张量并行与量化](implementation/tensor-parallel-quantization.md)。
+- **贯通低精度浮点执行**：[FP8 与 Microscaling 格式](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) → [K 尺度与执行路径](implementation/quantized-matmul-scaling-execution.md) → [FP4/FP8 块缩放的编码、布局与调用](implementation/block-scaled-matmul-execution.md) → [Tensor Core 与编译诊断](implementation/tensor-core-quantized-gemm.md)。
 - **优化算子配置与流水**：[GPU 算子的计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md) → [Kernel 配置选择与自动调优](implementation/kernel-configuration-and-autotuning.md) → [异步拷贝与多级流水](implementation/gpu-async-copy-pipelines.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **建立算子测试与性能分析流程**：[正确性、Sanitizer 与计时](implementation/kernel-correctness-and-benchmarking.md) → [时间线、硬件指标与瓶颈定位](implementation/gpu-kernel-performance-analysis.md) → [配置选择与对照实验](implementation/kernel-configuration-and-autotuning.md)。
 - **贯通量化的公共知识**：[二阶统计与加权距离](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7-二阶统计如何定义误差距离) → [Attention 误差传播](theory/attention-quantization-error-propagation.md) → [码本与率失真](theory/codebook-quantization-and-bit-budget.md#10-从失真目标推导标量量化器) → [缓存格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式) → [模拟到实际执行](implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
@@ -53,6 +80,7 @@ sources: []
 | [MLA：联合潜变量、位置分支与缓存表示](fundamentals/model/multi-head-latent-attention.md) | 联合压缩、矩阵吸收、解耦 RoPE 如何改变量化对象与缓存预算。 |
 | [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
 | [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | shape、stride、dtype 和执行接口怎样决定正确读写。 |
+| [Triton 语言与编译语义](fundamentals/operators/triton-language-and-compilation.md) | 逻辑张量、广播、mask、类型与 JIT 特化怎样影响设备代码。 |
 | [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解并行分工、mask、复用和融合。 |
 | [线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) | 线性层把一组输入特征加权组合成输出特征。 |
 | [熵、条件熵与依赖：量化代理指标的解释边界](fundamentals/mathematics/entropy-and-dependence.md) | 熵描述一个指定概率分布的不确定性。 |
@@ -88,6 +116,8 @@ sources: []
 | 页面 | 主要问题 |
 | --- | --- |
 | [QAPruner：量化与 token 选择](methods/qapruner.md) | 误差/范围代理、语义融合、删除重要性与局部 scale 边界。 |
+| [DBW：SVD 分量的秩与位宽](methods/dbw.md) | 成对分量预算、Hamilton/STE、训练/导出与固定代码的浮点恢复路径。 |
+| [StagQ：共享前缀与稀疏保护](methods/stagq.md) | dyadic refinement 的 affine 解码、共享 pair、pre/post guard 与逻辑/读取 rate。 |
 | [TurboQuant：旋转码本与残差修正](methods/turboquant.md) | 球面边缘、MSE 与无偏内积、有限维下界及位宽核对。 |
 | [NOVA-KV：查询加权变换与分组 VQ](methods/nova-kv.md) | 精确加权距离、等体积分组、校准与编码/读取成本。 |
 | [AKVQ-VL：多模态 token 精度保护](methods/akvq-vl.md) | TSA/PSA、pivot 代理、Hadamard 与实际混合位宽。 |
@@ -139,6 +169,9 @@ sources: []
 | [SAW-INT4：面向真实服务约束的 4 bit KV cache 量化](methods/saw-int4.md) | 许多 KV cache 压缩方法在离线精度与压缩率上表现不错，接入生产推理引擎后却拿不到收益。 |
 | [SmoothQuant：迁移激活量化难度的 W8A8 方法](methods/smoothquant.md) | SmoothQuant 面向同时量化权重与激活的 W8A8 推理。 |
 | [SpinQuant：用最终模型损失学习正交旋转](methods/spinquant.md) | SpinQuant 的出发点是：不同正交旋转在浮点下等价，在量化后却可能相差很大。 |
+| [ConQuR：顶点对齐与逐批旋转校准](methods/conqur.md) | 激活几何代理、Procrustes 闭式子问题、量化感知前向与可融合边界。 |
+| [WUSH-KV：缓存统计与敏感度的可逆变换](methods/wush-kv.md) | 闭式平衡、GQA 读取度量、post-RoPE 配对、双窗口与两套量化器的边界。 |
+| [OnPTQ：生成决策与未来分支校准](methods/onptq.md) | 同量化前缀、风险选择、context anchor 与轨迹刷新；代理理论、正确性 flip 和执行条件。 |
 | [SplitQ：模态离群通道拆分与权重激活双补偿](methods/splitq.md) | SplitQ 把多模态量化冲突拆成两个层次：少数模态离群通道先单独处理；剩余共享通道再分别缓解权重量化误差与激活量化误差。 |
 | [VLMQ：token 重要性加权的二阶量化](methods/vlmq.md) | VLMQ 用局部注意力模块重构损失的梯度估计各 token 的重要性，再把这些因子放进线性层的二阶重构目标。 |
 | [ZeroQuant：逐组权重、逐 token 激活与逐层蒸馏](methods/zeroquant.md) | 8 bit 量化到十亿参数规模时，精度损失主要来自两个数值事实：不同 token 的激活范围相差很大，不同输出行的权重范围也相差很大。 |
@@ -155,11 +188,17 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [MLA 缓存与 Attention 执行](implementation/mla-cache-and-attention-execution.md) | 潜变量/RoPE 的联合槽位、投影吸收、展开与潜空间路径、读取索引及精度转换怎样衔接。 |
+| [vLLM MLA 的 DCP 执行](implementation/vllm-mla-context-parallel-execution.md) | 全局 token 到本地 page、query head 收集、局部 LSE 合并、AG+RS/A2A 返回及 prefix prefill 的缓存收集怎样衔接。 |
+| [MoE 路由与量化专家执行](implementation/moe-routing-and-quantized-expert-execution.md) | top-k、配对排序与 padding、FP8 专家块尺度、两次 GEMM 和共享输出怎样连接。 |
+| [MoE 专家并行执行](implementation/moe-expert-parallel-execution.md) | SGLang/vLLM 的 group、expert 映射、normal/HT 与 LL 布局、通信尺度、gate/rho 与输出回传怎样配合。 |
 | [TTS 量化敏感性与评测](implementation/tts-quantization-evaluation.md) | 组件消融、统计等价、模拟与真实低比特图及系统成本。 |
 | [模型质量评测](implementation/model-quality-evaluation.md) | PPL 的有效计数、任务协议与风险—覆盖率怎样定义和比较。 |
 | [推理服务评测](implementation/serving-performance-evaluation.md) | 负载、TTFT、TPOT、吞吐与 SLO 下的 goodput 如何共同解释量化收益。 |
 | [张量并行与量化](implementation/tensor-parallel-quantization.md) | 列/行分片、GQA 复制、collective 与 group/scale/zero 如何配合。 |
 | [Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) | 从 tile、lane 和寄存器走到 ldmatrix、MMA、AWQ Triton 与编译诊断。 |
+| [CUDA 算子的编写、编译与接入](implementation/cuda-operator-build-and-integration.md) | 从完整设备代码和包装走到编译、dispatcher、FakeTensor 与接口检查。 |
+| [FP4/FP8 块缩放矩阵乘](implementation/block-scaled-matmul-execution.md) | 元素编码、K 组尺度、packed scale 布局与点积接口如何衔接。 |
 | [vLLM 推理执行：从 token 调度到变长批次](implementation/vllm-inference-execution.md) | 请求如何分配 token 与 KV 空间，再变成算子的紧凑输入。 |
 | [vLLM 算子设计：Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) | 分页状态与元数据如何进入 Attention，设备端怎样复用、归约并适配图执行。 |
 | [SGLang 推理执行：Radix 缓存、批次调度与重叠执行](implementation/sglang-inference-execution.md) | 前缀复用如何连接缓存保护、请求映射、批次与跨轮结果。 |

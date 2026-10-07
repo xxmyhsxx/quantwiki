@@ -7,6 +7,8 @@ tags:
   - reconstruction
   - calibration
 sources:
+  - raw/papers/2026-10-05/onptq/paper.pdf
+  - raw/papers/2026-10-05/onptq/source/iclr2027_conference.tex
   - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/qig/paper.pdf
@@ -17,7 +19,7 @@ sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale.py
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/pre_quant.py
-updated: 2026-09-28
+updated: 2026-10-07
 ---
 
 # MBQ 与 VLMQ：重要性怎样进入量化目标
@@ -102,12 +104,21 @@ VLMQ 表 6 在无分组 INT3、Qwen2-VL-7B 上报告：常数权重 69.03，Fast
 
 这不推翻 MBQ/VLMQ 的条件化消融，也没有证明用 PA gap 替换其重构损失会更好。若将几何指标用于量化研究，需要在相同模型、数据与量化器上检验它对量化损害的预测能力，再用独立任务结果判断优化它是否有效；Alignment Illusion 原文没有做这项量化实验。
 
+## 9. 从静态 token 重要性到生成状态与后果
+
+[OnPTQ](../methods/onptq.md) v1 §3–4 把比较再推进到自回归状态：用当前量化模型产生 prefix，在同状态下找浮点参考与量化竞争 token，再让量化模型分别继续两个短分支。它用边界损伤、同状态 JS 和未来分支差异选择状态，保留原 context anchor，并在参数更新后刷新轨迹。
+
+这与给静态视觉/文本 token 加系数是不同自由度。可按五项拆开比较：状态由谁生成、局部信号测什么、未来后果如何估计、哪些参数可更新、部署时保留哪些计算。OnPTQ 的未来 JS 只代理价值差，正确性 Flip Rate 又不同于 token 不一致；其理论界与最终任务改善仍需要分别看。
+
+已有证据支持在论文指定 Qwen/PTQ 设置下继续考虑状态与后果，而没有证明替换 MBQ/VLMQ 的权重必然更优，或任意叠加可同时获益。Qwen2.5-VL 的部分基线转引历史结果，Qwen3-VL 才使用作者共同本地评测；跨论文排名需要先控制这些条件。（§5、附录 C.1。）
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [Calibrate the Decisions That Change the Future](https://arxiv.org/abs/2609.36828v1) | `arXiv:2609.36828v1` | 生成状态、边界与后果的校准，更新变量及比较协议 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
 | [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
 | [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |

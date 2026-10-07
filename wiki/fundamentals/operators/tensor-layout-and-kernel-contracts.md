@@ -64,6 +64,8 @@ $$i=pB+r,\qquad 0\le r<B,\qquad p<\lceil n/B\rceil.$$
 
 `tl.arange(0,B)` 创建这组逻辑下标，`i<n` 保护 load/store。B 表示每个 program 的工作量，并不表示 B 个 CUDA 线程；`num_warps` 是另一个执行参数，实际元素如何分给线程由编译器布局决定。CUDA 的逐线程索引则常写作 `blockIdx.x*blockDim.x+threadIdx.x`。
 
+逻辑张量的广播、类型提升、控制流与编译特化另见 [Triton 语言与编译语义](triton-language-and-compilation.md)；它们决定这段索引和算术代码的实际含义。
+
 教学例：n=10、B=8 时启动两个 program，覆盖逻辑候选 `0…7` 与 `8…15`。最后一个只有 8、9 有效。只给 store 加 mask 会防止越界写，却不能修复已经发生的越界读，因此读取侧也要保护。
 
 对归约，失效位置不仅不能访问内存，还必须有合适的填充值；求和填 0、最大值填 $-\infty$ 的原因见 [归约与分块](gpu-kernel-computation-patterns.md)。
@@ -100,6 +102,8 @@ flowchart LR
 ```
 
 在 PyTorch 中注册可调用算子，也不自动得到正确的 backward、编译图元信息或所有图捕获能力；这些是额外接口责任，本页没有核对其完整实现。
+
+从这组职责走到完整代码、编译、库加载与调用，见 [CUDA 算子编写与接入](../../implementation/cuda-operator-build-and-integration.md)。该教学例子分配独立输出，并明确处理空输入、当前设备/stream、FakeTensor 与推理接口范围。
 
 ## 5. 布局怎样接到量化内核
 

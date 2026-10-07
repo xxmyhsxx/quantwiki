@@ -79,7 +79,7 @@ def check(root, require_raw=False):
     def fail(path, message):
         errors.append(str(path.relative_to(root)) + ': ' + message)
 
-    for name in ('README.md', 'INDEX.md', 'LOG.md'):
+    for name in ('README.md', 'INDEX.md', 'READING.md', 'LOG.md'):
         if not (wiki / name).is_file():
             errors.append('missing wiki/' + name)
     for child in wiki.iterdir() if wiki.is_dir() else []:
@@ -96,7 +96,7 @@ def check(root, require_raw=False):
         for issue in issues:
             fail(path, issue)
         bodies[path] = body
-        is_index = path == wiki / 'INDEX.md'
+        is_index = path.parent == wiki and path.name in {'INDEX.md', 'READING.md'}
         for key in ('title', 'type', 'sources') + (() if is_index else ('tags',)):
             if key not in meta:
                 fail(path, 'missing field: ' + key)
@@ -105,7 +105,7 @@ def check(root, require_raw=False):
         if meta.get('type') not in TYPES:
             fail(path, 'invalid page type')
         if is_index and meta.get('type') != 'index':
-            fail(path, 'INDEX must have type: index')
+            fail(path, path.name + ' must have type: index')
         if not is_index:
             if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', path.stem):
                 fail(path, 'invalid filename')
@@ -181,7 +181,7 @@ def check(root, require_raw=False):
                             break
                 source_cache[source] = found
             known_ids |= source_cache[source]
-        if raw_present:
+        if raw_present and not is_index:
             for aid in set(ARXIV.findall(body)) - known_ids:
                 fail(path, 'arXiv ID not present in registered source metadata: ' + aid)
         counts['numbered_citations'] += len(re.findall(r'(附录\s?[A-Z]|§\s?\d+(?:\.\d+)*|表\s?\d+|图\s?\d+)', body))

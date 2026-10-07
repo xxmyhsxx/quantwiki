@@ -16,7 +16,9 @@ sources:
   - raw/papers/2026-09-21/quarot/paper.pdf
   - raw/papers/2026-09-21/slicegpt/paper.pdf
   - raw/papers/2026-09-21/mquant/paper.pdf
-updated: 2026-09-29
+  - raw/papers/2026-10-03/conqur/paper.pdf
+  - raw/papers/2026-10-03/conqur/source/waq.tex
+updated: 2026-10-07
 ---
 
 # 正交旋转与量化：等价条件、离群值和在线代价
@@ -143,12 +145,30 @@ $$\det\Sigma\le\prod_j\Sigma_{jj}\le(\max_j\Sigma_{jj})^d,$$
 [TurboQuant](../methods/turboquant.md) 用 Haar 随机正交变换把固定单位输入变为均匀球面点，单坐标均值零、方差 $1/d$；有限维坐标受总平方和为 1 的约束，并非独立。单个固定 Hadamard 或随机符号 Hadamard 不自动具有完全相同的边缘分布。因此“保持范数”“减小峰值”“产生特定随机分布”是三种不同主张。
 
 [NOVA-KV](../methods/nova-kv.md) 则希望重构误差按 query 二阶矩 $M_q$ 计费。行向量变换满足 $RR^\top=M_q$ 时，$\|eR\|_2^2=eM_qe^\top$；它一般不保持欧氏范数，却把指定 logit 误差精确变成变换域 MSE。K 乘 $R$、Q 乘 $R^{-\top}$ 才保持未量化内积；不能因为两侧都存在变换就一律同乘 $R$。精确的代数恒等式与高分辨率最优性、有限精度实现、实际任务质量仍应分开验证。
+## 9. 从激活几何目标到闭式旋转更新
+
+[ConQuR](../methods/conqur.md) v2 §3、附录 B 提供另一种选择坐标系的目标。对单位列向量 $\tilde x$，正交旋转保持二范数，峰值至少为 $1/\sqrt d$；所有坐标幅值相等的超立方体顶点达到这个下界。无裁剪逐向量均匀量化的舍入界受峰值或带符号范围控制，因此靠近顶点可作为几何代理，但并非实际量化误差或下游任务的精确目标。
+
+令当前最近顶点为 $z_i=\operatorname{sign}(R\tilde x_i)/\sqrt d$，在零坐标处选一个等距顶点。最小距离可写为
+
+$$
+\sum_i\|R\tilde x_i-z_i\|_2^2
+=2n-\frac2{\sqrt d}\sum_i\|R\tilde x_i\|_1.
+$$
+
+它等价于最大归一化激活的 $\ell_1$ 范数，不是处处光滑目标，也不保证同一个 R 能把任意数据集全部变成等幅向量。共享坐标系需要在不同样本方向间取舍。
+
+固定顶点后，将激活和目标按行堆叠为 $\tilde X,Z$，问题成为 $\min_{R\in O(d)}\|\tilde X R^\top-Z\|_F^2$。若 $Z^\top\tilde X=U\Sigma V^\top$，则 $R=UV^\top$ 是该正交 Procrustes 子问题的解。交替选择顶点与求解 R 可在固定数据集上降低代理目标；逐批更换数据之后，以及量化后的整网任务，仍需独立检验。
+
+它和 SpinQuant 的差别不只是优化器：前者选择激活方向的几何目标，后者以最终模型交叉熵选择旋转。ConQuR 的共享残差 R1 与头内 R2 可折入权重，固定 R3/R4 仍有推理时执行；按批次更新的“在线校准”发生在离线 PTQ 阶段。完整位置、SVD 方向、量化感知前向与成本口径见[方法页](../methods/conqur.md)。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs](https://arxiv.org/abs/2605.10793v2) | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
 | [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
 | [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
 | [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |

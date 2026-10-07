@@ -31,10 +31,11 @@ sources:
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
   - raw/papers/2026-09-21/smoothquant/paper.pdf
   - raw/papers/2026-09-21/gptq/paper.pdf
+  - raw/papers/2026-09-21/microscaling-formats/paper.pdf
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
   - raw/repositories/2026-09-21/gptq/source/quant.py
   - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-updated: 2026-09-29
+updated: 2026-10-03
 ---
 
 # 量化矩阵乘法的缩放与执行路径
@@ -88,21 +89,26 @@ $$
 
 这是从仿射量化定义得到的展开，说明 zero-point 会带来修正项；能否预计算或融合取决于参数是否静态、粒度和后端。本页不据此声称某个具体内核已经实现这些项。SmoothQuant 的简化推导主要采用对称量化；GPTQ 原始权重量化常使用非对称网格，其反量化路径包含 zero-point。
 
-## 3. 三类执行路径
+## 3. 低比特执行路径
 
 | 路径 | 数据和计算 | 可以支持什么判断 |
 |---|---|---|
 | 模拟量化 | 将数值舍入到低比特网格，仍用浮点存储与乘法 | 观察该模拟规则下的质量变化；不能证明压缩或加速 |
 | Weight-only 压缩 + 即时反量化 | 打包权重，运行时解码为浮点，与浮点激活相乘 | 减少权重存储和访存；收益依赖反量化及权重复用 |
 | W8A8 整数矩阵乘 | 权重与输入以 INT8 交给整数矩阵乘接口，随后缩放/转换 | 可利用对应整数算力；额外量化、非矩阵算子与显存仍影响端到端收益 |
+| 原生低精度浮点或块缩放点积 | 低精度浮点元素及其尺度参与对应点积接口；累加与输出类型另由格式、指令及后端规定 | 与先解码成高精度输入的 weight-only 路径区分；实际硬件支持、转换成本和端到端收益仍需核验 |
+
+这些是辨识执行方式的例子，不是互斥且穷尽的格式分类。一个模型可混合多种路径，同一交换格式也可由模拟、反量化或原生低精度运算实现。Microscaling v3 §4.1、图 2 将两侧输入转为 MX 后执行 MX 点积，输出回到标量浮点；输出是 BF16/FP32 不能反推出乘法输入已恢复高精度。该论文实验来自模拟库，不能据此声称已测得原生 MX 硬件收益；格式与块尺度见 [FP8 与 Microscaling](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md)。
 
 可核对的固定版本例子：
 
-- SmoothQuant C `c61476d…` 的 `fake_quant.py:103`使用浮点 `F.linear`，属于第一类。
-- GPTQ C `2d65066e…` 的 `quant.py:137`保存 3-bit packed 权重，forward 调用单向量 CUDA 路径，属于第二类；本轮未运行内核。
-- torch-int T `65266db1…` 的 `linear.py:16`保存 INT8 权重并调用整数扩展，属于第三类接口；本轮未验证底层 kernel 的性能和数值。
+- SmoothQuant C `c61476d…` 的 `fake_quant.py:103`使用浮点 `F.linear`，属于模拟量化。
+- GPTQ C `2d65066e…` 的 `quant.py:137`保存 3-bit packed 权重，forward 调用单向量 CUDA 路径，属于 weight-only；本轮未运行该内核。
+- torch-int T `65266db1…` 的 `linear.py:16`保存 INT8 权重并调用整数扩展，属于整数矩阵乘接口；本轮未验证底层 kernel 的性能和数值。
 
-第二类路径的性能上限与批量强相关：[Marlin](marlin-batched-w4a16-gemm.md) 在 A10 上把接近理论上限的加速保持到 batch 约 16–32，之后随进入计算受限区间逐步下降，它用离线重排、异步拷贝与条带划分把权重读取的重叠做到接近峰值。第三类路径的困难在反量化发生的位置：[QServe](../methods/qserve.md) 论证按组 W4A4 在主循环内反量化部分和会被 CUDA 核心限制，因而改用渐进式分组量化，让全部计算落在 INT8 张量核心上。
+原生浮点/块缩放接口的完整分析见 [Triton 块缩放矩阵乘](block-scaled-matmul-execution.md)，沿输入字节、K 组 scale、descriptor 和 `tl.dot_scaled` 对照 FP32 参考含义，并区分原生硬件入口与实验性软件模拟。
+
+Weight-only 路径的性能上限与批量强相关：[Marlin](marlin-batched-w4a16-gemm.md) 在 A10 上把接近理论上限的加速保持到 batch 约 16–32，之后随进入计算受限区间逐步下降，它用离线重排、异步拷贝与条带划分把权重读取的重叠做到接近峰值。整数矩阵乘路径的困难包括反量化发生的位置：[QServe](../methods/qserve.md) 论证按组 W4A4 在主循环内反量化部分和会被 CUDA 核心限制，因而改用渐进式分组量化，让主矩阵计算落在 INT8 张量核心上。
 
 [Q-VLM](../methods/q-vlm.md) 固定代码提供一种组合路径：NF4 权重压缩、激活量化后恢复浮点、多 token 时反量化权重再做浮点线性运算。QLoRA v1 §3 同样明确低比特存储与通常 BF16 计算分开。因而看到激活量化节点和 W4A4 标签，也不能直接归为原生整数 GEMM；[非均匀码本与尺度元数据](../fundamentals/quantization/uniform-quantization-and-groups.md) 决定解码需要哪些信息。
 
@@ -282,6 +288,7 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 | [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
 | [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438v7) | `arXiv:2211.10438v7` | — |
 | [GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323v2) | `arXiv:2210.17323v2` | — |
+| [Microscaling Data Formats for Deep Learning](https://arxiv.org/abs/2310.10537v3) | `arXiv:2310.10537v3` | §4.1、图 2 的 MX 点积计算流；模拟结果不代表硬件执行 |
 | [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant.git/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
 | [IST-DASLab/gptq](https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf) | `2d65066eeb06a5c9ff5184d8cebdf33662c67faf` | — |
 | [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |

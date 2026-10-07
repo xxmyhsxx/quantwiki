@@ -17,7 +17,7 @@ sources:
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/mem_cache/common.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/forward_batch_info.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/model_runner.py
-updated: 2026-09-22
+updated: 2026-10-07
 ---
 
 # SGLang 推理执行：Radix 缓存、批次调度与重叠执行
@@ -121,6 +121,12 @@ out_cache_loc: [20,21,30]
 一个忽略同步与准备依赖的理想流水教学模型：若每轮 CPU 准备耗时 C、GPU 执行耗时 G，串行 N 轮约为 $N(C+G)$；能充分重叠时约为 $C+G+(N-1)\max(C,G)$。这仅说明减少空隙的机会，不是 SGLang 的实测速度。采样约束、内存资源和首 token 延迟目标都可能限制重叠；源码也允许特定批次关闭 overlap。
 
 ## 7. 与已有 vLLM 知识怎样衔接
+
+请求到槽位的映射还需与槽位里的表示衔接。[MLA 缓存与 Attention 执行](mla-cache-and-attention-execution.md)沿同一固定版本解释联合 latent/RoPE buffer、展开与吸收路径、缓存写入和 FlashInfer 读取；这与本页普通请求管理是两层职责。
+
+模型批次中的隐藏状态进入 MoE 后，还要变成 token–专家配对。[MoE 路由与量化专家执行](moe-routing-and-quantized-expert-execution.md)解释单设备 top-k、专家分块索引、FP8 权重与激活尺度，以及 routed/shared 输出汇合；单设备 dispatcher 的输入包装和 kernel 内的专家排序应分开理解。
+
+专家跨 rank 放置时，[MoE 专家并行执行](moe-expert-parallel-execution.md)接续 DeepEP normal/low-latency 的位置映射、通信输入、本地 expert 行与 combine 返回。此时本轮源 token 行数、每 rank 接收行数和专家 GEMM 行数需要分别记录。
 
 [vLLM 推理执行](vllm-inference-execution.md)围绕 token 进度、块管理与紧凑输入展开；本页提供另一种具体组织：EXTEND/DECODE/MIXED 模式、Radix 路径保护、请求到 token 槽位映射和结果转交。两者都需要保证缓存身份、资源可用性、请求边界和新旧状态顺序。这些共同要求有助于定位实现差异，但不能仅由数据结构名称判断吞吐高低。
 

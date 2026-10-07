@@ -16,7 +16,7 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_utils.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_model_runner.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/block_table.py
-updated: 2026-09-22
+updated: 2026-10-07
 ---
 
 # vLLM 推理执行：从 token 调度到变长批次
@@ -125,7 +125,13 @@ $$\mathrm{slot}(i,p)=\mathrm{block\_table}[i,\lfloor p/b\rfloor]\,b+(p\bmod b).$
 
 若 b=4，A 的块表为 [10,3]、B 为 [6,12]，上例对应槽位 [15,26,27,48]。它是 **token 槽位编号**，还需 backend 的 head、dtype 和 stride 布局才能得到实际字节地址。源码 `worker/block_table.py` 还处理 kernel block 转换与 context parallel，本例不覆盖这些扩展。
 
+上述单设备槽位模型的 DCP 扩展见[MLA 分布式执行](vllm-mla-context-parallel-execution.md)：调度/hash 按全局 block 计费，worker 使用 token owner、本地槽位和本地有效长度；管理块容量与每 rank 的真实 page 行数分别解释。
+
 ## 6. 调度怎样改变算子优化问题
+
+调度给出的 token 行与缓存槽位，还要由具体模型解释。[MLA 缓存与 Attention 执行](mla-cache-and-attention-execution.md)对照固定 vLLM 的联合 latent/RoPE 缓存、prefill 展开与 Triton decode；[MoE 路由与量化专家执行](moe-routing-and-quantized-expert-execution.md)连接 router、专家执行与输出汇合。普通 Attention/MLP 的形状不能直接替代这些结构的接口。
+
+[MoE 专家并行执行](moe-expert-parallel-execution.md)进一步连接 EP group、expert_map、DeepEP HT/LL 的 prepare/expert/finalize 和返回。本轮 token 总数不能直接用作每个专家的工作行数，通信布局也由选定 backend 决定。
 
 对于同一模型，线性层的 M 主要由本轮 token 总数决定；Attention 的负载还受每个请求的 query 长度、历史长度、head 数和掩码影响。所以仅以“batch size=几”描述一个 serving kernel 基准不够，至少要分清请求数、总 token 数、各 query 长度与 KV 长度。
 

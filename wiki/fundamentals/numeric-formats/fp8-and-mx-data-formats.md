@@ -122,7 +122,7 @@ $$shared\_exp=\left\lfloor \log_2\left(\max_i|V_i|\right)\right\rfloor-\mathrm{e
 
 **转置与量化的顺序不可交换。** 多维张量必须为共享尺度选择主轴，通常取矩阵乘的归约维；对 2D 矩阵，尺度可以按行或按列共享。先转置再量化与先量化再转置会得到不同结果（M §3），因此量化的 $W$ 与其转置必须分别存储为两个张量。训练的正反两向都需要它，这个存储代价是该格式的直接后果；两个张量不必同时在常驻内存中，除非前向与反向被极细地交错执行。
 
-**计算流（M 图 2）。** 点积类运算（matmul、convolution）的两侧输入转成 MX 格式后计算；向量类运算（LayerNorm、Softmax、GELU、残差加法）用 bfloat16 或 FP32；点积输出回到标量浮点格式；权重保留一份 FP32 主副本用于更新。这与 [三类执行路径](../../implementation/quantized-matmul-scaling-execution.md#3-三类执行路径) 中“压缩存储、高精度计算”的形态一致，区别在于压缩与解码作用在块级尺度上。
+**计算流（M 图 2）。** 点积类运算（matmul、convolution）的两侧输入转成 MX 格式，执行论文所引用的 MX 点积；向量类运算（LayerNorm、Softmax、GELU、残差加法）用 bfloat16 或 FP32；点积输出回到标量浮点格式；权重保留一份 FP32 主副本用于更新。高精度输出不意味着两侧输入必须先解码成 FP16/BF16 再做普通 GEMM，也不能仅凭格式名确定累加精度。应分别核对存储、乘法输入、累加和输出类型，见 [低比特执行路径](../../implementation/quantized-matmul-scaling-execution.md#3-低比特执行路径)。M 的实验使用模拟库，计算流说明不构成真实 MX 硬件执行或吞吐证据。
 
 M 的作者报告（结果表未逐项核对）：MXINT8 在若干推理基准上可直接替代 FP32 且差异落在标准差内；MXFP6 在量化感知微调后接近 FP32；MXFP6 支持 6 bit 权重、激活与梯度的生成式语言模型训练与 FP32 持平；MXFP4 权重配 MXFP6 激活与梯度只有小幅损失。这些是作者在自建模拟库上的报告，不是本项目复现，也不代表具体硬件吞吐。
 
@@ -145,7 +145,9 @@ typedef struct {
 } block_nvfp4;
 ```
 
-两者都是“块级尺度加 E2M1 元素”：MXFP4 用 32 元素块配一个 E8M0 尺度，共 $8+128$ bit，即 4.25 bit/weight；NVFP4 把块缩到 64 元素并把尺度改为四个 UE4M3 子块尺度（16 元素一个），换取更细的范围适配，代价是更多元数据。读取与打包路径属于 [GGUF 块量化存储格式](../../implementation/gguf-block-quantization-formats.md) 的范围。
+两者都是“块级尺度加 E2M1 元素”：MXFP4 用 32 元素块配一个 E8M0 尺度，共 $8+128$ bit，即 4.25 bit/weight；NVFP4 在一个 64 元素存储块内保存四个 UE4M3 尺度，每 16 元素共享一个尺度，共 $32+256$ bit，即 4.5 bit/weight。NVFP4 缩小的是尺度共享组，不是存储块；更细的范围适配增加了每元素元数据成本。这是该 ggml 快照的块内存储账，不包含模型其他参数、额外尺度或运行缓冲。读取与打包路径属于 [GGUF 块量化存储格式](../../implementation/gguf-block-quantization-formats.md) 的范围。
+
+要继续理解这些位模式怎样参与实际点积，可读 [Triton 块缩放矩阵乘](../../implementation/block-scaled-matmul-execution.md)：它连接元素解码、scale 的逻辑/packed 布局、descriptor 与点积调用，另行说明硬件条件。存储块定义与计算接口的搬运布局需分别核对。
 
 ## 6. 与整数网格的适用边界
 

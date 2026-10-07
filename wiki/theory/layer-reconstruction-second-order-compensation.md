@@ -6,6 +6,8 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/papers/2026-10-03/reconstruction-loss-scale-rmse/paper.pdf
+  - raw/papers/2026-10-03/reconstruction-loss-scale-rmse/source/iclr2027_conference.tex
   - raw/papers/2026-09-22/efficientqat/paper.pdf
   - raw/repositories/2026-09-22/efficientqat/source/quantize/block_ap.py
   - raw/papers/2026-09-21/quip/source.eprint
@@ -22,7 +24,7 @@ sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/gptq/paper.pdf
-updated: 2026-09-28
+updated: 2026-10-07
 ---
 
 # 层输出重构与二阶误差补偿
@@ -210,7 +212,104 @@ GPTAQ v3 §4.1 与附录 A.1 提供非对称框架，§4.2 又通过残差的通
 
 [SqueezeLLM](../methods/squeezellm.md) 的敏感性来自任务梯度外积的对角近似，不是本页固定输入线性重构的精确 Hessian。两类目标的来源、耦合和近似应分别说明；方法之间更一般的联系见 [低比特表示设计空间](../research/low-bit-representation-design.md)。
 
+## 11. 重构损失的尺度怎样影响优化
+
+前面讨论了重构什么、哪些参数可以补偿，以及误差怎样加权。即使这些选择不变，**损失的归约和梯度尺度也会改变有限步优化的结果**。本节依据 *The Devil Is in the Reconstruction Loss Scale* v1 的 §2–3、§4 与附录 A；公式的梯度条件和分组推导由本页展开。
+
+### 从输出误差到参数更新
+
+学习式 PTQ 通常冻结预训练权重，逐单元训练缩放、裁剪、旋转或适配器等辅助参数。单元可以是一个 Transformer block，也可以是连续多个 block。设当前输出残差为 $E=\widehat X_{i+1}-X_{i+1}$，元素数为 $N$，则
+
+$$
+L_{\mathrm{MSE}}=\frac{\|E\|_F^2}{N},\qquad
+\nabla_{\widehat X}L_{\mathrm{MSE}}=\frac{2E}{N},\qquad
+\|\nabla_{\widehat X}L_{\mathrm{MSE}}\|_F
+=2\sqrt{\frac{L_{\mathrm{MSE}}}{N}}.
+$$
+
+这是 v1 式 (2)、(5) 的等价展开。相同 $N$ 下，MSE 相差一万倍会使输出梯度范数相差一百倍。作者观察到的跨阶段损失跨度还与浮点 block 本身的输出幅值有关，不能全部归因为量化累积；附录 E 在浮点模型上测量了这一差异。
+
+但是输出梯度不等于参数更新。把当前单元输出与辅助参数展平，令 $J_i=\partial\widehat x_{i+1}/\partial\theta_i$，链式法则给出
+
+$$
+\nabla_{\theta_i}L=J_i^\top\nabla_{\widehat x_{i+1}}L.
+$$
+
+不同单元的 $J_i$、参数尺度、优化器及其历史状态还会影响更新。v1 用每步 $\|\Delta\Theta_i\|_F/\|\Theta_i\|_F$ 再在阶段内平均，作为实际优化强度的经验代理；恒定输出梯度并不证明各阶段这个比值相同。
+
+### RMSE 归一化了什么
+
+对同一个非零残差，单组 RMSE 为
+
+$$
+L_{\mathrm{RMSE}}=\frac{\|E\|_F}{\sqrt N},\qquad
+\nabla_{\widehat X}L_{\mathrm{RMSE}}
+=\frac{E}{\sqrt N\,\|E\|_F}
+=\frac{\nabla_{\widehat X}L_{\mathrm{MSE}}}{2\sqrt{L_{\mathrm{MSE}}}},
+\qquad
+\|\nabla_{\widehat X}L_{\mathrm{RMSE}}\|_F=\frac1{\sqrt N}.
+$$
+
+RMSE 保留这一组内部的梯度方向，去掉其对残差整体幅度的依赖。它没有把损失数值强制变成相同大小，也没有消除 Jacobian 的差异。不同阶段的 $N$ 不同时，梯度范数仍不同。（v1 §3.1，式 (6)–(7)。）
+
+对一个整体取平方根是严格单调变换，因此全局 MSE 与对应单组 RMSE 的最小点相同；改变的是优化路径与有限步结果。**先分组开方再平均则一般改变目标，不能继续套用这个最小点等价关系。** 零残差处范数不可微，以上导数式要求非零残差；若实现加平滑项，恒定范数公式也随之改变，论文未提供可据此确认的实现代码。
+
+### 分组决定哪些误差被一起归一化
+
+将全部元素分成 $M$ 个互不重叠、等大小的组，每组 $n=N/M$ 个元素。v1 式 (8) 定义
+
+$$
+L_G=\frac1M\sum_{m=1}^M\frac{\|E_{G_m}\|_2}{\sqrt n}.
+$$
+
+所有组残差非零时，每组梯度范数为 $1/(M\sqrt n)$，所以
+
+$$
+\|\nabla_E L_G\|_2^2
+=\sum_{m=1}^M\frac1{M^2n}
+=\frac1N.
+$$
+
+这解释了分组为何仍有同样的整体范数，却可改变组与组之间的相对权重。组大小不等时平方范数变为 $M^{-2}\sum_m |G_m|^{-1}$；有零残差组时，还须指定次梯度，不能无条件声称恒为 $1/\sqrt N$。
+
+附录 A.2 采用 $E\in\mathbb R^{B\times T\times C}$，分别表示样本、token、通道，所有分组都在每个样本内部进行：
+
+| 变体 | 一组包含什么 | 损失 |
+| --- | --- | --- |
+| Sample | 一个样本的全部 token 和通道 | $\frac1B\sum_b\sqrt{\frac1{TC}\sum_{t,c}E_{b,t,c}^2}$ |
+| Channel | 一个样本中某通道的全部 token | $\frac1{BC}\sum_{b,c}\sqrt{\frac1T\sum_t E_{b,t,c}^2}$ |
+| Token | 一个样本中某 token 的全部通道 | $\frac1{BT}\sum_{b,t}\sqrt{\frac1C\sum_c E_{b,t,c}^2}$ |
+| Element | 一个特征元素 | $\frac1{BTC}\sum_{b,t,c}\lvert E_{b,t,c}\rvert$，即平均绝对误差 |
+
+Channel 不是把整个 batch 的同名通道合成一组，Sample 也不是对整个 batch 只开一次方。v1 的重构 batch 分别为 OmniQuant/DuQuant 的 1、FlatQuant 的 4、SliderQuant 的 3；复现时须保留这些归约轴。教学上，残差 $(2,0)$ 的 MSE 为 2、MAE 为 1；$(1.4,1.4)$ 的 MSE 为 1.96、MAE 为 1.4，两个目标对候选的偏好相反。这个算例说明分组改变目标，不是模型实验。
+
+### 放回顺序 PTQ 的流程
+
+1. 沿原方法确定单元、校准输入、教师目标与可训练参数；保留原来的浮点或量化前缀路径，不能因为换损失就改变输入协议。
+2. 对输出残差选择归约轴，计算对应 RMSE；量化器、参数、优化器、学习率和训练步数保持成对对照。
+3. 在当前单元内更新辅助参数，完成后按原方法冻结并推进下一单元。RMSE 不让已经冻结的早期单元重新获得梯度。
+4. 分别记录输出梯度、参数梯度、相对更新和最终质量。前者的恒等式不能代替后面三项的测量。
+
+该改动作用于离线重构目标，保留原量化表示和推理流程。它与第 8 节的扩大联合重构范围，以及 [EfficientQAT](../methods/efficientqat.md) 更改可训练参数和整网阶段，是不同的选择。
+
+### 实验支持的范围
+
+以下均为作者报告。v1 附录 A.1 使用相同的 128 条 WikiText-2 校准样本，每条 2,048 token；保留各基础方法的优化器、学习率和步数。PPL 也在 WikiText-2 报告，六项零样本任务均分为 PIQA、ARC-Easy、ARC-Challenge、Winogrande、HellaSwag、BoolQ；同一语料名不能据此称为严格跨域校准。
+
+| 对照及原表 | MSE | RMSE | 能支持的判断 |
+| --- | --- | --- | --- |
+| OmniQuant，Qwen3.5-27B，W2A16，表 1，PPL / 六任务均分 | 37.51 / 60.45% | 22.20 / 70.96% | 该低比特配置有较大改善；原模型为 6.90 / 77.10%，仍有明显差距 |
+| FlatQuant，Qwen3.5-9B，W4A4，表 2，PPL / 六任务均分 | 10.26 / 72.23% | 9.15 / 74.19% | 换损失的价值不只出现在 OmniQuant；改善幅度受基础方法影响 |
+| OmniQuant，Qwen3.5-9B，W4A16，表 4，HumanEval | 75.61% | 75.00% | 四项推理任务的均分改善，不代表每个任务都改善 |
+| 同模型 W2A16G128，表 4，四项推理任务均分 | 0.97% | 3.65% | 比原模型 87.35% 仍低很多，换损失不足以恢复该配置 |
+
+表 3 没有一个变体在所有配置中最好。另有一处需要保留：§4.1/4.3 将 Qwen 默认变体写为 Channel，但表 1 的 Qwen3.5-9B W3A16 均分 72.79% 与表 3 的 Token 值相同，Channel 列是 73.17%；v1 未解释此差异，不能把这些表当作逐项一致的变体映射。
+
+表 5 在单 NVIDIA L40、batch 1 上测量整个顺序量化过程：四个对照的时间变化为 −1.19% 至 +2.82%，报告的峰值显存相同。这是离线量化成本，不是推理加速；论文未给这些差值的多次测量不确定性。本节未运行模型或作者代码，附录的完整任务附表也未逐格重算。
+
 ## 来源身份
+
+- [The Devil Is in the Reconstruction Loss Scale: Rethinking Optimization in LLM Quantization](https://arxiv.org/abs/2610.00983v1)，arXiv:2610.00983v1；§2–3、式 (2)–(8)、§4 表 1–5 与附录 A/D/E/F。第 11 节的链式法则、分组梯度与最小点关系为整理者展开，作者实验与本地验证分开。
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 

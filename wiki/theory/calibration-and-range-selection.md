@@ -6,6 +6,10 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/papers/2026-10-05/onptq/paper.pdf
+  - raw/papers/2026-10-05/onptq/source/iclr2027_conference.tex
+  - raw/papers/2026-10-03/scale-sensitivity/paper.pdf
+  - raw/papers/2026-10-03/scale-sensitivity/source/main_arxiv.tex
   - raw/papers/2026-09-22/qera/paper.pdf
   - raw/papers/2026-09-21/llm-qat/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
@@ -22,7 +26,7 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-28
+updated: 2026-10-07
 ---
 
 # 校准数据与量化范围选择
@@ -157,12 +161,120 @@ SpinQuant 表 11 在所测模型中，128 与 800 样本的 PPL 都约 6.2，100
 
 > 来源维护（2026-09-21）：上列固定 commit 的外部代码引用对应已移除的本地快照；保留原版本身份，本轮未重新审查相关代码结论。
 
+## 10. 极低位宽为什么更依赖尺度选择
+
+*Scale Sensitivity* v1 从固定网格的最近舍入（RTN）分析尺度，再用 GPTQ 实验检查趋势能否迁移。它补充的是第 2 节“舍入与裁剪如何权衡”的定量解释，不是所有 GPTQ 配置的最优尺度定理。这里的尺度 $s$ 是量化步长，和[重构损失尺度](layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)所说的跨阶段损失量级是不同概念。
+
+### 先核对网格，才能使用最优尺度
+
+令位宽 $B\ge2$，$M_B=2^{B-1}-1$，论文采用
+
+$$
+Q_{s,B}(w)=s\,\operatorname{clip}\!\left(
+\operatorname{round}(w/s),-M_B,M_B\right),\qquad s>0.
+$$
+
+它有 $2^B-1$ 个数值级别，包含零；2 bit 对应 $\{-s,0,s\}$，并非四级网格。对称半点舍入远离零。非对称零点、偶数级别、不同端点或舍入规则不能直接照搬下述常数。（v1 §3 与附录 B.1.2。）
+
+固定一行权重 $w\in\mathbb R^d$，校准输入 $X\in\mathbb R^{d\times n}$，记 $G=XX^\top$，则归一化的 RTN 输出重构损失是
+
+$$
+\mathcal E(s)=
+\frac{(w-Q_{s,B}(w))^\top G(w-Q_{s,B}(w))}
+{\operatorname{tr}G},\qquad \operatorname{tr}G>0.
+$$
+
+按 trace 归一化去掉输入整体幅度；$G=I$ 时退化为权重逐坐标 MSE。这仍保留输入的方向权重，不是在一般情况下把 $G$ 丢掉。GPTQ 会沿量化顺序改变尚未量化的权重，所以补偿后的误差曲线一般不同；相关补偿见[层输出重构](layer-reconstruction-second-order-compensation.md#3-固定一个权重后为什么其他权重可以补偿)。
+
+### 高斯极限的结论及前提
+
+作者在固定非零 $X$、$w_i$ 独立标准高斯及大有效秩条件下，证明 $\mathcal E(s)$ 对全部 $s>0$ 一致趋近
+
+$$
+D_B(s)=\mathbb E_{Z\sim\mathcal N(0,1)}
+\left[(Z-Q_{s,B}(Z))^2\right].
+$$
+
+条件为 $r_{\mathrm{eff}}(G)=\operatorname{tr}G/\|G\|_{\mathrm{op}}
+\ge C\log^8d$，固定 $B$、层宽 $d$ 趋于无穷；当前权重须符合固定输入下的高斯假设，不能默认训练后的相关性仍满足它。大有效秩意味着输入能量没有集中在少数方向，**不要求 $G$ 本身就是单位阵**。随机 MLP 的进一步结果要求比例增长的层宽、各向同性高斯输入、相应增长的校准样本，以及奇对称 Lipschitz 激活；ReLU 不在该结果中。（v1 §4.1 定理 1，附录 A.4。）
+
+极限目标有唯一非退化最小点 $s_B^*$，级别增加时最优步长下降。结论属于高斯极限；有限层的损失曲线、GPTQ 的补偿目标以及最终语言任务不因此获得唯一最优点或相同保证。（v1 §4.2，命题 1。）
+
+### 为什么比较相对曲率
+
+不同位宽或权重幅度的最优步长不同，固定一个绝对步长扰动不公平。定义
+
+$$
+\kappa_B=(s_B^*)^2D_B''(s_B^*),\qquad
+D_B(s_B^*(1+\epsilon))-D_B(s_B^*)
+=\frac{\kappa_B}{2}\epsilon^2+o(\epsilon^2).
+$$
+
+$\kappa_B$ 衡量同样百分比的步长误差造成多大的归一化损失。若权重尺度整体变为 $\sigma$，则最优步长变为 $\sigma s_B^*$；在损失再除以 $\sigma^2$ 的共同口径下，相对曲率不变。原文图 4 对 $B=2,\ldots,8$ 的数值求值显示曲率近似指数下降；它不是任意训练层都服从精确指数规律的证明。（v1 定义 1、附录 A.5.2。）
+
+有限 GPTQ 曲线可有编码切换，原文 §5.3 使用
+
+$$
+C_{\mathrm{sym}}(\delta)=
+\frac{L(\widehat s(1+\delta))+L(\widehat s(1-\delta))
+-2L(\widehat s)}{\delta^2}.
+$$
+
+光滑极限下该量趋于 $\widehat s^2L''(\widehat s)$；实际应称有限窗口敏感性。实验对每个矩阵选 32 个预定行，使用三次校准抽样。另一方面，五种尺度规则的最大/最小 NLL 差还包含规则本身选出的步长差，不能只凭这个差值声称局部曲率改变。（v1 §5.1 Remark 3、§5.3。）
+
+### 怎样选择尺度，以及旋转改变了什么
+
+附录 B.1.3 比较以下规则。设 $e(s)=Q_{s,B}(w)-w$，$s^e=\max_j|w_j|/M_B$：
+
+| 规则 | 使用的信息与选择目标 |
+| --- | --- |
+| Min–max | 用极值直接取 $s^e$ |
+| Shrink-2.4 | 枚举极值范围的缩小比例，最小化 $\sum_j\lvert e_j(s)\rvert^{2.4}$ |
+| WMSE | 搜索 $\sum_j e_j(s)^2$，不使用校准激活 |
+| RTNH | 搜索 $e(s)^\top G e(s)$，使用未阻尼的输入 Gram |
+| Proxy-static | 对当前补偿权重的固定快照搜索 $\sum_j e_j(s)^2/U_{jj}^2$；$U$ 为阻尼逆 Hessian 的上 Cholesky 因子 |
+| Analytic | 取 $s_B^*\widehat\sigma$，$\widehat\sigma$ 为当前行或组的权重 RMS，排除零输入统计列 |
+
+Proxy-static 借用 GPTQ 单步补偿的代价权重，却没有对每个候选执行全部反馈，因而仍是代理。Analytic 先离线求高斯目标导数的零点；该网格的 $s_B^*$ 在 2/3/4 bit 分别约为 1.2240/0.6508/0.3534。RMS 不减均值，不能悄悄换成中心化标准差。
+
+这里的 Hadamard 非相干处理（HIP）以正交 $R$ 改写 $W'=WR,\ X'=R^\top X$，使浮点 $W'X'=WX$；输入 Gram 变为 $R^\top G R$，谱和有效秩不变。它可能改善坐标分布，却不把真实权重变成有保证的独立高斯。旋转与在线成本见[正交旋转](orthogonal-rotation-and-hadamard-quantization.md)。
+
+### 实验支持到哪里
+
+以下为作者报告：五个模型的权重投影按 GPTQ 顺序量化，激活、Embedding 和输出 head 保持 FP16；用 C4 training split 的 128 个随机窗口校准，每个 2,048 token。§5 表 1–2 的代表对照是 Llama-3.1-8B（附录 B.1.1 指定 Instruct checkpoint）、W3、逐输出行尺度：
+
+| 尺度规则 | 无 HIP：WikiText-2 PPL | 有 HIP：WikiText-2 PPL |
+| --- | --- | --- |
+| Min–max | 41.473 | 15.396 |
+| Shrink-2.4 | 14.050 | 9.095 |
+| Proxy-static | 11.756 | 9.229 |
+| Analytic | 930,372.777 | 9.214 |
+
+解析规则在未经处理的权重上严重失败，HIP 后有竞争力，但这张表并未让它成为最低 PPL 的规则。2 bit 下它仍明显落后于搜索；6 bit 以上差异较小是所测设置的观察，不是所有模型的阈值。
+
+§5.3 与附录 B.4 又在 Llama-3.1-8B-Instruct、W2 的十个选定高误差行进行目标局部对照：HIP 后增加对角缩放或白化，使解析与最佳搜索尺度更接近，却使共同归一化下的最佳搜索重构误差中位数变为 HIP 的 3.63 倍和 20.8 倍。**尺度预测更准、有效秩更大和量化重构更好是不同目标。** 这个结果不表示任意白化都更差，也不是整模型部署性能对照。
+
+本节研读正文与相关实验/理论附录定义，未逐步重证全部附录证明、运行匿名补充代码或复现模型。应用时应先匹配网格、粒度、目标与输入路径，再判断尺度搜索是否值得；不能仅按名义位宽选一个通用高斯常数。
+
+## 11. 自回归校准还需要选择前缀状态
+
+图文样本相同，不表示模型见到的生成状态相同。令 $s_t=(I,x,y_{<t})$，静态校准在固定 $d_{static}$ 上优化，而当前量化策略诱导 $d_{Q_\theta}$，θ 更新后该分布也会变化。[OnPTQ](../methods/onptq.md) v1 §3–4 因此保存当前量化模型 rollout 的精确 token IDs，让浮点/量化模型在同一 prefix 比较；更新校准参数后重新生成状态。它和 dynamic per-token 网格不同：一个选择输入分布，一个估计当前输入的量化范围。
+
+on-policy 覆盖仍不等于合适的目标。OnPTQ 保留原多模态上下文 anchor，并从 top-1 mismatch 或边界被削弱的 near miss 中，用同状态差异和短分支后果筛选、加权关键状态。分支均由当前量化模型继续，浮点模型评估未来分布；这是后果代理，不是任务标签或价值保证。（§4.2–4.4。）
+
+三种生成数据用途因此需区分：固定生成语料改善输入覆盖；学生随训练迭代产生新轨迹以更新状态分布；在候选状态强制不同 token 估计未来差异。只记录“128 个校准样本”会遗漏轨迹长度、刷新轮数和分支预算，也不能证明三个方案成本相同。
+
+需要记录模型/量化初始化、prompt manifest 与 chat template、生成策略、exact prefix IDs、rollout 长度、状态预算、短分支 horizon、静态 anchor 和更新变量。独立评测还应检查自由生成质量、正确性转移与实际成本；OnPTQ 的默认两轮刷新优于五轮，说明更多适配并非单调改善。（§5.4、表 4、附录 C–D。）
+
 ## 来源身份
+
+- [Scale Sensitivity in Low-Bit Post-Training Quantization: Curvature of the Quantization Error Landscape](https://arxiv.org/abs/2609.37416v1)，arXiv:2609.37416v1；§3–5、定理 1、命题 1、定义 1、表 1–2/5，以及附录 A.4/A.5.2/B.1/B.4。第 10 节采用作者条件和报告，矩阵改写及变量关系为整理者展开。
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [Calibrate the Decisions That Change the Future](https://arxiv.org/abs/2609.36828v1) | `arXiv:2609.36828v1` | 当前量化前缀、静态 anchor、风险选择与轨迹刷新 |
 | [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 二阶矩、校准规模与 padding 假设 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
 | [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |

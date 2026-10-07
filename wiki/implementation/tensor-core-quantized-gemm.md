@@ -104,6 +104,8 @@ print(k.n_regs, k.n_spills, k.metadata.shared)
 
 这只是检查接口示意，本次未执行。`tl.dot` 不承诺在所有架构和 dtype 下生成上一节的同一条 MMA；不能把原始 Marlin 的手写 PTX 当作 Triton 已生成的结果，也不能把本地独立保存的 Triton 版本自动视为两库的运行依赖版本。
 
+低精度浮点和块缩放点积的另一条接口见 [FP4/FP8 块缩放执行](block-scaled-matmul-execution.md)：它追踪打包元素、scale 重排与 `tl.dot_scaled`，并明确归档教程的 NVIDIA 硬件入口；不要将本页 SM80/FP16 MMA 的路径直接套用到该实例。
+
 ## 7. 一次性能诊断怎样形成可检验解释
 
 先固定 shape、dtype、group、S、tile、warp/stage、GPU 与版本，建立数值参考及基线。以下是待运行时使用的判断路线，不是本次测得的瓶颈：

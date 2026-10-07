@@ -281,7 +281,7 @@ P0 表 9 的 INT2-g64 结果是 **AWQ+GPTQ** 组合：OPT-6.7B 的 GPTQ PPL=16.6
 
 ## 8. TinyChat 怎样把压缩转化为加速
 
-本节的压缩权重、反量化与浮点计算属于 weight-only 执行路径。它与模拟量化、W8A8 整数矩阵乘的区别见 [量化的三类执行路径](../implementation/quantized-matmul-scaling-execution.md#3-三类执行路径)；下面保留 TinyChat 特有的实现与测量条件。
+本节的压缩权重、反量化与浮点计算属于 weight-only 执行路径。它与模拟量化、W8A8 整数矩阵乘及低精度浮点点积的区别见 [量化的执行路径](../implementation/quantized-matmul-scaling-execution.md#3-低比特执行路径)；下面保留 TinyChat 特有的实现与测量条件。
 
 TinyChat 是 AWQ 配套的原生内核；同一份 AWQ 权重也可以交给为批处理设计的通用内核执行，例如 [Marlin](../implementation/marlin-batched-w4a16-gemm.md)，以及 vLLM 中单独列出的 awq_marlin 方法（见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)）。两者硬件与批量条件不同，加速比不能互换。
 

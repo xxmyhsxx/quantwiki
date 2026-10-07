@@ -2,6 +2,99 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-07 · vLLM 普通 MLA DCP 源码 ingest 与 review
+
+- 接续所选单设备 MLA 和 MoE EP 主线，新增 [vLLM MLA DCP 执行](implementation/vllm-mla-context-parallel-execution.md)，固定 commit `568afb3a13806beb53bb2e6bd518269357b237c0`。沿 Model Runner V1、PCP=1、DP=1、所选普通 BF16/Triton 分支核 group、PD 容量/hash、owner/local slot、有效长度、Q head gather、局部 O/LSE、AG+RS/A2A、value/TP 投影，以及 prefix prefill 的 cache gather/reorg/展开与本地合并。
+- 同步旧 MLA 执行、模型基础、KV 容量与两个 vLLM 入口、INDEX/READING/SELF；旧页补 FA4 与 FA3/SM90 同属原生 diff-head-width 的条件。decode 的 LSE 仍随 Q dtype；A2A 保留前面的 Q gather，FP32 bit packing 不恢复先前舍入。prefill 先收集联合历史，再对本地 heads 计算，不套用 decode 的跨 rank O/LSE 归约。
+- 三组独立内容 review 分别回查缓存/metadata/prefix、decode/通信/投影与 prefill/库接口，合计覆盖新页全文和相关旧页增量；主 Agent 复核公共容量、导航与画像。确认非默认 interleave 例的真实流程有更早的 local workspace 容量 assert，修正触发顺序与隔离重排算术的归属；另澄清最终逐头 O 与 padding 分支内部 chunk O 宽度，修正后独立复核闭合。其他核心主张未确认需修复的错误，必要前置已有正文承接。
+- 保留空分片 Triton O 与 A2A `NaN*0` 静态路径，以及非默认 interleave 的容量/行数条件，不写成已复现服务故障。CPU 教学算术核对 495 组 owner/本地地址/长度关系、12 组 LSE 合并关系（最大绝对差约 `8.9e-16`），另核 chunk 容量反例；没有执行 vLLM 原实现。
+- 验证：全库机械检查 127 个知识页、1,003 条来源（982 本地、21 固定外链）、2,377 条链接通过，无错误/警告/跳过；本轮六个受影响知识页的 465 个数学表达式通过 KaTeX，SELF 的 45 条本地链接/锚点、差异空白与末尾换行检查通过。205 份基线中变动限于九个已有文件，196 份哈希不变，仅新增一个预定页面，无范围外新文件或删除。
+- 没有安装、编译、运行模型/GPU/服务、测量网络或性能，没有提交或推送；raw、Skill、研究材料与既有工作区修改保留。SELF 下一项代码库 P1 为已有 MLA packed 格式与 DSA 读取链，其他部署分支按具体任务开展。
+
+## 2026-10-07 · MoE 专家并行源码 ingest 与 review
+
+- 接续已完成的单设备 MoE 主线，新增 [MoE 专家并行执行](implementation/moe-expert-parallel-execution.md)，沿同一固定 SGLang/vLLM 版本核读 expert 映射、dispatch、接收侧排列/专家计算与 combine 返回。旧单设备页、MoE 基础、TP 与两个框架入口补必要接续，INDEX/READING/SELF 同步实际覆盖。
+- SGLang 固定 SM90、JIT DeepGEMM、普通块 FP8：normal 贯通二维接收行、ep_scatter、两次 grouped GEMM、ep_gather 本地加权与 handle 返回；LL 贯通 expert-batched/masked_m、masked GEMM、原 ID/gate 的 combine 和后置 rho/shared。保留 normal Triton combine 暂禁、expected_m 精确表达式、event/hook 与 Python handle 清除不等于通信完成。
+- vLLM 固定 DP=P、TP/PCP/SP=1、均分 linear、普通块 FP8：对照 HT+Triton、LL+batched Triton 与 AG/RS；核 EP group、all2all 条件、global/local 与 round-robin 通信编号、scale 量化时点、gate/rho/handle 归属。普通 FP32 scale 叙述显式关闭全局 E8M0；按实际 CUDA decoder 参数而非 factory 默认值解释 routed scaling。
+- 公共增量区分 logical/physical 身份与 global/local 作用域、唯一接收 token/专家配对/目的 rank 计数、通信与权重量化、buffer capacity/padding/训练 dropping。logical payload 仅为有前提的教学记账，不表示已核网络协议。外部 DeepEP/DeepGEMM 内核与独立版本、EPLB/其他 backend、图/多 stream/重叠及真实 GPU/服务结果留在未核范围。
+- 两组独立框架内容 review 与一组公共/跨页 review 完成，主动回查选定路径、shape/scale、gate/rho/shared、索引、状态与核心记账。修正两处概括：padding 由计数/mask/有效逆映射限制最终结果，可能仍有额外执行；SGLang normal 物理 scatter 与 vLLM HT 的配对索引间接回读分别说明。同步间接回读的来源行范围，明确 expected_m 为按本 rank 行数估算的提示，并修正一处 LaTeX 标识符下划线。修正后复核无剩余必修问题；结论不覆盖外部库内核或全部源文件分支。
+- 验证：全库机械检查通过，126 个知识页、967 条来源（946 本地、21 固定外链）、2363 条本地链接，无错误/警告/跳过；六个受影响知识页的 278 个数学表达式通过 KaTeX，SELF 的 43 条本地链接/锚点和受影响文件空白检查通过。204 份基线中九个已有文件按范围更新，其余 195 份保持原哈希；仅新增一页，无范围外新文件或删除。
+- SELF 将所选 EP 框架调用链标记为已补，代码库下一项为已有 vLLM 普通 MLA 的 DCP 分片、局部 attention 与跨 rank 合并；OnPTQ/WUSH-KV 实现待匹配材料，外部通信内核/其他 EP 按具体部署问题展开。上述后续方向尚未启动。本轮没有安装、编译、模型/GPU/服务实测，没有提交或推送；raw、Skill、研究材料和既有工作区改动保留。
+
+## 2026-10-07 · MoE、MLA 与预算表示的源码 ingest 和 review
+
+- 按授权顺序完成 SGLang → FlashInfer → vLLM → DBW → StagQ，再统一内容 review。新增 [MLA 执行](implementation/mla-cache-and-attention-execution.md)、[MoE 执行](implementation/moe-routing-and-quantized-expert-execution.md)、[DBW](methods/dbw.md)、[StagQ](methods/stagq.md) 四页；更新九个已有知识页及 INDEX/READING/SELF/本记录，保留原有工作区内容。
+- 第一项 SGLang：MLA 贯通投影吸收、联合 latent/RoPE pool、展开/吸收分派、MHA one-shot/chunked prefix、paged 索引、写入/读取与 dtype；MoE 贯通选择分数/gate、dispatch 包装、配对排序/padding、两次 FP8 块尺度 GEMM 与 routed/shared 汇合。选定普通单设备分支，明确 noaux_tc 与 V2 论文路由、普通 cache cast 与 BMM scale 的区别；顶部 ragged 注释与实际条件按代码核定。
+- 第二项独立 FlashInfer v0.6.17：补 plan/run、fa2/fa3 JIT/C++/device、物理页与有效长度、右下对齐 causal、split-KV/base-2 LSE 合并和 fa3 原生 FP8 tile 恢复。与 SGLang 声明的 0.6.12 分开；CPU 教学例子核对不计为库运行。
+- 第三项 vLLM 对照：MLA 补模型/wrapper、联合 cache scale/写入、Triton grouped decode/自然 LSE 两阶段、历史 gather/反量化与 FlashAttention prefill 调用；MoE 补 factory/internal gate、no-DP/EP prepare、aligned/naive 配对、融合 activation 量化、workspace/finalize/shared。以实际 CUDA decoder 的缩放参数为准，保留 class 默认值与调用端的区别。
+- 第四项 DBW v1 与固定作者代码：补成对 SVD 分量、rank/bit 两级预算、Hamilton/STE、LBQ、分阶段训练、INT32 packing/FP16 恢复/两次 linear；公共预算/表示页提取因子计费与主体宽度。保留论文与 commit 在熵损失阶段、优化器/学习率、bit-plane packing/并行 GEMM 和 trunc 口径的差异；表 19 的加权 Bit 与表尾差异未裁决。review 后补整网参数先升 FP32、BF16 前向与保存 dtype 的边界。
+- 第五项 StagQ v1：补前缀约束、dyadic bits/affine 原点、跨精度 pair/floor 拟合、两阶段 guard/固定 side record、load 重打包与论文 kernel。保留 2.35 logical / 2.47 physical bpw、合成权重 GEMV/decoder、格式无关融合与真实权重两位局部数值检查的区别；未取得作者实现。
+- 三组独立内容 review 覆盖 MLA、MoE、DBW/StagQ 全文，并回查核心公式、真实调用分支/源码、代表数据/表号、版本与适用条件；主 Agent 复核受影响公共页、导航与画像。确认 StagQ 附录文件名与编译编号错位，按 PDF/main.tex 修正最优性 C、质心 D、配置 B、限制 A，并同步公共预算与 READING，已复核无残留；其余未确认需修复的事实错误。内容审查不等于逐格重算全部附表或验证所有源文件分支。
+- 同步研读记录与当前画像：READING 有依据记录增为 80 条，另 60 条保持范围待核实；移除过时的未核 MoE/MLA 实现表述，具体框架范围另列。SELF 移除已贯通的单设备缺口；后续 P1 为材料具备后的 OnPTQ/WUSH-KV 实现，以及代码 EP dispatch/返回/通信，MLA DCP/特殊格式按需求随后展开；VLA/DiT/其他后端为 P2。
+- 验证：全库机械检查 125 个知识页、924 条来源（903 本地、21 固定外链）通过，无错误/警告/跳过；本轮 13 个知识页的 657 个数学表达式通过 KaTeX；SELF 的 41 条本地链接/锚点、差异空白与新页换行检查通过。146 份基线中改动限于上述 13 个已有文件，另外 133 份哈希保持一致；仅新增四个预定页面，无范围外新文件或删除。
+- 本轮为固定资料的 ingest 与内容审查，没有安装依赖、运行模型/GPU、编译 kernel 或复现质量/性能；raw、Skill、研究材料及既有未提交改动保留，没有提交或推送。未核实现分支与论文/代码差异就近保留，后续方向为建议，尚未启动。
+
+## 2026-10-07 · 量化优化、变换与生成行为逐论文 ingest
+
+- 第一篇完成 RMSE v1：在[层输出重构](theory/layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)补齐损失尺度、输出/参数梯度、等大小分组与四种归约、离线流程及实验条件。保留非零残差条件、分组改变目标、Qwen W3 表间变体映射差异和单任务反例。
+- 第二篇完成 Scale Sensitivity v1：在[校准页](theory/calibration-and-range-selection.md#10-极低位宽为什么更依赖尺度选择)补齐奇数级网格、高斯 RTN 极限、相对尺度曲率、六种选择规则与 HIP/GPTQ 边界；保留解析尺度在原始权重上的失败，以及预测更准而重构更差的局部对照。
+- 第三篇完成 [ConQuR v2](methods/conqur.md)，新增方法解释，并补[公共旋转目标](theory/orthogonal-rotation-and-hadamard-quantization.md#9-从激活几何目标到闭式旋转更新)：顶点代理与 Procrustes 子问题、共享/头内旋转、逐批量化感知校准、质量与校准成本的条件。
+- 第四篇完成 [WUSH-KV v1](methods/wush-kv.md)，展开双侧统计的闭式可逆变换、GQA 局部代理/精确 Hessian、post-RoPE 位置与双窗口；同步公共误差与缓存页，区分 QuEST 近最优条件、模拟结果和 OSCAR 量化器的 SGLang 评测。
+- 第五篇完成 Decision Flips v1，整合至[排序稳定性](theory/quantization-ranking-stability.md#8-语言模型的分布距离怎样变成-token-翻转)和[评测协议](implementation/model-quality-evaluation.md#9-输出分布一致性要固定前缀和指标口径)：局部平方根规律、Jensen 因子、TV 严格界与经验比、留出失败条件及推测解码的接受/成本区别。
+- 第六篇完成 [OnPTQ v1](methods/onptq.md)，展开量化策略轨迹、边界损伤、量化分支/浮点评估、context anchor 与刷新；补校准状态选择和多模态目标的公共联系。区分单步共同 continuation 的理论界与风险代理、历史与共同流程的基线、正确性 flip 与 token flip，保留底层参数更新配置缺口。
+- 同步 [INDEX](INDEX.md)、[READING](READING.md) 与 [SELF](../SELF.md)：新增三方法入口与六条定向阅读路径，建立[按问题选择量化路线](INDEX.md#按问题选择量化路线)的导航表；READING 登记固定版本、实际研读范围及未核查部分，SELF 移除已补齐缺口并更新优先顺序。
+- 本批研读六篇正文与必要理论、算法和实验附录，结合固定 TeX 与原始 PDF 页图核对核心公式和代表图表；内容复核覆盖本批新增解释与跨页联系，未逐步重证全部附录证明或逐格重算全部任务附表。
+- 验证：全库机械检查通过，121 个知识页、808 条来源（787 本地、21 固定外链），无错误、警告或跳过；11 个受影响知识页的 662 个数学表达式通过 KaTeX，SELF 的 40 条本地链接与锚点通过检查，差异空白检查通过。131 份本批未涉及的基线文件哈希保持一致，没有范围外的新文件或删除。
+- 本批新增三方法页、更新八个已有知识页及四个导航/记录/画像文件。原始资料、Skill、研究材料和既有工作区改动保留；未运行模型、作者代码或 GPU，未复现质量和性能，不提交或推送。下一项建议落实为 MoE/MLA 到已归档 vLLM/SGLang 的具体表示与接口，尚未启动。
+
+## 2026-10-05 · 资料研读目录
+
+- 新增 [READING](READING.md)，按确定来源版本记录研读范围、Wiki 承接、尚未核查内容与有依据的日期；从 INDEX 增加入口，README 说明维护职责和历史补录边界。
+- 初始索引覆盖当前知识页使用的 127 份本地资料和 3 个固定 commit 外链版本。依据既有 LOG 登记 70 条有明确范围的研读记录；另有 60 条仅确认使用关系，保留为范围与日期待核实，不自动登记完整研读或未读。
+- 检查器识别 READING 为根层导航索引，检查元数据、链接与锚点，不将其计为知识页；具体知识页仍核对 arXiv 来源登记。118 个知识页、784 条原有来源的结构、链接、来源与导航检查通过，无错误、警告或跳过。
+- 本次整理现有记录，没有重新研读全部来源或改变知识结论；raw 规则与原件保持原状，既有工作区改动保留。
+
+## 2026-10-04 · CUDA/Triton 编写知识与块缩放执行补充、Review
+
+- 新增 [CUDA 编写与接入](implementation/cuda-operator-build-and-integration.md)、[Triton 语言与编译语义](fundamentals/operators/triton-language-and-compilation.md)、[FP4/FP8 块缩放矩阵乘](implementation/block-scaled-matmul-execution.md) 三页，分别承接完整编译/调用链、语言规则与 JIT、格式到执行的固定源码分析。CUDA/Triton 使用相同 `x+1` 推理契约的最小教学例子，复用已有布局、计算模式、GEMM、流水和测量解释。
+- 复用 Triton `81a46fa0…`、HF kernels `5c2cf07f…` 与 CUDA 官方快照；为缺少的 PyTorch 编译/注册语义收录两页官方文档，保留 2.14 API 与 2026-10-04 教程快照、获取时间和哈希。没有新增论文或覆盖旧来源。
+- 内容 review 覆盖三页全文和关联页本次增量，回查设备/stream、schema 与加载模式、FakeTensor 和梯度职责、类型提升、mask/where、编译特化，以及 FP4/E8M0 编码、K packing、B scale 方向、descriptor 约束、FP32 累加和输出转换。按源码展开 packed scale 的 5D 重排与坐标关系，明确 NVFP4 scale 不能按 E8M0 解码、格式字符串不能代替完整输入契约。
+- 区分教程的 NVIDIA 原生硬件入口与 `dot_scaled` 的实验性软件模拟，说明 A100 不满足该 descriptor 教程的入口，不将 FP32 参考或上游误差阈值当作模型质量、硬件算术或本地运行证据。CUDA 教学例子明确普通 ATen 本地构建和推理范围，未宣称跨版本稳定 ABI 或训练支持。
+- 同步四个关联页、[INDEX](INDEX.md) 与 [SELF](../SELF.md)；移除已补齐的低精度浮点执行实例待办。下一项优先整理问题到量化路线的阅读入口，其后按具体问题贯通 MoE/MLA 框架接口；backward 和新架构优化随实际算子任务补充。
+- 验证：118 个知识页、784 条来源的机械检查通过，无错误、警告或跳过；另核对 SELF 的 33 条本地链接与锚点。8 个 Python 代码块通过语法解析；MXFP4 教学例的 1,024 个 scale 坐标与源码 permute 顺序一致。空白检查通过，12 个已有无关改动文件的哈希保持一致。机械与索引检查不替代内容 review。
+- 本次完成知识补充、内容 review、画像和下一步更新，没有编译 CUDA/Triton、运行 GPU、复现性能或纠正论文实验数据；raw 原件、Skill、既有研究材料及其他工作区改动保留，不提交或推送。
+
+## 2026-10-04 · DeepSeek-V2 全流程 ingest 示例与内容 review
+
+- 根据 SELF 与相关正文确认 MoE/MLA 公共结构解释不足，选择已有归档的 DeepSeek-V2 v5。研读核心架构、必要训练与服务条件、相关对齐说明，以及 Appendix B/C/D 的结构公式与 attention 对照；按 PDF 页图核对关键公式和表号，采用同版本 TeX 补足抽取损坏的公式，没有逐项审查全部评测附表。
+- 新增 [MLA](fundamentals/model/multi-head-latent-attention.md) 与 [MoE 路由](fundamentals/model/mixture-of-experts-and-routing.md) 两个独立公共基础页，展开联合潜变量、矩阵吸收、解耦 RoPE、缓存预算，以及共享/路由专家、设备限制、平衡与 dropping。连接现有 Attention 误差、排序稳定性、校准与执行知识；为稠密 decoder 和 KV 粒度总论补上适用范围与入口，同步 INDEX。
+- 内容 review 覆盖两页全文及关联页本次增量，回查核心公式、配置、机制条件与主要依据。明确 MLA 缓存还包含共享位置 key、逐头概率不能合并、实际归一化不能遗漏；保留 V2 公式没有 TopK 后重归一化、平衡损失不保证严格均匀、训练 dropping 与评测不同的条件。将专家数限定为 MoE 层，分别说明总容量、单 token 计算与批次成本；服务吞吐保留 FP8/平均 6-bit 缓存、更大 batch 与 H800 条件，未改写为单独 MLA 的收益。
+- 更新 [SELF](../SELF.md) 的受影响画像，移除已解决的 MoE/MLA 基础缺口，将剩余缺口落实为具体框架接口和低精度浮点执行。下一项仍优先复用既有比较页补路线选择入口；下一次来源研读可选已有 Triton 块缩放矩阵乘教程，无需默认继续增加模型报告。
+- 验证：全库机械检查通过，115 个知识页、767 条来源（746 本地、21 固定 commit 外链）、1,418 条本地链接，无错误、警告或跳过；另核对 SELF 的 32 条本地链接与锚点。来源公式与新增推导人工核对通过，受影响文件空白与既有无关改动保留检查通过。机械结果不替代内容 review。
+- 边界：本次完成知识写入、内容 review、画像与下一步判断；没有运行模型、GPU 或论文数据纠正实验，也未核读 MoE/MLA 实现代码，不将作者报告表述为本地运行结果。保留 raw、Skill、已有研究材料和其他工作区修改，不提交或推送。
+
+## 2026-10-03 · 项目说明精简
+
+- 复评 README、SELF 和 AGENTS，合并重复说明，压缩来源分类、Skill 适用范围复述及重复建设方向。保留项目入口、来源范围、核心工作边界、十条主线的已有覆盖与不足，以及三项下一步。
+- 在 AGENTS 补入知识建设原则：按现状判断缺口与选择资料，ingest 后复评缺口、更新受影响画像与优先顺序，主动提出下一项及理由，在已授权范围内推进。
+- 保留论文研读与 review 聚焦核心观点、实验与工程任务按具体目标开展的边界；知识正文、来源与其他已有改动保持原状。
+- 检查：正文复评及六份关联文档的 374 条本地链接、章节锚点、表格与空白检查通过。
+
+## 2026-10-03 · SELF 职责说明与知识画像
+
+- 新增根 SELF，统一说明核心目的、知识与来源范围、ingest/review/源码分析等职责、论文实验边界、文件分工、当前主线画像及近期建设方向。明确独立实验与工程任务另定目标，不把论文数据纠正和复现列为默认工作。
+- 画像依据全库主题检索与公共基础、机制、比较、代表实现的定向正文核读，区分已有解释、源码分析、实际实现、覆盖不足和暂不展开；没有重新核验全部单篇方法或原始来源。确认后续 vLLM/SGLang 已覆盖分段 prefill 与前缀共享，不沿用旧记录将其列为当前缺失。
+- README 保留项目简介与阅读入口；AGENTS、Wiki README、INDEX 接入 SELF。Wiki README 将整体定位交由 SELF，保留页面规范，并要求实质覆盖变化同步维护画像。近期建议集中于问题导向的路线入口、MoE/MLA 必要基础、低精度浮点执行实例；这些建议尚未启动。
+- 本轮保留已有知识正文、来源、工作区改动和研究材料，没有修改上游代码或 Skill。
+- 验证：复用 wiki-review 检查器的 Markdown 与锚点规则，对 SELF、README、AGENTS、Wiki README、INDEX、LOG 六份文档的 380 条本地链接、目标章节、表格宽度、行尾空白与文件末尾换行完成检查，无错误；受影响已跟踪文件的差异空白检查通过。上述检查不表示全库科学主张重新审核。
+
+## 2026-10-03 · 全面 review 后的五处局部修订
+
+- 按已确认的 review 结果修正五处内容：FP8/MX 页区分尺度共享组与存储块，明确 MXFP4 4.25 bpw 与该 ggml NVFP4 4.5 bpw 的块内账；执行页将原生低精度浮点/块缩放点积纳入辨识范围，分别核对乘法输入、累加与输出，避免把高精度输出等同于解码后的高精度 GEMM。
+- NOVA-KV 页为全局 query Gram 恒等式补上未掩码全配对条件，说明 causal prefill 的逐 key 可见度量；可靠性页以严格单调变换反例区分概率校准、排序及阈值决策；KIVI 页将融合表述收紧为减少反量化开销的实现方式，不再宣称所有低比特收益必须融合。
+- 同步 AWQ 方法页与均匀量化页的执行路径链接，回查相关原论文、固定 ggml/量化代码以及 Attention 误差页。保留现有有效正文和来源，没有修改上游材料。
+- 验证：113 个知识页的机械检查通过，761 条来源、1,385 条本地链接，无错误、警告或跳过；4,474 个数学表达式通过 KaTeX，差异空白检查通过。上述计数对应本次内容修订，模型实验另行记录，不用格式检查替代模型证据。
+
 ## 2026-09-29 · 五个公共知识主题补深与 review
 
 - 按已确认的五个主题补齐可复用知识：新增 Attention 量化误差传播一页；深化可逆变换页第 7 节、码本页第 10–12 节、KV 对象页第 11–12 节、误差诊断页第 7 节。优先沿用已有内容，未将五个主题机械拆成五页；INDEX 新增连贯阅读路径。

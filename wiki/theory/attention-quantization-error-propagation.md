@@ -11,7 +11,9 @@ sources:
   - raw/papers/2026-09-22/qjl/paper.pdf
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/kivi/paper.pdf
-updated: 2026-10-06
+  - raw/papers/2026-10-03/wush-kv/paper.pdf
+  - raw/papers/2026-10-03/wush-kv/source/main.tex
+updated: 2026-10-07
 ---
 
 # Attention 量化误差传播：从 KV 重构到输出与生成
@@ -124,9 +126,33 @@ $$\mathbb E(\widehat a-a)^2=\operatorname{Var}(\widehat a)+(\mathbb E\widehat a-
 
 配套 [CPU 教学计算](../assets/attention-quantization-error-propagation/check_mechanisms.py) 使用 Python 3 与 NumPy，复算本页误差关系及相关页的二阶统计、码本例子、位打包和简化缓存轨迹；它不调用模型或 GPU，也不能替代真实实现验证。
 
+## 8. 从局部输出导数到 GQA 缓存敏感度
+
+[WUSH-KV](../methods/wush-kv.md) v1 附录 C 将本页的误差链转成缓存向量的局部 Hessian。以下为便于表达改用列 token：一个 KV head h 的第 s 个 K/V 向量被多个 query heads g 共享；$p_{g,t,s}$ 是位置 t 的 query 读位置 s 的概率，$o_{g,t}=V_hp_{g,t}$，$W_{O,g}$ 的形状为 d×模型宽度，$\tau$ 是点积缩放的分母。
+
+令只扰动一个缓存向量的重构损失为 $\ell(\delta)=\sum_t\|y_t(\delta)-y_t(0)\|_2^2$。在 $\delta=0$，输出残差为零，所以二阶导里的残差乘二阶输出导数项消失，得到
+
+$$H_s=2\sum_t A_{t,s}^\top A_{t,s},\qquad
+A_{t,s}=\left.\frac{\partial y_t}{\partial\delta^\top}\right|_{\delta=0}.$$
+
+这是零扰动处的精确 Hessian 恒等式。有限扰动下 K 经 softmax 仍是非线性的，不能把整个损失当成这个固定二次型。
+
+共享 Key 和 Value 的导数分别为
+
+$$
+A^K_{t,s}=\frac1\tau\sum_g p_{g,t,s}
+W_{O,g}^\top(v_{h,s}-o_{g,t})q_{g,t}^\top,
+$$
+$$A^V_{t,s}=\sum_g p_{g,t,s}W_{O,g}^\top.$$
+
+因果不可见时 $p_{g,t,s}=0$；Key 还受该位置 Value 与当前加权输出之差控制。如果两者很接近，改变读这个 Key 的概率可能对输出影响小。更重要的是：先对共享头的输出导数求和，再取 $A^\top A$，会保留 g 与 g′ 的交叉项。把每个 query head 单独平方后相加是另一个代理，可能丢失抵消或叠加。
+
+WUSH-KV 主方法使用更便宜的 $H_K=2\sum_g Q_gQ_g^\top$、$H_V=2\sum_gW_{O,g}W_{O,g}^\top$；WUSH-A 才按上述位置 Hessian 累加校准。两者都用于选择变换，不是已证明的最终语言任务敏感度。前向可构造这些矩阵，也不表示没有统计、矩阵构造与校准成本。（§4.2、附录 C.2/C.4–C.6。）
+
 ## 来源身份
 
 - [NOVA-KV，arXiv:2608.04074v1](https://arxiv.org/abs/2608.04074v1)：§3、附录 E/F 的 logit 加权、softmax 范数和输出交叉项。
 - [QJL，arXiv:2406.03482v2](https://arxiv.org/abs/2406.03482v2)：非对称内积随机估计；原文精确概率常数的限制见方法页。
 - [TurboQuant，arXiv:2504.19874v1](https://arxiv.org/abs/2504.19874v1)：MSE 与无偏内积的目标区分；本页不引用其有问题的有限维球面下界。
 - [KIVI，arXiv:2402.02750v2](https://arxiv.org/abs/2402.02750v2)：§3 的 K/V 误差传播与粒度分析。可见性加权、Jacobian 界的展开、抵消与无偏反例为整理者推导。
+- [WUSH-KV，arXiv:2609.38121v1](https://arxiv.org/abs/2609.38121v1)：§4.2、附录 C 的 GQA 局部重构 Hessian、共享头交叉项与便宜代理的区别；§8 改用简化下标展开。

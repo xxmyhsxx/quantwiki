@@ -11,7 +11,7 @@ aliases:
 sources:
   - raw/papers/2026-09-21/deepseek-v2/paper.pdf
   - raw/papers/2026-09-21/deepseek-v2/source.eprint
-updated: 2026-10-04
+updated: 2026-10-07
 ---
 
 # MLA：联合潜变量、位置分支与缓存表示
@@ -109,6 +109,8 @@ $$M_{\rm MLA}=N_lBL\left(d_c\frac{p_c}{8}+d_R\frac{p_R}{8}\right)+M_{\rm metadat
 
 实际分配还要处理尺度、对齐、页表、保护窗口、复制与临时张量，见 [缓存格式与生命周期](../../theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。576 个元素本身既不是 576 字节，也不能直接解释作者相对另一个已部署模型报告的显存比例。
 
+具体分布式框架还会按 token 分片和复制这份逻辑历史，预留页与临时张量需要另计；[vLLM 普通 MLA DCP](../../implementation/vllm-mla-context-parallel-execution.md#2-调度-block-与每-rank-的物理-page)给出每 rank、DCP 子组和 TP group 的条件化记账，不改变本节的联合缓存对象。
+
 ## 5. 潜变量量化怎样同时影响 K 和 V
 
 下面是基于结构的整理者推导，不是原文提出的专用量化算法。固定当前 query、权重与可见位置，设缓存解码后的误差为
@@ -134,7 +136,7 @@ MLA 的核心主张是以少量历史表示支持多头注意力。Appendix D.1�
 
 §3.2.3 的 5.76 倍是**已部署 V2 相对 DeepSeek 67B 的最大生成吞吐**：单节点 8 张 H800，V2 参数转为 FP8、缓存平均 6 bit，长度分布来自实际部署的基线服务，V2 可容纳更大 batch。这个结果体现结构、量化、系统优化与容量共同作用，不能归因于 MLA 单一因素，也不能解释为相同 batch 下的延迟倍数。该节未给出足以重建完整 MLA 缓存量化格式与内核的细节。
 
-本页核读 §2.1、§3.1.2/3.2.3、Appendix B/C/D 的相关内容，按 PDF 页图核对关键公式与表号；没有逐项审查全部评测附表，也没有核对 MLA 实现代码或运行模型。报告的另一项核心结构 [DeepSeekMoE 与专家路由](mixture-of-experts-and-routing.md)改变 FFN 计算和参数访问，与 MLA 对缓存表示的改变共同组成其效率设计。
+本页核读 §2.1、§3.1.2/3.2.3、Appendix B/C/D 的相关内容，按 PDF 页图核对关键公式与表号；没有逐项审查全部评测附表或运行模型。固定源码中的投影吸收、联合缓存、展开/潜空间读取和精度转换，已在[MLA 缓存与 Attention 执行](../../implementation/mla-cache-and-attention-execution.md)单独展开；它解释框架如何承接本页结构，不将具体后端路径当作所有 MLA 的规定。报告的另一项核心结构 [DeepSeekMoE 与专家路由](mixture-of-experts-and-routing.md)改变 FFN 计算和参数访问，与 MLA 对缓存表示的改变共同组成其效率设计。
 
 ## 来源身份
 

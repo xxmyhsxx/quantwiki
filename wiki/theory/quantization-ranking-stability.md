@@ -8,7 +8,9 @@ tags:
 sources:
   - raw/papers/2026-09-23/bos-sink-topology/paper.pdf
   - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
-updated: 2026-09-29
+  - raw/papers/2026-10-03/decision-flips/paper.pdf
+  - raw/papers/2026-10-03/decision-flips/source/main.tex
+updated: 2026-10-07
 ---
 
 # 量化后的排序稳定性：间隔、检索损害与精度分配
@@ -106,8 +108,103 @@ $$P(\text{accepted}\cap\text{flip})\le\alpha.$$
 
 这个边界论证也适用于 [attention sink 选头图谱](attention-sink-map-transfer.md)：全局 Spearman 很高，top-k 成员仍可能变化。但 Jaccard 是交并比，不是成员保留率，层内归一化距离也不保留绝对 attention 总量。排序变化只是诊断信号；没有下游任务或干预证据，不能把它直接称为任务损失。
 
+## 8. 语言模型的分布距离怎样变成 token 翻转
+
+*How Divergence Becomes Decision Flips in Compressed Language Models* v1 将排序问题放到下一个 token 的完整输出分布。它比较浮点参考与压缩模型在**同一个前缀**下是否选择同一 token，不测量两条自由生成轨迹逐字对齐，也不把浮点选择当成正确答案。以下依据 §3–8、必要协议与推导附录；未核读作者实现或运行模型。
+
+### 8.1 比较对象与三个指标
+
+令位置 t 的浮点/压缩分布为 $p_t,q_t$，两者都 teacher-force 同一序列。序列可以来自浮点 greedy continuation，也可以是自然文本。以位置等权平均，使用自然对数：
+
+$$
+D_t=\sum_vp_t(v)\log\frac{p_t(v)}{q_t(v)},\qquad
+V_t=\frac12\sum_v|p_t(v)-q_t(v)|,
+$$
+$$
+\overline D=\mathbb E_tD_t,\quad
+\overline V=\mathbb E_tV_t,\quad
+f=\mathbb E_t\mathbf1[\arg\max p_t\ne\arg\max q_t].
+$$
+
+f 是 greedy top-1 改变率。$\overline D$ 是 dense→compressed 的 forward KL，$\overline V$ 是平均 total variation；它们不等于目标 token 的 NLL 或任务正确率。本文所说 flip 不含“原来正确、现在错误”的额外标签条件，分母区别与 §1 一致。（原文 §3、式 (1)–(4)。）
+
+### 8.2 为什么会观察到平方根，而不是严格的指数定理
+
+在温度 1 下，设压缩造成小 logit 位移 $\Delta z_t$。softmax 输出的 KL 局部展开为
+
+$$D_t=\frac12\operatorname{Var}_{p_t}(\Delta z_t)+O(\|\Delta z_t\|^3).$$
+
+KL 是二阶量；原 top-1/top-2 的 logit 间隔变化 $\Delta g_t=\Delta z_t(i_1)-\Delta z_t(i_2)$ 则是一阶量。若很多位置的间隔接近零，小扰动会让其中一部分跨越边界，因此 flip 计数可随位移幅度一阶增加，形成 $f\approx\kappa\sqrt{\overline D}$。
+
+这个计数还需要零附近间隔密度、扰动正负近似对称及其与间隔的依赖足够温和。更低位宽的高阶项、第三名反超、有限精度并列与 flip 饱和都会破坏简化比例。论文测得指数接近而不精确等于 1/2；约 0.25 nats 以后曲线会弯折，2 bit 权重在其额外极端试验中已接近全翻转，不能延长幂律。（§4、附录 A.2。）
+
+### 8.3 先平均再开方，会引入语料相关系数
+
+只要各分母非零，以下分解是恒等式：
+
+$$
+\frac f{\sqrt{\overline D}}
+=\frac f{\overline V}\,
+\underbrace{\frac{\mathbb E_tV_t}{\mathbb E_t\sqrt{D_t}}}_{c}\,
+\underbrace{\frac{\mathbb E_t\sqrt{D_t}}{\sqrt{\mathbb E_tD_t}}}_{J}.
+$$
+
+由 Pinsker，$V_t\le\sqrt{D_t/2}$，所以 $c\le1/\sqrt2$；由 Jensen，$J\le1$，D_t 相同时取 1。J 反映误差是否集中在少数 token，不能仅从平均 KL 恢复。
+
+**教学例子：**若 100 个位置都为 $D_t=0.01$，平均 KL 为 0.01、$J=1$；若一个位置为 1、其余为零，平均 KL 仍为 0.01，但 $J=0.1$。这里比较的是聚合方式，不是构造两个模型证明 flip 已不同。论文表 2 的 42 个 FP32-head references 中，GSM8K 的 J 中位数为 0.38，自然 WikiText 为 0.75；解释了为什么跨语料不能直接搬用同一个 $\kappa$。（§5、式 (7)、表 2。）
+
+平均每位置 $\sqrt{D_t}$ 可消去这一 Jensen 因子，但还没有消去 $c$ 或决策几何的条件。低平均 KL 仍可能把错误集中在少数关键位置。
+
+### 8.4 TV 的严格界与近一经验比是两件事
+
+令浮点概率间隔 $\delta_t=p_t(i_1)-p_t(i_2)$。若 greedy 选择改变，则
+
+$$V_t\ge\delta_t/2.$$
+
+证明很直接：新第一名 j 的 $q_t(j)\ge q_t(i_1)$，原领先间隔只能靠 i1 丢失概率与 j 获得概率填平；各项都不超过 TV。设 $F(h)$ 是 $\delta_t<h$ 的位置比例，对任意 h>0 分开小间隔位置与其余位置，再用 Markov 得到
+
+$$f\le F(h)+2\overline V/h.$$
+
+这个分布无关界没有推出 $f\approx\overline V$。**教学反例：**单个位置 $p=(0.5001,0.4999)$、$q=(0.4999,0.5001)$，TV 仅 0.0002，greedy 已翻转；$p=(0.9,0.1)$、$q=(0.6,0.4)$ 的 TV 为 0.3，却没有翻转。单个微小间隔与一次大概率移动都足以让两者比例偏离一。（§5、引理 1；附录 A.2。）
+
+在论文主样本的 802 个配置中，$f/\overline V$ 中位数为 1.049，95% 配置在 0.89–1.29。它是一个经验集中范围，既不是置信区间，也不是所有压缩器的保证。论文用有限 token 集、各坐标独立高斯 logit 噪声及零附近连续的 top-2 间隔密度解释小噪声极限：
+
+$$
+\lim_{\sigma\to0}\frac f{\overline V}
+=\frac{\sqrt2\rho_g(0)}{\mathbb E_th(p_t)},\qquad
+h(p)=\sum_i p_i\sqrt{1-2p_i+\sum_jp_j^2}.
+$$
+
+分子是靠近决策边界的密度，分母反映概率质量的移动；没有理由对任意分布都正好相等。真实压缩器只在所测方向与这一噪声近似相似，命题 1 不直接覆盖所有有限量化误差。
+
+另有一个容易误读的温度检验：同时把两模型 logits 除以温度 $\vartheta>0$，不改变 greedy ID，却改变 TV。唯一 top-1 时，$\vartheta\to0$ 使两边分布都变成 one-hot，TV 逐位置趋于 flip 指示量，因此非零 f 时比例趋于一。这不是在温度 1 下的普遍等式；并列与 tie-break 仍要单独控制。（附录 A.3。）
+
+### 8.5 原文覆盖、留出与失败条件
+
+主研究为 19 个 checkpoint、6 个模型家族，802 个配置，54 个模型/语料 references；9 种扰动族包括权重量化、剪枝、KV 量化、删层和噪声。主要在 H100/BF16 上模拟压缩，数据设计不平衡：45% 配置来自开发 mix，RTN 与其单层变体占 35%。统计拟合以 reference 或 model 聚类，不把同一 reference 内配置当成独立样本。（§3。）
+
+| 证据 | 论文结果 | 应保留的条件 |
+| --- | --- | --- |
+| 固定 reference 的比较，§4–5 | 多数扰动族共享近平方根曲线；逐 reference 标定后，TV/√KL 留出配置的中位相对误差为 1.6%/2.4% | 标定系数属于模型与语料；不能说 KL 在所有比较中无用 |
+| 留出 Python/MBPP 域，§6 | 8 个已见模型的指数为 0.48–0.57，flip/TV 为 0.98–1.05 | 新语料而非新模型；KL 的若干系数/族偏移预注册预测失败 |
+| 新模型与真实 kernel，§6 | Mistral-Nemo 的 code 比例中位数为 0.91，Granite 为 0.987，存在低于一的情况 | 三个新模型；跨语料 TV 预测误差也可超过预注册 10% |
+| MoE/QAT 扩展，§6、附录 A.6 | 小范围扩展仍见主要规律 | 事后扩展；两个 MoE 的 router 保持 BF16；不能外推所有 MoE/QAT 配方 |
+
+BF16 logits 的离散网格会造成精确并列，主参考的 top-1/top-2 并列率中位数 1.16%；间隔分析另用 42 个 FP32 output-head references。把并列当成连续零附近密度会使推导失效。部分生成原始文本的模型会循环，作者保留自然文本参考并筛查退化生成；同前缀并不能替代语料质量检查。
+
+散度使用 dense top-64 token 加聚合 tail，聚合会低估完整 TV；作者核对的中位低估很小，TV 的 95th-percentile 放大因子仍为 1.07。原始非有限 logits 无法计算这些指标，真实 FP8 的 12 次试验中 10 次失败，论文据此明确 FP8 未验证。本文不将排除失败的统计当作 FP8 支持证据。（§3、§6、附录 A.1/A.7。）
+
+### 8.6 一致性何时有用，何时必须另测任务
+
+greedy 推测解码需要 draft 与 target 一致；采样版在同一状态下的标准拒绝采样接受率是 $1-\mathrm{TV}(p,q)$。后者是逐状态的采样恒等式，前者的 greedy 一致率却不能直接替换成 1−TV。估计整轮接受还要考虑错误沿序列聚集；论文的独立轮模型对全部 43 个 target/draft 配对都高估接受率，保留 teacher-forced 一致序列后预测更好。（§7、表 3。）
+
+真实 vLLM 两个 Qwen3 target 的评测中，TV 预测 greedy 接受率的平均相对误差为 1.1–2.4%，但按权重字节近似计算成本时，TV 选出的 draft 仅达到最佳实测加速的 85–100%。一致性还没有计入 draft kernel、验证批次和调度成本，不能据此选最快模型。
+
+最终任务则需要别的证据：论文 §8 在 Gemma-3-4B、相近 GSM8K KL 与 flip 下，magnitude pruning 损失 33.3 个准确率百分点，Wanda 却增加 4.8 个百分点。同样数量的决策改变，其方向与后果可以完全不同；teacher forcing 也没有覆盖早期改变对未来状态的反馈。评测应直接报告任务内 flip，并配合[模型质量协议](../implementation/model-quality-evaluation.md#9-输出分布一致性要固定前缀和指标口径)。
+
 ## 来源身份
 
 - [The Undetected Damage of Quantization on Retrieval and How to Fix It](https://arxiv.org/abs/2609.24322v1)，arXiv:2609.24322v1；2026-09-23 归档。作者报告、排序推导与本页纠正分别标注。
 
 - [Global Ranks Survive, Selected Heads Shift](https://arxiv.org/abs/2609.23585v1)，v1；全局排序、top-k 集合及校准图谱的区别。
+- [How Divergence Becomes Decision Flips in Compressed Language Models](https://arxiv.org/abs/2610.00694v1)，arXiv:2610.00694v1；§3–8、附录 A 的定义、分解、概率间隔界、噪声条件与评测范围。§8 的离散分布与 Jensen 数值例子是整理者教学推导，没有模型实验。

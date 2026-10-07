@@ -18,14 +18,14 @@ sources:
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/mem_cache/memory_pool.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/model_runner.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/runner/decode_cuda_graph_runner.py
-updated: 2026-09-22
+updated: 2026-10-07
 ---
 
 # SGLang 算子设计：索引化 KV、Extend 与 Decode 归约
 
 SGLang 的模型层通过 RadixAttention 接入具体 Attention backend。Radix cache 解决哪些历史状态可以复用，backend 把请求映射转换为设备索引，kernel 才执行 QK、softmax 和 PV。前缀树、索引元数据和注意力计算是相连的三个职责，不能把 RadixAttention 这个类名理解为一种固定的设备 kernel。
 
-本页沿[SGLang 推理执行](sglang-inference-execution.md)继续，选择所收录源码的普通 Llama/MHA/GQA 与 Triton extend/decode 路径。张量布局和在线 softmax 的共同基础分别复用[算子接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)与[vLLM Attention 设计](vllm-attention-operator-design.md)；本页补足 SGLang 的读取接口、两阶段 extend 和 decode 中间量语义。
+本页沿[SGLang 推理执行](sglang-inference-execution.md)继续，选择所收录源码的普通 Llama/MHA/GQA 与 Triton extend/decode 路径。张量布局和在线 softmax 的共同基础分别复用[算子接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)与[vLLM Attention 设计](vllm-attention-operator-design.md)；本页补足 SGLang 的读取接口、两阶段 extend 和 decode 中间量语义。[MLA 缓存与 Attention 执行](mla-cache-and-attention-execution.md)另解释联合潜变量和位置 key，以及展开/吸收算法的分派，不能把本页独立 K/V 的布局直接套给 MLA。
 
 普通 Llama decoder 在 Attention 两侧还维护残差与 RMSNorm，MLP 则沿 gate/up 投影、门控激活和 down 投影执行。学习这些较小的现成算子，可以先看[RMSNorm 的 CUDA/Triton 行归约](rmsnorm-cuda-triton-kernels.md)和[门控激活的工作映射与融合](gated-activation-cuda-triton-kernels.md)，再回到下面带 KV 状态的 Attention。
 

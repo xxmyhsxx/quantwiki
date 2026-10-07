@@ -16,7 +16,12 @@ sources:
   - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/billm/paper.pdf
-updated: 2026-09-29
+  - raw/papers/2026-10-07/dbw/paper.pdf
+  - raw/repositories/2026-10-07/dbw/source/dbw/block_ap.py
+  - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
+  - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
+  - raw/papers/2026-10-07/stagq/paper.pdf
+updated: 2026-10-07
 ---
 
 # 混合精度分配：选择变量、预算与部署口径
@@ -97,12 +102,30 @@ LUQ 附录 D 将 BiLLM/GPTQ 所选的层配置映射到 IQ1_M/Q4_K_M 来测试 C
 
 [跨 TTS 系统的组件消融](../implementation/tts-quantization-evaluation.md) 又说明，敏感组件随模型及量化对象变化：OmniVoice 权重量化与 per-tensor 激活量化的瓶颈不同，两个组件一起量化的损失也可能大于独立损失之和。应先分开测量权重、激活和粒度，再复测联合配置；按模型类别或参数占比直接分配精度没有足够依据。保护组件或 GPTQ 校准后的均值改善，还须满足预先声明的质量区间，并在目标 runtime 上验证成本。
 
+## 7. 改变因子宽度时，rank 与 bit 必须共同计费
+
+[DBW](../methods/dbw.md)把 $W\in\mathbb R^{m\times n}$ 的主体改成两侧因子，对每对分量分配位宽 $b_c$；0 bit 删除该分量。每个分量含 $m+n$ 个因子元素，因此忽略元数据与对齐的原矩阵口径是
+
+$$b_{\rm original}=\frac{(m+n)\sum_c b_c}{mn}.$$
+
+对方阵，全秩两侧因子的元素数是原矩阵的两倍；因子平均 2 bit 并不等于原矩阵 2 bpw。减少因子宽度与增加保留分量位宽可以共享同一预算，而把不同形状矩阵的因子位宽直接平均会丢掉这个成本差异。DBW 固定代码先按原权重载荷在 block 内分配矩阵份额，再除以各矩阵因子元素数，最后分配分量整数位宽；其 Hamilton 投影有整数预算、正归一化与位宽上限条件，不保证重构目标全局最优。（DBW v1 §2.2、附录 C.2；固定 `a45f26e1` 的 `block_ap.py::block_ap`。）
+
+这个预算还未包含组尺度/偏移、系数与 word padding；整数存储的因子在固定前向中恢复为完整浮点张量后，再执行两次矩阵乘，运行峰值和延迟不能只按上式估计。完整的选择变量、训练与保存/读取路径见方法页。
+
+## 8. 多个可读精度与逐层位宽分配是不同选择
+
+[StagQ](../methods/stagq.md)让同一份主体编码按前缀提供 p2–p6：每组共用一对元数据，读取更深 plane 时派生新的原点/步长，所有精度仍读取同一份保护记录。它的首要选择是“一个编码同时提供哪些 operating points”，不是为每一层分别训练独立量化器。共享前缀使各精度不能任意独立拟合；在相同 rate/失真/校准信息/decoder 类别下，其可行集合属于固定精度码的子集，不保证优于最佳独立单精度表示。（StagQ v1 §2.1–3。）
+
+共享 pair 为 $8/g$ bpw，每新增主体 plane 加 1 bpw；codebook、稀疏值与索引/计数仍要计入。该论文的 Llama 两位 XXS 是 logical 2.35 bpw，而当前 real-weight kernel 因固定 row slots 读取 2.47 bpw；更紧凑的可变长布局仍是未来工程。保存流可截取，实际 kernel 在 load 时重打包成连续 $M$-bit code，也不能据此宣称已支持服务中即时切换。这个案例再次说明：payload 精度、逻辑字段、物理读取和运行峰值属于不同预算。（StagQ v1 §4.1、附录 E/G/A。）
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [StagQ](https://arxiv.org/abs/2610.05977v1) | `arXiv:2610.05977v1` | 前缀可行集合、共享元数据、全精度保护与 logical/physical rate；§2–4、附录 E/G/A |
+| [Differentiable Bit-Widths](https://arxiv.org/abs/2610.06026v1)；[MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a) | `arXiv:2610.06026v1`；`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a` | 成对分量的 rank/bit；`block_ap.py` 矩阵份额、`fake_dbw.py` 整数投影与 `real_dbw.py` 浮点恢复；细节见 DBW 方法页 |
 | [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 前缀混合精度的名义标签与实际预算 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
 | [BiLLM: Pushing the Limit of Post-Training Quantization for LLMs](https://arxiv.org/abs/2402.04291v2) | `arXiv:2402.04291v2` | — |

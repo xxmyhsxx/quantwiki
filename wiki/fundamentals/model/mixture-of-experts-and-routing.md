@@ -12,7 +12,7 @@ aliases:
 sources:
   - raw/papers/2026-09-21/deepseek-v2/paper.pdf
   - raw/papers/2026-09-21/deepseek-v2/source.eprint
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # MoE 与专家路由：稀疏计算、容量与量化对象
@@ -51,6 +51,8 @@ DeepSeekMoE 的两个设计意图是将专家切得更细，以组合更多专�
 专家并行（EP）把不同专家部署到不同设备；一个 token 选到的专家越分散，隐藏状态要发往的设备就可能越多。这里的分工与 [张量并行](../../implementation/tensor-parallel-quantization.md)不同：EP 划分专家，TP 划分一个算子或参数张量的计算。
 
 从路由公式到执行，需要保留 token 原位置、专家 ID 与 gate 的对应关系：按专家汇集输入行，各专家处理自己的 token 子批次，再按原 token 汇合加权输出。EP 下还涉及隐藏状态发送与专家结果返回；这些逻辑依赖由公式决定，具体 dispatch、汇合与通信布局仍由实现承担。
+
+[MoE 专家并行执行](../../implementation/moe-expert-parallel-execution.md)进一步解释全局与本地 expert 编号、目的 rank 与专家配对计数、通信量化和输出回传。执行索引与放置需要匹配上面的专家函数，不自行改变模型路由定义。
 
 §2.2.2 的 device-limited routing 按两步执行：先根据专家 affinity 选择 $M$ 个候选设备，再在这些设备上的专家中选 top-$K_r$。原文没有给出完整的设备评分聚合公式，本页不补猜成某种固定求和或最大值规则。
 
@@ -117,7 +119,7 @@ DeepSeek-V2 的效率思路同时作用于两种成本：DeepSeekMoE 减少单 t
 
 报告还包含 8.1T token 预训练、长上下文扩展、SFT 与基于 GRPO 的对齐。这里以 §2.2、§3.1.2/3.1.3 的架构和必要训练条件为主要依据，研读训练、推理效率与对齐说明以辨别整体贡献；未将对齐算法展开为本页的另一条主题，也未逐项审查全部任务表或归因每项质量变化。服务中的 FP8 参数与平均 6-bit 缓存是作者报告，完整格式、专家算子与路由路径不由该报告给出；本次未核读这些实现代码。
 
-本页完成的是模型结构和量化对象的解释。框架如何保存专家权重、汇集 token、处理设备候选与执行低精度专家 GEMM，仍需围绕具体实现版本阅读；上面的分析不表示已经实现、运行或测量这些路径。
+本页完成的是模型结构和量化对象的解释。[MoE 路由与量化专家执行](../../implementation/moe-routing-and-quantized-expert-execution.md)沿固定 SGLang 版本连接 top-k、token–专家配对、块尺度、两次专家 GEMM 与共享输出。该页选定的有偏 sigmoid 路由是实现类支持的另一配置，不能替换上面的 V2 论文公式；源码核读也不表示已运行或测量这些路径。
 
 ## 来源身份
 
