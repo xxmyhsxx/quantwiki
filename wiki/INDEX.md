@@ -188,6 +188,7 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [OSCAR 混合 KV 缓存执行](implementation/oscar-mixed-kv-cache-execution.md) | affine INT2码/浮点元数据、BF16 sink/recent更新、QP/HP索引、读取舍入与LSE合并怎样配套。 |
 | [MLA 缓存与 Attention 执行](implementation/mla-cache-and-attention-execution.md) | 潜变量/RoPE 的联合槽位、投影吸收、展开与潜空间路径、读取索引及精度转换怎样衔接。 |
 | [vLLM MLA 的 DCP 执行](implementation/vllm-mla-context-parallel-execution.md) | 全局 token 到本地 page、query head 收集、局部 LSE 合并、AG+RS/A2A 返回及 prefix prefill 的缓存收集怎样衔接。 |
 | [vLLM MLA packed 缓存与 DSA](implementation/vllm-mla-packed-cache-and-dsa-execution.md) | 656-byte 主记录、独立 indexer 的整页 key/scale、因果 top-k、物理槽位与 BF16 sparse prefill 怎样衔接。 |

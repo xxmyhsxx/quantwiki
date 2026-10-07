@@ -24,7 +24,15 @@ sources:
   - raw/papers/2026-09-21/saw-int4/paper.pdf
   - raw/papers/2026-10-03/wush-kv/paper.pdf
   - raw/papers/2026-10-03/wush-kv/source/main.tex
-updated: 2026-10-07
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_backend.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/common.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/gpu_flush_int2.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/quantized_kv_prefill.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/flashattention_backend.py
+updated: 2026-10-08
 ---
 
 # KV cache 量化的对象与粒度
@@ -201,6 +209,8 @@ $$b_{\rm page}=\frac{4GD+2rGD+40D+32G}{2GD}=2+r+\frac{20}{G}+\frac{16}{D}.$$
 
 Kitty 的 `KVCache_Layer.__init__` 按最大 batch 和最大长度预分配页与缓冲。因而“当前 token 的逻辑字节数”“已分配缓存容量”和“运行峰值显存”是三个不同结果。压缩能让同一容量容纳更多 token，但有效 token 减少时，预分配空间并不会因此自动释放。动态页池与请求回收是另一层机制，见 [服务内存管理](../implementation/serving-memory-and-batching.md)。
 
+[OSCAR 的固定 INT2实现](../implementation/oscar-mixed-kv-cache-execution.md#3-affine-int2-的码元数据与裁剪)给出另一种布局：同一字节的四个码来自通道四分区，而非Kitty的K token轴。D128、单组、FP32 scale/zero时，每token/KV head的K+V是64字节码加16字节元数据，共80字节，相对BF16的512字节为6.4倍；再计保护池和ring预分配，不能报告完整缓存8倍压缩。其所选GQA decode reader还会把保存为FP32的s/z转成BF16后参与恢复，说明元数据存储与消费精度需要分别核对。（`unified_kv_pool.py:410–437`；`decode_attention.py:1654–1682,1858–1880`。）
+
 ## 12. 缓存的生命周期会改变数值路径
 
 对一类带 sink、K 分组缓冲、V 最近窗口的设计，单步可以按以下顺序理解：追加当前 K/V → attention 读取当前完整历史 → 满组缓冲编码入页 → 清空缓冲计数，复用原有内存。Kitty 的 `update`、`quantize_decode` 与模型侧调用属于这一顺序。另一实现若在本步 attention **之前**压缩满组，本步就已经读取量化值，二者不能只因最终字节格式相同而视为数值等价。
@@ -214,6 +224,8 @@ $$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
 一个缩小的教学例子取 $S=2,G=4,R=2$，不是 Kitty 内核支持的配置。第 6 个 token 到来时，K 的待编码区是 token 3–6，attention 使用它们的浮点值，随后写为一页；此时 V 最近区是 5–6，待编码区是 3–4。到第 8 步，V 的 3–6 才凑满一页。若只检查第 8 步的页数，便看不到第 6、7 步 K/V 精度区域不同的事实。
 
 同样的区别出现在 prefill。整段浮点 prefill 后压缩，压缩不影响这次 prefill 内部的 attention；逐 chunk 写入压缩历史，则后续 chunk 已经读取量化 KV，其隐藏状态、后来产生的 K/V 也可能改变。即使最后采用同一种缓存格式，缓存内容也未必一致。NOVA-KV v1 的 chunked prefill 讨论和精确副本策略体现了这个取舍：保护正在使用的历史可以降低数值变化，但副本计入瞬时内存，不能只报压缩页大小。
+
+OSCAR在decode Attention前先把一批旧BF16 recent行量化、remap到QP，再写当前BF16 K/V；当前Attention因此已读到刚移出的量化历史。其FA3 prefill接口虽先更新缓存，本次chunk仍读取dense BF16，仅历史前缀从缓存恢复；二者的量化时刻与读取对象分别核对。[窗口时间线与两tier读取](../implementation/oscar-mixed-kv-cache-execution.md#5-extend-与-decode-怎样移动窗口)进一步给出位置守恒、flush前等待与局部LSE合并，避免仅凭最终格式判定数值等价。（`triton_backend.py:1694–1859`；池的extend/decode写点见该实现页。）
 
 这也解释了为什么离线 fake quant 的质量不能直接证明实际缓存的质量。需要同时对齐量化公式、保护区域、触发时刻、mask 与位置，再对齐读取实现；具体步骤见 [从模拟到真实执行的对齐](../implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
 
@@ -230,6 +242,7 @@ $$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [OSCAR 官方实现](https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437) | `41ebcdba3db5f0ce1339c3727caea80df575d437` | INT2通道布局、FP32元数据/所选GQA decode BF16读取、保护窗口及更新次序 |
 | [WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms](https://arxiv.org/abs/2609.38121v1) | `arXiv:2609.38121v1` | 一般可逆 K/V 变换、双窗口与量化器/实现的证据区别 |
 | [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5) | `arXiv:2405.04434v5` | §2.1.3、Appendix C；MLA 缓存对象与显式 K/V 的范围区别 |
 | [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750v2) | `arXiv:2402.02750v2` | — |

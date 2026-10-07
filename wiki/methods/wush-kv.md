@@ -9,7 +9,13 @@ tags:
 sources:
   - raw/papers/2026-10-03/wush-kv/paper.pdf
   - raw/papers/2026-10-03/wush-kv/source/main.tex
-updated: 2026-10-07
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_backend.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/memory_pool.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/gpu_flush_int2.py
+  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
+updated: 2026-10-08
 ---
 
 # WUSH-KV：联合缓存统计与读取敏感度的可逆变换
@@ -139,6 +145,8 @@ $$1+\frac{1+3C_{tail}C_{align}}{\alpha_b^2-1}.$$
 
 L 层缓存有 $2Ln_{kv}dS$ 个 K/V 元素，还要保存 $Ln_{kv}$ 个固定 d×d Key 变换。若某时刻有 r 个全精度位置，忽略元数据的平均编码位宽为 $b+(16-b)r/S$；再加逐组尺度/零点、页对齐和暂存。这里的 2 bit 是量化中段整数编码的标称位宽，不能据此说整机显存或缓存真实字节数缩小八倍。计账方式见[KV 格式与生命周期](../theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。
 
+公开前置代码的 [OSCAR 混合缓存执行](../implementation/oscar-mixed-kv-cache-execution.md) 已核到固定 commit `41ebcdba3db5f0ce1339c3727caea80df575d437`：逐 token/head affine INT2、浮点 scale/zero、sink/recent 的 BF16保护与flush，以及两种精度按LSE合并。它使用每层共用的正交rotation、输出乘 `Rv.T`，不能代替本方法每KV head的一般可逆T及逆转置配对；WUSH作者修改后的SGLang仍未核读。OSCAR普通prefill与flush的裁剪算法还有差别，不能只凭“同一百分位”宣称真实编码一致。
+
 ## 6. 论文结果与比较条件
 
 三层实验分别回答不同问题：
@@ -175,3 +183,4 @@ H 基线只使用归一化 Hadamard 变换，同一实验内匹配当前量化�
 | 来源 | 固定版本 | 本页用途 |
 | --- | --- | --- |
 | [WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms](https://arxiv.org/abs/2609.38121v1) | arXiv:2609.38121v1 | §3–4 与附录 A–C：构造、位置、量化与理论；§5–6、表 1–2、附录 D.1–D.2 及长上下文说明：协议与证据边界 |
+| [OSCAR 官方实现](https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437) | `41ebcdba3db5f0ce1339c3727caea80df575d437` | 公开前置量化器、池与读取接口；具体文件见frontmatter，不表示核读WUSH-KV集成 |

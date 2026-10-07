@@ -1,5 +1,15 @@
 # Wiki 变动记录
 
+## 2026-10-08 · OSCAR 混合缓存源码 ingest 和 review
+
+- 复查OnPTQ/WUSH-KV固定v1与官方入口；本次可读范围未定位匹配作者实现。既有WUSH仓库对应前作W4A4，未当作WUSH-KV代码；OnPTQ的θ/优化器/更新步数与WUSH作者改版仍保留为未核。
+- 固定OSCAR `41ebcdba3db5f0ce1339c3727caea80df575d437`，raw保存8166个parent blob与指定simple-evals pin的25个blob；完整树/ZIP/文件系统回读核Git blob SHA-1、SHA-256、路径、类型、6个symlink与218个执行位，8191项全部一致，无额外/缺少项或LFS指针。vendored SGLang为parent内容，raw归档与知识核读分别记账。
+- 新增[OSCAR混合KV缓存执行](implementation/oscar-mixed-kv-cache-execution.md)，沿BF16/TP1/GQA/D128/G128、affine INT2、sink64/recent256、FP32元数据、旋转暂存与裁剪/量化/打包kernel分开、V absorption、FA3 prefill框架→Triton decode的选定分支。核通道四分区码/浮点zero、普通prefill排序与flush二分裁剪、独立QP/HP arena/slot及预分配预算、flush/remap/当前HP写入、尺度BF16消费与概率舍入、FP32 O/LSE合并及BF16输出逆旋转。
+- 同步WUSH前置入口、KV格式/生命周期、INDEX/READING/SELF，新增一个固定来源记录，86条有依据、60条范围待核实。OSCAR未替代WUSH一般可逆变换实现；P1仍待作者匹配材料，下一条材料已具备的P2为SAW-INT4既有host路径后的选定设备核读。
+
+- 三组独立内容review回查producer/旋转/裁剪、host/布局/窗口与reader/精度/split合并。修正真实函数标识、FA3预旋转归属和融合边界、scratch分配责任、0-based裁剪索引及来源定位；补FA3前缀FP32恢复与GQA decode先转s/z BF16的差别，限定桥页reader范围，修正后无剩余必修问题。
+- 验证：22个直接使用的源码文件与固定ZIP逐字节及SHA-256一致；独立教学计算核E4码/还原、80字节/6.4倍记录预算、7步二分阈值、512→520位置守恒和LSE加权合并。全库133个知识页、1226项来源（1205本地/21固定外链）、2496处本地链接检查通过；七个成果文件的154个数学表达式通过KaTeX，SELF的57条本地链接/锚点与空白/末尾换行通过。原有15个未提交文件及范围外173份已跟踪Wiki/SELF文件保持原哈希。本轮静态核读，没有安装、导入/执行上游、JIT/编译、模型/GPU/服务或质量/显存/性能实验。
+
 ## 2026-10-07 · W4A16 MoE 专家源码 ingest 和 review
 
 - 新增 [W4A16 MoE 专家执行](implementation/w4a16-moe-expert-execution.md)，连接既有 AWQ 加载、Dense Marlin 和 FP8 MoE 页。固定 vLLM `568afb3a13806beb53bb2e6bd518269357b237c0`，限定 Standard MarlinExperts、BF16/SM80+、非对称 kU4/G128、多组、单设备合法路由、普通 SiLU、无 bias/act-order/A8。

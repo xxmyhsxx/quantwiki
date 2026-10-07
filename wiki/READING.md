@@ -2,7 +2,7 @@
 title: 资料研读目录
 type: index
 sources: []
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # 资料研读目录
@@ -11,7 +11,7 @@ updated: 2026-10-07
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **85 条**；另有 **60 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **86 条**；另有 **60 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -117,6 +117,7 @@ updated: 2026-10-07
 | [SqueezeAILab/SqueezeLLM](https://github.com/SqueezeAILab/SqueezeLLM/tree/a5fd71f353bf569feb7b55737c1c1493e78e8f31)<br>a5fd71f353bf569feb7b55737c1c1493e78e8f31 | 例外提取、聚类输入与 LUT 打包的三个文件 | [SqueezeLLM：敏感性加权的非均匀量化与稠密稀疏分解](methods/squeezellm.md)；[码本量化：标量、向量、加性表示与位宽预算](theory/codebook-quantization-and-bit-budget.md) | 未扩展为整仓库或 CUDA 复现；FP32/FP16 口径区别保留 | [2026-09-22](LOG.md#2026-09-22--quipquipaqlmspqr-与-squeezellm-论文-ingest) |
 | [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5)<br>c61476d728e42ae0d8a35e7e78494edcac3237b5 | 平滑、两次校准、浮点模拟与 OPT INT8 图 | [SmoothQuant 的实现核对：平滑融合、INT8 接口与离线边界](implementation/smoothquant-implementation.md)；[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) | 未运行模型、导出或基准；其他骨干和分支不作完整覆盖 | [2026-09-22](LOG.md#2026-09-22--gptqsmoothquantw8a8qserveqoq-实现深化与-review) |
 | [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)<br>2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc | Scheduler/RadixCache/请求与 KV pool、overlap 与 extend/decode；AWQ、GPTQ/Marlin、W8A8、QoQ；本轮贯通普通 MLA 的投影/联合缓存/分派与 FlashInfer 调用端，及单设备 FP8 MoE 的 top-k、配对排序、专家尺度/两次 GEMM/共享汇合；续核 DeepEP normal/LL 的 group、expert 映射、接收排列/量化、DeepGEMM 调用、gate/rho/shared 与 handle/event/hook；续核默认DeepEP recipe及所选设备接续；续核DeepGEMM 0.1.3 pin、真实定制init/FFI、contiguous/masked caller、scale布局/中间舍入、padding消费与暖编译接口 | [SGLang 推理执行](implementation/sglang-inference-execution.md)；[Attention 设计](implementation/sglang-attention-operator-design.md)；[MLA 执行](implementation/mla-cache-and-attention-execution.md)；[MoE 执行](implementation/moe-routing-and-quantized-expert-execution.md)；[EP 执行](implementation/moe-expert-parallel-execution.md)；[DeepEP 设备](implementation/deepep-moe-communication-execution.md)；[DeepGEMM 专家设备](implementation/deepgemm-moe-expert-execution.md) | 无服务/GPU 实测；未选 DeepEP/DeepGEMM 分支、EPLB/其他 EP 分支、DSA/DCP、TMA/graph、HiCache、SWA/Mamba、分布式 KV 和全部量化/Attention 类型未全面覆盖；调用端依赖 FlashInfer 0.6.12 | [2026-10-07](LOG.md#2026-10-07--deepgemm-专家设备源码-ingest-和-review) |
+| [FutureMLS-Lab/OSCAR](https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437)<br>41ebcdba3db5f0ce1339c3727caea80df575d437 | eval配置/rotation接口与vendored SGLang；所选BF16/TP1/GQA/D128/G128、affine INT2 mixed缓存的writer、裁剪、slot/arena、extend/flush、FA3 prefill调用、Triton decode四分区恢复/舍入/softmax/split合并与输出逆旋转 | [OSCAR混合缓存执行](implementation/oscar-mixed-kv-cache-execution.md)；[KV格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md)；[WUSH-KV](methods/wush-kv.md)的前置接口 | 未取得WUSH-KV作者改版；未核全部Lloyd-Max/多组/其他dtype/backend/共享前缀/graph/多设备或FA3库内device；未取RotationZoo/模型或运行/编译/GPU/测性能。完整归档8191个blob不表示整仓研读 | [2026-10-08](LOG.md#2026-10-08--oscar-混合缓存源码-ingest-和-review) |
 | [togethercomputer/saw-int4](https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0)<br>e51bfa7291d52cd14b86e4c6ded6c002d0444ff0 | 已展开子模块的 KV 写入与解码主机路径、Q/K 旋转和 V 还原 | [SAW-INT4：面向真实服务约束的 4 bit KV cache 量化](methods/saw-int4.md) | 尚未研读的设备分支保留；未验证模型或跨后端性能 | [2026-09-22](LOG.md#2026-09-22--既有内容复习-ingest) |
 | [mit-han-lab/omniserve](https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8)<br>02b2925aa6fa3b92b06316a1524b7f38922cd9c8 | QServe/QoQ converter、tile/nibble 与元数据重排 | [QServe/QoQ 的实现核对：两级编码、离线重排与 SGLang W4A8](implementation/qserve-implementation.md)；[量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | TP/尾块及整套 KV4 系统未运行验证 | [2026-09-22](LOG.md#2026-09-22--gptqsmoothquantw8a8qserveqoq-实现深化与-review) |
 | [llm-awq / TinyChat](https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61)<br>d6e797a42b9ef7778de8ee2352116e0f48a78d61 | 搜索/裁剪、fake/real 量化、TinyChat v2 打包、加载与 GEMV/GEMM 链 | [AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang](implementation/awq-implementation.md)；[权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | 未编译/运行模型或测性能；未核验全部数据类型和分支 | [2026-09-22](LOG.md#2026-09-22--awq-代码与服务后端-ingest) |
