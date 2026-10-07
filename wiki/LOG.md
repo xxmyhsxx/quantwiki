@@ -1,5 +1,14 @@
 # Wiki 变动记录
 
+## 2026-10-07 · W4A16 MoE 专家源码 ingest 和 review
+
+- 新增 [W4A16 MoE 专家执行](implementation/w4a16-moe-expert-execution.md)，连接既有 AWQ 加载、Dense Marlin 和 FP8 MoE 页。固定 vLLM `568afb3a13806beb53bb2e6bd518269357b237c0`，限定 Standard MarlinExperts、BF16/SM80+、非对称 kU4/G128、多组、单设备合法路由、普通 SiLU、无 bias/act-order/A8。
+- 核逐专家 AWQ repack 与 Dense 标准化/GPTQ repack 的接口差异、w13/w2 参数与元数据布局、w13 scale 置换传入 I 的实际条件；沿配对 p、expert block/sentinel 前缀、专家 stride 接续整数零点/尺度/FP32 MMA 与两次 GEMM。
+- 明确普通 SiLU 的两次 BF16 舍入、down accumulator 和 gate 各自先转 BF16再乘、实际 callback 的 CUDA FP32 top-k sum；两次 GEMM 显式非atomic/FP32跨CTA归约，NoOP finalize不重复加权。区分两组激活cache、INT32锁和每次GEMM的FP32部分和。
+- 同步 AWQ/FP8 MoE 承接页、INDEX/READING/SELF；复用同一 vLLM 研读记录，85条有依据、60条范围待核实不变。移除所选 W4A16 MoE 的已解决 P1，下一项 P1 为取得 OnPTQ/WUSH-KV 的匹配实现材料；其他 backend/组长/单组/多设备分支按具体问题展开。
+- 三组独立内容 review 回查入口/加载/host、配对/专家地址/恢复、数值舍入/汇合/缓冲与跨页范围。修正 P 外但仍在分配容量内的 expert sentinel 措辞、模型汇合锚点、实际 fused_moe 激活来源登记；补设备恢复/归约定位、来源身份 URL 与浮点前置链接，修正后无剩余必修问题。
+- 验证：28个本轮直接使用的 vLLM源码文件与固定ZIP逐字节一致；教学计算核配对/读取映射、专家/组地址和BF16 gate舍入差异。全库132个知识页、1190项来源、2481处本地链接检查通过；七个成果文件中126个数学表达式通过KaTeX，SELF的55条本地链接/锚点及差异空白/换行检查通过。原有15个未提交文件和范围外172份已跟踪Wiki/SELF文件保持原哈希。本轮为静态源码 ingest，没有安装、生成/编译、JIT、GPU、模型、服务或性能实验。
+
 ## 2026-10-07 · AWQ Marlin 零点设备源码 ingest 和 review
 
 - 接续既有 AWQ 加载与对称 GPTQ Marlin 主线，在[内核契约页](implementation/weight-only-dequant-kernels.md#11-非对称-awq--vllm-marlin整数零点怎样参与计算)增补固定 vLLM `568afb3a13806beb53bb2e6bd518269357b237c0` 的 Dense `kU4/G128/A16/no-act-order/SM80+`。核 checkpoint→MPLinear 标准化→Marlin 权重/scale/packed zeros 配套布局→host/template→设备消费，限定本分片 K≥256且按128整除、N按8整除；本范围只补 N 至64倍数，没有重新量化模型。

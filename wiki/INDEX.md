@@ -193,6 +193,7 @@ sources: []
 | [vLLM MLA packed 缓存与 DSA](implementation/vllm-mla-packed-cache-and-dsa-execution.md) | 656-byte 主记录、独立 indexer 的整页 key/scale、因果 top-k、物理槽位与 BF16 sparse prefill 怎样衔接。 |
 | [DSA 的设备执行](implementation/dsa-sparse-device-execution.md) | DeepGEMM 的 FP8 logits、因果选择范围，以及 FlashMLA 的 packed/BF16 读取、online softmax 与 split 合并怎样执行。 |
 | [MoE 路由与量化专家执行](implementation/moe-routing-and-quantized-expert-execution.md) | top-k、配对排序与 padding、FP8 专家块尺度、两次 GEMM 和共享输出怎样连接。 |
+| [W4A16 MoE 专家执行](implementation/w4a16-moe-expert-execution.md) | AWQ 专家 repack、配对/专家读取、整数零点与尺度、SiLU/gate 舍入及 FP32 top-k 汇合怎样衔接。 |
 | [MoE 专家并行执行](implementation/moe-expert-parallel-execution.md) | SGLang/vLLM 的 group、expert 映射、normal/HT 与 LL 布局、通信尺度、gate/rho 与输出回传怎样配合。 |
 | [DeepEP 通信设备执行](implementation/deepep-moe-communication-execution.md) | normal/HT 的 rank/组去重、LL 的专家复制、FP8 消息/scale/handle、BF16 回传与 FP32 gate 归约怎样执行。 |
 | [DeepGEMM 专家设备执行](implementation/deepgemm-moe-expert-execution.md) | SGLang 匹配版本的 contiguous/masked 行选择、TMA scale、分组 WGMMA、padding 与 BF16 输出怎样配合。 |

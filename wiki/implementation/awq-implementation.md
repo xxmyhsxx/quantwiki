@@ -37,6 +37,8 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/marlin_utils.py
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_template.h
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/dequant.h
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/oracle/int_wna16.py
+  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/experts/marlin_moe.py
 updated: 2026-10-07
 ---
 
@@ -51,7 +53,7 @@ updated: 2026-10-07
 | 快照 | 固定版本 | 本页读取范围 |
 |---|---|---|
 | mit-han-lab/llm-awq | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | entry、校准数据、scale/clip 搜索、量化与打包、TinyChat 加载；新版 GEMV 数据与归约路径、GEMM 分派及 MMA/流水片段 |
-| vllm-project/vllm | `568afb3a13806beb53bb2e6bd518269357b237c0` | AutoAWQ 配置、Dense 加载/转换/执行，MPLinear 选择与 Marlin 准备；AWQ 包装与 Triton GEMM；接续所选 Dense kU4/G128/SM80+ 的零点设备消费，详见内核页；MoE 只定位配置与转换入口 |
+| vllm-project/vllm | `568afb3a13806beb53bb2e6bd518269357b237c0` | AutoAWQ 配置、Dense 加载/转换/执行，MPLinear 选择与 Marlin 准备；AWQ 包装与 Triton GEMM；接续所选 Dense kU4/G128/SM80+ 的零点设备消费，详见内核页；接续所选单设备 BF16 W4A16 MoE 的逐专家准备与 Marlin 执行，详见专家页 |
 | sgl-project/sglang | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | AWQ/Marlin 配置、Dense scheme/backend、JIT 反量化、权重与元数据重排；MoE 只定位配置与专家打包入口 |
 
 下文以 Dense 线性层为主，$X\in\mathbb R^{M\times K}$、数学权重 $W\in\mathbb R^{N\times K}$、$Y=XW^T$。M 是展平后的 token 数；张量并行段落的 K、N 指本分片维度，另写 full K 才指全模型输入维。配置类、Python 包装、设备端内核各有额外约束，不能用上层声明代替下层核对。
@@ -164,6 +166,10 @@ flowchart LR
 本轮接续已选 Dense `kU4/G128`、整数零点、FP16/BF16 与 SM80+，取本分片 K≥256且按128整除、N按8整除。此时只将 N 补为64的倍数；标准 qzeros 先转置解包，再补列、按64元素列置换与 nibble interleave，保持相同整数零点，不加1、不减8或预乘尺度。设备让 q 与 z 以相同浮点基底恢复，相减后乘组尺度，再进入 MMA；这与对称 GPTQ 固定减8和 TinyChat scaled-zero 格式不同。列对应、组边界搬运、FP32归约与低精度 bias，及 K=128/SM75 的相邻分支，见 [非对称 AWQ 的 Marlin 零点消费](weight-only-dequant-kernels.md#11-非对称-awq--vllm-marlin整数零点怎样参与计算)。这里的 SM80+ 是本轮核读范围，FP16 的其他架构支持仍按具体模板判断。
 
 **张量并行条件。** 普通 AWQ 创建缓冲时检查本分片 K 能否被有效组长整除、本分片 N 能否被 8 整除；Marlin 可补某些 tile 尾部，但不能靠 padding 修复一个量化组跨越 TP rank 的问题。须区分全局 shape、本分片 shape 与补齐后 shape，不能把模型原始维度直接传入分片内核。
+
+### MoE：直接做逐专家 AWQ repack
+
+MoE 的 `AutoAWQMoEMethod` 交给 WNA16 oracle 选择 backend；在所选 Standard `MarlinExperts` 分支中，`_process_awq_weights_marlin` 直接逐专家调用 `awq_marlin_repack`，并配套重排尺度与 packed 整数零点。它不经过上述 Dense 的标准化/GPTQ repack 接口。所选 G128、多组、BF16/SM80+ 单设备路径的参数形状、专家配对、两次 GEMM、零点/尺度读取和低精度 gate 汇合，见 [W4A16 MoE 专家执行](w4a16-moe-expert-execution.md)。该页保留 w13 scale 置换传入 I 的实际调用条件，没有把单组边界并入结论。
 
 ## 6. 跨引擎：SGLang
 
