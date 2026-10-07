@@ -39,7 +39,7 @@ updated: 2026-10-07
 
 [MLA 缓存与 Attention 执行](../implementation/mla-cache-and-attention-execution.md)进一步连接这些结构对象与 SGLang、FlashInfer、vLLM 的具体持久池和读取接口。选择 cache 精度时，还要查清该固定版本在何处恢复尺度、生成什么工作张量，以及 Attention 返回的中间量约定。
 
-[vLLM packed 缓存与 DSA](../implementation/vllm-mla-packed-cache-and-dsa-execution.md)进一步区分混合精度记录、独立选择缓存与按 query 选择的候选集合。表示的位宽、选择数量、实际恢复范围和持久容量是不同对象；减少当前候选不能直接推导历史缓存已被删除，scale 的编码约束也不能代替其物理存储布局。
+[vLLM packed 缓存与 DSA](../implementation/vllm-mla-packed-cache-and-dsa-execution.md)进一步区分混合精度记录、独立选择缓存与按 query 选择的候选集合。表示的位宽、选择数量、实际恢复范围和持久容量是不同对象；减少当前候选不能直接推导历史缓存已被删除，scale 的编码约束也不能代替其物理存储布局。[DSA 设备执行](../implementation/dsa-sparse-device-execution.md)进一步核对同一记录在 decode 与 prefill 中的尺度恢复、候选范围和 LSE 约定，说明存储位宽还需与实际算术接口一起阅读。
 
 设解码阶段当前查询为 $\vec q$，历史键值分别为 $\mathbf X_K,\mathbf X_V$，注意力为
 

@@ -30,6 +30,8 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/torch_bindings.cpp
   - raw/repositories/2026-09-21/vllm/source/csrc/quantization/w8a8/fp8/nvidia/quant_utils.cuh
   - raw/repositories/2026-09-21/vllm/source/cmake/external_projects/flashmla.cmake
+  - raw/repositories/2026-10-07/flashmla/source/flash_mla/flash_mla_interface.py
+  - raw/repositories/2026-10-07/flashmla/source/csrc/api/sparse_fwd.h
   - raw/repositories/2026-09-21/vllm/source/tests/kernels/attention/test_deepgemm_attention.py
 updated: 2026-10-07
 ---
@@ -155,7 +157,7 @@ $$\mathrm{slot}(i,j)=\mathrm{block\_table}_c[i,\lfloor j/P\rfloor]P+(j\bmod P).$
 
 $$\mathrm{workspace\_row}(i,j)=\mathrm{workspace\_start}_i+j.$$
 
-这一变换同时可统计每 query 的有效 `topk_length`，但所选 wrapper 保持原列位置，不把它称为排序或压缩到前缀。转换函数不按请求真实 `seq_len` 或每 query 的因果位置再检查 $j$；有效历史和因果范围来自前一阶段的 metadata/top-k。DCP owner 过滤与另一种 compact wrapper 不在本页单设备主线。（`sparse_utils.py::_convert_req_index_to_global_index_kernel/triton_convert_req_index_to_global_index`。）
+这一变换同时可统计每 query 的有效 `topk_length`，但所选 wrapper 保持原列位置，不把它称为排序或压缩到前缀。转换函数不按请求真实 `seq_len` 或每 query 的因果位置再检查 $j$；有效历史和因果范围来自前一阶段的 metadata/top-k。所选合法单设备 top-k 的有效项为连续前缀，因此这个数量符合匹配 FlashMLA prefill 的前缀长度契约；任意内部空洞或 DCP owner 过滤则不能作同样推断，具体条件见[设备读取](dsa-sparse-device-execution.md#51-接口与-invalid-indices)。DCP owner 过滤与另一种 compact wrapper 不在本页单设备主线。（`sparse_utils.py::_convert_req_index_to_global_index_kernel/triton_convert_req_index_to_global_index`。）
 
 ## 7. 主 attention：packed decode 与 BF16 sparse prefill
 
@@ -185,7 +187,7 @@ $$\widehat c_{j,a}=\operatorname{BF16}\left(s_{j,\lfloor a/128\rfloor}\operatorn
 
 然后 `_bf16_flash_mla_kernel → flash_mla_sparse_fwd` 使用 BF16 Q、恢复后的联合 workspace、转换后的 workspace indices、`topk_length` 与模型 score scale，输出 latent 宽度 512，再接 $U_V$。这里没有经 `kv_b_proj` 展开成每头 K/V；**BF16 sparse prefill 与普通 dense MHA prefill 是两条不同路径**。Top-k 可以减少主 sparse attention 的候选集合，但这条 prefill 仍收集完整历史，不能把总恢复流量也写成 $S$ 行。（`flashmla_sparse.py::_forward_fp8_kv_separate_prefill_decode/_bf16_flash_mla_kernel`。）
 
-Hopper BF16 sparse helper 的 head 数要求是 64 的倍数，Blackwell 是 128 的倍数，所选 128 heads 都无需 padding。$H<32$ 时另一个 mixed-batch 分支将 prefill/decode query 合在一个 FP8 decode 接口中，不经过这份 BF16 prefill workspace；这里只登记分支条件，不把 separate 路径的成本套给它。
+框架 Hopper BF16 sparse helper 将 head 数按 64 补齐，Blackwell 按 128 补齐；匹配外部 API 实际只接受 64 或 128 heads，不能仅凭补齐规则推断任意倍数都可用。所选 128 heads 无需 padding。（外部 FlashMLA `api/sparse_fwd.h:200–207`。）$H<32$ 时另一个 mixed-batch 分支将 prefill/decode query 合在一个 FP8 decode 接口中，不经过这份 BF16 prefill workspace；这里只登记分支条件，不把 separate 路径的成本套给它。
 
 ### 7.3 没有强制 MQA 时，短 prefill 可能回到 dense MHA
 
@@ -211,13 +213,13 @@ Indexer 对 $d_I=128$ 的每 page 另需 $132P=8448$ 字节。只为解释有效
 
 本页核读默认 registry/通用模型入口、两种持久缓存、Q/weights 与 key 量化、indexer 的 metadata/调用、top-k buffer、请求内到物理/workspace 索引、主 packed CUDA writer/专用恢复，以及 FlashMLA sparse 的 prefill/decode 框架调用。数学与地址例子用于解释静态接口，没有执行上游测试或模型。
 
-`cmake/external_projects/flashmla.cmake` 的默认下载分支固定外部 FlashMLA commit `a8f794d1251cbfd88a5011445dd5582289c727e4`；设置 `FLASH_MLA_SRC_DIR` 时则使用提供的源码目录。构建从外部源码生成 `third_party/flashmla/flash_mla_interface.py`。该文件和库设备 kernel 没有包含在所读 vLLM source 树中。当前核到调用接口与默认依赖版本，不能把 cache writer/恢复的已读设备代码扩大为 FlashMLA sparse QK/PV、softmax、LSE 合并或 SM100 设备 scale 处理已核。
+`cmake/external_projects/flashmla.cmake` 的默认下载分支固定外部 FlashMLA commit `a8f794d1251cbfd88a5011445dd5582289c727e4`；设置 `FLASH_MLA_SRC_DIR` 时则使用提供的源码目录。构建从外部源码生成 `third_party/flashmla/flash_mla_interface.py`。该文件和库设备 kernel 没有包含在所读 vLLM source 树中。本页主体核到框架调用、writer/恢复与默认依赖版本；现已另行保存该固定外部源码，并在[DSA 设备执行](dsa-sparse-device-execution.md)接续所选 SM90 的 QK/PV、scale 舍入、online softmax、LSE/split 合并、无效候选与调度。本页只直接补核 head 与前缀契约，不扩大为 SM100 或其他设备分支已核。
 
-同样，DeepGEMM logits 的设备内部实现、全部 top-k 算法内部、非默认融合模型、FP4 indexer、V4/其他压缩格式、SGLang DSA、其他 backend、DCP/PCP、LoRA、图执行与多 stream 未由本轮完整核验。没有安装依赖、编译、运行 GPU/服务、测量误差或性能。后续设备分析需要补齐匹配的外部源码；本页已闭合的是两种表示到框架读取接口的链。
+匹配 DeepGEMM 的 SM90 FP8 logits 设备计算、页平面读取与调度也已在上述设备页接续；其他 DeepGEMM 分支、全部 top-k 算法内部、非默认融合模型、FP4 indexer、V4/其他压缩格式、SGLang DSA、其他 backend、DCP/PCP、LoRA、图执行与多 stream 未由本轮完整核验。没有安装依赖、编译、运行 GPU/服务、测量误差或性能。本页承接两种表示到框架读取的链，设备计算的版本、条件与边界由续页承接。
 
 ## 来源身份
 
 | 来源 | 固定版本 | 实际使用范围 |
 | --- | --- | --- |
 | [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | 上述模型、缓存、indexer、sparse backend、CUDA writer/恢复、CMake 和测试 reference；文件与函数就近定位 |
-| [vllm-project/FlashMLA](https://github.com/vllm-project/FlashMLA/tree/a8f794d1251cbfd88a5011445dd5582289c727e4) | `a8f794d1251cbfd88a5011445dd5582289c727e4` | 仅由 vLLM CMake 核定默认下载版本；没有读取该外部源码，不作直接内容证据 |
+| [vllm-project/FlashMLA](https://github.com/vllm-project/FlashMLA/tree/a8f794d1251cbfd88a5011445dd5582289c727e4) | `a8f794d1251cbfd88a5011445dd5582289c727e4` | 本页直接补核 Python 前缀说明与 prefill API head gate；SM90 设备主链见续页 |

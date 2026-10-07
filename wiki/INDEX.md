@@ -28,7 +28,7 @@ sources: []
 
 - **理解秩、位宽与前缀预算**：[混合精度计费](theory/mixed-precision-allocation.md) → [DBW 的成对分量](methods/dbw.md) / [StagQ 的共享前缀](methods/stagq.md) → [主体与例外的表示选择](research/low-bit-representation-design.md)；分清名义精度、保存字段、实际读取和训练/推理工作张量。
 - **贯通 MoE 路由与执行**：[专家选择、容量与误差](fundamentals/model/mixture-of-experts-and-routing.md) → [配对排序、FP8 专家与共享输出](implementation/moe-routing-and-quantized-expert-execution.md) → [EP 映射、通信与输出回传](implementation/moe-expert-parallel-execution.md)；分清模型 gate、本地参数轴、接收行/专家配对、通信尺度和汇合职责。
-- **贯通 MLA 结构与执行**：[联合潜变量与位置分支](fundamentals/model/multi-head-latent-attention.md) → [SGLang 的请求与槽位](implementation/sglang-inference-execution.md) → [投影吸收、联合缓存与 Attention 读取](implementation/mla-cache-and-attention-execution.md)，再按问题进入 [vLLM DCP 分片与跨 rank 合并](implementation/vllm-mla-context-parallel-execution.md)或[packed 缓存与 DSA 选择/读取](implementation/vllm-mla-packed-cache-and-dsa-execution.md)；分别核对持久状态、工作张量、通信轴、候选集合与精度转换。
+- **贯通 MLA 结构与执行**：[联合潜变量与位置分支](fundamentals/model/multi-head-latent-attention.md) → [SGLang 的请求与槽位](implementation/sglang-inference-execution.md) → [投影吸收、联合缓存与 Attention 读取](implementation/mla-cache-and-attention-execution.md)，再按问题进入 [vLLM DCP 分片与跨 rank 合并](implementation/vllm-mla-context-parallel-execution.md)或[packed 缓存与 DSA 选择/读取](implementation/vllm-mla-packed-cache-and-dsa-execution.md)，再接[DSA 设备 logits 与 sparse attention](implementation/dsa-sparse-device-execution.md)；分别核对持久状态、工作张量、通信轴、候选集合与精度转换。
 - **理解重构的优化行为**：[层输出重构与二阶补偿](theory/layer-reconstruction-second-order-compensation.md) → [损失尺度、分组 RMSE 与参数更新](theory/layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)；区分改变重构对象、损失归约和可训练参数。
 - **理解低位宽的尺度选择**：[校准与范围选择](theory/calibration-and-range-selection.md) → [高斯极限、相对曲率与 GPTQ 尺度](theory/calibration-and-range-selection.md#10-极低位宽为什么更依赖尺度选择) → [旋转的等价条件与代价](theory/orthogonal-rotation-and-hadamard-quantization.md)。
 - **选择旋转的校准目标**：[正交变换的等价条件](theory/orthogonal-rotation-and-hadamard-quantization.md) → [SpinQuant 的模型损失](methods/spinquant.md) / [ConQuR 的顶点距离与 Procrustes 更新](methods/conqur.md)；结合可融合位置、量化器和校准成本判断。
@@ -191,6 +191,7 @@ sources: []
 | [MLA 缓存与 Attention 执行](implementation/mla-cache-and-attention-execution.md) | 潜变量/RoPE 的联合槽位、投影吸收、展开与潜空间路径、读取索引及精度转换怎样衔接。 |
 | [vLLM MLA 的 DCP 执行](implementation/vllm-mla-context-parallel-execution.md) | 全局 token 到本地 page、query head 收集、局部 LSE 合并、AG+RS/A2A 返回及 prefix prefill 的缓存收集怎样衔接。 |
 | [vLLM MLA packed 缓存与 DSA](implementation/vllm-mla-packed-cache-and-dsa-execution.md) | 656-byte 主记录、独立 indexer 的整页 key/scale、因果 top-k、物理槽位与 BF16 sparse prefill 怎样衔接。 |
+| [DSA 的设备执行](implementation/dsa-sparse-device-execution.md) | DeepGEMM 的 FP8 logits、因果选择范围，以及 FlashMLA 的 packed/BF16 读取、online softmax 与 split 合并怎样执行。 |
 | [MoE 路由与量化专家执行](implementation/moe-routing-and-quantized-expert-execution.md) | top-k、配对排序与 padding、FP8 专家块尺度、两次 GEMM 和共享输出怎样连接。 |
 | [MoE 专家并行执行](implementation/moe-expert-parallel-execution.md) | SGLang/vLLM 的 group、expert 映射、normal/HT 与 LL 布局、通信尺度、gate/rho 与输出回传怎样配合。 |
 | [TTS 量化敏感性与评测](implementation/tts-quantization-evaluation.md) | 组件消融、统计等价、模拟与真实低比特图及系统成本。 |

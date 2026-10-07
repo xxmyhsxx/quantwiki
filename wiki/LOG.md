@@ -1,5 +1,15 @@
 # Wiki 变动记录
 
+## 2026-10-07 · DSA 设备源码 ingest 和 review
+
+- 接续 packed/DSA 框架页，补齐 vLLM 默认固定 FlashMLA `a8f794d1251cbfd88a5011445dd5582289c727e4` 与 DeepGEMM `a6b593d2826719dcf4892609af7b84ee23aaf32a`。两份父归档与全部指定子模块共 13,784 个 blob，经上游原始归档、官方完整 Git tree、字节/Git blob SHA-1/类型/执行位/缺失额外项核对一致；raw 留在本地资料层，文件与哈希由对应 README 和 raw LOG 承接。
+- 新增 [DSA 设备执行](implementation/dsa-sparse-device-execution.md)，沿 Python/注册/API/JIT/device 核读 SM90、I64/D128/P64/单 query 的 FP8 indexer logits，及 H128/MQA576/512 的 BF16 sparse prefill 与 V32 packed decode。贯通 Qscale 融权重、ReLU/head 归约/Kscale、整页 key/scale/TMA、因果 top-k 边界，主 attention 的 QK/PV、online softmax、LSE、persistent scheduler 和 split combine。
+- 澄清所选路径的实际契约：DeepGEMM context lens 是二维、cache 是整页平面，cleanFalse 的合法列由 top-k 保证；FlashMLA prefill length 是列前缀，普通合法单设备 top-k 的前缀条件成立；SM90 packed decode 先将 FP32 scale 转 BF16，与 prefill 恢复的舍入位置不同。负一 sentinel 仍读 dummy 地址但清零 latent/scale、mask score，空行最终 LSE 使用正无穷 sentinel。这些是静态接口与数值顺序，不表示已经复现精度或服务缺陷。
+- 三组内容 review 定向回查 DeepGEMM、FlashMLA prefill 和 decode 的核心公式、shape/layout、mask、调度、精度与证据；修正 Kscale 乘法/跨线程归约顺序、反量化来源路径与函数定位、dummy 内容的过强条件，并补因果符号、LSE 移位分母、输出 shape 和 decode CTA cluster/persistent 的解释。
+- 更新 [packed/DSA 框架页](implementation/vllm-mla-packed-cache-and-dsa-execution.md)的实际 head/前缀契约及外部设备接续；[MLA 执行](implementation/mla-cache-and-attention-execution.md)、[KV 对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md)补必要阅读连接，INDEX/READING/SELF 同步。研读记录增至 82 条有依据、60 条范围待核实；下一项代码库 P1 为所选 MoE EP 的匹配 DeepEP 通信设备链，OnPTQ/WUSH-KV 仍待实现材料。
+- 验证：全库机械检查 129 个知识页、1,063 条来源（1,042 本地、21 固定外链）、2,416 条本地链接通过，无错误/警告/跳过；本轮四个知识页的 409 个数学表达式通过 KaTeX，SELF 的 49 条本地链接/锚点与八个成果文件的空白/换行检查通过。175 份基线中仅改七个既有文件、新增一个预定设备页，其余 168 份哈希一致，原有 15 个未提交文件保持原哈希；提交前另核对完整索引快照。
+- 本轮没有安装、JIT/编译、运行上游测试、GPU/model/服务或性能测量；SM100/FP4、MODEL1、其他 DSA/backend、多 query、DCP/PCP 与极端输入未全面展开。保留 raw、Skill、研究材料和原有工作区改动，提交与推送分开。
+
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
 ## 2026-10-07 · vLLM MLA packed 缓存与 DSA 源码 ingest 和 review

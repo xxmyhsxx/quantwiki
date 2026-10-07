@@ -475,7 +475,7 @@ Prefill workspace 的 token 容量由 batch、最大序列长度和 block size �
 
 PCP=1 的普通 vLLM DCP 已在[分布式执行页](vllm-mla-context-parallel-execution.md)接续：全局 token 到本地 page、query head 收集、局部 LSE 加权与输出返回，以及 prefix prefill 的缓存收集/展开分别核读。该页限定 Model Runner V1 与所选 BF16/Triton 路径，不扩大本页单设备核读范围，也不覆盖 PCP 或 packed/DSA。
 
-[vLLM packed 缓存与 DSA](vllm-mla-packed-cache-and-dsa-execution.md)单独接续 V3.2 的 656-byte 主记录、内嵌分组 scale、独立 indexer cache、top-k 逻辑位置与主 cache/workspace 读取。它沿所选单设备 FlashMLA sparse 框架链展开，不将本页普通连续 FP8 行或 DCP 的恢复/归约接口套给特殊格式。
+[vLLM packed 缓存与 DSA](vllm-mla-packed-cache-and-dsa-execution.md)单独接续 V3.2 的 656-byte 主记录、内嵌分组 scale、独立 indexer cache、top-k 逻辑位置与主 cache/workspace 读取。它沿所选单设备 FlashMLA sparse 框架链展开，[DSA 设备执行](dsa-sparse-device-execution.md)再接续匹配 DeepGEMM logits 与 FlashMLA 的 SM90 读取、舍入和归一化；这些专用接口不能套成本页普通连续 FP8 行或 DCP 的恢复/归约。
 
 ## 来源身份
 
