@@ -131,6 +131,8 @@ $$\mathrm{slot}(i,p)=\mathrm{block\_table}[i,\lfloor p/b\rfloor]\,b+(p\bmod b).$
 
 调度给出的 token 行与缓存槽位，还要由具体模型解释。[MLA 缓存与 Attention 执行](mla-cache-and-attention-execution.md)对照固定 vLLM 的联合 latent/RoPE 缓存、prefill 展开与 Triton decode；[MoE 路由与量化专家执行](moe-routing-and-quantized-expert-execution.md)连接 router、专家执行与输出汇合。普通 Attention/MLP 的形状不能直接替代这些结构的接口。
 
+[MLA packed 缓存与 DSA](vllm-mla-packed-cache-and-dsa-execution.md)说明独立 indexer 的请求内 top-k 位置怎样重新映射到主缓存物理槽位或恢复 workspace。写入 slot、选择 token 身份与最终读取地址分别由相应接口承接。
+
 [MoE 专家并行执行](moe-expert-parallel-execution.md)进一步连接 EP group、expert_map、DeepEP HT/LL 的 prepare/expert/finalize 和返回。本轮 token 总数不能直接用作每个专家的工作行数，通信布局也由选定 backend 决定。
 
 对于同一模型，线性层的 M 主要由本轮 token 总数决定；Attention 的负载还受每个请求的 query 长度、历史长度、head 数和掩码影响。所以仅以“batch size=几”描述一个 serving kernel 基准不够，至少要分清请求数、总 token 数、各 query 长度与 KV 长度。

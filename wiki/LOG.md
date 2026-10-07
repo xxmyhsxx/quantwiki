@@ -2,6 +2,15 @@
 
 记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-07 · vLLM MLA packed 缓存与 DSA 源码 ingest 和 review
+
+- 新增 [vLLM MLA packed 缓存与 DSA](implementation/vllm-mla-packed-cache-and-dsa-execution.md)，接续普通 MLA 与 DCP 页，固定 vLLM commit `568afb3a13806beb53bb2e6bd518269357b237c0`。选择默认 registry 的通用 V3.2、SM90/BF16、单设备、page 64、实际创建 Indexer 的层，核 656-byte 主记录、四组 FP32 scale、BF16 RoPE、CUDA writer 与专用恢复，以及独立 indexer 的整页 key/scale、Q scale/weights、因果 top-k、请求内到物理/workspace 位置和所选 sparse prefill/decode 框架链。
+- 核清 132-byte indexer 预算不等于逐 token 连续记录；`scale_fmt=ue8m0` 在所选 indexer 路径约束 scale 数值为二次幂，仍用四字节 FP32 存储。主 packed 的内嵌 scale 与普通 MLA 外部 `_k_scale` 分开，专用恢复不能替换为普通 gather；选中 token 不表示未选历史被删除，prefill 恢复完整 context+query，再按因果 top-k 使用。
+- 三组独立内容 review 覆盖格式/预算/来源、indexer/选择与 sparse 读取/路由；主 Agent 复核相关旧页增量、入口、画像与范围。修正测试 reference 与量化接口合写的归因、skip-topk 层的覆盖范围、业务阶段与 metadata 分组、helper 与真实导入 gate、prefill 完整长度及外部源码目录 override 条件；补 op registration、因果区间、常数定义与准确来源/锚点。
+- 同步四个相关知识页、INDEX/READING/SELF。SELF 将所选 packed/DSA 框架接口标为已补，代码库下一项为取得匹配 FlashMLA sparse 与 DeepGEMM logits 设备源码。CMake 默认固定的外部 FlashMLA commit 与构建生成 interface 分别说明；当前快照不含该接口文件和库内 kernel，框架调用完成不等于 sparse QK/PV、softmax、invalid index 或 SM100 内部 scale 已核验。
+- 验证：全库机械检查通过，128 个知识页、1,027 条来源（1,006 本地、21 固定外链）、2,395 条链接，无错误/警告/跳过；五个受影响知识页的 394 个数学表达式通过 KaTeX，SELF 的 47 条本地链接/锚点和差异空白检查通过。三组 review 的修正点复核闭合，15 份既有未提交文件哈希保持一致。
+- 本轮没有安装、编译、运行模型/GPU/服务或测量误差与性能。raw、Skill、研究材料和既有工作区改动保留；提交按本轮明确范围处理，推送另按用户授权执行。
+
 ## 2026-10-07 · vLLM 普通 MLA DCP 源码 ingest 与 review
 
 - 接续所选单设备 MLA 和 MoE EP 主线，新增 [vLLM MLA DCP 执行](implementation/vllm-mla-context-parallel-execution.md)，固定 commit `568afb3a13806beb53bb2e6bd518269357b237c0`。沿 Model Runner V1、PCP=1、DP=1、所选普通 BF16/Triton 分支核 group、PD 容量/hash、owner/local slot、有效长度、Q head gather、局部 O/LSE、AG+RS/A2A、value/TP 投影，以及 prefix prefill 的 cache gather/reorg/展开与本地合并。

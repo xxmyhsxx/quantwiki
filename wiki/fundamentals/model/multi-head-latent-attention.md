@@ -136,7 +136,7 @@ MLA 的核心主张是以少量历史表示支持多头注意力。Appendix D.1�
 
 §3.2.3 的 5.76 倍是**已部署 V2 相对 DeepSeek 67B 的最大生成吞吐**：单节点 8 张 H800，V2 参数转为 FP8、缓存平均 6 bit，长度分布来自实际部署的基线服务，V2 可容纳更大 batch。这个结果体现结构、量化、系统优化与容量共同作用，不能归因于 MLA 单一因素，也不能解释为相同 batch 下的延迟倍数。该节未给出足以重建完整 MLA 缓存量化格式与内核的细节。
 
-本页核读 §2.1、§3.1.2/3.2.3、Appendix B/C/D 的相关内容，按 PDF 页图核对关键公式与表号；没有逐项审查全部评测附表或运行模型。固定源码中的投影吸收、联合缓存、展开/潜空间读取和精度转换，已在[MLA 缓存与 Attention 执行](../../implementation/mla-cache-and-attention-execution.md)单独展开；它解释框架如何承接本页结构，不将具体后端路径当作所有 MLA 的规定。报告的另一项核心结构 [DeepSeekMoE 与专家路由](mixture-of-experts-and-routing.md)改变 FFN 计算和参数访问，与 MLA 对缓存表示的改变共同组成其效率设计。
+本页核读 §2.1、§3.1.2/3.2.3、Appendix B/C/D 的相关内容，按 PDF 页图核对关键公式与表号；没有逐项审查全部评测附表或运行模型。固定源码中的投影吸收、联合缓存、展开/潜空间读取和精度转换，已在[MLA 缓存与 Attention 执行](../../implementation/mla-cache-and-attention-execution.md)单独展开；它解释框架如何承接本页结构，不将具体后端路径当作所有 MLA 的规定。特殊混合精度表示与候选选择接续到[vLLM packed 缓存与 DSA](../../implementation/vllm-mla-packed-cache-and-dsa-execution.md)，其格式和 indexer 属于后续固定实现，不从本页 V2 模型报告推导。报告的另一项核心结构 [DeepSeekMoE 与专家路由](mixture-of-experts-and-routing.md)改变 FFN 计算和参数访问，与 MLA 对缓存表示的改变共同组成其效率设计。
 
 ## 来源身份
 
