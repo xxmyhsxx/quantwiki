@@ -1,5 +1,13 @@
 # Wiki 变动记录
 
+## 2026-10-07 · DeepGEMM 专家设备源码 ingest 和 review
+
+- 接续所选 MoE EP/DeepEP 主线，新增 [DeepGEMM 专家设备执行](implementation/deepgemm-moe-expert-execution.md)。核定 SGLang 默认 `sgl-deep-gemm==0.1.3` 与官方 `v0.1.3` tag commit `b4296edce3cd07e3b6392c8eb390cee9c41a6b70`；每个 PyPI/cu129 x86_64 wheel 的 870 项非binary文件与固定父树/子模块相符。6,923 blob 的完整保存与哈希/类型/执行位检查另记 raw，不把host二进制身份或默认依赖当成实际部署证明。
+- 核通定制init/TVM-FFI→host/API→JIT/成本heuristic→SM90 scheduler/TMA/WGMMA→BF16输出。区分tile首行专家选择、128K局部点积后的两侧恢复scale、FP32 final accumulator与RN BF16；B scale由普通global/shared读取，A scale使用TMA布局，转置保留普通FP32数值。
+- 澄清contiguous padding ID仍非负，masked_m只控制tile/warp-group起始而非逐行store，expected_m只影响配置估计；默认Mmax128保证容量tile对齐，后续有效gather/activation/combine才限定模型贡献。所匹配包未接收wrapper SBO的overlap/signal参数，明确为静态API差异并保留无overlap范围。
+- 三组独立内容review回查版本/FFI/JIT、contiguous布局/计算/尾部、masked计数/SiLU舍入/scale与公式；修正前置链接、表格列结构和gate乘法措辞，补math warp-group定义及N尾部/flatten边界。同步两承接页、INDEX/READING/SELF，研读记录85条有依据、60条范围待核实。
+- 代码下一项P1为已有材料的Dense非对称AWQ W4A16现代Marlin零点消费；对称GPTQ主流水已有覆盖，故采用最小增量，OnPTQ/WUSH-KV仍待matched实现材料。本次没有安装、JIT、GPU、模型、服务或性能实验，机械检查与索引验证的范围按实际交付说明。
+
 ## 2026-10-07 · DeepEP 通信设备源码 ingest 和 review
 
 - 接续所选 MoE EP 框架链，新增 [DeepEP 通信设备执行](implementation/deepep-moe-communication-execution.md)。分别核定 SGLang 默认 CUDA `9af0e0d0e74f3577af1979c9b9e1ac2cad0104ee`、vLLM 默认 CUDA Docker `73b6ea4a439ba03a695563f9fd242c8e4b02b37c`，与独立工具回退、配方补丁、覆盖版本及实际部署状态分开；两固定源码存档与 73 个 blob 核验另记 raw LOG。

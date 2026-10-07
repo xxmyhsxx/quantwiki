@@ -138,7 +138,7 @@ normal `dispatch_a` 在 `ENABLE_JIT_DEEPGEMM and use_fp8` 条件下，先在 SGL
 
 `Fp8MoEMethod` 创建 `DeepGemmMoeQuantInfo`，传入本地 FP8 权重、块 scale 和 block shape；`MoeRunner` 按 dispatch format `deepep_normal` 查 pre/post adapter，core 选 `_run_contiguous_gemm`。第一 grouped GEMM 用 `m_indices` 选择局部专家，写 BF16 `[A,2I]`；SiLU×up 形成 BF16 `[A,I]`，重新按行和 128 个 $I$ 通道量化，第二 grouped GEMM 写 BF16 `[A,D]`。两个 GEMM 的调用都没有 gate 权重参数，未在 input 或 down 输出中乘 $g$。[S8，1764–1789、1941–1978 行][S5，137–165 行][S6，164–295 行]
 
-所选 normal 的 `SGLANG_OPT_FIX_MEGA_MOE_MEMORY=False` 分支先写 BF16 SiLU 中间值，再调用 per-token-group quant。另一 flag 分支可融合 activation 与量化，但不属于本文固定链。本节仅确认 SGLang 的权重/scale 对与 wrapper 的 grouped-GEMM 接口；DeepGEMM 的内部 tile、硬件指令与每一步舍入未在本次读出。[S6，218–275 行][S13，112–139 行]
+所选 normal 的 `SGLANG_OPT_FIX_MEGA_MOE_MEMORY=False` 分支先写 BF16 SiLU 中间值，再调用 per-token-group quant。另一 flag 分支可融合 activation 与量化，但不属于本文固定链。匹配 `sgl-deep-gemm 0.1.3` 的 [SM90 专家设备链](deepgemm-moe-expert-execution.md)已接续定制入口/TVM-FFI/JIT、tile 首行专家选择、TMA/scale、分组 WGMMA 与 BF16 写回。scatter 给全部对齐行写非负专家 ID，只有有效配对写值/scale；对齐 padding 仍可参与两次 GEMM/激活，最终 gather 只消费有效 output_index。[S6，218–275 行][S13，112–139 行]
 
 ## 4. SGLang normal：本地加权，再按 handle 返回
 
@@ -166,7 +166,7 @@ $$\mathrm{expected\_m}=\left\lfloor\frac{M_q P K+E}{E}\right\rfloor.$$
 
 它是按本 rank 行数估算的平均配对负载提示，用作 masked grouped-GEMM 参数；它不是 `masked_m` 的真实计数、buffer 上限或 token 丢弃阈值，代码也不在这里裁掉超过平均值的行。$M_qPK$ 恰好整除 $E$ 时，这个表达式仍比商多 1，不能无条件改写成通常的 ceil。[S4，656–659 行][S6，406–414、478–487 行]
 
-LL 的 pre-adapter 不再 scatter；它把已经三维组织好的输入和 scale 直接交给 `_run_masked_gemm`。两次 GEMM 依 `masked_m/expected_m` 计算：FP8 输入和本地 `w13` → BF16 `[L,C,2I]` → SiLU×up 与每 128 通道量化 → FP8 `[L,C,I]`/FP32 scale `[L,C,I/128]` → BF16 down `[L,C,D]`。所选 fallback activation kernel 只迭代 `token_index < masked_m[expert_id]`，对有效行做 SiLU×up 与动态 group scale，容量尾部不应被读作有效专家输出。[S6，362–496、829–919 行][S7，289–429 行]
+LL 的 pre-adapter 不再 scatter；它把已经三维组织好的输入和 scale 直接交给 `_run_masked_gemm`。两次 GEMM 依 `masked_m/expected_m` 计算：FP8 输入和本地 `w13` → BF16 `[L,C,2I]` → SiLU×up 与每 128 通道量化 → FP8 `[L,C,I]`/FP32 scale `[L,C,I/128]` → BF16 down `[L,C,D]`。所选 fallback activation kernel 只迭代 `token_index < masked_m[expert_id]`，对有效行做 SiLU×up 与动态 group scale，容量尾部不应被读作有效专家输出。匹配 [masked 设备调度](deepgemm-moe-expert-execution.md#4-调度如何选择专家与行)按有效计数选择 tile 与 math warp-group 起点，没有逐行 masked store，尾 tile 仍可计算/写容量 padding；所选默认 `Mmax=128` 保持每专家容量按 M tile 对齐。[S6，362–496、829–919 行][S7，289–429 行]
 
 LL core 和 post-adapter 都没有乘 $g$ 或 $\rho$。post-adapter 仅把未加权 down 输出与保存的原 ID/weight 包装成 `DeepEPLLCombineInput`。随后 `Buffer.low_latency_combine(x,topk_idx,topk_weights,handle)` 得到源 rank 的输出。因此这里 gate 的应用/跨专家归约归属 low latency combine 的外部接口，SGLang runner 不先本地乘一次；匹配固定库的 [LL combine](deepep-moe-communication-execution.md#7-ll-combine回到原-token-后施加-gate)按源端原 top-k 槽序读取 BF16 专家输出，乘 FP32 gate、用 float 累加，最后写 BF16。[S6，692–704 行][S4，748–819 行]
 
@@ -334,7 +334,7 @@ $$B_{\mathrm{dispatch}}^{\mathrm{logical}}=
 
 本页核对固定框架的 group、专家位置映射、所选通信 P/F、接收侧排列、本地两次 FP8 GEMM 调用、gate/rho/shared 归属与 handle/event/hook 衔接。量化公式的已有解释见单设备页；这里明确各接口消费的是哪种形状和尺度，未把通信 API 的 flags 当成外部 kernel 已被逐步核验。
 
-匹配默认构建来源的 DeepEP 版本与所选设备通信已在 [接续页](deepep-moe-communication-execution.md)核对，包含 rank/组去重、per-expert 复制、载荷/scale/handle 与归约舍入。完整 NVSHMEM/IBGDA 传输协议、异常恢复/真实拓扑/性能，以及专家计算所依赖的 matching DeepGEMM grouped/masked 设备内部路径仍未核；DSA 的 logits 核读不能替代专家 GEMM。EPLB/冗余副本迁移、融合 shared、Waterfill、LoRA、SBO/TBO/DBO、多 stream/graph、SP/PCP/CP 扩展、DeepEPv2 和其他通信/专家 backend 没有沿完整链审查。
+匹配默认构建来源的 DeepEP 版本与所选设备通信已在 [接续页](deepep-moe-communication-execution.md)核对，包含 rank/组去重、per-expert 复制、载荷/scale/handle 与归约舍入。匹配 SGLang 默认包的 [DeepGEMM contiguous/masked SM90 专家设备链](deepgemm-moe-expert-execution.md)也已接续；无 overlap 调用相符，SBO 的 enable_overlap/max_block_n/signal 不在该包 API 中。完整 NVSHMEM/IBGDA 传输协议、异常恢复/真实拓扑/性能及其他专家设备分支仍未核。EPLB/冗余副本迁移、融合 shared、Waterfill、LoRA、SBO/TBO/DBO、多 stream/graph、SP/PCP/CP 扩展、DeepEPv2 和其他通信/专家 backend 没有沿完整链审查。
 
 没有安装依赖、编译、运行模型/GPU 或测量质量/通信/性能。本页已经完成的是所选分支的静态源码解释；硬件支持与模型配置能否实际运行须由对应运行任务判断。
 

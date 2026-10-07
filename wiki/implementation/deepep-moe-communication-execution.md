@@ -214,7 +214,7 @@ Buffer destroy 在同步和 barrier 后关闭 IPC、释放 NVSHMEM/工作存储�
 
 本页已核 rank/组去重、局部 ID、FP8 布局与逆向归约，LL 动态量化、容量/scale strides、回源加权与双缓冲同步。没有安装、编译、GPU/模型/网络/故障或性能实测，也未审查 NVSHMEM 外部源码、完整 IBGDA WQE/完成协议、全部 ring 竞争或任意 overlap/graph、LogFMT/UE8M0/MNNVL/shrink、V2 与其他后端。
 
-专家 GEMM 仍是独立设备边界：通信核读不等于 SGLang matching DeepGEMM grouped/masked GEMM 的 TMA、WGMMA、scale 读取与尾块已核；[DSA logits](dsa-sparse-device-execution.md)也不能替代这项。下一步可从框架页 contiguous/masked 调用核定对应版本，再接续专家设备计算。
+专家 GEMM 是独立设备边界，现由 [SGLang 匹配 DeepGEMM 0.1.3 的 SM90 接续页](deepgemm-moe-expert-execution.md)承接 contiguous/masked 行选择、TMA/scale、WGMMA、FP32 分组恢复与 BF16 输出。通信有效 range 与 GEMM 的 tile padding 分别解释；[DSA logits](dsa-sparse-device-execution.md)使用另一固定版本和对象，不能代替专家 GEMM。
 
 ## 来源身份与定位
 
