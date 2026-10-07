@@ -26,7 +26,9 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-10-07
+  - raw/papers/2026-10-07/centriq/paper.pdf
+  - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
+updated: 2026-10-08
 ---
 
 # 校准数据与量化范围选择
@@ -96,6 +98,12 @@ $$
 只有忽略 $\epsilon$ 且统计匹配时才近似 $|\gamma|$；gamma 可以为负，不能一般地当作标准差。还要额外假设分布形状，才能用“均值 ± 若干标准差”估计覆盖率；经过 ReLU 后还要考虑截断与零点质量。W 的简写不应取代这些条件。
 
 这种做法依赖模型中可用的 BN 统计。LayerNorm/RMSNorm 的输入相关归一化没有相同的固定总体统计，不能照抄 BN 范围公式；[等价变换页](diagonal-scaling-equivalent-transform.md)进一步区分固定 BN 融合与归一化输出侧缩放。缺少真实数据时，应降低对部署分布覆盖的确信程度，而不是宣称“无需数据所以没有分布风险”。
+
+### 免校准仍可使用当前 token 的统计
+
+[CentriQ](../methods/centriq.md#3-免校准不等于没有在线统计) v1 §4.2 提供一个不同于固定 BN 统计的例子：先移除当前 token 的均值并旋转，再用其绝对值的0.9995分位数除以半正态分位数，估计散布；固定高斯4位裁剪常数与位宽共同确定动态步长。它没有先用 prompt 数据拟合逐模型参数，但每个 token 仍需在线统计。
+
+这里需要分开三件事：中心化消除均值项是代数关系；半正态换算与高斯裁剪常数是分布模型；下游生成质量是实验结果。固定常数不保证所有真实分布或位宽最优，确定性 Hadamard 也不保证激活成为独立高斯。作者用独立开发集选择设计，因而“免校准”不能改写为“整个方法开发不接触数据”。主表对照、组件消融和低位宽模拟边界见方法页。（附录 A、B.3，表2–3。）
 
 ### 生成数据解决访问限制，仍需验证覆盖
 
@@ -274,6 +282,7 @@ on-policy 覆盖仍不等于合适的目标。OnPTQ 保留原多模态上下文 
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [CentriQ](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | 免校准与在线分位数、分布假设和开发集的区别 |
 | [Calibrate the Decisions That Change the Future](https://arxiv.org/abs/2609.36828v1) | `arXiv:2609.36828v1` | 当前量化前缀、静态 anchor、风险选择与轨迹刷新 |
 | [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 二阶矩、校准规模与 padding 假设 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |

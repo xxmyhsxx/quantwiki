@@ -69,6 +69,8 @@ sources: []
 
 - **比较低比特 KV 的目标与布局**：[QJL](methods/qjl.md) → [TurboQuant](methods/turboquant.md) → [NOVA-KV](methods/nova-kv.md) → [Kitty](methods/kitty.md)；多模态保护见 [AKVQ-VL](methods/akvq-vl.md)。
 
+- **理解 DiT 的免校准量化**：[输入相关均值与旁路](theory/orthogonal-rotation-and-hadamard-quantization.md#输入相关的均值为什么需要旁路) → [CentriQ](methods/centriq.md) → [在线统计与分布假设](theory/calibration-and-range-selection.md#免校准仍可使用当前-token-的统计)。
+
 ## 全部知识页
 
 ### 公共基础
@@ -117,6 +119,7 @@ sources: []
 | --- | --- |
 | [QAPruner：量化与 token 选择](methods/qapruner.md) | 误差/范围代理、语义融合、删除重要性与局部 scale 边界。 |
 | [DBW：SVD 分量的秩与位宽](methods/dbw.md) | 成对分量预算、Hamilton/STE、训练/导出与固定代码的浮点恢复路径。 |
+| [CentriQ：逐 token 均值旁路与免校准 DiT 量化](methods/centriq.md) | adaLN 均值、中心化与回注、动态分位数、稳健权重拟合和生成质量/执行边界。 |
 | [StagQ：共享前缀与稀疏保护](methods/stagq.md) | dyadic refinement 的 affine 解码、共享 pair、pre/post guard 与逻辑/读取 rate。 |
 | [TurboQuant：旋转码本与残差修正](methods/turboquant.md) | 球面边缘、MSE 与无偏内积、有限维下界及位宽核对。 |
 | [NOVA-KV：查询加权变换与分组 VQ](methods/nova-kv.md) | 精确加权距离、等体积分组、校准与编码/读取成本。 |

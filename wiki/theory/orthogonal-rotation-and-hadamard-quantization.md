@@ -23,6 +23,8 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
   - raw/papers/2026-09-21/saw-int4/paper.pdf
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
+  - raw/papers/2026-10-07/centriq/paper.pdf
+  - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
 updated: 2026-10-08
 ---
 
@@ -87,6 +89,20 @@ $$
 $xC$ 是去均值后的向量。一般 $CR\ne RC$，因此不能直接把 LayerNorm 改名为 RMSNorm 后旋转。SliceGPT §2.1、§3.2 将中心化与仿射操作按计算图折叠到相邻线性层，连同 embedding、输出层和残差一起处理。其原文用单位二范数归一化，本页把常数 $\sqrt d$ 放回常用 RMS 定义，并显式保留 $\epsilon$。
 
 理解 Pre-LN 的一个无仿射简化：若原块为 $x+f(\operatorname{LN}_0(x))$，以中心化状态 $z=xC$ 表示，下一状态可写为 $z+f(\operatorname{RMS}_0(z))C$；输出投影和偏置吸收右侧 $C$。这依赖后续确实只需中心化状态，边界输出仍要对应原图。MQuant 附录 A.14 进一步讨论其视觉编码器中的 Post-LN 结构：中心化、增益以及残差支路位置不同，不能直接复制 Pre-LN 的融合步骤。
+
+### 输入相关的均值为什么需要旁路
+
+归一化之后的条件调制或非线性可以重新引入逐 token 均值。[CentriQ](../methods/centriq.md) v1 §4.1–4.2 用 DiT 的 adaLN 说明：通道增益和偏移即使由所有 token 共享，乘上不同的归一化 token 后，均值仍可能随 token 变化，不能将整个贡献折成一份静态 bias。
+
+沿本页行 token 约定，令 $C=I-\mathbf1\mathbf1^{\mathsf T}/d$、$\mu=X\mathbf1/d$，则
+
+$$
+XB=(XCR)(R^{\mathsf T}B)+\mu(\mathbf1^{\mathsf T}B).
+$$
+
+$C$ 是去均值投影，具有零空间，不是可逆旋转；最后的外积把被移出的方向补回，批量更新至多 rank 1。将 $\mathbf1^{\mathsf T}B$ 从原权重预计算并保留在高精度分支，可让中心化残差独立接受旋转与量化。这个分解不需要从数据拟合低秩方向，也不等于对量化误差做 SVD。
+
+固定 Sylvester Hadamard 会把常量方向集中到一个坐标；移走该方向可以消除显式均值项，但剩余残差的峰值仍依赖旋转。精确算术下的分解、输入整体偏移的不变性，以及 FP16/BF16 旁路的存储/计算舍入须分开。含 padding 时还要在原生通道上先中心化，再补零，具体机制与反例见 [CentriQ 的均值回注](../methods/centriq.md#2-中心化padding-与均值回注)。（§4.2、附录 B.1、C.5。）
 
 ## 4. 离线旋转与在线旋转各处理哪里
 
@@ -177,6 +193,7 @@ $$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [CentriQ](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | adaLN 均值、中心化投影、rank-1 回注及 padding/精度边界 |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | K-only块旋转与服务条件；本页采用既有方法页研读 |
 | [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取及prefill逆旋转的预缩放与舍入顺序 |
 | [ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs](https://arxiv.org/abs/2605.10793v2) | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
