@@ -1,5 +1,14 @@
 # Wiki 变动记录
 
+## 2026-10-07 · DeepEP 通信设备源码 ingest 和 review
+
+- 接续所选 MoE EP 框架链，新增 [DeepEP 通信设备执行](implementation/deepep-moe-communication-execution.md)。分别核定 SGLang 默认 CUDA `9af0e0d0e74f3577af1979c9b9e1ac2cad0104ee`、vLLM 默认 CUDA Docker `73b6ea4a439ba03a695563f9fd242c8e4b02b37c`，与独立工具回退、配方补丁、覆盖版本及实际部署状态分开；两固定源码存档与 73 个 blob 核验另记 raw LOG。
+- normal/HT 沿 Python→C++→layout/notify/dispatch/combine 核 rank去重、专家计数alignment与接收R分离、局部ID/非本地gate零、普通FP32 scale复制与行连续返回、int64平面、六项handle/prefix/head/返程和FP32→BF16归约。hierarchical核八GPU分组、目的组去重/bitmap fanout、SourceMeta/int32wire/slot stride、十项handle及NVL/RDMA两段BF16舍入。
+- LL核每专家复制、BF16发送端per128动态E4M3量化、FP32 restoring scale、消息长度与capacity reservation、每专家P*Mmax容量/有效segment/列连续scale、五项handle与原topk回源FP32 gate归约→BF16；核peer NVLink/IBGDA条件分支、event/hook SEND/RECV、双缓冲signal clean与Buffer回收入口，保留支持集合、ID编译条件、QPdepth及shrink关闭的边界。
+- 同步 [EP框架页](implementation/moe-expert-parallel-execution.md)中的已核外部实现、INDEX/READING/SELF；有依据研读记录增至84条，60条范围待核实不变。代码库下一项为匹配SGLang DeepGEMM contiguous/masked专家设备链；OnPTQ/WUSH-KV仍待实现材料。
+- 三组独立内容 review 回查版本/normal/LL/hierarchical 与跨页一致性，修正 normal 返程匹配、LL 分配计费与实际消息步长、旧未核边界与正文定位/引用，并补 normal notify 的 CPU 动态计数等待。全库130个知识页、1109项来源、2449处本地链接检查通过；两受影响正文163个数学表达通过KaTeX，73个raw blob及原有15个脏文件哈希核对通过。
+- 本轮为静态源码 ingest 与内容 review；没有安装、编译、GPU/模型/网络/故障或性能实验。NVSHMEM外部库/完整WQE完成与竞态协议、其他格式/拓扑/overlap/graph/V2、专家GEMM设备实现保留未核范围；raw本地保存，原有Skill/研究/其他工作区改动保留。
+
 ## 2026-10-07 · DSA 设备源码 ingest 和 review
 
 - 接续 packed/DSA 框架页，补齐 vLLM 默认固定 FlashMLA `a8f794d1251cbfd88a5011445dd5582289c727e4` 与 DeepGEMM `a6b593d2826719dcf4892609af7b84ee23aaf32a`。两份父归档与全部指定子模块共 13,784 个 blob，经上游原始归档、官方完整 Git tree、字节/Git blob SHA-1/类型/执行位/缺失额外项核对一致；raw 留在本地资料层，文件与哈希由对应 README 和 raw LOG 承接。
