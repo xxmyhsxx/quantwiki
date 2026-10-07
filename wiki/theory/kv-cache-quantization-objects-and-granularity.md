@@ -32,6 +32,11 @@ sources:
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/gpu_flush_int2.py
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/quantized_kv_prefill.py
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/flashattention_backend.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/kv_quant_kernels.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_backend.py
+  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
 updated: 2026-10-08
 ---
 
@@ -211,6 +216,8 @@ Kitty 的 `KVCache_Layer.__init__` 按最大 batch 和最大长度预分配页�
 
 [OSCAR 的固定 INT2实现](../implementation/oscar-mixed-kv-cache-execution.md#3-affine-int2-的码元数据与裁剪)给出另一种布局：同一字节的四个码来自通道四分区，而非Kitty的K token轴。D128、单组、FP32 scale/zero时，每token/KV head的K+V是64字节码加16字节元数据，共80字节，相对BF16的512字节为6.4倍；再计保护池和ring预分配，不能报告完整缓存8倍压缩。其所选GQA decode reader还会把保存为FP32的s/z转成BF16后参与恢复，说明元数据存储与消费精度需要分别核对。（`unified_kv_pool.py:410–437`；`decode_attention.py:1654–1682,1858–1880`。）
 
+[SAW-INT4 所选统一 INT4 记录](../methods/saw-int4.md#43-持久记录地址与完整预算)则把通道分成两半：byte $j$ 的低、高 nibble 对应 $j,j+64$，K/V 每token/KV head各存64字节码和8字节FP32 scale/浮点zero，合计144字节、4.5 bit/元素、相对BF16约3.56倍。其所选GQA reader在FP32中用码与s/z恢复，再转BF16，与上例OSCAR先把s/z转BF16的顺序不同；存储dtype相同不足以证明恢复数值相同。（`memory_pool.py:840–884`；`kv_quant_kernels.py:120–158`；`decode_attention.py:1047–1070,1115–1133`。）
+
 ## 12. 缓存的生命周期会改变数值路径
 
 对一类带 sink、K 分组缓冲、V 最近窗口的设计，单步可以按以下顺序理解：追加当前 K/V → attention 读取当前完整历史 → 满组缓冲编码入页 → 清空缓冲计数，复用原有内存。Kitty 的 `update`、`quantize_decode` 与模型侧调用属于这一顺序。另一实现若在本步 attention **之前**压缩满组，本步就已经读取量化值，二者不能只因最终字节格式相同而视为数值等价。
@@ -226,6 +233,8 @@ $$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
 同样的区别出现在 prefill。整段浮点 prefill 后压缩，压缩不影响这次 prefill 内部的 attention；逐 chunk 写入压缩历史，则后续 chunk 已经读取量化 KV，其隐藏状态、后来产生的 K/V 也可能改变。即使最后采用同一种缓存格式，缓存内容也未必一致。NOVA-KV v1 的 chunked prefill 讨论和精确副本策略体现了这个取舍：保护正在使用的历史可以降低数值变化，但副本计入瞬时内存，不能只报压缩页大小。
 
 OSCAR在decode Attention前先把一批旧BF16 recent行量化、remap到QP，再写当前BF16 K/V；当前Attention因此已读到刚移出的量化历史。其FA3 prefill接口虽先更新缓存，本次chunk仍读取dense BF16，仅历史前缀从缓存恢复；二者的量化时刻与读取对象分别核对。[窗口时间线与两tier读取](../implementation/oscar-mixed-kv-cache-execution.md#5-extend-与-decode-怎样移动窗口)进一步给出位置守恒、flush前等待与局部LSE合并，避免仅凭最终格式判定数值等价。（`triton_backend.py:1694–1859`；池的extend/decode写点见该实现页。）
+
+SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残差窗口；FA3 prefill host也先写当前chunk，再把含该chunk的完整缓存交flatten恢复，原Q与恢复后的K/V进入FA3。因而它的当前chunk也走缓存编码/恢复，不能沿用OSCAR的dense旁路结论。所选writer/decode已核；flatten设备内的恢复、页索引与Hadamard配对仍待接续。（`triton_backend.py:1017–1081`；`flashattention_backend.py:769–780,892–951`；[SAW调用边界](../methods/saw-int4.md#45-当前-token-与-fa3-prefill-的边界)。）
 
 这也解释了为什么离线 fake quant 的质量不能直接证明实际缓存的质量。需要同时对齐量化公式、保护区域、触发时刻、mask 与位置，再对齐读取实现；具体步骤见 [从模拟到真实执行的对齐](../implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
 
@@ -247,6 +256,7 @@ OSCAR在decode Attention前先把一批旧BF16 recent行量化、remap到QP，�
 | [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5) | `arXiv:2405.04434v5` | §2.1.3、Appendix C；MLA 缓存对象与显式 K/V 的范围区别 |
 | [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750v2) | `arXiv:2402.02750v2` | — |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
+| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | SAW所选INT4记录、GQA恢复与当前chunk写入/读取边界 |
 | [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6) | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |
 
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；训练中适应逐 token KV 量化。

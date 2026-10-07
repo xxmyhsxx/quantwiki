@@ -1,5 +1,14 @@
 # Wiki 变动记录
 
+## 2026-10-08 · SAW-INT4 writer 与 GQA decode ingest 和 review
+
+- 接续现有SAW方法页，固定parent `e51bfa7291d52cd14b86e4c6ded6c002d0444ff0` 与fast-rotation child `0fcc241961f9c79c27f6bad9a456bf10c8554a84`，限定BF16/TP1/GQA4/D128/Hadamard128/K-only/FUSE1。parent HEAD/gitlink与三份配置/版本文件核实，7个实际使用的child源码与官方固定commit逐字节及SHA-256一致；未把缺失child Git元数据写成独立HEAD核验，也未重验全部既有存档。
+- 核K的FP32预缩放/7级FWHT→BF16舍入→全行affine，以及V普通INT4 writer；核通道两半nibble/FP32浮点zero/四buffer与144B完整记录、GQA FP32恢复后BF16、每非空split的Q旋转、P BF16/分母FP32、局部O/LSE与共同空段几何、FP32合并→BF16输出。含元数据为4.5bit/元素、相对BF16约3.56倍，裸码4倍和论文服务数据分别保留。
+- 同步KV格式/生命周期、旋转舍入、INDEX/READING/SELF；将已固定的child独立列为来源版本；论文定向复核范围单独确认，历史全文/附录未知不变，88条有依据、59条范围待核实。修正SAW与KIVI均用token粒度的旧概括。FA3 host已确认先写当前chunk再flatten，未套OSCAR dense旁路；设备恢复/Hadamard配对为同配置下一项P2，OnPTQ/WUSH匹配材料仍为P1。
+- 三组独立内容review回查producer/论文归因、host/来源/记录及reader/精度/split和相关理论桥。修正作者4×元数据口径、Hessian成本被误作下降原因、KIVI固定容量/粒度概括与历史论文范围记录，补准确源码定位和分段attention锚点；修正后各审查范围无剩余必修。
+- 验证：7个child文件与官方固定commit、3个parent文件与Git blobs、2个论文tex与固定eprint逐字节一致。独立教学核算验证A0/F5两半码与恢复、144B/4.5bit/32/9预算、GQA共同地址、Sylvester正交关系、N100/k3的有效split和LSE加权合并。全库133个知识页、1242项来源（1221本地/21固定外链）、2506处本地链接检查通过；七个成果文件的227个数学表达式通过KaTeX，SELF的58条本地链接/锚点与空白/末尾换行通过。原有15个未提交文件及范围外173份已跟踪Wiki/SELF文件保持原哈希。
+- 本轮为静态源码ingest；FA3 flatten/device与库内、其他格式/配置/backend/多设备未全面核，没有安装、导入/执行上游、JIT/编译、GPU/模型/服务或质量/显存/性能测量。
+
 ## 2026-10-08 · OSCAR 混合缓存源码 ingest 和 review
 
 - 复查OnPTQ/WUSH-KV固定v1与官方入口；本次可读范围未定位匹配作者实现。既有WUSH仓库对应前作W4A4，未当作WUSH-KV代码；OnPTQ的θ/优化器/更新步数与WUSH作者改版仍保留为未核。

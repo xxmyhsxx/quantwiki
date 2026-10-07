@@ -166,7 +166,7 @@ sources: []
 | [QIG：以量化误差积分梯度指导 token 加权校准](methods/qig.md) | QIG 的问题是：图文 token 在共享语言层中不断交互，只按“视觉/文字”给一个平均重要性，可能掩盖模态内部的差别；直接照搬任务梯度或注意力，也未必测量了量化造成的误差。 |
 | [QServe：W4A8KV4 量化与系统协同](methods/qserve.md) | 权重量化在单用户场景常能带来接近理论上限的加速，但云侧服务需要同时处理多请求：计算强度上升，瓶颈从权重读取转向计算与反量化。 |
 | [QuaRot：固定旋转、全图等价与四位推理](methods/quarot.md) | QuaRot 先把模型改写到适合量化的坐标系，再量化权重、激活和 KV cache。 |
-| [SAW-INT4：面向真实服务约束的 4 bit KV cache 量化](methods/saw-int4.md) | 许多 KV cache 压缩方法在离线精度与压缩率上表现不错，接入生产推理引擎后却拿不到收益。 |
+| [SAW-INT4：面向真实服务约束的 4 bit KV cache 量化](methods/saw-int4.md) | 块旋转如何融入INT4写入/GQA读取；码、浮点元数据、恢复舍入与服务预算如何对齐。 |
 | [SmoothQuant：迁移激活量化难度的 W8A8 方法](methods/smoothquant.md) | SmoothQuant 面向同时量化权重与激活的 W8A8 推理。 |
 | [SpinQuant：用最终模型损失学习正交旋转](methods/spinquant.md) | SpinQuant 的出发点是：不同正交旋转在浮点下等价，在量化后却可能相差很大。 |
 | [ConQuR：顶点对齐与逐批旋转校准](methods/conqur.md) | 激活几何代理、Procrustes 闭式子问题、量化感知前向与可融合边界。 |
