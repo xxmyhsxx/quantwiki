@@ -6,6 +6,9 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/pv-tuning/paper.pdf
+  - raw/papers/2026-09-22/pv-tuning/source/03_method.tex
+  - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
   - raw/papers/2026-09-22/loftq/paper.pdf
   - raw/papers/2026-09-22/efficientqat/paper.pdf
   - raw/papers/2026-09-21/llm-qat/paper.pdf
@@ -17,7 +20,7 @@ sources:
   - raw/papers/2026-09-21/q-vlm/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-09-22
+updated: 2026-10-08
 ---
 
 # PTQ、QAT 与代理梯度
@@ -115,6 +118,46 @@ $$
 
 如果训练直接保留整数 $q,z$，只更新 $s$，前向为 $\widehat w=(q-z)s$，于是 $\partial\widehat w/\partial s=q-z$。这里是精确的连续导数，不再出现重新计算整数编码的 $\operatorname{round}(w/s)-w/s$ 代理项。同组所有权重的梯度共同汇聚到一个尺度，尺度更新会改变恢复权重，但不能重新选择组内整数索引。EfficientQAT v3 §3.3 的 E2E-QP 就是这一参数化；它说明“学习步长”尚不足以确定训练规则，必须同时记录哪些量固定、哪些节点仍在前向中。
 
+### 3.1 离散选码可以使用可验证的代理下降
+
+[PV-Tuning](../../methods/pv-tuning.md) 将连续中心/尺度与离散索引分开更新。离散步骤可以使用恢复权重的真实损失梯度构造代理，再在合法量化集合上搜索；不必把它解释成对整数索引求导。以下由其 v2 §3.2、附录 A.2–A.3 展开，陈述的是满足上界条件时的算法性质。
+
+设当前合法恢复权重为 $y\in\mathcal Q$，$g=\nabla\phi(y)$，$L>0$，且对所考虑的候选满足
+
+$$
+\phi(x)\leq q_y(x)
+=\phi(y)+g^\top(x-y)+\frac L2\|x-y\|_2^2.
+$$
+
+完成平方得
+
+$$
+q_y(x)=\phi(y)-\frac{\|g\|_2^2}{2L}
++\frac L2\left\|x-\left(y-\frac gL\right)\right\|_2^2.
+$$
+
+因此投影目标是绝对权重 $y-g/L$，不是位移 $-g/L$。若 $\widehat x$ 在合法集合中精确最小化代理，旧点 $y$ 的可行性给出
+
+$$
+\phi(\widehat x)\leq q_y(\widehat x)\leq q_y(y)=\phi(y).
+$$
+
+这里不要求 $\mathcal Q$ 凸。近似搜索也可使用同一论证，但须确认返回合法点且 $q_y(\widehat x)\leq q_y(y)$；仅知道运行了 beam search 不足以推出该不等式。向量码本的合法集合由整组向量组成，不能把各坐标的独立最近标量拼成一个不存在的码字。
+
+真实损失在代理最优点的值一般**不等于**代理最小值。例如整理者教学例 $\phi(x)=x^2/2$，$y=2$，$L=2$，$\mathcal Q=\{0,1,2\}$，投影目标为1，于是 $\phi(1)=0.5$ 而 $q_2(1)=1$。两者都不高于旧损失2，但不能用等号替代上界。PV-Tuning 附录 A.3 式9正有这处等号问题，以上链条可保留其单调性结论。
+
+固定码本时，合法点有界并不保证一个任意学习率都满足所需上界；同时训练中心后，候选集合和梯度基点又会改变。工程实现若复用旧梯度并同时更新中心与索引，需另核实际目标，不能直接套用精确交替的保证。全局目标下有界与每步损失不增，只能推出损失序列收敛；最小值是否可达、参数是否收敛、是否达到最优是另外的问题。
+
+### 3.2 减少更新坐标为什么可能允许更大步长
+
+令 $U$ 的列为选中坐标的标准基，仅允许 $x=y+Uz$。若限制目标 $z\mapsto\phi(y+Uz)$ 在相关域有有效的二次上界常数 $L_S$，可用 $y-UU^\top g/L_S$ 作为选码目标；未选坐标保持不变。对于常 Hessian 的二次目标，限制曲率为 $U^\top H U$，其谱范数不大于 $\|H\|_2$。
+
+“不大于”不等于严格降低。整理者例子 $\phi(x)=\tfrac12(\sum_i x_i)^2$ 有 $H=\mathbf1\mathbf1^\top$，全空间常数为 $d$，单坐标常数为1；而 $\phi(x)=\tfrac\lambda2\|x\|_2^2$（$\lambda>0$）在任意非空坐标子空间的常数都为 $\lambda$。前一种结构允许更大的单坐标步长，后一种没有这个收益。对非线性模型，不同训练轨迹上的估计也不能当成同一域中嵌套子空间的严格比较。（PV-Tuning v2 §3.3、附录 G；反例与条件为整理者展开。）
+
+PV-Tuning 附录 G 使用十个迭代点的梯度差商、以及十步有限差分 power iteration 估计平滑程度。这些有限探测不认证全域上界，观测最大梯度差商也不能用作理论所需的保守上界。实际用 Adam 幅度选子空间、限制量化后的变化范数，是工程选择；其对质量和稳定性的证据应来自所列实验，不能由小子空间自动推出。
+
+小步长被投影吞掉的机制也有确定条件。例如合法标量为 $\{0,1\}$，从0出发的目标0.1仍会选0。STE潜变量可在多步间累计到越过中点；稀疏PV则试图在部分坐标上直接形成足够大的合法跳变。哪种策略更好取决于目标、表示、步长和搜索规则，PV-Tuning 自身也评估了二者混合。
+
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
@@ -159,3 +202,4 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 - [Learned Step Size Quantization](https://arxiv.org/abs/1902.08153v3)，arXiv:1902.08153v3；步长代理与梯度缩放。
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据、教师输出与联合量化。
 - [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。
+- [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；代理选码、子空间与精确理论/工程更新的条件。

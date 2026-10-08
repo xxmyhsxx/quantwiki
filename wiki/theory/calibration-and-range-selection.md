@@ -6,6 +6,8 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/papers/2026-09-22/pv-tuning/paper.pdf
+  - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
   - raw/papers/2026-10-05/onptq/paper.pdf
   - raw/papers/2026-10-05/onptq/source/iclr2027_conference.tex
   - raw/papers/2026-10-03/scale-sensitivity/paper.pdf
@@ -131,6 +133,22 @@ J §3.1 在训练时对激活范围使用指数移动平均，并在部分配置
 完成范围选择后，应在未用于选择的数据上查看层误差与任务质量，并核对实际执行的网格是否一致。[量化误差诊断与验证](../implementation/quantization-error-diagnosis.md)说明如何分离图变换、量化和后端实现的问题。本页没有模型实验，不提供校准规模充分性的实证保证。
 
 配置选择还会让同一批数据承担候选排序职责。[Quantization Price](../methods/quantization-price-prediction.md) 用参考模型统计给局部候选评分，节省组装完整模型的搜索成本，但实际梯度来源、MSE 归约以及校准/测试划分都决定代理含义；选择成本与最终量化、评测成本应分别报告。
+
+### 5.1 同一语料不等于同一采样分布
+
+“使用同一个数据集”没有确定每个 token 被训练或校准的相对权重。[PV-Tuning](../methods/pv-tuning.md) v2 附录 H 区分均匀抽文档后抽固定长度片段，与先拼接文档再分成固定长度训练块。前者让每篇合格文档获得近似相同的片段名额，后者让长文档贡献更多块；它改变了损失平均所对应的分布。
+
+整理者教学例：两篇文档分别由1个和9个等长块组成。先以各 $1/2$ 的概率选文档、再在文档内均匀选块，短文档唯一块的概率为 $1/2$，长文档每块为 $1/18$；从十个块中均匀抽取则每块为 $1/10$。若各块平均损失为 $\ell_{ji}$，两种目标分别为
+
+$$
+L_{\mathrm{doc}}=\frac12\ell_{11}+\frac1{18}\sum_{i=1}^{9}\ell_{2i},
+\qquad
+L_{\mathrm{block}}=\frac1{10}\left(\ell_{11}+\sum_{i=1}^{9}\ell_{2i}\right).
+$$
+
+这个例子假定等长、不重叠块，排除短文档过滤、边界拼接与尾部丢弃等影响。真实预处理还须说明这些规则、EOS、mask及损失归约；不能只靠“拼接”一词推断全部细节。哪种抽样无偏取决于目标究竟是文档均匀、token均匀还是特定部署分布，不能把 token 均匀称为所有任务的唯一正确目标。
+
+PV-Tuning 报告这项预处理改变在部分模型上改善至多约0.15 PPL，并在比较内匹配预处理；其 §4.1 的表示实验仍保留旧方式用于对齐基线。归因算法效果时，应核每项实验的具体取样方式，不能把数据版本一致当作协议完全一致。
 
 ## 6. 图文校准增加的是数据与目标条件
 
@@ -325,3 +343,5 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 | [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
 
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据与蒸馏目标。
+
+- [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；文档与token采样分布、分实验预处理条件。

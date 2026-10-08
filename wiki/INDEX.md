@@ -61,6 +61,7 @@ sources: []
 - **理解误差方向与配置选择**：[激活引导补偿](methods/activation-guided-compensation.md) → [曲率加权误差](theory/curvature-weighted-quantization-error.md) / [RGSQ](methods/rgsq.md) → [HAWQ-V2](methods/hawq-v2.md) → [CASA](methods/casa.md) → [Quantization Price](methods/quantization-price-prediction.md)。
 - **理解同列向量与二阶选码**：[VPTQ](methods/vptq.md) → [同列共享曲率与加权初始化](theory/layer-reconstruction-second-order-compensation.md#31-同列向量为什么仍可使用欧氏最近中心) → [离群/残差/多组码本预算](theory/codebook-quantization-and-bit-budget.md#51-离群值残差和分组怎样共同计费)。
 - **比较多输入列选码与CPU小码本**：[GPTVQ](methods/gptvq.md) → [条件矩阵度量与中心更新](theory/layer-reconstruction-second-order-compensation.md#33-多输入列的条件度量与码本中心更新) → [索引/中心/硬件查表](theory/codebook-quantization-and-bit-budget.md#61-索引宽度中心精度与硬件查表是三个约束)。
+- **理解离散与连续参数的联合恢复**：[PV-Tuning](methods/pv-tuning.md) → [代理下降与子空间条件](fundamentals/quantization/post-training-and-quantization-aware-training.md#31-离散选码可以使用可验证的代理下降) → [文档与token采样](theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布)。
 - **连接编码与阶段执行**：[码本量化](theory/codebook-quantization-and-bit-budget.md) → [QTIP](methods/qtip.md) → [XOR-Trellis](methods/xor-trellis.md) → [SPHQuant](methods/sphquant.md) → [Disaggregated Quantization](methods/disaggregated-quantization.md)。
 
 - **诊断平均分之外的损害**：[排序稳定性与间隔](theory/quantization-ranking-stability.md) → [多模态对齐诊断](theory/multimodal-alignment-diagnostics.md) → [模型质量评测](implementation/model-quality-evaluation.md)。
@@ -144,6 +145,7 @@ sources: []
 | [CASA：方向敏感分配与跨层交换](methods/casa.md) | 标量失真界、对角因子 MCKP、跨层上界提案及校准接受的保证边界。 |
 | [Quantization Price：部署前配置定价](methods/quantization-price-prediction.md) | forward KL 的局部价格、trace 简化条件、配置预算与实验实现差别。 |
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
+| [PV-Tuning：连续参数与离散选码](methods/pv-tuning.md) | 精确P/V、代理下降、稀疏Adam与实际变化限制、数据/质量/运行条件。 |
 | [GPTVQ：多输入列与移动CPU码本](methods/gptvq.md) | 数据感知E/M、固定索引中心更新、INT8/INT4小表、位预算与CPU吞吐条件。 |
 | [VPTQ：同列向量与二阶反馈](methods/vptq.md) | 跨输出行的向量、加权码本初始化、残差/离群列、微调与存储/吞吐条件。 |
 | [XOR-Trellis：局部候选与曲率路径](methods/xor-trellis.md) | XOR生成器、条件候选集合、block-LDL对角评分、无旋转边界与综合成本。 |
