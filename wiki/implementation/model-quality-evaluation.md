@@ -6,6 +6,9 @@ tags:
   - numerical-error
   - reliability
 sources:
+  - raw/papers/2026-10-03/quantforge/paper.pdf
+  - raw/papers/2026-10-03/quantforge/source/sections/experiments.tex
+  - raw/papers/2026-10-03/quantforge/source/sections/appendix.tex
   - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
   - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
   - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
@@ -135,7 +138,41 @@ PIVOT-Q 论文表2称三次 independent runs/seeds；仓库协议却指定训练
 
 对同一组 $N$ 个配对 episode，记恢复数为 $n_{F\to S}$、退化数为 $n_{S\to F}$，成功率差是 $(n_{F\to S}-n_{S\to F})/N$。论文 GR00T/QuantVLA 的单 seed 配对实例为 $100\times(101-18)/560\approx14.82$ 个百分点；它与跨 seed 的均值差是不同统计，且明确存在18个退化实例。这里仅复算作者计数，没有开展新的机器人实验。
 
+## 11. 搜索反馈、留出评测与聚合指标要分别定义
+
+方法搜索不只选择参数，也可能选择算法结构。是否“留出”应由**结果是否影响提案、接受或最终选择**判断，而非只看评测是否由另一个进程执行。[QuantForge](../methods/quantforge.md#62-发现-hires-的过程与独立搜索比较) 的 HiRes 开发会收到 Llama-3.1-8B 迁移验证的接受信号；独立搜索框架比较则把同模型的所有结果与搜索隔离。前者属于开发验证信息，后者才支持该实验声明的独立迁移终点。（v1 附录 A.1。）
+
+预算也要明确单位。一次新候选、一个对照和一个定向执行 probe 可以都记为一次 evaluator call，但不保证各自耗时相同。QuantForge 的240次搜索调用另有12次留出观测；真实成本还包括提案调用、token、校准、失败/重试及硬件时间。首次生成达标候选的索引与定期评测确认达标的索引也不同；只对成功 seed 取中位数，会排除未达标运行，不能代替全体运行的成功概率或时间分布。（附录 D.1。）
+
+### 平均与最差表现怎样共同进入分数
+
+QuantForge 先把每模型 $m$、每任务 $j$ 归一到该模型的 BF16 参考：
+
+$$
+d_{mj}=
+\begin{cases}
+\mathrm{PPL}_{q,mj}/\mathrm{PPL}_{16,mj}-1,&\text{PPL任务},\\
+1-\mathrm{Acc}_{q,mj}/\mathrm{Acc}_{16,mj},&\text{准确率任务}.
+\end{cases}
+$$
+
+分母需为正；优于参考时保留负数。Fit-7 取任务维度的均值与最大值各一半，Robust Fit 再对七模型的 Fit-7 作同样聚合：
+
+$$
+F_m=\tfrac12\operatorname{mean}_j d_{mj}+\tfrac12\max_j d_{mj},
+\qquad
+R=\tfrac12\operatorname{mean}_m F_m+\tfrac12\max_m F_m.
+$$
+
+它对最差任务、再对最差模型增加权重，不是平均准确率，也不是对全部模型—任务单元一次性取最大值。任务集合、模型集合、参考分数和两层权重都是指标的一部分。（QuantForge §6.1，式12–13。）
+
+教学上，两个任务损害为 $(0,0.3)$ 的方案，均值0.15、均值/最大值混合分0.225；损害为 $(0.18,0.18)$ 的方案均值更差，却以0.18获得更好的混合分。因此某个聚合分改善，不保证每项任务或另一种汇总都改善。论文 Qwen3-8B 的 Fit-7 与五准确率任务平均值也给出这种口径差异；应保留原始终点而非只留一个排名。
+
+对于配对搜索，seed 是完整搜索结果的统计单位。同一轨迹中抽出的多个转移可用于比较局部后继，但存在共享历史；不能把48个转移当成48次独立搜索。是否独立、是否反馈与按何种维度汇总，需要分别报告。
+
 ## 来源身份
+
+- [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)，v1；§6.1–6.2、附录 A.1/D.1/D.2，指标聚合、搜索预算及信息反馈边界。
 
 - [Perplexity of fixed-length models](https://huggingface.co/docs/transformers/en/perplexity)，Transformers main，2026-09-22 获取，`perplexity-20260922-03be86a2`；定义、固定窗口与滑动窗口示例。
 - [Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs](https://arxiv.org/abs/2602.13289v1)，arXiv:2602.13289v1；使用 §3 的置信度、评测指标和 held-out 阈值设置，二值公式与算例为整理者解释。

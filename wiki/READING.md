@@ -11,7 +11,7 @@ updated: 2026-10-08
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **92 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **93 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)<br>arXiv:2609.34680v1 | 正文与附录 A/B 算法；C/D 中关键质量/状态重测/存储与运行成本、两种搜索协议/预算/配对重放；回查关键 PDF 公式表格 | [QuantForge/HiRes](methods/quantforge.md)；[重构与选码](theory/layer-reconstruction-second-order-compensation.md#12-权重确定后激活舍入的目标怎样改变)；[搜索评测](implementation/model-quality-evaluation.md#11-搜索反馈留出评测与聚合指标要分别定义) | 未逐格重算全部附表，未取得匹配作者实现；原生 MXFP4 部署未验证；未运行搜索、模型或 GPU | [2026-10-08](LOG.md#2026-10-08--quantforgehires-ingest-与-astra-review) |
 | [When and What to Prune? Stage-Aware Visual Token Pruning for Efficient VLA](https://arxiv.org/abs/2610.05273v1)<br>arXiv:2610.05273v1 | 正文与必要附录 A/B/C；选层式3–9、双路径式10–16、算法1–2、复杂度和主要实验/校准/限制；回查关键 PDF 公式与表格 | [SAPrune](methods/saprune.md)；[视觉 attention 与逐层预算](fundamentals/model/vision-language-model-tokens-and-quantization.md#71-attention-总量集中度与所关注对象是三件事) | 未取得匹配作者实现；query/证据聚合和接入细节仍有限；未运行模型、机器人或 GPU | [2026-10-08](LOG.md#2026-10-08--saprune-论文-ingest-与-astra-review) |
 | [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)<br>arXiv:2610.05745v1 | 正文与附录 A–F；式1–7、表1–3及关键 PDF 页；学生状态、未来差异/段内秩、稀疏加权、行为锚点、诊断和统计边界 | [PIVOT-Q](methods/pivot-q.md)；[时序状态选择](theory/calibration-and-range-selection.md#12-具身策略的状态选择与时序覆盖)；[适配与评测](implementation/model-quality-evaluation.md#10-策略恢复要分清适配范围与统计单位) | 保留论文/代码锚点来源、seed与结果差异，7.4%与表内比值不一致；未逐格复算全部诊断表或复现模型/机器人/性能 | [2026-10-08](LOG.md#2026-10-08--pivot-q-论文与主恢复链-ingest-和-astra-review) |
 | [CentriQ](https://arxiv.org/abs/2610.06260v1)<br>arXiv:2610.06260v1 | 正文与附录 A–C；核公式1–10、图1–3、表1–7与关键页图；adaLN/DC、中心化与rank-1回注、先中心化后padding、动态分位数、RoDS变量/IRLS/HQS、零点旁路与质量/延迟协议 | [CentriQ](methods/centriq.md)；[均值旁路](theory/orthogonal-rotation-and-hadamard-quantization.md#输入相关的均值为什么需要旁路)；[动态免校准尺度](theory/calibration-and-range-selection.md#免校准仍可使用当前-token-的统计) | 作者内核仅论文描述，未取得匹配作者代码；未复现生成/性能；定性图不作统计复验，未逐步重证全部附录概率界；保留有限精度回注和转引基线边界 | [2026-10-08](LOG.md#2026-10-08--centriq-论文-ingest-与-astra-review) |
@@ -215,11 +216,11 @@ updated: 2026-10-08
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune论文已研读并按实际范围移入上表；以下136个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune及QuantForge论文已研读并按实际范围移入上表；以下135个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 QuantForge，接续 MXFP4 表示、残差重构与方法搜索的证据边界，随后处理其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 XOR-Trellis，接续结构化编码、曲率目标与反量化成本，随后处理其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（62条）
+### 论文（61条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -281,7 +282,6 @@ updated: 2026-10-08
 | [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2) | `arXiv:2409.17066v2` |
 | [vla.simd: Efficient CPU Inference for Language-Conditioned Manipulation](https://arxiv.org/abs/2609.24274v1) | `arXiv:2609.24274v1` |
 | [MWOP: Modality-aware Width-wise Operation Pruning for Efficient MLLMs](https://arxiv.org/abs/2610.01434v1) | `arXiv:2610.01434v1` |
-| [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1) | `arXiv:2609.34680v1` |
 | [Query Independent Variable Rate Visual Token Coding](https://arxiv.org/abs/2610.00204v1) | `arXiv:2610.00204v1` |
 | [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1) | `arXiv:2610.00432v1` |
 | [CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding](https://arxiv.org/abs/2609.39924v1) | `arXiv:2609.39924v1` |

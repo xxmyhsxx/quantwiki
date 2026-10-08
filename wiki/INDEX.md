@@ -49,6 +49,7 @@ sources: []
 - **从算法走向部署**：[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) → [AWQ 的实现核对](implementation/awq-implementation.md) → [GPTQ 的实现核对](implementation/gptq-implementation.md) → [SmoothQuant 的实现核对](implementation/smoothquant-implementation.md) → [QServe/QoQ 的实现核对](implementation/qserve-implementation.md) → [权重量化反量化内核的契约](implementation/weight-only-dequant-kernels.md) → [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md)。
 - **从推理库学习 CUDA 与 Triton**：[工作映射与张量接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md) → [vLLM/SGLang 门控激活](implementation/gated-activation-cuda-triton-kernels.md) → [RMSNorm 行归约与残差融合](implementation/rmsnorm-cuda-triton-kernels.md) → [Attention 算子设计](implementation/sglang-attention-operator-design.md)。
 - **深入矩阵乘与多卡执行**：[Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) → [W8A8 量化、GEMM 与校正](implementation/w8a8-quantization-gemm-kernels.md) → [配置与自动调优](implementation/kernel-configuration-and-autotuning.md) → [张量并行与量化](implementation/tensor-parallel-quantization.md)。
+- **理解 MXFP4 的分阶段重构**：[格式与共享尺度](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) → [QuantForge/HiRes 的坐标、编码与恢复](methods/quantforge.md) → [已量化权重下的激活舍入](theory/layer-reconstruction-second-order-compensation.md#12-权重确定后激活舍入的目标怎样改变) → [搜索与留出评测](implementation/model-quality-evaluation.md#11-搜索反馈留出评测与聚合指标要分别定义)。
 - **贯通低精度浮点执行**：[FP8 与 Microscaling 格式](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) → [K 尺度与执行路径](implementation/quantized-matmul-scaling-execution.md) → [FP4/FP8 块缩放的编码、布局与调用](implementation/block-scaled-matmul-execution.md) → [Tensor Core 与编译诊断](implementation/tensor-core-quantized-gemm.md)。
 - **优化算子配置与流水**：[GPU 算子的计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md) → [Kernel 配置选择与自动调优](implementation/kernel-configuration-and-autotuning.md) → [异步拷贝与多级流水](implementation/gpu-async-copy-pipelines.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **建立算子测试与性能分析流程**：[正确性、Sanitizer 与计时](implementation/kernel-correctness-and-benchmarking.md) → [时间线、硬件指标与瓶颈定位](implementation/gpu-kernel-performance-analysis.md) → [配置选择与对照实验](implementation/kernel-configuration-and-autotuning.md)。
@@ -129,6 +130,7 @@ sources: []
 | [CoRePrune：条件可删除性](methods/coreprune.md) | 删除失真、集合方向交互、深度刷新与两阶段视觉剪枝。 |
 | [SAPrune：选层与双路径视觉剪枝](methods/saprune.md) | 校准层深时机、子空间/熵预算、query 响应覆盖与逐层计算成本。 |
 | [LayerPos：逐层位置策略](methods/layerpos.md) | 稀疏/连续编号、定位校准和 prefill/decode 的坐标一致性。 |
+| [QuantForge 与 HiRes：搜索与 MXFP4 分阶段重构](methods/quantforge.md) | 竞争解释/对照、实际编码误差、合法单码选择、路径重测与模拟执行成本。 |
 | [PRQuant：置换与低比特残差拼接](methods/prquant.md) | 门控 FFN 的等价重排、尺度位置、残差与实际扩宽成本。 |
 | [RAMP：CPU 混合精度与图成本](methods/ramp.md) | 单层 logits 敏感度、质心阈值和融合损失怎样影响选择。 |
 | [FoldQuantVLA：共享输入折叠与整数投影](methods/foldquantvla.md) | 变换顺序、动态范围、代码执行路径与动作/闭环证据。 |

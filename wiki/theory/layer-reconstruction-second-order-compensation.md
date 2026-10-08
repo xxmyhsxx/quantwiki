@@ -6,6 +6,9 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/papers/2026-10-03/quantforge/paper.pdf
+  - raw/papers/2026-10-03/quantforge/source/sections/eigenquant.tex
+  - raw/papers/2026-10-03/quantforge/source/sections/appendix.tex
   - raw/papers/2026-10-03/reconstruction-loss-scale-rmse/paper.pdf
   - raw/papers/2026-10-03/reconstruction-loss-scale-rmse/source/iclr2027_conference.tex
   - raw/papers/2026-09-22/efficientqat/paper.pdf
@@ -24,7 +27,7 @@ sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/gptq/paper.pdf
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # 层输出重构与二阶误差补偿
@@ -307,7 +310,50 @@ Channel 不是把整个 batch 的同名通道合成一组，Sample 也不是对�
 
 表 5 在单 NVIDIA L40、batch 1 上测量整个顺序量化过程：四个对照的时间变化为 −1.19% 至 +2.82%，报告的峰值显存相同。这是离线量化成本，不是推理加速；论文未给这些差值的多次测量不确定性。本节未运行模型或作者代码，附录的完整任务附表也未逐格重算。
 
+## 12. 权重确定后，激活舍入的目标怎样改变
+
+前面的 GPTQ 固定输入、优化权重。[QuantForge 的 HiRes](../methods/quantforge.md#4-阶段二让-a4-选码考虑已经确定的-w4) 则在 W4 已确定后，继续选择同一固定格式中的激活码。它说明：最近激活值不一定给出最近输出；已经发生的权重误差也会改变激活舍入的偏好。
+
+固定一个32通道块，令 $x,q_0\in\mathbb R^{32}$ 分别为原激活和最近编码的解码值，$W,\widehat W\in\mathbb R^{m\times32}$ 为浮点参考与已编码权重。记 $d_0=q_0-x$，则当前局部残差为
+
+$$
+r_0=\widehat Wq_0-Wx=\widehat Wd_0-(W-\widehat W)x.
+$$
+
+只把第 $i$ 项改为同一固定指数下的另一个合法值，增量为 $\delta$，残差变为 $r_0+\delta\widehat W e_i$，因此
+
+$$
+\Delta L=2\delta[\widehat W^\top r_0]_i
++\delta^2[\widehat W^\top\widehat W]_{ii}
+=2\delta[G_Qd_0-K_Qx]_i+\delta^2[G_Q]_{ii},
+\quad
+G_Q=\widehat W^\top\widehat W,\quad
+K_Q=\widehat W^\top(W-\widehat W).
+$$
+
+这是固定块输出平方误差的精确展开。仅用 $d_0^\top G_Qd_0$ 会漏掉权重偏差的线性项；只有 $W=\widehat W$ 等使该项消失的条件下，才恢复纯敏感度加权的激活舍入。（QuantForge v1，式8、附录 B.3。）
+
+教学例取块尺度为1，$x=(1.6,4,0,\ldots)$，参考权重一行为 $W=(1.2,0,4,\ldots)$，已编码 $\widehat W=(1,0,4,\ldots)$，其余项为0。两块最大幅值均为4，符合该编码器的指数0。最近激活码是 $(1.5,4,0,\ldots)$，输出残差为 $1.5-1.2\times1.6=-0.42$；把首项改为同样合法的2，残差变0.08。激活自身的距离增大，输出平方误差却从0.1764降到0.0064，$\Delta L=-0.17$。这个算例解释权重与激活误差的补偿，不是模型实验。
+
+**局部精确不等于全层单调。** 若整层输出残差为各输入块贡献之和 $r=\sum_b r_b$，修改块 $b$ 所引起的残差增量为 $\Delta r_b$，则
+
+$$
+\Delta\|r\|_2^2
+=\Delta\|r_b\|_2^2
++2\left\langle\sum_{a\ne b}r_a,\Delta r_b\right\rangle.
+$$
+
+逐块评分未计入第二项。教学上，两个块残差分别为1和−1时整层误差为0；将第一块局部误差降到0，整层残差反而为−1。全层误差、更深的非线性和任务质量因此仍需独立判断。
+
+### 统计必须对应已经安装的计算状态
+
+HiRes 的三处重测依赖具有更一般的解释价值：坐标变换改变 pre-A4 输入 Gram；固定 W4 改变 $G_Q,K_Q$；attention 校正改变下游 MLP 的输入和目标残差。公式正确但统计来自旧状态，仍是在解另一个问题。这里应记录“谁产生当前输入、哪个版本的权重已经固定、目标来自完整浮点轨迹还是同一当前输入上的浮点模块”，而不只记录校准语料名。（QuantForge §5、算法1、附录 C.5。）
+
+这与第8节的联合重构范围是不同维度：重测不会自动扩大梯度范围或联合优化所有阶段。论文的 fresh/stale 对照固定最终执行顺序与校正形式，只改变拟合统计的取得时刻；它支持所测方法的状态依赖，不构成一般收敛或全网络单调性保证。
+
 ## 来源身份
+
+- [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)，v1；§5.2/式8、算法1、附录 B.3/C.5。第12节的合法码数值例和跨块交叉项为整理者展开。
 
 - [The Devil Is in the Reconstruction Loss Scale: Rethinking Optimization in LLM Quantization](https://arxiv.org/abs/2610.00983v1)，arXiv:2610.00983v1；§2–3、式 (2)–(8)、§4 表 1–5 与附录 A/D/E/F。第 11 节的链式法则、分组梯度与最小点关系为整理者展开，作者实验与本地验证分开。
 
