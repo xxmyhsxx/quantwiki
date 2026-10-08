@@ -28,6 +28,9 @@ sources:
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
   - raw/papers/2026-10-07/centriq/paper.pdf
   - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
+  - raw/papers/2026-10-07/pivot-q/paper.pdf
+  - raw/repositories/2026-10-07/pivot-q/source/pivot_q/selector.py
+  - raw/repositories/2026-10-07/pivot-q/source/pivot_q/train.py
 updated: 2026-10-08
 ---
 
@@ -274,6 +277,26 @@ on-policy 覆盖仍不等于合适的目标。OnPTQ 保留原多模态上下文 
 
 需要记录模型/量化初始化、prompt manifest 与 chat template、生成策略、exact prefix IDs、rollout 长度、状态预算、短分支 horizon、静态 anchor 和更新变量。独立评测还应检查自由生成质量、正确性转移与实际成本；OnPTQ 的默认两轮刷新优于五轮，说明更多适配并非单调改善。（§5.4、表 4、附录 C–D。）
 
+## 12. 具身策略的状态选择与时序覆盖
+
+VLA 的动作会改变环境和后续观测，因而校准样本还包含**谁控制采集轨迹**。[PIVOT-Q](../methods/pivot-q.md) v1 §3–5 让量化学生控制环境，浮点教师在同观测、同生成噪声下给参考动作；更新后再采新轨迹。即使原图像和任务集合相同，教师控制与学生控制也可能得到不同状态分布。
+
+三个选择维度需要分开：
+
+| 维度 | PIVOT-Q 的具体例子 | 改变了什么 |
+| --- | --- | --- |
+| 当前与随后信号 | 首动作 MSE，加同轨迹后续短窗口的折扣 MSE | 找到当前或随后存在差异的状态；没有测反事实行动效果 |
+| 时间覆盖 | 每段内排名、分配固定名额，并尽可能保持段内间隔 | 防止所有名额集中在一个片段；不同段的绝对误差不再直接竞争 |
+| 保留参考分布 | 目标状态损失加 clean/reference 状态的动作锚点 | 限制集中修复对已有行为的影响；不保证没有负迁移 |
+
+段内百分位只保留次序，去掉误差单位和绝对差距；相同百分位不意味着动作误差或任务影响相同。主代码给并列值按时间分配不同秩，又在名额不足时放宽时间间隔，因此“每段 top-k”还不足以完整描述选择规则。（固定 `74d6e1f8994a03eb45aae5c316a743abda2cba15`，`selector.py`。）
+
+OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者改变当前决策后比较未来状态，后者回看一条既有轨迹。两者都是任务后果的代理，都不能代替实际成功率。PIVOT-Q 通过 LoRA 恢复动作，亦不同于只调量化网格；方法比较需同时保留状态来源、选择信号、可训练变量和执行图。
+
+状态数只描述部分预算。若完整 rollout 有 $T$ 个状态、选 $M$ 个、重复更新 $U$ 次、每步另用 $B$ 个 anchors，则目标状态的反向参与次数为 $UM$，锚点至多 $UB$；教师仍需为全轨迹评分。教学例 $T=200,M=16,U=5,B=4$：目标覆盖8%，却有80次目标状态和至多20次锚点参与更新，另有完整轨迹采集/教师评估。不能把8%当作总计算比例。（`train.py` 的采集、选择与更新；算例为整理者计数。）
+
+锚点本身也须记录来源与刷新：PIVOT-Q 正文称原训练数据集，主代码却采 clean LIBERO 的学生短轨迹并存入 replay；这项差异随方法页保留。范围选择、状态选择和行为约束是相连但不同的优化自由度。
+
 ## 来源身份
 
 - [Scale Sensitivity in Low-Bit Post-Training Quantization: Curvature of the Quantization Error Landscape](https://arxiv.org/abs/2609.37416v1)，arXiv:2609.37416v1；§3–5、定理 1、命题 1、定义 1、表 1–2/5，以及附录 A.4/A.5.2/B.1/B.4。第 10 节采用作者条件和报告，矩阵改写及变量关系为整理者展开。
@@ -283,6 +306,7 @@ on-policy 覆盖仍不等于合适的目标。OnPTQ 保留原多模态上下文 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | [CentriQ](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | 免校准与在线分位数、分布假设和开发集的区别 |
+| [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)；[作者实现](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15) | arXiv:2610.05745v1；`74d6e1f8994a03eb45aae5c316a743abda2cba15` | 学生环境状态、段内选择、锚点来源与恢复预算；代码限定 GR00T+QuantVLA 主路径 |
 | [Calibrate the Decisions That Change the Future](https://arxiv.org/abs/2609.36828v1) | `arXiv:2609.36828v1` | 当前量化前缀、静态 anchor、风险选择与轨迹刷新 |
 | [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 二阶矩、校准规模与 padding 假设 |
 | [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |

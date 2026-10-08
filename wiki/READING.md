@@ -11,7 +11,7 @@ updated: 2026-10-08
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **89 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **91 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)<br>arXiv:2610.05745v1 | 正文与附录 A–F；式1–7、表1–3及关键 PDF 页；学生状态、未来差异/段内秩、稀疏加权、行为锚点、诊断和统计边界 | [PIVOT-Q](methods/pivot-q.md)；[时序状态选择](theory/calibration-and-range-selection.md#12-具身策略的状态选择与时序覆盖)；[适配与评测](implementation/model-quality-evaluation.md#10-策略恢复要分清适配范围与统计单位) | 保留论文/代码锚点来源、seed与结果差异，7.4%与表内比值不一致；未逐格复算全部诊断表或复现模型/机器人/性能 | [2026-10-08](LOG.md#2026-10-08--pivot-q-论文与主恢复链-ingest-和-astra-review) |
 | [CentriQ](https://arxiv.org/abs/2610.06260v1)<br>arXiv:2610.06260v1 | 正文与附录 A–C；核公式1–10、图1–3、表1–7与关键页图；adaLN/DC、中心化与rank-1回注、先中心化后padding、动态分位数、RoDS变量/IRLS/HQS、零点旁路与质量/延迟协议 | [CentriQ](methods/centriq.md)；[均值旁路](theory/orthogonal-rotation-and-hadamard-quantization.md#输入相关的均值为什么需要旁路)；[动态免校准尺度](theory/calibration-and-range-selection.md#免校准仍可使用当前-token-的统计) | 作者内核仅论文描述，未取得匹配作者代码；未复现生成/性能；定性图不作统计复验，未逐步重证全部附录概率界；保留有限精度回注和转引基线边界 | [2026-10-08](LOG.md#2026-10-08--centriq-论文-ingest-与-astra-review) |
 | [SAW-INT4](https://arxiv.org/abs/2604.19157v1)<br>arXiv:2604.19157v1 | 本轮定向回查section3的Hessian结果/因果措辞与Mean/Drop冲突、section5的4×与0.25×容量说法、TTFT与两类吞吐解释；两tex与固定源包一致 | [SAW方法/服务证据](methods/saw-int4.md) | 只确认本轮所列局部核对，历史全文/附录研读范围与日期仍未知；未复现质量或服务数据 | [2026-10-08](LOG.md#2026-10-08--saw-int4-prefill-恢复与全量材料队列) |
 | [StagQ](https://arxiv.org/abs/2610.05977v1)<br>arXiv:2610.05977v1 | 正文与附录 A–G，H 用于背景；核 dyadic/affine 公式、pair/floor 目标、guard/完整重建、rate、kernel/代表实验表与 PDF 页图 | [StagQ](methods/stagq.md)；[多精度预算](theory/mixed-precision-allocation.md#8-多个可读精度与逐层位宽分配是不同选择)；[前缀与例外](research/low-bit-representation-design.md#7-多精度前缀使主体与例外一起承担约束) | 未取得作者实现或运行质量/性能；全部任务附表未逐格重算；性能为合成权重 batch-one，真实 decode 数值检查仅 Llama 两位局部 blocks；可变长 side record/生产运行时切换尚待实现 | [2026-10-07](LOG.md#2026-10-07--moemla-与预算表示的源码-ingest-和-review) |
@@ -96,6 +97,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [ruanruan-andy/PIVOT-Q](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15)<br>74d6e1f8994a03eb45aae5c316a743abda2cba15 | README/实验协议；主 GR00T+QuantVLA 的配置→selector→训练、当前/未来评分、phase/gap/权重、归一化首动作、clean anchor、LoRA更新、vendored加载/采样/fake-quant linear | [PIVOT-Q实现与差异](methods/pivot-q.md#5-主-gr00t--quantvla-调用链与可训练变量) | 仅所列主路径；其他模型完整adapter/量化器/子模块、checkpoint恢复边界、部署与全图梯度未核；未导入、安装或执行上游/模型/GPU | [2026-10-08](LOG.md#2026-10-08--pivot-q-论文与主恢复链-ingest-和-astra-review) |
 | [huggingface/kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc)<br>5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc | 初始化模板与扩展构建/装入的登记文件 | [CUDA 算子的编写、编译与 PyTorch 接入](implementation/cuda-operator-build-and-integration.md)；[算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 未编译或验证跨版本 ABI、训练/backward | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
 | [triton-lang/triton](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592)<br>81a46fa0c04526e5df55a018ecfab72ff922f592 | 教程 01/02/03/05、testing、runtime/语言/JIT 相关文件及块缩放矩阵乘路径 | [块缩放矩阵乘：FP4/FP8 编码、Scale 布局与 Triton 调用](implementation/block-scaled-matmul-execution.md)；[Triton 语言与编译语义：从逻辑张量到 GPU Kernel](fundamentals/operators/triton-language-and-compilation.md) | 未编译/执行 GPU；不表示所有语言与编译分支已核验 | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
 | [TTS PTQ Map](https://github.com/uxfacdev/tts-ptq-map/tree/ea6f62da57ac86c1fe8f81818d689228c62b5d66)<br>ea6f62da57ac86c1fe8f81818d689228c62b5d66 | RTN/激活模拟、组件 GPTQ、ONNX MatMulNBits 改写与 bootstrap | [TTS 量化评测：组件敏感性、质量判据与真实执行](implementation/tts-quantization-evaluation.md) | 未生成音频、执行低比特内核或复现质量/性能 | [2026-09-29](LOG.md#2026-09-29--第三批四篇-ingest-与内容-review) |
@@ -212,11 +214,11 @@ updated: 2026-10-08
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目中，CentriQ 已完成本轮研读并移入上表；以下139个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径已研读并按实际范围移入上表；以下137个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 PIVOT-Q 及匹配代码，随后 SAPrune；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 SAPrune，随后接续其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（64条）
+### 论文（63条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -282,7 +284,6 @@ updated: 2026-10-08
 | [Query Independent Variable Rate Visual Token Coding](https://arxiv.org/abs/2610.00204v1) | `arXiv:2610.00204v1` |
 | [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1) | `arXiv:2610.00432v1` |
 | [CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding](https://arxiv.org/abs/2609.39924v1) | `arXiv:2609.39924v1` |
-| [Beyond In-Distribution Preservation: Recovering Generalization in Quantized VLAs via Vulnerability-Oriented Tuning](https://arxiv.org/abs/2610.05745v1) | `arXiv:2610.05745v1` |
 | [When and What to Prune? Stage-Aware Visual Token Pruning for Efficient VLA](https://arxiv.org/abs/2610.05273v1) | `arXiv:2610.05273v1` |
 
 ### 文章与文档（53条）
@@ -343,7 +344,7 @@ updated: 2026-10-08
 | [vla.simd model bundle](https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle) | `2026-09-28 page snapshot` |
 | [TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix](https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html) | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 
-### 代码条目（22条）
+### 代码条目（21条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -368,4 +369,3 @@ updated: 2026-10-08
 | [cair-vinuni/vla.simd](https://github.com/cair-vinuni/vla.simd/tree/7354b6d73b3686395d709202dbb519fd2e101aa0) | `7354b6d73b3686395d709202dbb519fd2e101aa0` |
 | [ernie-research/CoVisco](https://github.com/ernie-research/CoVisco/tree/604cd70d53afc39506682d423c07604a38d37b40) | `604cd70d53afc39506682d423c07604a38d37b40` |
 | [NVIDIA/TensorRT-Edge-LLM](https://github.com/NVIDIA/TensorRT-Edge-LLM/tree/e649dadcbbf049fa4caf2f09f3a3275ca56751db) | `e649dadcbbf049fa4caf2f09f3a3275ca56751db` |
-| [ruanruan-andy/PIVOT-Q](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15) | `74d6e1f8994a03eb45aae5c316a743abda2cba15` |

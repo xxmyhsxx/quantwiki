@@ -69,6 +69,7 @@ sources: []
 
 - **比较低比特 KV 的目标与布局**：[QJL](methods/qjl.md) → [TurboQuant](methods/turboquant.md) → [NOVA-KV](methods/nova-kv.md) → [Kitty](methods/kitty.md)；多模态保护见 [AKVQ-VL](methods/akvq-vl.md)。
 
+- **恢复量化 VLA 的闭环行为**：[状态选择与时序覆盖](theory/calibration-and-range-selection.md#12-具身策略的状态选择与时序覆盖) → [PIVOT-Q 的稀疏动作蒸馏与主代码](methods/pivot-q.md) → [适配范围与评测单位](implementation/model-quality-evaluation.md#10-策略恢复要分清适配范围与统计单位)。
 - **理解 DiT 的免校准量化**：[输入相关均值与旁路](theory/orthogonal-rotation-and-hadamard-quantization.md#输入相关的均值为什么需要旁路) → [CentriQ](methods/centriq.md) → [在线统计与分布假设](theory/calibration-and-range-selection.md#免校准仍可使用当前-token-的统计)。
 
 ## 全部知识页
@@ -175,6 +176,7 @@ sources: []
 | [ConQuR：顶点对齐与逐批旋转校准](methods/conqur.md) | 激活几何代理、Procrustes 闭式子问题、量化感知前向与可融合边界。 |
 | [WUSH-KV：缓存统计与敏感度的可逆变换](methods/wush-kv.md) | 闭式平衡、GQA 读取度量、post-RoPE 配对、双窗口与两套量化器的边界。 |
 | [OnPTQ：生成决策与未来分支校准](methods/onptq.md) | 同量化前缀、风险选择、context anchor 与轨迹刷新；代理理论、正确性 flip 和执行条件。 |
+| [PIVOT-Q：学生轨迹上的稀疏动作恢复](methods/pivot-q.md) | 首动作差异、未来窗口、阶段预算与行为锚点；LoRA/fake quant 主链及论文与代码的协议差异。 |
 | [SplitQ：模态离群通道拆分与权重激活双补偿](methods/splitq.md) | SplitQ 把多模态量化冲突拆成两个层次：少数模态离群通道先单独处理；剩余共享通道再分别缓解权重量化误差与激活量化误差。 |
 | [VLMQ：token 重要性加权的二阶量化](methods/vlmq.md) | VLMQ 用局部注意力模块重构损失的梯度估计各 token 的重要性，再把这些因子放进线性层的二阶重构目标。 |
 | [ZeroQuant：逐组权重、逐 token 激活与逐层蒸馏](methods/zeroquant.md) | 8 bit 量化到十亿参数规模时，精度损失主要来自两个数值事实：不同 token 的激活范围相差很大，不同输出行的权重范围也相差很大。 |

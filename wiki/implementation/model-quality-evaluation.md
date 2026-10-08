@@ -13,7 +13,9 @@ sources:
   - raw/papers/2026-09-21/quantization-reliable-vqa/paper.pdf
   - raw/papers/2026-10-03/decision-flips/paper.pdf
   - raw/papers/2026-10-03/decision-flips/source/main.tex
-updated: 2026-10-07
+  - raw/papers/2026-10-07/pivot-q/paper.pdf
+  - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md
+updated: 2026-10-08
 ---
 
 # 模型质量评测：PPL、任务协议与选择性预测
@@ -85,7 +87,7 @@ $$\Phi_c(\tau)=\frac{n_{\mathrm{accepted,correct}}-c\,n_{\mathrm{accepted,wrong}
 
 先用 [误差诊断](quantization-error-diagnosis.md)排除加载、布局和图变换错误，再按共同 PPL 与任务协议判断模型质量；有可靠性要求时补充校准和选择性预测，最后在同一质量约束下比较 [服务性能](serving-performance-evaluation.md)。这能避免用“Kernel 正确”替代“模型可用”，或用“平均准确率接近”替代“低风险覆盖相同”。
 
-本页没有新增模型分数；公式例子只验证计数、归约和指标边界。已有可靠性页的特定结果仍以对应论文为准。
+本页没有新增模型运行结果；公式例子只验证计数、归约和指标边界。来源中的特定结果仍以对应论文及协议为准。
 
 ## 7. 平均质量、排序保持与几何诊断分别回答什么
 
@@ -116,6 +118,23 @@ Decision Flips v1 §3–8 说明评测压缩后的输出保真时，需要把浮
 
 当两模型已经可以运行，直接数任务 flip 的成本与计算散度同阶，没有必要用论文经验比代替实测。非有限 logits 应单独作为运行失败记录，不能只在有限样本上给出散度后称整个配置有效。论文只在部分真实后端验证，FP8 明确未通过其试验；本页没有运行这些配置。
 
+## 10. 策略恢复要分清适配范围与统计单位
+
+动作策略中，同状态、同随机噪声下的动作差异隔离输出变化；闭环成功率则让模型自己的动作改变后续环境。两者相互补充，不能把前者的 MSE 降低直接解释为未见任务上的成功率提高。
+
+[PIVOT-Q](../methods/pivot-q.md)提供了适配边界的实例：固定作者仓库 `74d6e1f8994a03eb45aae5c316a743abda2cba15` 的 `docs/experiment_protocol.md` 指定恢复与评测使用相同 task IDs，最终评测另跑 episode。它支持同任务环境扰动下的传导式适配评测，不等于留出任务或留出扰动的泛化。需要同时声明任务集合、初始状态、环境变化、训练/评测随机性及最终 checkpoint 的选择规则；不能只写“560条测试”。
+
+| 统计对象 | 可以描述什么 | 不能替代什么 |
+| --- | --- | --- |
+| 同一最终 checkpoint 的多个评测 seed | 该固定策略对评测随机性的变化 | 多次独立恢复训练的不确定性 |
+| 恢复过程中多个 rollout 的直方图 | 不同适配阶段及策略访问分布的混合 | 同一最终模型在固定状态集上的差异 |
+| 按任务身份关联选择分数与最终成功 | 两类记录在任务上的关联 | 同一最终评测轨迹中的因果效应 |
+| 最终配对的失败→成功和成功→失败 | 净收益和退化集合 | 单凭平均成功率即可保证无退化 |
+
+PIVOT-Q 论文表2称三次 independent runs/seeds；仓库协议却指定训练seed0、同一最终 checkpoint 的四个评测seed。引用时必须保留各自说法，不能把仓库协议当作论文统计的已证实解释。附录 E 的 OpenVLA 另有560个最终结果、558个选择记录，成功率分母与选择散点分母也不能互换。
+
+对同一组 $N$ 个配对 episode，记恢复数为 $n_{F\to S}$、退化数为 $n_{S\to F}$，成功率差是 $(n_{F\to S}-n_{S\to F})/N$。论文 GR00T/QuantVLA 的单 seed 配对实例为 $100\times(101-18)/560\approx14.82$ 个百分点；它与跨 seed 的均值差是不同统计，且明确存在18个退化实例。这里仅复算作者计数，没有开展新的机器人实验。
+
 ## 来源身份
 
 - [Perplexity of fixed-length models](https://huggingface.co/docs/transformers/en/perplexity)，Transformers main，2026-09-22 获取，`perplexity-20260922-03be86a2`；定义、固定窗口与滑动窗口示例。
@@ -126,3 +145,4 @@ Decision Flips v1 §3–8 说明评测压缩后的输出保真时，需要把浮
 
 - [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
 - [How Divergence Becomes Decision Flips in Compressed Language Models](https://arxiv.org/abs/2610.00694v1)，arXiv:2610.00694v1；§3–8 的同前缀输出保真、指标聚合和推测解码评测。
+- [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)，arXiv:2610.05745v1，§6/表2及附录 E；[固定实验协议](https://github.com/ruanruan-andy/PIVOT-Q/blob/74d6e1f8994a03eb45aae5c316a743abda2cba15/docs/experiment_protocol.md)：传导式适配、训练/评测 seed 和最终 checkpoint。
