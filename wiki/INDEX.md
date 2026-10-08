@@ -59,7 +59,7 @@ sources: []
 - **理解 SGLang 的缓存与算子**：[Radix 缓存、批次与重叠执行](implementation/sglang-inference-execution.md) → [KV 索引、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) → [AWQ 的 SGLang 路径](implementation/awq-implementation.md#6-跨引擎sglang)。
 - **判断误差与运行收益**：[量化误差诊断与验证](implementation/quantization-error-diagnosis.md) → [模型质量评测](implementation/model-quality-evaluation.md) → [量化与可靠性](theory/quantization-reliability-and-selective-prediction.md) → [服务性能评测](implementation/serving-performance-evaluation.md)。
 - **理解误差方向与配置选择**：[激活引导补偿](methods/activation-guided-compensation.md) → [曲率加权误差](theory/curvature-weighted-quantization-error.md) / [RGSQ](methods/rgsq.md) → [HAWQ-V2](methods/hawq-v2.md) → [CASA](methods/casa.md) → [Quantization Price](methods/quantization-price-prediction.md)。
-- **连接编码与阶段执行**：[码本量化](theory/codebook-quantization-and-bit-budget.md) → [QTIP](methods/qtip.md) → [SPHQuant](methods/sphquant.md) → [Disaggregated Quantization](methods/disaggregated-quantization.md)。
+- **连接编码与阶段执行**：[码本量化](theory/codebook-quantization-and-bit-budget.md) → [QTIP](methods/qtip.md) → [XOR-Trellis](methods/xor-trellis.md) → [SPHQuant](methods/sphquant.md) → [Disaggregated Quantization](methods/disaggregated-quantization.md)。
 
 - **诊断平均分之外的损害**：[排序稳定性与间隔](theory/quantization-ranking-stability.md) → [多模态对齐诊断](theory/multimodal-alignment-diagnostics.md) → [模型质量评测](implementation/model-quality-evaluation.md)。
 - **连接低比特方案与真实执行**：[PRQuant 的残差拼接](methods/prquant.md) → [RAMP 的 CPU 图成本](methods/ramp.md) → [FoldQuantVLA 的共享输入与整数投影](methods/foldquantvla.md)。
@@ -142,6 +142,7 @@ sources: []
 | [CASA：方向敏感分配与跨层交换](methods/casa.md) | 标量失真界、对角因子 MCKP、跨层上界提案及校准接受的保证边界。 |
 | [Quantization Price：部署前配置定价](methods/quantization-price-prediction.md) | forward KL 的局部价格、trace 简化条件、配置预算与实验实现差别。 |
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
+| [XOR-Trellis：局部候选与曲率路径](methods/xor-trellis.md) | XOR生成器、条件候选集合、block-LDL对角评分、无旋转边界与综合成本。 |
 | [SPHQuant：球面方向与半径编码](methods/sphquant.md) | 半径投影、角度训练、实际2.25位布局与吞吐/内存取舍。 |
 | [Disaggregated Quantization：分阶段格式与权重](methods/disaggregated-quantization.md) | QADD、两阶段状态衔接、ODP借用恢复及真实计时边界。 |
 | [LLM-QAT：生成数据蒸馏与联合量化](methods/llm-qat.md) | 前缀覆盖、软标签与 W/A/KV 量化怎样共同进入训练。 |

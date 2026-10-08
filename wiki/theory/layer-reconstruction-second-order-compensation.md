@@ -6,6 +6,8 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/papers/2026-10-03/xor-trellis/paper.pdf
+  - raw/papers/2026-10-03/xor-trellis/source/main.tex
   - raw/papers/2026-10-03/quantforge/paper.pdf
   - raw/papers/2026-10-03/quantforge/source/sections/eigenquant.tex
   - raw/papers/2026-10-03/quantforge/source/sections/appendix.tex
@@ -351,7 +353,62 @@ HiRes 的三处重测依赖具有更一般的解释价值：坐标变换改变 p
 
 这与第8节的联合重构范围是不同维度：重测不会自动扩大梯度范围或联合优化所有阶段。论文的 fresh/stale 对照固定最终执行顺序与校正形式，只改变拟合统计的取得时刻；它支持所测方法的状态依赖，不构成一般收敛或全网络单调性保证。
 
+## 13. LDL 残余度量与离散路径搜索怎样衔接
+
+LDLQ 的顺序反馈与内部量化器可以采用不同目标。[XOR-Trellis](../methods/xor-trellis.md#4-把残余敏感性用于路径评分)说明：外层用曲率补偿，不代表内部 trellis 路径已经按相同曲率选择。本节区分分解恒等式、实际搜索代理与动态规划精确性的条件。（v1 §4、附录 D/E。）
+
+### 分解是精确的，代理还需另外定义
+
+对正定 $H=LDL^\top$，若采用标量 LDL、$D$ 为正对角，令 $e=w-\widehat w$、$r=L^\top e$，有
+
+$$
+e^\top H e=r^\top D r=\sum_i D_{ii}r_i^2.
+$$
+
+这里的对角度量作用在**变换后的残差**上。实际顺序算法把先前量化误差反馈到目标 $z_i$，离散搜索面对的是 $\rho_i=z_i-\widehat z_i$。除非对具体反馈、分块和路径约束证明了 $\rho=L^\top e$，不能直接把 $\sum_iD_{ii}\rho_i^2$ 写成原始 full-Hessian 目标。XOR-Trellis 附录 D.1 明确保留这一区分。
+
+采用块 LDL 时，还要区分块内与块间：$D=\operatorname{blockdiag}(D_1,\ldots,D_B)$，则精确形式为 $\sum_b r_b^\top D_b r_b$。若评分仅取 $d_i=(D_b)_{ii}$，就舍弃了块内 $i\ne j$ 的交叉项，即使另有三角反馈也不能自动收回这些项。附录 E.2 实际分析采用16列块；“D 是块对角”不等于“每块内部是对角”。
+
+### 可加权重怎样保留最优子结构
+
+固定目标、图、边界和正权重 $d_t$，令 $f(s,b)$ 为后继状态、$g(s,b)$ 为重构值。搜索目标与递推为
+
+$$
+C(\pi)=\sum_t d_t[z_t-g(s_t,b_t)]^2,
+\qquad
+V_{t+1}(s')=\min_{s,b:f(s,b)=s'}
+\{V_t(s)+d_t[z_t-g(s,b)]^2\}.
+$$
+
+汇合到同一状态的两条历史拥有相同未来选择；可加目标下，更贵的历史不可能靠同一未来反超，因此每状态只需保留最便宜的前驱。固定 $d_t$ 改变数值评分，不改变这个理由，也不扩大状态/分支数。（附录 D.4。）
+
+教学上，两条可行路径残差为 $(1,0)$ 和 $(0,2)$，欧氏目标为1和4，偏好前者；若 $d=(8,1)$，代价为8和4，偏好后者。若所有 $d_i=\alpha>0$，则两种目标必有同样的最小点。若代价依赖当前状态没有保存的更早历史，或包含未被状态承接的跨步交叉项，上述递推就不能不加修改地保持精确。
+
+### 近似界只约束所声明的对角目标
+
+对同一可行残差集合，令 $\pi_E,\pi_D$ 分别最小化欧氏目标和正对角目标，$d_{\min}>0$。由
+
+$$
+d_{\min}\|\rho\|_2^2\le\rho^\top\operatorname{Diag}(d)\rho
+\le d_{\max}\|\rho\|_2^2
+$$
+
+可得
+
+$$
+\mathcal L_D(\pi_E)
+\le d_{\max}\|\rho(\pi_E)\|_2^2
+\le d_{\max}\|\rho(\pi_D)\|_2^2
+\le\frac{d_{\max}}{d_{\min}}\mathcal L_D(\pi_D).
+$$
+
+该界依赖正的最小权重和同一候选集合，只保证对角代理上的比值；它既不证明代理等于完整层误差，也不证明语言任务 PPL 的比值。分位数各向异性 $P_{95}(d)/P_5(d)$ 是经验诊断，不能替换此界中的极值比。（附录 D.2、E.2。）
+
+加权发生在离线路径选择时，$d_t$ 无需存入部署流。改变离线评价目标可以保持在线码格式不变；反过来，这也意味着“运行时没有增加开销”不能证明搜索找到了完整模型损失的最优解。
+
 ## 来源身份
+
+- [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)，v1；§4、附录 D/E。第13节的路径评分算例和最优子结构说明为整理者展开。
 
 - [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)，v1；§5.2/式8、算法1、附录 B.3/C.5。第12节的合法码数值例和跨块交叉项为整理者展开。
 

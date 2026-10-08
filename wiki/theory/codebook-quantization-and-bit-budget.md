@@ -7,6 +7,8 @@ tags:
   - data-format
   - memory
 sources:
+  - raw/papers/2026-10-03/xor-trellis/paper.pdf
+  - raw/papers/2026-10-03/xor-trellis/source/main.tex
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/nova-kv/paper.pdf
   - raw/papers/2026-09-21/quip-sharp/source.eprint
@@ -16,7 +18,7 @@ sources:
   - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/spqr/source.eprint
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
-updated: 2026-09-29
+updated: 2026-10-08
 ---
 
 # 码本量化：标量、向量、加性表示与位宽预算
@@ -88,6 +90,16 @@ $$y_i=s_i\sum_{j,k}T_{j,k,z_{ijk}}.$$
 
 因此“高维”应分清整条路径 T、单节点输出 V 与二阶反馈输入块宽。路径结构牺牲任意码字自由度，换取可加距离下动态规划与局部位窗口并行解码。有效码率还要计入 LUT、变换向量、对齐与未量化参数，不能只看 k。
 
+### 7.1 全局分布、局部候选与路径连接分别决定什么
+
+对有限状态生成器 $g(h,b)$，至少要区分三个对象：全部状态/分支生成值的边际分布；固定历史 $h$ 时各分支同时提供的候选集合；选择分支后进入哪一个新历史。它们分别回答“总体有哪些值”“当前能选什么”“这个选择怎样限制以后”。相同直方图并不能确定后两项。[XOR-Trellis](../methods/xor-trellis.md#2-从历史位生成四个局部候选)据此设计每个历史下的四个候选和分支重排。（v1 §3、附录 C。）
+
+教学例：把 $\{-3,-1,1,3\}$ 均匀放进两组，$\{-3,-1\}/\{1,3\}$ 与 $\{-3,1\}/\{-1,3\}$ 有相同总体直方图。目标为 $x=-2$，两组等概率时，最近平方误差的平均值却分别为 $(1+9)/2=5$ 和 $(1+1)/2=1$。候选怎样同时出现，已经改变单步质量。
+
+XOR-Trellis 对16个带标签值作四路秩交错，包含数值相同但标签不同的正负零。在**组标号均匀且与目标独立、四个互不重叠的四元组、单步标量平方距离**下，各组最近距离总和至少为四个全局最近标签的距离之和。标量轴上可选连续四秩作为最近四个标签，交错分组让每组恰有一个，于是达到下界。条件去掉后，尤其实际搜索使历史与输入相关时，这个证明不能直接用于完整路径。（附录 C.2 命题1。）
+
+路径连接还会改变未来的选择。例如对一组分支标签作双射，当前候选集合不变，但标签进入移位历史后，后续候选组可能改变。二进制线性映射的满秩检查可以证明均匀设计输入下的组序列支持范围；它既不是对实际 Viterbi 路径分布的证明，也不是压缩误差的排名。相邻输出 Pearson 相关为0同样只排除该统计量反映的线性关系，不能推出独立或最佳长路径质量。（附录 C.3、F。）
+
 ## 8. 球面方向与幅值是另一种结构分配
 
 [SPHQuant](../methods/sphquant.md) 将8D向量拆为8个符号位、正单位方向表索引和半径。固定方向 c 后，最佳幅值是投影 $|w|^\top c$，不是原范数；误差分为方向不可达部分与半径量化部分。增加半径位主要改善后者，所以码本方向覆盖仍然重要。
@@ -155,6 +167,8 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 固定每组相同位宽时，$\sum a_\ell$ 决定预测失真。对固定坐标方差乘积，混合坐标使各组体积接近可减少 AM–GM 间隙，但一个具体离散分组未必能完全均衡。设计时应依次核对：来源分布和目标、近似适用区间、整数索引预算、元数据、编码/解码成本，最后才是任务效果。
 
 ## 来源身份
+
+- [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)，v1；§3、附录 C/F。第7.1节的两组算例为整理者构造。
 
 - [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2)，arXiv:2402.04396v2；BlockLDLQ、E8P 与高位宽残差编码。
 - [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4)，arXiv:2401.06118v4；§3、位宽核算与推理章节。
