@@ -63,7 +63,7 @@ sources: []
 - **诊断平均分之外的损害**：[排序稳定性与间隔](theory/quantization-ranking-stability.md) → [多模态对齐诊断](theory/multimodal-alignment-diagnostics.md) → [模型质量评测](implementation/model-quality-evaluation.md)。
 - **连接低比特方案与真实执行**：[PRQuant 的残差拼接](methods/prquant.md) → [RAMP 的 CPU 图成本](methods/ramp.md) → [FoldQuantVLA 的共享输入与整数投影](methods/foldquantvla.md)。
 
-- **理解视觉 token 删除**：[视觉 token 基础](fundamentals/model/vision-language-model-tokens-and-quantization.md) → [CoRePrune 的条件可删除性](methods/coreprune.md) → [LayerPos 的位置策略](methods/layerpos.md) → [QAPruner 的量化感知选择](methods/qapruner.md)。
+- **理解视觉 token 删除**：[视觉 token 基础](fundamentals/model/vision-language-model-tokens-and-quantization.md) → [CoRePrune 的条件可删除性](methods/coreprune.md) → [LayerPos 的位置策略](methods/layerpos.md) → [SAPrune 的选层与双路径覆盖](methods/saprune.md) → [QAPruner 的量化感知选择](methods/qapruner.md)。
 - **核验校准图谱迁移**：[排序稳定性](theory/quantization-ranking-stability.md) → [BOS-Sink 图谱](theory/attention-sink-map-transfer.md)。
 - **评估跨架构低比特部署**：[混合精度分配](theory/mixed-precision-allocation.md) → [TTS 敏感性与质量判据](implementation/tts-quantization-evaluation.md) → [缩放与真实执行](implementation/quantized-matmul-scaling-execution.md)。
 
@@ -127,6 +127,7 @@ sources: []
 | [AKVQ-VL：多模态 token 精度保护](methods/akvq-vl.md) | TSA/PSA、pivot 代理、Hadamard 与实际混合位宽。 |
 | [Kitty：动态通道提精度与缓存页](methods/kitty.md) | 幅值选通道、双 2-bit 位面、模拟/内核差异与真实字节。 |
 | [CoRePrune：条件可删除性](methods/coreprune.md) | 删除失真、集合方向交互、深度刷新与两阶段视觉剪枝。 |
+| [SAPrune：选层与双路径视觉剪枝](methods/saprune.md) | 校准层深时机、子空间/熵预算、query 响应覆盖与逐层计算成本。 |
 | [LayerPos：逐层位置策略](methods/layerpos.md) | 稀疏/连续编号、定位校准和 prefill/decode 的坐标一致性。 |
 | [PRQuant：置换与低比特残差拼接](methods/prquant.md) | 门控 FFN 的等价重排、尺度位置、残差与实际扩宽成本。 |
 | [RAMP：CPU 混合精度与图成本](methods/ramp.md) | 单层 logits 敏感度、质心阈值和融合损失怎样影响选择。 |

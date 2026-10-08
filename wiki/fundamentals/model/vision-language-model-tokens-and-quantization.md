@@ -7,6 +7,8 @@ tags:
   - weight-quantization
   - activation-quantization
 sources:
+  - raw/papers/2026-10-07/saprune/paper.pdf
+  - raw/papers/2026-10-07/saprune/source/main.tex
   - raw/papers/2026-09-21/qapruner/paper.pdf
   - raw/papers/2026-09-21/akvq-vl/paper.pdf
   - raw/papers/2026-09-23/coreprune/paper.pdf
@@ -18,7 +20,7 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/repositories/2026-09-21/mbq/source/qmllm/models/qwen2_vl/qwen2_vl.py
-updated: 2026-09-29
+updated: 2026-10-08
 ---
 
 # 视觉语言模型中的 token 与量化对象
@@ -120,6 +122,33 @@ MASQuant 的主要实验只量化语言部分，Qwen2.5-Omni 限于 Thinker；Sp
 
 物理 gather 后还需决定 position IDs。[LayerPos](../../methods/layerpos.md) 区分原编号的稀疏位置与重新连续编号；它们改变幸存 token 的相对 RoPE 距离，并在感知和定位任务上产生不同取舍。位置策略需贯穿每层 prefill 与 decode，不能仅靠保持序列顺序保证计算关系不变。删除数、删除深度、删除集合与位置策略是四个应分别控制的变量。
 
+### 7.1 attention 总量、集中度与所关注对象是三件事
+
+[SAPrune](../../methods/saprune.md) 用动作 query 的视觉 top-$k$ attention mass 选择剪枝层。对于某个 query，或相同归约规则下跨 query/head 的平均权重，设视觉权重为 $a_i\ge0$、视觉总量为 $M_v=\sum_{i\in V}a_i>0$。令 $p_i=a_i/M_v$，就有下面的直接分解：
+
+$$
+S_k=\sum_{i\in\operatorname{Top}_k(a)}a_i
+=M_v\sum_{i\in\operatorname{Top}_k(p)}p_i
+=M_v C_k.
+$$
+
+$M_v$ 描述相对于其他可见位置分给视觉的总 attention，$C_k$ 才是视觉内部 top-$k$ 的条件集中度。若没有固定或归一化 $M_v$，$S_k$ 的变化不能单独归因于视觉内部集中程度。（SAPrune v1，§2.2–3.2，式3–6；上式为整理者代数分解。）
+
+两个教学反例说明其边界。视觉权重从 $(0.2,0.1)$ 变为 $(0.4,0.2)$ 时，top-1 mass 从0.2变0.4，但条件占比始终为 $2/3$；从 $(0.4,0.1)$ 换成 $(0.1,0.4)$ 时，top-1 mass 与总量都不变，受关注的 token 却换了。因而层间标量趋稳不能证明同一视觉对象已经稳定，也不能代替包含 Value 和删除后重归一化的输出误差。
+
+### 7.2 最终 token 数不等于逐层工作量
+
+设模型共 $L$ 层，在零起始层号 $s_1,s_2,s_3$ 的**输出后**逐次剪枝，令 $b_j=s_j+1$。若各段总 token 数为 $n_0,n_1,n_2,n_3$，单层同构计算的代价为 $f(n)$，则骨干的近似总工作量为
+
+$$
+F=b_1f(n_0)+(b_2-b_1)f(n_1)+(b_3-b_2)f(n_2)
++(L-b_3)f(n_3).
+$$
+
+选定层本身仍按剪前长度计算。非视觉位置应包含在 $n_j$ 中；attention 的二次项、线性层的一次项与选取/gather 开销也要分别计入。（SAPrune v1，附录 A.2，式20–24；这里用一般函数 $f$ 表示不同骨干的成本。）
+
+用32层、剪枝点 $[2,16,26]$ 与视觉长度 $256\to128\to64\to32$ 作教学计算：各段层数是3/14/10/5，单看视觉位置的一次项，累计为 $3\times256+14\times128+10\times64+5\times32=3360$，相对 $32\times256=8192$ 为41.0%。这既不是最终12.5%的保留率，也不是完整模型 FLOPs 或实测时延。跨方法即使最后同为32 token，也须核对何层开始缩短、保留哪些非视觉位置及 routing 成本，才能解释实际速度差异。
+
 ## 8. 难量化、不可删除与值得保护不能互相替代
 
 [QAPruner](../../methods/qapruner.md) 把模拟 INT4 重构误差及通道范围与语义分数融合，用来选择保留视觉 token。这个代理直接测数值可量化性，不直接测删除该 token 后的任务损失；若 scale 在每 token 内独立计算，删掉别的 token 也不会在特征固定时改变它的 scale。它为量化与剪枝的联合选择提供实证，不能把难量化自动当成不可删除的定理。
@@ -143,3 +172,4 @@ MASQuant 的主要实验只量化语言部分，Qwen2.5-Omni 限于 Thinker；Sp
 - [Layer-Aware Position Embeddings](https://arxiv.org/abs/2609.23715v1)，v1；剪枝后的位置策略。
 - [QAPruner](https://arxiv.org/abs/2604.02816v1)，v1；§3–4，剪枝与数值敏感度评分。
 - [AKVQ-VL](https://arxiv.org/abs/2501.15021v1)，v1；§III、图 2、表 I，按模式保护 KV。
+- [SAPrune](https://arxiv.org/abs/2610.05273v1)，v1；§2.2–3.2、附录 A.2，attention 标量与分阶段 token 成本。
