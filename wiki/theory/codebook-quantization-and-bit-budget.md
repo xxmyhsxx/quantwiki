@@ -7,6 +7,8 @@ tags:
   - data-format
   - memory
 sources:
+  - raw/papers/2026-09-22/vptq/paper.pdf
+  - raw/papers/2026-09-22/vptq/source/93.appendix.ablation_study.tex
   - raw/papers/2026-10-03/xor-trellis/paper.pdf
   - raw/papers/2026-10-03/xor-trellis/source/main.tex
   - raw/papers/2026-09-21/turboquant/paper.pdf
@@ -73,6 +75,31 @@ AQLM 使用残差 K-means 初始化，随后交替更新索引和码本。原文
 AQLM 的 $1\times16$ 与 $2\times8$ 在 $g=8$ 时主体都为 2 bit/weight，但 FP16 码本分别为 1 MiB 与 8 KiB。码本开销对小矩阵占比更高，不能只引用大模型平均值。SpQR 主体码保留所有位置时，例外另外保存值和索引，不能用简单的 $(1-p)b+p\cdot16$ 代替整个格式。
 
 这些公式分别依据 AQLM“Estimating model size”、SqueezeLLM 的逐行表设计与 SpQR 表示章节推导。部署核算必须换入真实 dtype；例如 [SqueezeLLM 的固定代码片段](../methods/squeezellm.md) 使用 FP32 表与稀疏值，不能原样套入 FP16 理想公式。[GGUF](../implementation/gguf-block-quantization-formats.md) 展示另一个按实际块字节核算的例子，具体格式不能与论文码本互换。
+
+### 5.1 离群值、残差和分组怎样共同计费
+
+先确定不同表示覆盖的权重是否重叠。设矩阵共有 $P$ 个权重，其中比例 $p$ 单独用离群码本，向量长度 $v_0$、中心数 $k_0$；其余比例 $1-p$ 用长度 $v_1$ 的主体向量，并可叠加同长度残差码本。若三种中心数为二次幂且理想紧凑存索引、没有尾组，主体和离群位置互不重叠，则
+
+$$
+b_{\rm index}
+=p\frac{\log_2 k_0}{v_0}
++(1-p)\frac{\log_2 k_1+\log_2 k_2}{v_1}.
+$$
+
+关闭残差时去掉 $\log_2 k_2$，没有离群路径时去掉第一项。这里残差覆盖同一批主体位置，所以要相加；离群路径替代对应位置的主体，所以按覆盖比例加权。SpQR 一类主体仍覆盖全部位置的例外格式不能套此式。一般非二次幂固定宽索引要使用 $\lceil\log_2 k\rceil$，而不是假定可以逐项存小数位。
+
+FP16 中心表还需逐张相加。若实际有 $G_0$ 张离群表、$G_1$ 组主体/残差表，各自尺寸相同且不跨组共享，则每个权重的理想总成本为
+
+$$
+b_{\rm ideal}=b_{\rm index}
++\frac{16\,[G_0v_0k_0+G_1v_1(k_1+k_2)]}{P}.
+$$
+
+关闭的表连同其项一起删除。仍需另加列位置/排列、尺度、未量化参数、尾组和容器等实际开销；运行时恢复权重、激活和 workspace 另计。这里是格式计数条件，不是对某作者文件布局的断言。
+
+[VPTQ](../methods/vptq.md#5-两位索引不等于相同的总存储)提供了这类组合实例。它的附录 C.2 离群项误写为 $\log_2(k_0/v_0)$：例如 $k_0=4096,v_0=4$ 应为每个向量12位、每个权重3位，而非10位。1%这类离群权重与99%的2位主体，在不计中心表时为2.01 bit/weight。原表的 $k_2=-1$ 是关闭残差标记，不能代入上述数量公式。
+
+同为2位主体索引，$v=6,k=4096$ 的单张 FP16 表占48 KiB；$v=12,k_1=k_2=4096$ 的两张表占192 KiB。后者可以通过两个较小码本表达中心之和，但中心数据总量为前者的四倍，还多一次取表与相加；若分成多个独立组，中心表也需重复计费。是否改善质量与运行速度，要分别检查，不能由主体索引位数相同推出。（VPTQ v2 §3.2.2、附录 C.1–C.2；公式与数值为整理者按存储对象展开。）
 
 ## 6. 从编码走向计算
 
@@ -167,6 +194,8 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 固定每组相同位宽时，$\sum a_\ell$ 决定预测失真。对固定坐标方差乘积，混合坐标使各组体积接近可减少 AM–GM 间隙，但一个具体离散分组未必能完全均衡。设计时应依次核对：来源分布和目标、近似适用区间、整数索引预算、元数据、编码/解码成本，最后才是任务效果。
 
 ## 来源身份
+
+- [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2)，arXiv:2409.17066v2；§3.2.2、附录 C.1–C.2；本页§5.1按覆盖范围、索引和实际码本张数展开理想预算，不代表已核物理布局。
 
 - [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)，v1；§3、附录 C/F。第7.1节的两组算例为整理者构造。
 

@@ -11,7 +11,7 @@ updated: 2026-10-08
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **94 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **95 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2)<br>arXiv:2409.17066v2 | 正文、算法1–2及必要附录 A–D；同列选码/反馈、加权初始化、残差/离群列/微调、位预算及质量/运行协议；回查关键PDF公式与表2–3/8–11 | [VPTQ](methods/vptq.md)；[同列曲率与加权初始化](theory/layer-reconstruction-second-order-compensation.md#31-同列向量为什么仍可使用欧氏最近中心)；[组合位预算](theory/codebook-quantization-and-bit-budget.md#51-离群值残差和分组怎样共同计费) | 无匹配已归档作者仓库；条件逆处理、分组/packing及完整端到端微调配方未核，保留原文公式差异；附表未逐格复算，未运行模型/GPU | [2026-10-08](LOG.md#2026-10-08--vptq-ingest-与-astra-review) |
 | [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)<br>arXiv:2610.00432v1 | 正文与附录 A–F；XOR mapping/listing、palette局部条件、LDL/diagD目标、路径递推、模型/矩阵诊断及电路综合；关键PDF公式图表 | [XOR-Trellis](methods/xor-trellis.md)；[局部候选与路径](theory/codebook-quantization-and-bit-budget.md#71-全局分布局部候选与路径连接分别决定什么)；[曲率路径目标](theory/layer-reconstruction-second-order-compensation.md#13-ldl-残余度量与离散路径搜索怎样衔接) | 无匹配完整作者实现；尺度选择、边界/packing与部署接口未核；附表未逐格复算，未运行模型/GPU/电路综合 | [2026-10-08](LOG.md#2026-10-08--xor-trellis-ingest-与-astra-review) |
 | [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)<br>arXiv:2609.34680v1 | 正文与附录 A/B 算法；C/D 中关键质量/状态重测/存储与运行成本、两种搜索协议/预算/配对重放；回查关键 PDF 公式表格 | [QuantForge/HiRes](methods/quantforge.md)；[重构与选码](theory/layer-reconstruction-second-order-compensation.md#12-权重确定后激活舍入的目标怎样改变)；[搜索评测](implementation/model-quality-evaluation.md#11-搜索反馈留出评测与聚合指标要分别定义) | 未逐格重算全部附表，未取得匹配作者实现；原生 MXFP4 部署未验证；未运行搜索、模型或 GPU | [2026-10-08](LOG.md#2026-10-08--quantforgehires-ingest-与-astra-review) |
 | [When and What to Prune? Stage-Aware Visual Token Pruning for Efficient VLA](https://arxiv.org/abs/2610.05273v1)<br>arXiv:2610.05273v1 | 正文与必要附录 A/B/C；选层式3–9、双路径式10–16、算法1–2、复杂度和主要实验/校准/限制；回查关键 PDF 公式与表格 | [SAPrune](methods/saprune.md)；[视觉 attention 与逐层预算](fundamentals/model/vision-language-model-tokens-and-quantization.md#71-attention-总量集中度与所关注对象是三件事) | 未取得匹配作者实现；query/证据聚合和接入细节仍有限；未运行模型、机器人或 GPU | [2026-10-08](LOG.md#2026-10-08--saprune-论文-ingest-与-astra-review) |
@@ -217,11 +218,11 @@ updated: 2026-10-08
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune、QuantForge及XOR-Trellis论文已研读并按实际范围移入上表；以下134个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune、QuantForge、XOR-Trellis及VPTQ论文已研读并按实际范围移入上表；以下133个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 VPTQ，接续二阶向量量化、码本初始化与真实表示/执行成本，随后处理其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。当前下一篇为 GPTVQ，接续多输入列向量、数据感知码本初始化/更新与压缩执行成本，随后处理其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（60条）
+### 论文（59条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -280,7 +281,6 @@ updated: 2026-10-08
 | [PACT: Parameterized Clipping Activation for Quantized Neural Networks](https://arxiv.org/abs/1805.06085v2) | `arXiv:1805.06085v2` |
 | [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2) | `arXiv:2405.14852v2` |
 | [Optimize Weight Rounding via Signed Gradient Descent for the Quantization of LLMs](https://arxiv.org/abs/2309.05516v5) | `arXiv:2309.05516v5` |
-| [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2) | `arXiv:2409.17066v2` |
 | [vla.simd: Efficient CPU Inference for Language-Conditioned Manipulation](https://arxiv.org/abs/2609.24274v1) | `arXiv:2609.24274v1` |
 | [MWOP: Modality-aware Width-wise Operation Pruning for Efficient MLLMs](https://arxiv.org/abs/2610.01434v1) | `arXiv:2610.01434v1` |
 | [Query Independent Variable Rate Visual Token Coding](https://arxiv.org/abs/2610.00204v1) | `arXiv:2610.00204v1` |
