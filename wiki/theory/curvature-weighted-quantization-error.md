@@ -6,11 +6,12 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/papers/2026-09-21/llm-mq/paper.pdf
   - raw/papers/2026-09-23/rgsq/paper.pdf
   - raw/papers/2026-09-26/casa-cross-layer-sensitivity/paper.pdf
   - raw/papers/2026-09-22/hawq-v2/paper.pdf
   - raw/papers/2026-09-26/quantization-price-prediction/paper.pdf
-updated: 2026-09-28
+updated: 2026-10-12
 ---
 
 # 曲率加权量化误差：Fisher、双侧度量与量化集合
@@ -85,10 +86,23 @@ RGSQ 先用模态系数分别混合 A/S，再做乘积。它产生跨模态因�
 
 [Quantization Price](../methods/quantization-price-prediction.md) 把位宽、粒度和变换作为候选误差生成器，以 forward KL 的局部二阶价格比较。其平均输出曲率与平均输入矩相乘仍需因子分离近似；进一步用 trace 乘总误差能量，还会丢掉输出误差方向。共同判断标准是：理论目标、统计代理、实际评分和最终测试是否仍对应同一个对象。
 
+## 7. 候选量化扰动的一阶评分
+
+[LLM-MQ](../methods/llm-mq.md)给每层各位宽生成扰动 $E_{i,b}=Q_b(W_i)-W_i$，以 $s_{i,b}=|\langle g_i,E_{i,b}\rangle|$ 比较候选；这里 $g_i=\nabla_{W_i}\mathcal L(W)$ 是对该层权重的梯度，矩阵内积对权重元素求和。它衡量误差在损失梯度方向的投影，既不是梯度范数，也不是逐元素绝对乘积之和。例如 $g=(1,1)$、$E=(1,-1)$ 的绝对内积为0，但绝对乘积和为2；方向抵消可能隐藏较大的扰动。论文式1的扰动反号不影响绝对分数，但正向损失展开仍应保留 $Q(W)-W$ 的方向。
+
+各层选定扰动 $E_i$ 后，令联合 $E$ 为 $\operatorname{vec}(E_i)$ 的拼接，$\|E\|^2=\sum_i\|E_i\|_F^2$ 是同一欧氏参数坐标下的二范数平方；未改变参数的扰动为0，所有梯度均在同一 $W$ 处计算。在这个共同展开点，联合一阶量满足 $|\sum_i\langle g_i,E_i\rangle|\le\sum_i s_i$。若损失沿整个扰动线段二次可微且 Hessian 算子范数有界为 $\Lambda$，Taylor积分余项给出条件界
+
+$$|\mathcal L(W+E)-\mathcal L(W)|\le\sum_i s_i+\frac\Lambda2\|E\|^2.$$
+
+该界含完整联合Hessian的控制，不要求它半正定，也不能删除余项后当作任意2-bit扰动的保证。**教学排序反例：**$\mathcal L(w)=w_1+100w_2^2$，在0处 $g=(1,0)$。候选A扰动 $(0,0.1)$ 的一阶分数0、真实增量1；候选B扰动 $(0.1,0)$ 的分数0.1、真实增量0.1。仅按一阶分数会偏向A；这是局部代理的限制，不是已运行作者量化器的结果。
+
+梯度为0也不表示二阶无效：$\mathcal L(w)=\tfrac12(w_1^2-w_2^2)$ 在0处梯度为0、Hessian不定，却有精确二阶方向代价。选择一阶、PSD重构/Fisher或联合状态经验代理，须先确认损失对象、统计与候选范围；非半正定不能单独证明某一类评分普遍更好。上述数学条件与反例为整理者展开，LLM-MQ式1–5只给候选一阶评分及独立相加的预算规划。
+
 ## 来源身份
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
+| [LLM-MQ](https://neurips2023-enlsp.github.io/papers/paper_4.pdf) | SHA-256 `9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0` | §2.2式1–5；方向、条件余项界及有限候选反例为整理者核对与展开 |
 | [RGSQ: Riemannian Geometry-Sensitive Quantization for Large Vision-Language Models](https://arxiv.org/abs/2609.25492v1) | arXiv:2609.25492v1 | §III–IV 的统计与目标；因子顺序、阻尼展开和约束搬运为本文核对与推导 |
 | [Beyond Scalar Sensitivity](https://arxiv.org/abs/2609.25916v1) | arXiv:2609.25916v1 | Theorem 3.1，标量最坏乘性失真及其量词 |
 | [HAWQ-V2](https://arxiv.org/abs/1911.03852v1) | arXiv:1911.03852v1 | §2.1，平均trace的方向假设 |
