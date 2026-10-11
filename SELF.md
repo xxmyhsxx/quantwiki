@@ -70,6 +70,8 @@ SELF 保留当前判断与少量优先方向，具体知识和详细历史由上
 
 ## 6. 下一步建设与维护
 
+分批安排与理由见 [已收录资料的 ingest 计划](research/plans/2026-10-11-ingest-batches.md)。资料的实际处理状态仍由 READING 维护。
+
 当前按用户要求逐步处理所有已收录材料；[研读目录](wiki/READING.md#待逐项核查与-ingest-的已收录材料)接入首轮140条未登记来源队列，CentriQ、PIVOT-Q论文/作者代码主路径、SAPrune、QuantForge、XOR-Trellis、VPTQ、GPTVQ及PV-Tuning论文、AQLM的PV代码主链移入范围记录后剩130条。先核真实覆盖，再逐项 ingest、由独立 Astra 子代理 review、修正和本地提交。已有登记也保留实际阅读范围，不能直接计为全文完成。重要性与执行先后分开：
 
 1. **P1：材料具备后补生成校准与低位宽缓存的实现证据。** 本次官方入口复查仍未定位匹配的OnPTQ参数/更新配置或WUSH-KV作者改版；OSCAR公开前置量化器/窗口/读取已补，WUSH的一般可逆变换接入仍需匹配实现。需要材料后再核查，不从搜索未命中推断代码未发布。
