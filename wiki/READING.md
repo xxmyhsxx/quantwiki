@@ -11,7 +11,7 @@ updated: 2026-10-11
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **101 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **102 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-11
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4)<br>arXiv:2410.13056v4 | 正文/算法1、质量/消融/预算/部署表及必要附录A–D；核输入通道/分位规则、双类保护/重聚类、LUT/CSR和受控结果，回查关键PDF页 | [CMPQ](methods/cmpq.md)；[分位与整数预算](theory/mixed-precision-allocation.md#9-分位阈值不自动满足精确预算) | 未核作者实现/端点与并列处理/保护mask和重叠/实际打包；保留背景公式、保护比例与LLaMA3身份差异，附表未逐格重算，未运行模型/GPU | [2026-10-11](LOG.md#2026-10-11--cmpq-ingest-与独立评审) |
 | [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)<br>arXiv:2309.02784v2 | 正文/算法1/式1–3、表1–9及必要附录表10–11；核顺序输入/局部参考、norm变量、矩损失/生成种子和质量/成本，回查关键PDF页 | [Norm Tweaking](methods/norm-tweaking.md)；[矩匹配](theory/layer-reconstruction-second-order-compensation.md#14-逐通道矩匹配与逐位置重构约束不同的对象)；[种子先验](theory/calibration-and-range-selection.md#52-生成数据仍有种子先验) | 未核作者实现/统计轴/方差估计器/mask/具体学习率与导出；保留式2记法、OPT激活位宽与OmniQuant模型身份缺口，未运行模型/GPU | [2026-10-11](LOG.md#2026-10-11--norm-tweaking-ingest-与独立评审) |
 | [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)<br>arXiv:2608.13966v1 | 正文/算法1/定理1与推论1、必要附录A–D；选码/加权恢复/SGD与PL证明链、INT/NVFP4/LUT、QAD/适配/消融和成本；回查关键原始页 | [QUASAR](methods/quasar.md)；[编码与拟合](theory/calibration-and-range-selection.md#21-选码范围和恢复参数可以分开优化)；[STE条件界](fundamentals/quantization/post-training-and-quantization-aware-training.md#34-重构误差怎样进入-ste-更新的条件界) | 未取得作者实现，EMA时点/退化拟合/格式参数与导出接口未核；保留主/消融数值及NV均分范围差异，附图附表未逐项重建，未运行模型/GPU | [2026-10-11](LOG.md#2026-10-11--quasar-ingest-与独立评审) |
 | [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)<br>arXiv:2606.10531v1 | 正文、式3–12及必要附录A.1–A.6；核仿射网格/LDLQ初始化/硬前向/代理变量、数据与消融/速度条件，回查关键PDF页 | [LC-QAT](methods/lc-qat.md)；[仿射码本](theory/codebook-quantization-and-bit-budget.md#41-可学习仿射网格如何限制中心与计算)；[代理与坐标](fundamentals/quantization/post-training-and-quantization-aware-training.md#33-代理函数和坐标变换要分别核对) | 未取得匹配训练或CUDA实现；保留DGE中点/多区间数值处理、预处理坐标接口及指令2B/4B差异，附表未逐格复算，未运行模型/GPU | [2026-10-11](LOG.md#2026-10-11--lc-qat-ingest-与独立评审) |
@@ -224,18 +225,17 @@ updated: 2026-10-11
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下127个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下126个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；下一项为第4批 CMPQ、CoopQ、LLM-MQ、ResQ及所选ResQ实现，再接续其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算已整合，下一项CoopQ，再接续LLM-MQ、ResQ及所选ResQ实现和其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（54条）
+### 论文（53条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
 | [Atom: Low-bit Quantization for Efficient and Accurate LLM Serving](https://arxiv.org/abs/2310.19102v3) | `arXiv:2310.19102v3` |
 | [Attention Is All You Need](https://arxiv.org/abs/1706.03762v7) | `arXiv:1706.03762v7` |
 | [CalibQuant: 1-Bit KV Cache Quantization for Multimodal LLMs](https://arxiv.org/abs/2502.14882v2) | `arXiv:2502.14882v2` |
-| [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4) | `arXiv:2410.13056v4` |
 | [CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs](https://arxiv.org/abs/2509.15455v2) | `arXiv:2509.15455v2` |
 | [CudaForge: An Agent Framework with Hardware Feedback for CUDA Kernel Optimization](https://arxiv.org/abs/2511.01884v2) | `arXiv:2511.01884v2` |
 | [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948v2) | `arXiv:2501.12948v2` |

@@ -147,6 +147,7 @@ sources: []
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
 | [PV-Tuning：连续参数与离散选码](methods/pv-tuning.md) | 精确P/V、代理下降、稀疏Adam与实际变化限制、数据/质量/运行条件。 |
 | [LC-QAT：仿射网格与代理训练](methods/lc-qat.md) | 受约束向量表示、输入侧重排、DGE/坐标接口与数据效率边界。 |
+| [CMPQ：按输入通道分配精度与双类离群保护](methods/cmpq.md) | 激活范数、分位名额、非均匀中心与FP16保护怎样共同影响预算和执行。 |
 | [Norm Tweaking：量化后仅调整归一化参数](methods/norm-tweaking.md) | 固定量化主体的局部参考、逐通道矩约束与生成校准的种子先验。 |
 | [QUASAR：训练中的损失感知重构](methods/quasar.md) | 候选选码/固定码拟合、STE梯度差与条件界、格式及任务/成本证据。 |
 | [GPTVQ：多输入列与移动CPU码本](methods/gptvq.md) | 数据感知E/M、固定索引中心更新、INT8/INT4小表、位预算与CPU吞吐条件。 |

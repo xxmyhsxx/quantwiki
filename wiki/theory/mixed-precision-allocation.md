@@ -7,6 +7,8 @@ tags:
   - memory
   - deployment
 sources:
+  - raw/papers/2026-09-21/channel-wise-mixed-precision/paper.pdf
+  - raw/papers/2026-09-21/channel-wise-mixed-precision/source/CMPQ_V2.tex
   - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
   - raw/papers/2026-09-28/foldquantvla/paper.pdf
   - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf
@@ -21,7 +23,7 @@ sources:
   - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
   - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
   - raw/papers/2026-10-07/stagq/paper.pdf
-updated: 2026-10-07
+updated: 2026-10-11
 ---
 
 # 混合精度分配：选择变量、预算与部署口径
@@ -118,12 +120,25 @@ $$b_{\rm original}=\frac{(m+n)\sum_c b_c}{mn}.$$
 
 共享 pair 为 $8/g$ bpw，每新增主体 plane 加 1 bpw；codebook、稀疏值与索引/计数仍要计入。该论文的 Llama 两位 XXS 是 logical 2.35 bpw，而当前 real-weight kernel 因固定 row slots 读取 2.47 bpw；更紧凑的可变长布局仍是未来工程。保存流可截取，实际 kernel 在 load 时重打包成连续 $M$-bit code，也不能据此宣称已支持服务中即时切换。这个案例再次说明：payload 精度、逻辑字段、物理读取和运行峰值属于不同预算。（StagQ v1 §4.1、附录 E/G/A。）
 
+## 9. 分位阈值不自动满足精确预算
+
+对 $d$ 个等长度通道，每通道只取2/3/4 bit时，主体平均为 $\bar c=d^{-1}\sum_i c_i$，可达值是有限离散集合，间隔为 $1/d$；“平均可取分数”不表示任意实数都能精确表示。[CMPQ](../methods/cmpq.md) v4算法1用激活范数分位点与严格比较决定升级/降级，以名义预算表达分配比例。
+
+若基线全为3、升级数量为 $k_4$、降级数量为 $k_2$，则
+
+$$\bar c=3+\frac{k_4-k_2}{d}.$$
+
+阈值只间接控制这两个整数。四个分数都等于1时，目标3.5的中位阈值也是1，严格大于者为0，算法字面仍为3；即使目标可由恰好两个升级实现，也不保证分位比较选出两个。分数各异时，端点2取最大分位点并严格小于，会至少留一个3-bit通道；端点4同理至少留一个3-bit通道。实现若用端点特判或排序名额处理，应另据代码说明，不将整理者修复方案冒充作者实现。
+
+给定名额也需声明取整与并列处理：例如仅升级且 $b\ge3$ 时，严格上限可要求 $k_4\le\lfloor d(b-3)\rfloor$，而最近平均值可能用四舍五入，两者约束不同。不同通道长度时又必须按参数量加权，不能直接用通道数量比例。即使主体预算准确，中心、保护值/索引与对齐仍须计入第2节的完整代价；通道排序也没有保证任务质量全局最优。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4) | `arXiv:2410.13056v4` | 算法1的分位分配；第9节有限预算、严格比较及计数例为整理者展开 |
 | [StagQ](https://arxiv.org/abs/2610.05977v1) | `arXiv:2610.05977v1` | 前缀可行集合、共享元数据、全精度保护与 logical/physical rate；§2–4、附录 E/G/A |
 | [Differentiable Bit-Widths](https://arxiv.org/abs/2610.06026v1)；[MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a) | `arXiv:2610.06026v1`；`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a` | 成对分量的 rank/bit；`block_ap.py` 矩阵份额、`fake_dbw.py` 整数投影与 `real_dbw.py` 浮点恢复；细节见 DBW 方法页 |
 | [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 前缀混合精度的名义标签与实际预算 |
