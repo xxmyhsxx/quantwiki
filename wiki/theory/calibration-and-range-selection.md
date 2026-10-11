@@ -6,6 +6,8 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/papers/2026-09-21/norm-tweaking/paper.pdf
+  - raw/papers/2026-09-21/norm-tweaking/source/norm_tweak.tex
   - raw/papers/2026-09-21/quasar/paper.pdf
   - raw/papers/2026-09-21/quasar/source/methodology.tex
   - raw/repositories/2026-09-21/aqlm/source/finetune.py
@@ -167,6 +169,16 @@ $$
 PV-Tuning 报告这项预处理改变在部分模型上改善至多约0.15 PPL，并在比较内匹配预处理；其 §4.1 的表示实验仍保留旧方式用于对齐基线。归因算法效果时，应核每项实验的具体取样方式，不能把数据版本一致当作协议完全一致。
 
 沿[已归档AQLM PV入口](../implementation/aqlm-pv-training-and-code-updates.md#7-训练数据与-kl-的实际接口)还能看到“拼接分块”的具体范围：`prepare_training_dataset` 调用 batched map，`group_texts` 在每次收到的批次内拼接，丢弃该批次不足一个完整块的尾部。若两个map批次各有6个token、块长4，则共保留8个；全局12个token一次分块则可保留12个。这个整理者算例说明批次边界会影响有效样本量。函数本身不再插入EOS；外部已分词数据又会绕过这套预处理，不能仅凭数据集名称断言token覆盖和边界完全相同。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`finetune.py`、`datautils.py`。）
+
+### 5.2 生成数据仍有种子先验
+
+[LLM-QAT](../methods/llm-qat.md)用随机起始token后接模型生成，[Norm Tweaking](../methods/norm-tweaking.md) v2进一步限制种子语言。以种子 $s$ 的分布为 $\pi(s)$、种子后续文本 $u$ 的生成分布为 $p_\theta(u\mid s)$，边缘分布为
+
+$$p_{\pi,\theta}(u)=\sum_s\pi(s)p_\theta(u\mid s).$$
+
+这是整理者混合分布记法：限制种子候选、改变其权重、调整条件生成器或解码规则，都会改变校准分布。词表项比例、种子概率、生成文本比例和预训练token比例是不同对象，不能互相替代。
+
+教学例：两类种子等概率，生成目标语言的条件概率分别为0.9和0.2，则总体概率为0.55；只保留第一类种子时变成0.9，而非必然为1。均匀选语言也不等于均匀选其词表项，更不保证按训练语料比例生成。Norm Tweaking表8受限种子改善所列生成基线，但未全面超过各评测域的真实校准数据；不能由此认定生成语料不存在偏差。原模型未覆盖的知识也不会因种子重加权自动得到补足。
 
 ## 6. 图文校准增加的是数据与目标条件
 
@@ -334,6 +346,8 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 锚点本身也须记录来源与刷新：PIVOT-Q 正文称原训练数据集，主代码却采 clean LIBERO 的学生短轨迹并存入 replay；这项差异随方法页保留。范围选择、状态选择和行为约束是相连但不同的优化自由度。
 
 ## 来源身份
+
+- [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)，`arXiv:2309.02784v2`；§3校准生成、表1/8；§5.2混合公式与概率例为整理者展开。
 
 - [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)，`arXiv:2608.13966v1`；编码候选与固定码加权恢复的区别。
 

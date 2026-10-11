@@ -6,6 +6,8 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/papers/2026-09-21/norm-tweaking/paper.pdf
+  - raw/papers/2026-09-21/norm-tweaking/source/norm_tweak.tex
   - raw/repositories/2026-09-21/aqlm/source/aq_engine.py
   - raw/repositories/2026-09-21/aqlm/source/main.py
   - raw/papers/2026-09-22/gptvq/paper.pdf
@@ -491,7 +493,23 @@ $$
 
 加权发生在离线路径选择时，$d_t$ 无需存入部署流。改变离线评价目标可以保持在线码格式不变；反过来，这也意味着“运行时没有增加开销”不能证明搜索找到了完整模型损失的最优解。
 
+## 14. 逐通道矩匹配与逐位置重构约束不同的对象
+
+同样比较块输出，目标可以只约束统计而不对齐每个位置。[Norm Tweaking](../methods/norm-tweaking.md) v2式2以逐通道均值与方差之差调整归一化参数，冻结量化线性层。原文统计轴、mask和方差估计器未完整给出；以下是整理者用于区分目标的教学定义，不是作者实现复原。
+
+设 $F,Q\in\mathbb R^{S\times C}$，$S$ 是参与统计的位置数、$C$ 是通道数，定义 $\mu_F^c=S^{-1}\sum_sF_{sc}$ 与 $v_F^c=S^{-1}\sum_s(F_{sc}-\mu_F^c)^2$，$Q$同理。比较
+
+$$L_{\rm moment}=\frac1C\sum_c\left(|\mu_F^c-\mu_Q^c|+|v_F^c-v_Q^c|\right),\qquad L_{\rm MSE}=\frac1{SC}\|F-Q\|_F^2.$$
+
+单通道 $F=(-1,1)^\top,Q=(1,-1)^\top$ 的均值均为0、方差均为1，故 $L_{\rm moment}=0$，但 $L_{\rm MSE}=4$。矩匹配允许位置置换，而token语义、对应关系或因果次序可能已经改变；零矩误差不保证零逐位置误差。
+
+多通道还存在相关性缺口。若 $F$ 两行为 $(-1,-1),(1,1)$，$Q$ 两行为 $(-1,1),(1,-1)$，每个通道的均值/方差仍相同，但通道间协方差由 $+1$ 变成 $-1$。更高阶矩也未受约束，因此只能称为逐通道低阶矩匹配，不能直接称为完整分布匹配。若对应位置MSE为0则这些统计必相同，逆向结论由上述反例否定；有限误差下还要保留幅值与统计估计条件。
+
+优化变量同样重要：只更新norm参数、更新全部权重、学习舍入或插入残差，其可达输出集合不同，不能单靠损失名称比较恢复能力。Norm Tweaking的参考由浮点当前块接收量化前缀输入产生；这与全浮点路径的参考不同，需连同[非对称输入](#7-加权重构与非对称输入)一并记录。小参数量会减少优化状态，却仍可能需要穿过固定线性计算的输入反向。
+
 ## 来源身份
+
+- [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)，`arXiv:2309.02784v2`；算法1、式2；第14节统计定义与反例为整理者教学展开。
 
 - [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)，arXiv:2402.15319v2；§4式4–6、附录 A式7；本页§3.3的条件解、向量反例和固定索引凸性为整理者展开。
 
