@@ -7,6 +7,8 @@ tags:
   - data-format
   - memory
 sources:
+  - raw/papers/2026-09-21/lc-qat/paper.pdf
+  - raw/papers/2026-09-21/lc-qat/source/main.tex
   - raw/papers/2026-09-22/gptvq/paper.pdf
   - raw/papers/2026-09-22/gptvq/source/sections/method.tex
   - raw/papers/2026-09-22/vptq/paper.pdf
@@ -22,7 +24,7 @@ sources:
   - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/spqr/source.eprint
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # 码本量化：标量、向量、加性表示与位宽预算
@@ -63,6 +65,14 @@ AQLM 使用残差 K-means 初始化，随后交替更新索引和码本。原文
 格是由离散规则生成的点集。QuIP# 的 E8P 从 $E_8$ 的平移与符号对称性构造 65,536 个 8 维码字；只存 256 个绝对值模式并紧凑打包，用符号、偶校验和平移位恢复其余结构。其底表为 1 KiB，跨层共享；不是把 65,536 个任意向量压进 1 KiB。
 
 [QuIP# 方法页](../methods/quip-sharp.md) 展开 8+7+1 bit 编码。这里的一般认识是：结构约束同时限制可学习自由度并降低解码成本。论文中“格的球堆积密度高”有助于解释设计，但本身不是任意有限分布、有限码本和神经网络任务损失上的最优证明。
+
+### 4.1 可学习仿射网格如何限制中心与计算
+
+[LC-QAT](../methods/lc-qat.md)对 $W\in\mathbb R^{m\times n}$ 沿输入列每 $d$ 个数分组，将中心限制为 $c=Az+B$，$z\in\{0,\ldots,2^b-1\}^d$，共享 $A\in\mathbb R^{d\times d}$、$B\in\mathbb R^d$。$2^{bd}$ 个候选由 $d^2+d$ 个浮点参数生成；独立任意中心则需 $d\,2^{bd}$ 个数。组内坐标因 $A$ 的非对角项而耦合，但任意中心集合一般不能由同一个仿射网格表示。方阵映射也不必降秩。
+
+例如二维 $b=1$ 的四个中心满足 $c_{00}+c_{11}=c_{01}+c_{10}$，是平行四边形；任意四点未必满足此关系。这个整理者例子说明低存储来自结构约束。FP16 映射与理想紧凑编码的预算为 $b+16(d^2+d)/(mn)$ bit/weight，不包含其他状态和容器。更大的 $d$ 增加局部混合自由度，也增加输入投影成本。
+
+令 $N$ 为输入行数，$X_i\in\mathbb R^{N\times d}$ 为第 $i$ 组输入，$Z_i\in\mathbb Z^{m\times d}$ 为对应整数码块，$\mathbf1_m\in\mathbb R^m$ 为全1列向量。这种结构还允许 $X_i(AZ_i^\mathsf T+B\mathbf1_m^\mathsf T)=(X_iA)Z_i^\mathsf T+(X_iB)\mathbf1_m^\mathsf T$，把查表改为浮点小投影、低比特整数主体和广播偏移；正确的实数重排不保证有限精度或任意 kernel 同速。离散码在 QAT 中仍由硬舍入取得，反向代理另有条件。（LC-QAT v1式3、7–8；平行四边形例与预算为整理者展开。）
 
 ## 5. 三类格式怎样计账
 
@@ -206,6 +216,8 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 固定每组相同位宽时，$\sum a_\ell$ 决定预测失真。对固定坐标方差乘积，混合坐标使各组体积接近可减少 AM–GM 间隙，但一个具体离散分组未必能完全均衡。设计时应依次核对：来源分布和目标、近似适用区间、整数索引预算、元数据、编码/解码成本，最后才是任务效果。
 
 ## 来源身份
+
+- [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，`arXiv:2606.10531v1`；仿射网格表示与输入侧重排。
 
 - [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)，arXiv:2402.15319v2；§2.3–5.3、附录 B/C；第6.1节的参数关系与字节/尺度算例为整理者计账，不替代实际打包。
 

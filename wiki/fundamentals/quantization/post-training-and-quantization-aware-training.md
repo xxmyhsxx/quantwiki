@@ -6,6 +6,8 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-21/lc-qat/paper.pdf
+  - raw/papers/2026-09-21/lc-qat/source/main.tex
   - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
   - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
@@ -168,6 +170,12 @@ $$
 
 即使能约束第二项，也不能忽略第一项而声称整步满足同一相对上界。[AQLM固定PV实现](../../implementation/aqlm-pv-training-and-code-updates.md#5-更新比例与-trust-ratio-的实际边界)恰以 $\overline W$ 测选码变化；其前缀截断还保留首个达到或超过阈值的组，本身也不是硬上界。候选数量、索引变化、解码权重变化与整步变化是不同的限制对象，应沿实际时序核对。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`pv_optimizer.py:step`、`beam_search_l2.py:beam_search_optimal_codes`。）
 
+### 3.3 代理函数和坐标变换要分别核对
+
+连续解码可精确求导，不使前面的硬舍入变成可微。[LC-QAT](../../methods/lc-qat.md)用共享仿射网格解码整数向量，再为整数节点选 DGE 代理。其区间函数的导数为 $f'(x)=\tfrac1k|2x/\delta-1|^{1/k-1}$；$k>1$ 时在区间中点发散。训练曲线较稳定是所列实验结果，不能直接写成全域光滑、有界或真实离散损失单调下降。多个区间怎样定位、clamp 外怎样反传、数值奇点怎样处理，必须核实际实现。（LC-QAT v1式9–10、图5；导数边界为整理者核算。）
+
+代理变量的尺度也会影响反向。设整数坐标代理为 $P_z$，改用 $P_x=s(P_z-t)$、$s>0$。若仍要保持相同的硬前向，应使用 $Q(P_x/s+t)$，而不是 $Q(P_x)$；按同一代理反向时还多出 $1/s$ 的 Jacobian。这个整理者推导说明：把潜变量缩到 Xavier 量级，不能自动保持选码，也不能仅凭“归一化”判断训练步长。LC-QAT式11描述缩放初始化，图3含 scaling，但式5与式11的坐标接口未完全给出；本页保留这一实现缺口，不把自洽示例当作作者代码。
+
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
@@ -189,6 +197,8 @@ J §3.1 延迟启用激活量化，并用指数移动平均跟踪范围，以避
 W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：PTQ 通常报告 5 次，QAT 3 次；后者还选择学习率并针对不同任务训练不同轮数。BERT 的 PTQ 表含部分 16-bit 激活，而对应 QAT 配置为全 8-bit 激活。BERT 这里是编码器任务指标，不等于自回归大模型的困惑度或生成质量。
 
 公平比较需同时列出浮点基线是否经过同等微调、训练/校准数据、量化节点、各层实际位宽、粒度、优化成本与独立评测。QAT 高于原浮点分数，也可能受额外训练影响；仅凭该结果不能证明量化带来正则化收益。W §4.5 的跨模型表格支持特定配置的可行性，不支持“QAT 总是胜出”或“per-channel 总是更好”。
+
+“数据效率”还要声明分母是已有基座上的额外 QAT、指令微调，还是从头预训练。[LC-QAT](../../methods/lc-qat.md#5-数据效率证据支持到哪里)的4B/30B比较取得较高QA均分而PPL较差；与BitNet的4B/4T又跨越额外训练与从头训练。预训练基座及各任务的变化不能从预算比例中消失。准确率均值、PPL和总训练成本需要分别判断。（LC-QAT v1表2–3。）
 
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
@@ -213,4 +223,5 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据、教师输出与联合量化。
 - [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。
 - [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；代理选码、子空间与精确理论/工程更新的条件。
+- [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，arXiv:2606.10531v1；代理梯度、潜变量坐标与数据预算边界。
 - [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV连续更新与选码变化的不同基准。
