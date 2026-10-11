@@ -6,6 +6,9 @@ tags:
   - equivalent-transform
   - outliers
 sources:
+  - raw/papers/2026-09-21/resq/paper.pdf
+  - raw/papers/2026-09-21/resq/source/example_paper.tex
+  - raw/repositories/2026-09-21/resq/source/fake_quant/get_basis.py
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/nova-kv/paper.pdf
   - raw/papers/2026-09-22/ostquant/paper.pdf
@@ -25,7 +28,7 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
   - raw/papers/2026-10-07/centriq/paper.pdf
   - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
-updated: 2026-10-08
+updated: 2026-10-12
 ---
 
 # 正交旋转与量化：等价条件、离群值和在线代价
@@ -187,12 +190,35 @@ $$
 
 它和 SpinQuant 的差别不只是优化器：前者选择激活方向的几何目标，后者以最终模型交叉熵选择旋转。ConQuR 的共享残差 R1 与头内 R2 可折入权重，固定 R3/R4 仍有推理时执行；按批次更新的“在线校准”发生在离线 PTQ 阶段。完整位置、SVD 方向、量化感知前向与成本口径见[方法页](../methods/conqur.md)。
 
+## 10. 先选高精度子空间，再在组内旋转
+
+[ResQ](../methods/resq.md)提供一种将精度分配与坐标变换联用的方式。令 $X\in\mathbb R^{n\times d}$ 为校准激活，$P=[P_l\ P_h]\in\mathbb R^{d\times d}$ 正交，$P_h$ 有 $r$ 列、$P_l$ 有 $d-r$ 列；$R_l,R_h$ 为各组宽度对应的方阵正交变换。使用 $U_l=P_lR_l$、$U_h=P_hR_h$ 后，$\|XU_h\|_F^2=\|XP_h\|_F^2$：组内旋转改变各坐标分布，但不改变受保护子空间或其总能量。任意跨组旋转则不保留这一指定分配。
+
+假设两组量化近似为 $A_l=Q_l(XU_l)$、$A_h=Q_h(XU_h)$，分别具有 $n\times(d-r)$、$n\times r$ 形状。旋转坐标应横向拼接为 $[A_l\ A_h]$，原坐标恢复为 $\widehat X=A_lU_l^\top+A_hU_h^\top$。定义 $E_l=XU_l-A_l$、$E_h=XU_h-A_h$，有
+
+$$\|X-\widehat X\|_F^2=\|E_l\|_F^2+\|E_h\|_F^2.$$
+
+这是正交子空间的平方和，不能写成范数直接相加。例如两个误差范数为3、4，总范数为5；同理，低组能量可以用平方能量相减，低组范数却不能写成总范数减高组范数。trace 恒等式也是 $\|XP_h\|_F^2=\operatorname{tr}(P_h^\top X^\top XP_h)$，不省略平方。
+
+高组怎样选择，需要先明确目标。对固定校准矩阵，取 $G=X^\top X$ 的最大 $r$ 个特征值方向，使 $\|XP_h\|_F^2$ 最大。若定义平方能量代理
+
+$$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
+=a\|X\|_F^2-(a-b)\|XP_h\|_F^2,$$
+
+其中固定系数满足 $a>b\ge0$，这个选择也使 $J$ 最小；最大保留能量等于最大的 $r$ 个特征值之和。$a=b$ 时代理不区分子空间，$a<b$ 时推荐方向反转。这是整理者对**指定能量代理**的推导，没有把动态范围、舍入、两侧权重量化或整网任务误差变成固定系数，也不修复ResQ定理4.2原证明中的错误范数等式。
+
+未中心化二阶能量与中心化方差还会选择不同方向。令 $X$ 三行为 $(10,1),(10,-1),(10,0)$，则 $X^\top X=\operatorname{diag}(300,2)$，高能量方向为第一维；减均值后Gram为 $\operatorname{diag}(0,2)$，最大方差方向为第二维。ResQ所选代码累计前者。统计量的语义与归约条件见[Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#gram二阶矩与协方差)，实际基底和投影消费见[实现页](../implementation/resq-basis-and-fake-quantization.md)。
+
+最后，组内随机旋转保持能量不代表每个样本峰值都下降，也不使有限维数据严格高斯。选子空间、改善分布、实际量化误差与任务质量是需要分别核验的结论。（ResQ v2 §4.1–4.2、附录A；固定 `get_basis.py` 的 `full_shared` 分支。）
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [ResQ](https://arxiv.org/abs/2412.14363v2) | arXiv:2412.14363v2 | 高精度子空间、平方能量代理与原证明边界 |
+| [project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a) | `cb87d0d059455858daaa66f7410da4afebee978a` | 所选未中心化Gram与共享基底 |
 | [CentriQ](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | adaLN 均值、中心化投影、rank-1 回注及 padding/精度边界 |
 | [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | K-only块旋转与服务条件；本页采用既有方法页研读 |
 | [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取及prefill逆旋转的预缩放与舍入顺序 |
