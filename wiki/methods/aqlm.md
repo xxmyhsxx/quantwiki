@@ -7,9 +7,11 @@ tags:
   - vector-quantization
   - reconstruction
 sources:
+  - raw/repositories/2026-09-21/aqlm/source/finetune.py
+  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
   - raw/papers/2026-09-21/aqlm/paper.pdf
   - raw/papers/2026-09-21/aqlm/source.eprint
-updated: 2026-09-22
+updated: 2026-10-11
 ---
 
 # AQLM：加性码本与激活感知的联合编码
@@ -77,6 +79,14 @@ v4 的 Llama-2 主实验使用 RedPajama、长度 4096，AQLM 校准约 8M token
 
 代价主要在离线搜索、输入统计和微调；低位宽下局部重构仍可能遗漏复杂任务风险。[QuIP#](quip-sharp.md) 用固定格结构换取紧凑解码，AQLM 用可学习码本争取表示适配度；共同设计问题由 [低比特表示的设计空间](../research/low-bit-representation-design.md) 承接。本页为论文研读，没有执行 AQLM 校准或推理复现。
 
+## 6. 后续 PV 优化器的代码范围
+
+固定仓库 `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` 的根 `finetune.py` 已包含 [PV-Tuning](pv-tuning.md) 路线：一次整网KL反向同时服务中心/尺度与连续选码目标，随后以L2搜索整数码，再写回恢复权重。这是原始激活感知校准后的另一阶段；不能把这里没有传 `XTX` 的搜索写成原始联合编码器的全部实现。
+
+[PV训练与选码实现页](../implementation/aqlm-pv-training-and-code-updates.md)记录绝对目标、新中心时序、STE缓冲、更新比例与非严格trust阈值，以及数据/配置/保存边界。该代码版本与上文论文 v4 的实验分别登记；原始校准器与专用推理kernel仍待接续，未运行模型。
+
 ## 来源身份
 
 [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4)，arXiv:2401.06118v4。使用 §3–4，以及配置、微调、位宽核算、消融与生成速度附录。本文按完整公式计入所有 $M$ 个码本和索引。
+
+[Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；新增核读范围限于所选PV训练/选码及必要依赖。

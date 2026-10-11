@@ -2,7 +2,7 @@
 title: 资料研读目录
 type: index
 sources: []
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # 资料研读目录
@@ -11,7 +11,7 @@ updated: 2026-10-08
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **97 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **98 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,7 +30,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
-| [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)<br>arXiv:2405.14852v2 | 正文/算法1–3与必要附录 A–P；精确P/V、代理下降、稀疏更新、Adam/STE/数据与表1–2/7–9及运行条件 | [PV-Tuning](methods/pv-tuning.md)；[代理下降与子空间](fundamentals/quantization/post-training-and-quantization-aware-training.md#31-离散选码可以使用可验证的代理下降)；[采样分布](theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布) | 仅论文及教学推导；已有AQLM快照的PV实现待续核，保留伪代码/主附表差异，未逐项重证全部附录，未执行训练或GPU | [2026-10-08](LOG.md#2026-10-08--pv-tuning-ingest-与-astra-review) |
+| [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)<br>arXiv:2405.14852v2 | 正文/算法1–3与必要附录 A–P；精确P/V、代理下降、稀疏更新、Adam/STE/数据与表1–2/7–9及运行条件 | [PV-Tuning](methods/pv-tuning.md)；[代理下降与子空间](fundamentals/quantization/post-training-and-quantization-aware-training.md#31-离散选码可以使用可验证的代理下降)；[采样分布](theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布) | 仅论文及教学推导；固定AQLM的PV实现另列范围记录，保留伪代码/主附表差异，未逐项重证全部附录，未执行训练或GPU | [2026-10-08](LOG.md#2026-10-08--pv-tuning-ingest-与-astra-review) |
 | [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)<br>arXiv:2402.15319v2 | 正文/算法1–2，必要附录 A–I；多输入列/数据感知EM/固定索引中心更新、移动小LUT/INT4、SVD/归一化/FT及质量和执行协议；关键PDF公式与表1–7/13–19 | [GPTVQ](methods/gptvq.md)；[矩阵度量与中心更新](theory/layer-reconstruction-second-order-compensation.md#33-多输入列的条件度量与码本中心更新)；[索引/中心/查表](theory/codebook-quantization-and-bit-budget.md#61-索引宽度中心精度与硬件查表是三个约束) | 无匹配已归档作者仓库，未核打包/ISA/完整优化配方；保留公式、配置及跨表协议差异，未逐格复算全部任务附表，未运行模型/CPU/GPU | [2026-10-08](LOG.md#2026-10-08--gptvq-ingest-与-astra-review) |
 | [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2)<br>arXiv:2409.17066v2 | 正文、算法1–2及必要附录 A–D；同列选码/反馈、加权初始化、残差/离群列/微调、位预算及质量/运行协议；回查关键PDF公式与表2–3/8–11 | [VPTQ](methods/vptq.md)；[同列曲率与加权初始化](theory/layer-reconstruction-second-order-compensation.md#31-同列向量为什么仍可使用欧氏最近中心)；[组合位预算](theory/codebook-quantization-and-bit-budget.md#51-离群值残差和分组怎样共同计费) | 无匹配已归档作者仓库；条件逆处理、分组/packing及完整端到端微调配方未核，保留原文公式差异；附表未逐格复算，未运行模型/GPU | [2026-10-08](LOG.md#2026-10-08--vptq-ingest-与-astra-review) |
 | [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)<br>arXiv:2610.00432v1 | 正文与附录 A–F；XOR mapping/listing、palette局部条件、LDL/diagD目标、路径递推、模型/矩阵诊断及电路综合；关键PDF公式图表 | [XOR-Trellis](methods/xor-trellis.md)；[局部候选与路径](theory/codebook-quantization-and-bit-budget.md#71-全局分布局部候选与路径连接分别决定什么)；[曲率路径目标](theory/layer-reconstruction-second-order-compensation.md#13-ldl-残余度量与离散路径搜索怎样衔接) | 无匹配完整作者实现；尺度选择、边界/packing与部署接口未核；附表未逐格复算，未运行模型/GPU/电路综合 | [2026-10-08](LOG.md#2026-10-08--xor-trellis-ingest-与-astra-review) |
@@ -103,6 +103,7 @@ updated: 2026-10-08
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)<br>e79a896ed6656fe4ed06193d42d004e7d0bbdbb2 | 根finetune入口→PV optimizer/Adam→aq/L2选码→权重写回；数据/KL、FSDP owner与保存的必要依赖 | [AQLM PV训练与选码](implementation/aqlm-pv-training-and-code-updates.md)；[PV-Tuning](methods/pv-tuning.md)；[AQLM](methods/aqlm.md) | 未核原始激活感知校准、导出/推理kernel及所有加载分支；保留多rank直接更新、阈值/参数传递/协议边界；未执行上游、训练、通信或GPU | [2026-10-08](LOG.md#2026-10-08--aqlm-pv-实现-ingest)；[2026-10-11](LOG.md#2026-10-11--aqlm-pv-实现-ingest-收尾复核) |
 | [ruanruan-andy/PIVOT-Q](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15)<br>74d6e1f8994a03eb45aae5c316a743abda2cba15 | README/实验协议；主 GR00T+QuantVLA 的配置→selector→训练、当前/未来评分、phase/gap/权重、归一化首动作、clean anchor、LoRA更新、vendored加载/采样/fake-quant linear | [PIVOT-Q实现与差异](methods/pivot-q.md#5-主-gr00t--quantvla-调用链与可训练变量) | 仅所列主路径；其他模型完整adapter/量化器/子模块、checkpoint恢复边界、部署与全图梯度未核；未导入、安装或执行上游/模型/GPU | [2026-10-08](LOG.md#2026-10-08--pivot-q-论文与主恢复链-ingest-和-astra-review) |
 | [huggingface/kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc)<br>5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc | 初始化模板与扩展构建/装入的登记文件 | [CUDA 算子的编写、编译与 PyTorch 接入](implementation/cuda-operator-build-and-integration.md)；[算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 未编译或验证跨版本 ABI、训练/backward | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
 | [triton-lang/triton](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592)<br>81a46fa0c04526e5df55a018ecfab72ff922f592 | 教程 01/02/03/05、testing、runtime/语言/JIT 相关文件及块缩放矩阵乘路径 | [块缩放矩阵乘：FP4/FP8 编码、Scale 布局与 Triton 调用](implementation/block-scaled-matmul-execution.md)；[Triton 语言与编译语义：从逻辑张量到 GPU Kernel](fundamentals/operators/triton-language-and-compilation.md) | 未编译/执行 GPU；不表示所有语言与编译分支已核验 | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
@@ -220,9 +221,9 @@ updated: 2026-10-08
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune、QuantForge、XOR-Trellis、VPTQ、GPTVQ及PV-Tuning论文已研读并按实际范围移入上表；以下131个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune、QuantForge、XOR-Trellis、VPTQ、GPTVQ及PV-Tuning论文、AQLM的PV代码主链已研读并按实际范围移入上表；以下130个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。下一项先核已有 AQLM 固定快照中的 PV 优化器，澄清目标权重、码本更新、梯度复用与实际选码限制，再接续其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。下一项接续 AQLM 同快照的原始激活感知校准与导出/推理接口，完善同一记录的实际范围；其后研读 LC-QAT，再接续其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
 ### 论文（57条）
 
@@ -344,11 +345,10 @@ updated: 2026-10-08
 | [vla.simd model bundle](https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle) | `2026-09-28 page snapshot` |
 | [TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix](https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html) | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 
-### 代码条目（21条）
+### 代码条目（20条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
-| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2) | `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` |
 | [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | `7e3618b1a7a7c86e1c93cc909b1510c046d76ac6` |
 | [Dao-AILab/flash-attention](https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68) | `73c992c8ca746935548df620ef3c1b6238fe6e68` |
 | [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | `a42424d843adffebe4b28ddb62a760cb52b0d2f0` |

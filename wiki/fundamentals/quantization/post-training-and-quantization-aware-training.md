@@ -6,6 +6,8 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
+  - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
   - raw/papers/2026-09-22/pv-tuning/source/03_method.tex
   - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
@@ -20,7 +22,7 @@ sources:
   - raw/papers/2026-09-21/q-vlm/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # PTQ、QAT 与代理梯度
@@ -158,6 +160,14 @@ PV-Tuning 附录 G 使用十个迭代点的梯度差商、以及十步有限差�
 
 小步长被投影吞掉的机制也有确定条件。例如合法标量为 $\{0,1\}$，从0出发的目标0.1仍会选0。STE潜变量可在多步间累计到越过中点；稀疏PV则试图在部分坐标上直接形成足够大的合法跳变。哪种策略更好取决于目标、表示、步长和搜索规则，PV-Tuning 自身也评估了二者混合。
 
+限制变化量时还要说明基准时点。令 $W^k$ 为旧表示，$\overline W$ 为连续中心/尺度更新后、索引未变的表示，$W^{k+1}$ 为选码后表示，则
+
+$$
+W^{k+1}-W^k=(\overline W-W^k)+(W^{k+1}-\overline W).
+$$
+
+即使能约束第二项，也不能忽略第一项而声称整步满足同一相对上界。[AQLM固定PV实现](../../implementation/aqlm-pv-training-and-code-updates.md#5-更新比例与-trust-ratio-的实际边界)恰以 $\overline W$ 测选码变化；其前缀截断还保留首个达到或超过阈值的组，本身也不是硬上界。候选数量、索引变化、解码权重变化与整步变化是不同的限制对象，应沿实际时序核对。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`pv_optimizer.py:step`、`beam_search_l2.py:beam_search_optimal_codes`。）
+
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
@@ -203,3 +213,4 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据、教师输出与联合量化。
 - [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。
 - [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；代理选码、子空间与精确理论/工程更新的条件。
+- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV连续更新与选码变化的不同基准。

@@ -6,6 +6,8 @@ tags:
   - optimization
   - qat
 sources:
+  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
+  - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
   - raw/papers/2026-09-22/pv-tuning/source/03_method.tex
   - raw/papers/2026-09-22/pv-tuning/source/04_experiments.tex
@@ -15,14 +17,14 @@ sources:
   - raw/papers/2026-09-22/pv-tuning/source/resources/table_aggregated.tex
   - raw/papers/2026-09-22/pv-tuning/source/resources/table_llama2_2bit.tex
   - raw/papers/2026-09-22/pv-tuning/source/resources/table_llama3_1bit.tex
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # PV-Tuning：连续参数与离散选码的联合微调
 
 PV-Tuning 研究量化后的模型怎样继续恢复质量。尺度、码本中心可以反向传播，整数索引却需要离散选择；只训练前者会限制可调整范围，直接对所有权重做“梯度更新再量化”又容易让小步长消失。论文把连续参数更新与离散选码组合起来，并让每步选码只改变一部分权重，使较大的离散跳变仍有可控的整体幅度。
 
-本页依据 **arXiv:2405.14852v2**，研读正文、算法1–3及必要附录 A–P，核对关键 PDF 公式与表1–2、7–9。精确优化、二次上界与工程近似分别说明；实验为作者报告，教学推导为整理者展开。归档 AQLM 快照包含 PV 优化器，具体实现留待单独核读；本页未执行上游程序、模型训练或 GPU 推理。
+本页依据 **arXiv:2405.14852v2**，研读正文、算法1–3及必要附录 A–P，核对关键 PDF 公式与表1–2、7–9。精确优化、二次上界与工程近似分别说明；实验为作者报告，教学推导为整理者展开。已接续核读[AQLM固定快照的PV主链](../implementation/aqlm-pv-training-and-code-updates.md)，实现与论文配置分开记录；未执行上游程序、模型训练或 GPU 推理。
 
 ## 1. 表示形式与恢复算法分别决定什么
 
@@ -98,7 +100,9 @@ $$
 
 因此表1的“$\tau=0.01$”不能解释成始终只更新1%的权重。理论中的 $\tau$ 是子空间大小，工程中用范数限制来决定可接受的大小。量化跳变后的范数也不等于浮点 Adam 位移的范数；这个限制本身不是损失下降证书。（§3.4、§4.2、附录 I/K。）
 
-算法3先把 `update` 写成 Adam 输出减旧权重的位移，随后直接将它传入 `find_nearest`；按前述推导，距离目标应为更新后的**绝对权重**。伪代码没有充分说明对象、返回值及新码本时序，本页不据此补造可执行接口，后续以固定作者代码另行核对。附录 D 的距离展开还保留位置相关的目标内积；不能将只依赖候选值对的范数差缓存，误写成整个选码成本与位置无关。
+算法3先把 `update` 写成 Adam 输出减旧权重的位移，随后直接将它传入 `find_nearest`；按前述推导，距离目标应为更新后的**绝对权重**。接续核读的 AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` 确实传入更新后的完整权重或STE缓冲，并使用已更新的中心/尺度，见[实际时序](../implementation/aqlm-pv-training-and-code-updates.md#3-一次反向如何连接到-p-与-v)。原伪代码歧义保留，不判为实际代码使用位移。附录 D 的距离展开还保留位置相关的目标内积；不能将只依赖候选值对的范数差缓存，误写成整个选码成本与位置无关。
+
+同一代码快照的 `code_trust_ratio` 则与上述论文回滚描述有差异：它以新中心/尺度加旧码作为基准，只计选码变化，并保留首个达到或超过范数阈值的组。它不是整步变化的硬上界。候选组比例、阈值越界算例和具体函数见[实现页 §5](../implementation/aqlm-pv-training-and-code-updates.md#5-更新比例与-trust-ratio-的实际边界)，没有据此改写论文原来的实验配置。
 
 ## 5. STE 混合与随机舍入比较的含义
 
@@ -149,6 +153,7 @@ STE 的浮点潜变量可以跨多步积累更新，即使当次量化结果未�
 ## 来源身份与阅读联系
 
 - [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，固定版本 arXiv:2405.14852v2；正文§3–4、算法1–3、附录A–P及表1–2/7–9。
+- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；实际目标、码本时序与选码变化限制。
 - [PTQ、QAT 与代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)：固定编码的精确导数、代理下降与子空间条件。
 - [校准数据与范围选择](../theory/calibration-and-range-selection.md)：采样单位、预处理和目标分布。
 - [层输出重构与二阶补偿](../theory/layer-reconstruction-second-order-compensation.md)：局部重构度量与固定索引凸二次条件，不能直接推广到整网KL。

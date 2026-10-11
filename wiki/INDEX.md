@@ -61,7 +61,7 @@ sources: []
 - **理解误差方向与配置选择**：[激活引导补偿](methods/activation-guided-compensation.md) → [曲率加权误差](theory/curvature-weighted-quantization-error.md) / [RGSQ](methods/rgsq.md) → [HAWQ-V2](methods/hawq-v2.md) → [CASA](methods/casa.md) → [Quantization Price](methods/quantization-price-prediction.md)。
 - **理解同列向量与二阶选码**：[VPTQ](methods/vptq.md) → [同列共享曲率与加权初始化](theory/layer-reconstruction-second-order-compensation.md#31-同列向量为什么仍可使用欧氏最近中心) → [离群/残差/多组码本预算](theory/codebook-quantization-and-bit-budget.md#51-离群值残差和分组怎样共同计费)。
 - **比较多输入列选码与CPU小码本**：[GPTVQ](methods/gptvq.md) → [条件矩阵度量与中心更新](theory/layer-reconstruction-second-order-compensation.md#33-多输入列的条件度量与码本中心更新) → [索引/中心/硬件查表](theory/codebook-quantization-and-bit-budget.md#61-索引宽度中心精度与硬件查表是三个约束)。
-- **理解离散与连续参数的联合恢复**：[PV-Tuning](methods/pv-tuning.md) → [代理下降与子空间条件](fundamentals/quantization/post-training-and-quantization-aware-training.md#31-离散选码可以使用可验证的代理下降) → [文档与token采样](theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布)。
+- **理解离散与连续参数的联合恢复**：[PV-Tuning](methods/pv-tuning.md) → [固定AQLM的PV训练/选码](implementation/aqlm-pv-training-and-code-updates.md) → [代理下降与子空间条件](fundamentals/quantization/post-training-and-quantization-aware-training.md#31-离散选码可以使用可验证的代理下降) → [文档与token采样](theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布)。
 - **连接编码与阶段执行**：[码本量化](theory/codebook-quantization-and-bit-budget.md) → [QTIP](methods/qtip.md) → [XOR-Trellis](methods/xor-trellis.md) → [SPHQuant](methods/sphquant.md) → [Disaggregated Quantization](methods/disaggregated-quantization.md)。
 
 - **诊断平均分之外的损害**：[排序稳定性与间隔](theory/quantization-ranking-stability.md) → [多模态对齐诊断](theory/multimodal-alignment-diagnostics.md) → [模型质量评测](implementation/model-quality-evaluation.md)。
@@ -239,6 +239,7 @@ sources: []
 | [权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | AWQ/TinyChat 与现代 Marlin 的打包、元数据和设备消费；区分对称 GPTQ 固定偏置与非对称 AWQ 整数零点，以及尺度、MMA、归约和输出顺序。 |
 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) | 多模态模型压缩的评测常停在几个 VQA 分数上。 |
 | [量化误差诊断与验证](implementation/quantization-error-diagnosis.md) | 量化后结果变差，可能来自图变换错误、网格与分布不匹配、局部误差传播，也可能来自整数后端与模拟规则不一致。 |
+| [AQLM 的 PV 训练与选码](implementation/aqlm-pv-training-and-code-updates.md) | 恢复权重梯度、连续目标、新码本时序、候选比例/trust范围、FSDP与数据/保存接口。 |
 | [AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang](implementation/awq-implementation.md) | 方法页回答 AWQ 为什么这样设计、证据支持什么；本页回答代码层面的事情：量化脚本产出什么形状的权重、打包约定是什么、内核从哪里进入、同一个 AWQ checkpoint 在 vLLM 与 SGLang 里各走哪条路径。 |
 | [GPTQ 的实现核对：校准、导出协议与服务内核选择](implementation/gptq-implementation.md) | 连接 Llama 校准、原始 3-bit 保存、服务格式、vLLM 后端选择与 SGLang 原生/Marlin；保留 TP 与 fallback 条件。 |
 | [QServe/QoQ 的实现核对：两级编码、离线重排与 SGLang W4A8](implementation/qserve-implementation.md) | 从上游 fake-quant 产物追到 nibble 与尺度重排、SGLang QoQ 加载、字节级恢复及 INT8 MMA；区分 W4A8 Linear 与完整 KV4 系统。 |

@@ -6,6 +6,8 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/repositories/2026-09-21/aqlm/source/finetune.py
+  - raw/repositories/2026-09-21/aqlm/source/src/datautils.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
   - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
   - raw/papers/2026-10-05/onptq/paper.pdf
@@ -33,7 +35,7 @@ sources:
   - raw/papers/2026-10-07/pivot-q/paper.pdf
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/selector.py
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/train.py
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # 校准数据与量化范围选择
@@ -149,6 +151,8 @@ $$
 这个例子假定等长、不重叠块，排除短文档过滤、边界拼接与尾部丢弃等影响。真实预处理还须说明这些规则、EOS、mask及损失归约；不能只靠“拼接”一词推断全部细节。哪种抽样无偏取决于目标究竟是文档均匀、token均匀还是特定部署分布，不能把 token 均匀称为所有任务的唯一正确目标。
 
 PV-Tuning 报告这项预处理改变在部分模型上改善至多约0.15 PPL，并在比较内匹配预处理；其 §4.1 的表示实验仍保留旧方式用于对齐基线。归因算法效果时，应核每项实验的具体取样方式，不能把数据版本一致当作协议完全一致。
+
+沿[已归档AQLM PV入口](../implementation/aqlm-pv-training-and-code-updates.md#7-训练数据与-kl-的实际接口)还能看到“拼接分块”的具体范围：`prepare_training_dataset` 调用 batched map，`group_texts` 在每次收到的批次内拼接，丢弃该批次不足一个完整块的尾部。若两个map批次各有6个token、块长4，则共保留8个；全局12个token一次分块则可保留12个。这个整理者算例说明批次边界会影响有效样本量。函数本身不再插入EOS；外部已分词数据又会绕过这套预处理，不能仅凭数据集名称断言token覆盖和边界完全相同。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`finetune.py`、`datautils.py`。）
 
 ## 6. 图文校准增加的是数据与目标条件
 
@@ -345,3 +349,4 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 - [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据与蒸馏目标。
 
 - [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；文档与token采样分布、分实验预处理条件。
+- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV文本分块与map批次尾部。
