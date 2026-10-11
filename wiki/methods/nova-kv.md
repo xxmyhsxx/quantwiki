@@ -29,11 +29,13 @@ $$\|S-\widehat S\|_F\leq\frac{1}{2\sqrt d}\|Q(K-\widehat K)^\top\|_F.$$
 
 这一界允许用 logit 误差作为 K 的代理，但“更低 logit MSE”不保证每个问题答案更好，也不直接保证最高分 token 排名不变。
 
-固定校准查询时，令 $M_q=Q^\top Q$，则
+固定校准查询，对所有 query–key 配对的未掩码 logit 矩阵，令 $M_q=Q^\top Q$，则
 
 $$\|Q(K-\widehat K)^\top\|_F^2=\sum_j(k_j-\widehat k_j)M_q(k_j-\widehat k_j)^\top.$$
 
 这是全配对矩阵误差的精确恒等式。本页沿用论文的未归一化写法：$M_q=Q^\top Q$ 是 Gram 矩阵，对应误差求和；有 $N$ 个等权 query 时，经验未中心化二阶矩为 $M_q/N$，仍不同于中心化协方差。GQA 下应把共享同一 KV head 的 query heads 的 Gram 矩阵相加。归一化约定见 [Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#gram二阶矩与协方差)。它描述校准查询的加权方向，无法保证未来自回归查询分布不漂移。
+
+一般 causal prefill 中，第 $j$ 个 key 只被可见集合 $I_j$ 内的 query 读取，可见 logits 的精确目标因而使用 $M_{q,j}=\sum_{i\in I_j}q_i^\top q_i$，而非对所有 keys 使用同一个全局 $M_q$。NOVA 的全局二阶矩在这里是全配对代理；当前 decode query 对全部有效历史可见时才有共同可见集合这一特例。全配对平方误差可上界可见部分，但不能将二者写成同一精确目标。该区别是整理者对原文式 (5) 的适用条件展开，完整推导见 [K 误差与因果可见性](../theory/attention-quantization-error-propagation.md#2-k-误差沿-query-方向进入-logits)。
 
 ## 2. K 的变换为什么通常不是正交矩阵
 

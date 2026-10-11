@@ -33,7 +33,7 @@ description: "在用户明确要求查询本项目 Wiki——定位某个问题�
 每条定位 = 可点击的绝对路径 Markdown 链接 + 实际章节 + 一句「该处处理什么」；结尾交代检索范围与未核实部分。
 
 ```text
-[wiki/量化/大语言模型量化/smoothquant.md](/Users/xiao/Desktop/量化/wiki/量化/大语言模型量化/smoothquant.md) §3 缩放如何在两侧分配难度 → 处理「为什么可以把激活的量化难度迁移到权重」
+[wiki/methods/smoothquant.md](/Users/xiao/Desktop/量化/wiki/methods/smoothquant.md) §3 缩放如何在两侧分配难度 → 处理「为什么可以把激活的量化难度迁移到权重」
 ```
 
 不落盘检索日志、覆盖矩阵或状态文件。

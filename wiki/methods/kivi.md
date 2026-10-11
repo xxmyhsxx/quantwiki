@@ -11,7 +11,7 @@ sources:
   - raw/papers/2026-09-21/kivi/source.eprint
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/repositories/2026-09-21/kivi/source/models/llama_kivi.py
-updated: 2026-09-22
+updated: 2026-10-03
 ---
 
 # KIVI：键按通道、值按 token 的 2 bit KV cache 量化
@@ -90,7 +90,7 @@ $$\mathbf A_g=\vec q\,Q(\mathbf X_{K_g}^{\mathsf T}),\qquad \mathbf A_r=\vec q\,
 
 仓库实现与论文一致（快照 `876b4d2d` 的 `models/llama_kivi.py`）：配置项为 `group_size` 与 `residual_length`；键在量化前转置，使分组落在最后一维，从而按通道共享参数；值按 token 量化后沿 token 维拼接；残差长度与分组大小的整除关系以断言形式写在代码里（`assert self.residual_length % self.group_size == 0`）。
 
-论文报告的系统侧工作是把反量化与矩阵乘融合（图中的 Q_MatMul），用 CUDA 实现，并用 Triton 实现分组量化内核。作者明确：与 weight-only 量化兼容，两者可以叠加。这与 [执行路径](../implementation/quantized-matmul-scaling-execution.md) 中「反量化必须与计算融合，否则低比特只是省存储」的判断一致，也与 [混合精度分配](../theory/mixed-precision-allocation.md) 中「KV cache 是独立预算项」的划分一致。
+论文报告的系统侧工作是把反量化与矩阵乘融合（图中的 Q_MatMul），用 CUDA 实现，并用 Triton 实现分组量化内核。融合可减少高精度中间张量的写回、再读取和额外调用，是控制反量化成本的一种实现方式；它不是所有低比特收益的必要条件。独立反量化是否抵消访存收益，以及缓存容量增加能否支持更大 batch，仍取决于实际工作负载与后端，应分别测量。作者还说明与 weight-only 量化兼容，两者可以叠加；完整对照见 [执行路径](../implementation/quantized-matmul-scaling-execution.md)，KV cache 的独立预算见 [混合精度分配](../theory/mixed-precision-allocation.md)。
 
 ## 5. 质量证据
 

@@ -87,7 +87,7 @@ Baseline 正确性确认且性能测量有效后，进入 Step 4。Baseline 与 
 
 ### Step 4：设计并实现当前 Candidate
 
-首次实现时，根据 Reference 语义与 backend 选择简单、可编译、可验证、可 Benchmark 的实现，不一次加入大量复杂优化。需要具体实现或优化知识时，只读取当前 Skill 已有且与该问题有关的 Reference，并将其用于本轮设计。
+首次实现时，根据 Reference 语义与 backend 选择简单、可编译、可验证、可 Benchmark 的实现，不一次加入大量复杂优化。需要具体实现或优化知识时，只读取本 Skill 已有且与当前问题有关的辅助材料，并将其用于本轮设计。
 
 后续迭代使用 Step 9 形成的假设、parent 和 planned change，不在实现过程中加入与本轮假设无关的修改。
 
@@ -147,7 +147,7 @@ Baseline 正确性确认且性能测量有效后，进入 Step 4。Baseline 与 
 
 执行 Profiling 时，优先使用项目已有 Profiler 或当前 Skill 实际随附的脚本。按待解释的问题选取指标，例如 kernel duration、SM utilization、memory throughput、cache behavior、occupancy、register/shared memory usage、warp stall、tensor-core utilization 和 launch configuration，不要求每次收集全部指标。
 
-需要理解指标或诊断方法时，按需读取已有的相关 Reference；不把某个指标直接等同于固定代码修改。
+需要理解指标或诊断方法时，按需读取已有的相关辅助材料；不把某个指标直接等同于固定代码修改。
 
 保存可复核的原始输出，在上下文中保留与问题相关的紧凑指标摘要。有可用摘要脚本时使用；没有时直接整理必要指标，不假设存在 summarizer 工具。记录 Profiling 对应的 Candidate、workload 和执行入口后进入 Step 9。
 
