@@ -147,6 +147,7 @@ sources: []
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
 | [PV-Tuning：连续参数与离散选码](methods/pv-tuning.md) | 精确P/V、代理下降、稀疏Adam与实际变化限制、数据/质量/运行条件。 |
 | [LC-QAT：仿射网格与代理训练](methods/lc-qat.md) | 受约束向量表示、输入侧重排、DGE/坐标接口与数据效率边界。 |
+| [QUASAR：训练中的损失感知重构](methods/quasar.md) | 候选选码/固定码拟合、STE梯度差与条件界、格式及任务/成本证据。 |
 | [GPTVQ：多输入列与移动CPU码本](methods/gptvq.md) | 数据感知E/M、固定索引中心更新、INT8/INT4小表、位预算与CPU吞吐条件。 |
 | [VPTQ：同列向量与二阶反馈](methods/vptq.md) | 跨输出行的向量、加权码本初始化、残差/离群列、微调与存储/吞吐条件。 |
 | [XOR-Trellis：局部候选与曲率路径](methods/xor-trellis.md) | XOR生成器、条件候选集合、block-LDL对角评分、无旋转边界与综合成本。 |

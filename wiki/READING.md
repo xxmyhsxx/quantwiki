@@ -11,7 +11,7 @@ updated: 2026-10-11
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **99 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **100 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-11
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)<br>arXiv:2608.13966v1 | 正文/算法1/定理1与推论1、必要附录A–D；选码/加权恢复/SGD与PL证明链、INT/NVFP4/LUT、QAD/适配/消融和成本；回查关键原始页 | [QUASAR](methods/quasar.md)；[编码与拟合](theory/calibration-and-range-selection.md#21-选码范围和恢复参数可以分开优化)；[STE条件界](fundamentals/quantization/post-training-and-quantization-aware-training.md#34-重构误差怎样进入-ste-更新的条件界) | 未取得作者实现，EMA时点/退化拟合/格式参数与导出接口未核；保留主/消融数值及NV均分范围差异，附图附表未逐项重建，未运行模型/GPU | [2026-10-11](LOG.md#2026-10-11--quasar-ingest-与独立评审) |
 | [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)<br>arXiv:2606.10531v1 | 正文、式3–12及必要附录A.1–A.6；核仿射网格/LDLQ初始化/硬前向/代理变量、数据与消融/速度条件，回查关键PDF页 | [LC-QAT](methods/lc-qat.md)；[仿射码本](theory/codebook-quantization-and-bit-budget.md#41-可学习仿射网格如何限制中心与计算)；[代理与坐标](fundamentals/quantization/post-training-and-quantization-aware-training.md#33-代理函数和坐标变换要分别核对) | 未取得匹配训练或CUDA实现；保留DGE中点/多区间数值处理、预处理坐标接口及指令2B/4B差异，附表未逐格复算，未运行模型/GPU | [2026-10-11](LOG.md#2026-10-11--lc-qat-ingest-与独立评审) |
 | [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)<br>arXiv:2405.14852v2 | 正文/算法1–3与必要附录 A–P；精确P/V、代理下降、稀疏更新、Adam/STE/数据与表1–2/7–9及运行条件 | [PV-Tuning](methods/pv-tuning.md)；[代理下降与子空间](fundamentals/quantization/post-training-and-quantization-aware-training.md#31-离散选码可以使用可验证的代理下降)；[采样分布](theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布) | 仅论文及教学推导；固定AQLM的PV实现另列范围记录，保留伪代码/主附表差异，未逐项重证全部附录，未执行训练或GPU | [2026-10-08](LOG.md#2026-10-08--pv-tuning-ingest-与-astra-review) |
 | [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)<br>arXiv:2402.15319v2 | 正文/算法1–2，必要附录 A–I；多输入列/数据感知EM/固定索引中心更新、移动小LUT/INT4、SVD/归一化/FT及质量和执行协议；关键PDF公式与表1–7/13–19 | [GPTVQ](methods/gptvq.md)；[矩阵度量与中心更新](theory/layer-reconstruction-second-order-compensation.md#33-多输入列的条件度量与码本中心更新)；[索引/中心/查表](theory/codebook-quantization-and-bit-budget.md#61-索引宽度中心精度与硬件查表是三个约束) | 无匹配已归档作者仓库，未核打包/ISA/完整优化配方；保留公式、配置及跨表协议差异，未逐格复算全部任务附表，未运行模型/CPU/GPU | [2026-10-08](LOG.md#2026-10-08--gptvq-ingest-与-astra-review) |
@@ -222,11 +223,11 @@ updated: 2026-10-11
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune、QuantForge、XOR-Trellis、VPTQ、GPTVQ及PV-Tuning论文、AQLM的PV代码主链及LC-QAT论文已研读并按实际范围移入上表；以下129个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下128个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT论文与公共机制已整合；下一项为第3批 QUASAR、Norm Tweaking，再接续 P1 批次的其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT与QUASAR论文及公共机制已整合；下一项为第3批 Norm Tweaking，再接续 P1 批次的其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（56条）
+### 论文（55条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -261,7 +262,6 @@ updated: 2026-10-11
 | [Advancing Multimodal Large Language Models with Quantization-Aware Scale Learning for Efficient Adaptation](https://arxiv.org/abs/2408.03735v1) | `arXiv:2408.03735v1` |
 | [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2) | `arXiv:2309.02784v2` |
 | [Plug-and-Play 1.x-Bit KV Cache Quantization for Video Large Language Models](https://arxiv.org/abs/2503.16257v2) | `arXiv:2503.16257v2` |
-| [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1) | `arXiv:2608.13966v1` |
 | [Qwen2.5-Omni Technical Report](https://arxiv.org/abs/2503.20215v1) | `arXiv:2503.20215v1` |
 | [Qwen2.5-VL Technical Report](https://arxiv.org/abs/2502.13923v1) | `arXiv:2502.13923v1` |
 | [Qwen3 Technical Report](https://arxiv.org/abs/2505.09388v1) | `arXiv:2505.09388v1` |

@@ -6,6 +6,9 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-21/quasar/paper.pdf
+  - raw/papers/2026-09-21/quasar/source/theory.tex
+  - raw/papers/2026-09-21/quasar/source/appendix_proofs.tex
   - raw/papers/2026-09-21/lc-qat/paper.pdf
   - raw/papers/2026-09-21/lc-qat/source/main.tex
   - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
@@ -176,6 +179,16 @@ $$
 
 代理变量的尺度也会影响反向。设整数坐标代理为 $P_z$，改用 $P_x=s(P_z-t)$、$s>0$。若仍要保持相同的硬前向，应使用 $Q(P_x/s+t)$，而不是 $Q(P_x)$；按同一代理反向时还多出 $1/s$ 的 Jacobian。这个整理者推导说明：把潜变量缩到 Xavier 量级，不能自动保持选码，也不能仅凭“归一化”判断训练步长。LC-QAT式11描述缩放初始化，图3含 scaling，但式5与式11的坐标接口未完全给出；本页保留这一实现缺口，不把自洽示例当作作者代码。
 
+### 3.4 重构误差怎样进入 STE 更新的条件界
+
+恒等 STE 将 $r=w+\Delta$ 处的梯度施加给潜在参数 $w$，造成 $e=\nabla\mathcal L(r)-\nabla\mathcal L(w)$。[QUASAR](../../methods/quasar.md#3-理论连接为何需要额外条件) v1定理1先用线段积分
+
+$$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
+
+将两者连接。令 $h_i$ 为非负敏感度，$\widehat S=\sum_i h_i\Delta_i^2$；若沿所考虑候选连线满足 $\|\nabla^2\mathcal L(w+u\Delta)\Delta\|^2\le C\widehat S$，Jensen不等式给出 $\|e\|^2\le C\widehat S$。$L$-smooth与一致的 $h_i\ge h_{\min}>0$ 是充分条件，可取 $C=L^2/h_{\min}$；仅有Adam二阶状态不保证这个正下界或曲率控制。
+
+对无偏条件噪声的恒等STE–SGD、合适固定步长，重构误差进入联合驻点界的平均惩罚；要控制最终部署模型的函数值还需额外全局PL条件及终点误差。主实验AdamW的收益需要实验支持，不能套用SGD保证。局部损失差近似使用 $H$，梯度差平方线性化使用 $H^2$，两者需要上述控制条件；任意把敏感度再平方不构成更准确的Hessian。降低代理上界也不证明每步真实低比特损失单调下降。（QUASAR v1 §5、附录A。）
+
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
@@ -224,4 +237,5 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 - [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。
 - [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；代理选码、子空间与精确理论/工程更新的条件。
 - [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，arXiv:2606.10531v1；代理梯度、潜变量坐标与数据预算边界。
+- [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)，arXiv:2608.13966v1；恒等STE梯度差、重构误差与SGD/PL条件界。
 - [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV连续更新与选码变化的不同基准。

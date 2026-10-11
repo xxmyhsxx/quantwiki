@@ -6,6 +6,8 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/papers/2026-09-21/quasar/paper.pdf
+  - raw/papers/2026-09-21/quasar/source/methodology.tex
   - raw/repositories/2026-09-21/aqlm/source/finetune.py
   - raw/repositories/2026-09-21/aqlm/source/src/datautils.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
@@ -80,6 +82,18 @@ $$
 W §3.1 的 MSE+Xent 案例在最后层使用输出分布相关目标，不等于“所有层都应改成交叉熵”。[层输出重构](layer-reconstruction-second-order-compensation.md)说明 $\|(W-\widehat W)X\|_F^2$ 如何包含输入的二阶统计；[AWQ](../methods/awq.md)采用的分组输出裁剪目标也不能叫作纯权重 MSE。
 
 范围还可以用梯度学习。[OmniQuant](../methods/omniquant.md) v3 §3.2 将当前权重极值 $a,b$ 映射为 $l=\beta a,u=\gamma b$，学习 $\beta,\gamma$，用 Transformer block 输出误差决定裁剪。相对强度使端点跟随等价变换后不断变化的权重范围；它不是直接最小化权重张量 MSE，也不表示按比例删掉权重。若 $\gamma=0.5$，只说明正端点变为当前最大值的一半，不能据此推断有一半元素被裁剪。
+
+### 2.1 选码范围和恢复参数可以分开优化
+
+[QUASAR](../methods/quasar.md)将一组潜在权重 $w_i$ 的裁剪范围用于生成固定码 $q_i$，再独立拟合恢复值 $r_i=sq_i+o$。这里 $o$ 是实数偏移，与第1节整数零点不同；若实际格式要求 $r_i=s(q_i-z)$，还必须满足 $o=-sz$ 和零点的整数约束。
+
+给定非负敏感度 $h_i$，令 $H_0=\sum_i h_i>0$、$\bar q_h=\sum_i h_iq_i/H_0$、$\bar w_h=\sum_i h_iw_i/H_0$。在加权码方差非零时，最小化 $\sum_i h_i(sq_i+o-w_i)^2$ 的闭式解为
+
+$$s^\star=\frac{\sum_i h_i(q_i-\bar q_h)(w_i-\bar w_h)}{\sum_i h_i(q_i-\bar q_h)^2},\qquad o^\star=\bar w_h-s^\star\bar q_h.$$
+
+它来自先对偏移求驻点，再解尺度的加权线性回归；只对固定码、无额外格式限制的仿射恢复最优。总权重为零或所有有效码相同，分式不能直接使用；后者仅确定一个恢复常量，不能辨识唯一尺度与偏移。QUASAR v1未完整给出这些数值分支，不能自行补成作者实现。
+
+教学例：$q=(0,0,1)$、$w=(0,1,4)$、$h=(1,3,1)$，闭式拟合得 $o=0.75,s=3.25$，前两个数仍共享0.75，第三个恢复4。拟合无法把共享同一码的前两个数拆开；需要改变选码候选。多个候选范围先选码、再拟合、比较拟合后的误差，不要求使用新尺度重新选码。若存储参数只允许低精度值，需在可表示参数上重新评价误差，浮点最优值不能直接替代已编码值。（QUASAR v1式3–4、算法1；例子、退化条件和格式约束为整理者展开。）
 
 ## 3. 作者结果说明了哪些差异
 
@@ -320,6 +334,8 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 锚点本身也须记录来源与刷新：PIVOT-Q 正文称原训练数据集，主代码却采 clean LIBERO 的学生短轨迹并存入 replay；这项差异随方法页保留。范围选择、状态选择和行为约束是相连但不同的优化自由度。
 
 ## 来源身份
+
+- [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)，`arXiv:2608.13966v1`；编码候选与固定码加权恢复的区别。
 
 - [Scale Sensitivity in Low-Bit Post-Training Quantization: Curvature of the Quantization Error Landscape](https://arxiv.org/abs/2609.37416v1)，arXiv:2609.37416v1；§3–5、定理 1、命题 1、定义 1、表 1–2/5，以及附录 A.4/A.5.2/B.1/B.4。第 10 节采用作者条件和报告，矩阵改写及变量关系为整理者展开。
 
