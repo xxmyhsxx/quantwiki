@@ -240,6 +240,7 @@ sources: []
 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) | 多模态模型压缩的评测常停在几个 VQA 分数上。 |
 | [量化误差诊断与验证](implementation/quantization-error-diagnosis.md) | 量化后结果变差，可能来自图变换错误、网格与分布不匹配、局部误差传播，也可能来自整数后端与模拟规则不一致。 |
 | [AQLM 的 PV 训练与选码](implementation/aqlm-pv-training-and-code-updates.md) | 恢复权重梯度、连续目标、新码本时序、候选比例/trust范围、FSDP与数据/保存接口。 |
+| [AQLM 的校准、转换与所选推理](implementation/aqlm-calibration-export-and-inference.md) | token 二阶矩、激活选码、条件导出、有符号码容器与 CUDA 2×8 读取／舍入。 |
 | [AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang](implementation/awq-implementation.md) | 方法页回答 AWQ 为什么这样设计、证据支持什么；本页回答代码层面的事情：量化脚本产出什么形状的权重、打包约定是什么、内核从哪里进入、同一个 AWQ checkpoint 在 vLLM 与 SGLang 里各走哪条路径。 |
 | [GPTQ 的实现核对：校准、导出协议与服务内核选择](implementation/gptq-implementation.md) | 连接 Llama 校准、原始 3-bit 保存、服务格式、vLLM 后端选择与 SGLang 原生/Marlin；保留 TP 与 fallback 条件。 |
 | [QServe/QoQ 的实现核对：两级编码、离线重排与 SGLang W4A8](implementation/qserve-implementation.md) | 从上游 fake-quant 产物追到 nibble 与尺度重排、SGLang QoQ 加载、字节级恢复及 INT8 MMA；区分 W4A8 Linear 与完整 KV4 系统。 |

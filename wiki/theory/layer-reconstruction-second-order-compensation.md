@@ -6,6 +6,8 @@ tags:
   - second-order
   - quantization-error
 sources:
+  - raw/repositories/2026-09-21/aqlm/source/aq_engine.py
+  - raw/repositories/2026-09-21/aqlm/source/main.py
   - raw/papers/2026-09-22/gptvq/paper.pdf
   - raw/papers/2026-09-22/gptvq/source/sections/method.tex
   - raw/papers/2026-09-22/gptvq/source/sections/appendix.tex
@@ -34,7 +36,7 @@ sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/gptq/paper.pdf
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # 层输出重构与二阶误差补偿
@@ -56,6 +58,18 @@ $$
 因此各输出行可以独立优化，同时共享 $G=XX^{\mathsf T}$。$G_{ij}=\sum_tX_{it}X_{jt}$ 是未中心化的二阶乘积，不应无条件称为协方差；$G_{ii}$ 衡量该输入通道在校准数据上的平方幅度，非对角项反映不同通道共同变化的影响。
 
 若用权重 MSE，即 $\|W-\widehat W\|_F^2$，等于忽略这些输入统计。只有在 $XX^{\mathsf T}$ 与单位阵成比例等特殊条件下，两种目标才等价。一个权重偏移大，并不必然意味着输出误差大；不同通道造成的输出误差还可能互相抵消。
+
+### 1.1 二阶矩的归约与分片合并
+
+总 Gram 与平均二阶矩的区别影响实际损失归约。本小节以 $\overline G=XX^\mathsf T/n$ 表示平均二阶矩，保留前后章节 $G=XX^\mathsf T$ 的总 Gram 定义。于是 $\operatorname{tr}(E\overline GE^\mathsf T)/r=\|EX\|_F^2/(nr)$，其中 $E\in\mathbb R^{r\times d}$ 是权重误差、$n$ 是输入向量数、$r$ 是输出通道数。它是输出元素的平均平方误差；相对总和乘了常数，固定候选的排序可以相同，但梯度尺度、优化器和停止阈值要按实际接口判断。
+
+两片材料分别有 $n_1,n_2$ 个输入向量，平均二阶矩为 $\overline G_1,\overline G_2$ 时，合并应使用
+
+$$
+\overline G=\frac{n_1\overline G_1+n_2\overline G_2}{n_1+n_2}.
+$$
+
+这也给出在线累积方式：旧均值乘旧样本比例，再加新批的总乘积除以总样本数。只有两片大小相同，直接取两个均值的等权平均才成立。Transformer 输入展平 batch 与序列后，应按实际 token 向量数计数，是否排除 padding 又是独立的数据接口问题。固定 AQLM 的 `AQEngine.add_batch` 和 `main.py:init_aq_engines_parallel` 是这一规则的实际例子，默认 FP64 累积、选码时另转码本 dtype，见[校准实现](../implementation/aqlm-calibration-export-and-inference.md#1-收集的是-token-加权的输入二阶矩)。
 
 ## 2. Hessian 在这里是什么
 
@@ -498,6 +512,7 @@ $$
 | [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
 | [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |
 | [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4) | `arXiv:2401.06118v4` | 量化机制与适用条件 |
+| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2) | `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` | `AQEngine.add_batch` 与 `init_aq_engines_parallel` 的均值累积和合并 |
 | [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1) | `arXiv:2306.03078v1` | 量化机制与适用条件 |
 | [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4) | `arXiv:2306.07629v4` | 量化机制与适用条件 |
 | [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |

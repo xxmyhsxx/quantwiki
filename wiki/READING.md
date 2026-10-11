@@ -103,7 +103,7 @@ updated: 2026-10-11
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
-| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)<br>e79a896ed6656fe4ed06193d42d004e7d0bbdbb2 | 根finetune入口→PV optimizer/Adam→aq/L2选码→权重写回；数据/KL、FSDP owner与保存的必要依赖 | [AQLM PV训练与选码](implementation/aqlm-pv-training-and-code-updates.md)；[PV-Tuning](methods/pv-tuning.md)；[AQLM](methods/aqlm.md) | 未核原始激活感知校准、导出/推理kernel及所有加载分支；保留多rank直接更新、阈值/参数传递/协议边界；未执行上游、训练、通信或GPU | [2026-10-08](LOG.md#2026-10-08--aqlm-pv-实现-ingest)；[2026-10-11](LOG.md#2026-10-11--aqlm-pv-实现-ingest-收尾复核) |
+| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)<br>e79a896ed6656fe4ed06193d42d004e7d0bbdbb2 | 根finetune→PV optimizer/Adam→aq/L2选码→写回；原始main→AQEngine→激活选码/逐块微调；所选PV legacy转换、HF容器与CUDA 2×8前向读取 | [PV训练与选码](implementation/aqlm-pv-training-and-code-updates.md)；[校准、转换与所选推理](implementation/aqlm-calibration-export-and-inference.md)；[二阶矩归约](theory/layer-reconstruction-second-order-compensation.md#11-二阶矩的归约与分片合并) | CPU/Numba、Triton、Turing及其他CUDA格式、全部加载/分布式组合未完整核读；保留转换入口/args元数据/逐输出组尺度/低精度舍入条件；未执行上游、编译、模型、通信或GPU | [2026-10-08](LOG.md#2026-10-08--aqlm-pv-实现-ingest)；[2026-10-11](LOG.md#2026-10-11--aqlm-原始校准转换与所选推理-ingest) |
 | [ruanruan-andy/PIVOT-Q](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15)<br>74d6e1f8994a03eb45aae5c316a743abda2cba15 | README/实验协议；主 GR00T+QuantVLA 的配置→selector→训练、当前/未来评分、phase/gap/权重、归一化首动作、clean anchor、LoRA更新、vendored加载/采样/fake-quant linear | [PIVOT-Q实现与差异](methods/pivot-q.md#5-主-gr00t--quantvla-调用链与可训练变量) | 仅所列主路径；其他模型完整adapter/量化器/子模块、checkpoint恢复边界、部署与全图梯度未核；未导入、安装或执行上游/模型/GPU | [2026-10-08](LOG.md#2026-10-08--pivot-q-论文与主恢复链-ingest-和-astra-review) |
 | [huggingface/kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc)<br>5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc | 初始化模板与扩展构建/装入的登记文件 | [CUDA 算子的编写、编译与 PyTorch 接入](implementation/cuda-operator-build-and-integration.md)；[算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 未编译或验证跨版本 ABI、训练/backward | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
 | [triton-lang/triton](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592)<br>81a46fa0c04526e5df55a018ecfab72ff922f592 | 教程 01/02/03/05、testing、runtime/语言/JIT 相关文件及块缩放矩阵乘路径 | [块缩放矩阵乘：FP4/FP8 编码、Scale 布局与 Triton 调用](implementation/block-scaled-matmul-execution.md)；[Triton 语言与编译语义：从逻辑张量到 GPU Kernel](fundamentals/operators/triton-language-and-compilation.md) | 未编译/执行 GPU；不表示所有语言与编译分支已核验 | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
@@ -223,7 +223,7 @@ updated: 2026-10-11
 
 首轮140个条目中，CentriQ、PIVOT-Q论文及作者代码主路径、SAPrune、QuantForge、XOR-Trellis、VPTQ、GPTVQ及PV-Tuning论文、AQLM的PV代码主链已研读并按实际范围移入上表；以下130个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。下一项接续 AQLM 同快照的原始激活感知校准与导出/推理接口，完善同一记录的实际范围；其后研读 LC-QAT，再接续其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；下一项研读 LC-QAT，再接续 P1 批次的其余论文与必要实现依赖；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
 ### 论文（57条）
 
