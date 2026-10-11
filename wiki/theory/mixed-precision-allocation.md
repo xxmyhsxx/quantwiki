@@ -7,6 +7,8 @@ tags:
   - memory
   - deployment
 sources:
+  - raw/papers/2026-09-21/coopq/paper.pdf
+  - raw/papers/2026-09-21/coopq/source/aaai2026.tex
   - raw/papers/2026-09-21/channel-wise-mixed-precision/paper.pdf
   - raw/papers/2026-09-21/channel-wise-mixed-precision/source/CMPQ_V2.tex
   - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
@@ -23,7 +25,7 @@ sources:
   - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
   - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
   - raw/papers/2026-10-07/stagq/paper.pdf
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
 # 混合精度分配：选择变量、预算与部署口径
@@ -132,12 +134,27 @@ $$\bar c=3+\frac{k_4-k_2}{d}.$$
 
 给定名额也需声明取整与并列处理：例如仅升级且 $b\ge3$ 时，严格上限可要求 $k_4\le\lfloor d(b-3)\rfloor$，而最近平均值可能用四舍五入，两者约束不同。不同通道长度时又必须按参数量加权，不能直接用通道数量比例。即使主体预算准确，中心、保护值/索引与对齐仍须计入第2节的完整代价；通道排序也没有保证任务质量全局最优。
 
+## 10. 联合量化的边际贡献与交互代理
+
+单层在其他层全浮点时测出的损失，未必等于多个层一起量化时的损失增量。[CoopQ](../methods/coopq.md) v2的SPQE从全4-bit状态出发，沿随机排列逐层降到2-bit，在不同联合状态下重复评价NLL。为解释成本，设 $q_i=1$ 为低精度、$g(q)$ 为相对全高的损失增加；一次排列中第 $i$ 层的成本边际为 $d_i=g(q+e_i)-g(q)$，其中 $e_i$ 是第 $i$ 个单位向量，降精度前 $q_i=0$。随机排列期望给出该低精度成本游戏的Shapley值；它平均分摊状态依赖影响，不保证每个具体组合都可由边际均值相加恢复。CoopQ原文用高精度集合与“前−后”的NLL边际，符号相反，不能直接混用为正损失。
+
+**教学反例：**两层成本 $g(q)=q_1+q_2+2q_1q_2$。先量化1或先量化2，对齐层列后的边际向量分别为 $(1,3)$、$(3,1)$；均值 $(2,2)$，用分母2得到协方差
+
+$$C=\begin{pmatrix}1&-1\\-1&1\end{pmatrix}.$$
+
+真实联合附加损失为正的2，边际协方差非对角却为−1：每条路径总成本固定为4，一层分得较多时另一层分得较少。将协方差直接当作真实二阶交互会丢掉这个区别。对全部边际统一反号，协方差不变，也不能借此消除目标一阶项的符号问题。
+
+对称矩阵 $K$ 的二进制代理 $F(q)=a^\top q+q^\top Kq$，其Shapley值为 $\psi_i=a_i+K_{ii}+\sum_{j\ne i}K_{ij}$：对角项随玩家自身加入，成对项的总系数 $2K_{ij}$ 平分到两位玩家。若只从均值中扣除非对角行和，仍留下 $K_{ii}$；不能未经额外对角约定就称为准确隔离一阶贡献。以上为整理者有限游戏推导，CoopQ式8–10是经验代理，其实验有效性与真实Hessian/精确游戏分解是不同证据。
+
+求解器线性化可以精确求固定代理，不能补回代理未表达的真实损失。预算也须明确全低基线：升级增量约束应扣除基线占用；若右侧直接用总预算，则左侧要计入基线。实际方法页保留原文符号、形状、对角与预算衔接的未澄清处，未据此推断作者代码缺陷。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| [CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs](https://arxiv.org/abs/2509.15455v2) | `arXiv:2509.15455v2` | SPQE、协方差代理与二进制求解；第10节有限游戏及Shapley代数为整理者展开 |
 | [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4) | `arXiv:2410.13056v4` | 算法1的分位分配；第9节有限预算、严格比较及计数例为整理者展开 |
 | [StagQ](https://arxiv.org/abs/2610.05977v1) | `arXiv:2610.05977v1` | 前缀可行集合、共享元数据、全精度保护与 logical/physical rate；§2–4、附录 E/G/A |
 | [Differentiable Bit-Widths](https://arxiv.org/abs/2610.06026v1)；[MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a) | `arXiv:2610.06026v1`；`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a` | 成对分量的 rank/bit；`block_ap.py` 矩阵份额、`fake_dbw.py` 整数投影与 `real_dbw.py` 浮点恢复；细节见 DBW 方法页 |
