@@ -11,7 +11,7 @@ sources:
   - raw/papers/2026-09-26/casa-cross-layer-sensitivity/paper.pdf
   - raw/papers/2026-09-22/hawq-v2/paper.pdf
   - raw/papers/2026-09-26/quantization-price-prediction/paper.pdf
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # 曲率加权量化误差：Fisher、双侧度量与量化集合
@@ -51,7 +51,7 @@ $$\operatorname{vec}_{col}(E)^\top(A\otimes S)\operatorname{vec}_{col}(E)
 
 行优先展开对应 $S\otimes A$，两种记号都可用，但不能混用。RGSQ 式 14 的中间乘积遵循列优先，末行却交换了因子，本页依恒等式修正。Kronecker 与 reshape 的基本关系见 [可逆变换与 Kronecker 乘积](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md)。
 
-当 $S=I$、$A=XX^\top/N$，恢复层输出 MSE。因此欧氏输出重构并非权重空间所有方向等价；[二阶重构](layer-reconstruction-second-order-compensation.md) 中的输入 Gram 矩阵已经表达方向差异。
+当 $S=I$、$A=XX^\top/N$，该二次型为 $\|EX\|_F^2/N$，即按 token 平均的平方输出误差。若按全部输出元素取 MSE，还需除以输出通道数 $d_o$。固定候选的排序不受这个正比例因子影响，梯度与阈值的尺度却会改变；归约口径见[二阶重构](layer-reconstruction-second-order-compensation.md#1.1%20%E4%BA%8C%E9%98%B6%E7%9F%A9%E7%9A%84%E5%BD%92%E7%BA%A6%E4%B8%8E%E5%88%86%E7%89%87%E5%90%88%E5%B9%B6)。输入 Gram 已表达方向差异，欧氏输出重构并不等于各权重方向等价。
 
 ## 3. 阻尼与模态融合都会改变度量
 
@@ -78,7 +78,7 @@ RGSQ 先用模态系数分别混合 A/S，再做乘积。它产生跨模态因�
 
 ## 5. 标量敏感度为何存在不可消去的失真
 
-若双侧因子正定，$Q(E)/\|E\|_F^2$ 的极值分别是 $m=\lambda_{min}(A)\lambda_{min}(S)$ 和 $M=\lambda_{max}(A)\lambda_{max}(S)$。用任何正标量 $\alpha\|E\|_F^2$ 代替 $Q$，对全部误差方向的最坏双向乘性失真为 $\max(M/\alpha,\alpha/m)$；最优标量 $\sqrt{mM}$ 也只能把它降至 $\sqrt{\kappa(A)\kappa(S)}$。（CASA Theorem 3.1。）
+记 $J(E)=\operatorname{tr}(SEAE^\top)$。若双侧因子正定，$J(E)/\|E\|_F^2$ 的极值分别是 $m=\lambda_{min}(A)\lambda_{min}(S)$ 和 $M=\lambda_{max}(A)\lambda_{max}(S)$。用任何正标量 $\alpha\|E\|_F^2$ 代替 $J$，对全部误差方向的最坏双向乘性失真为 $\max(M/\alpha,\alpha/m)$；最优标量 $\sqrt{mM}$ 也只能把它降至 $\sqrt{\kappa(A)\kappa(S)}$。（CASA Theorem 3.1。）
 
 [HAWQ-V2](../methods/hawq-v2.md) 的平均 trace 在等方向能量或各向同性扰动假设下有解释，但与这个最坏方向最优标量解决的不是同一问题。条件数大表明存在坏方向，不证明有限量化候选一定实现它。对角因子保留坐标异质性，也仍舍弃旋转后的相关方向。[CASA](../methods/casa.md) 进一步说明这种区别如何影响有限预算分配，以及跨层有符号项如何使独立求和失效。
 

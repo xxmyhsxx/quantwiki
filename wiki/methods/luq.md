@@ -146,4 +146,4 @@ LUQ 为“预算约束下按层分配压缩强度”提供了具体基线。它�
 | --- | --- | --- |
 | LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |
 | BiLLM: Pushing the Limit of Post-Training Quantization for LLMs（`https://arxiv.org/abs/2402.04291v2`） | `arXiv:2402.04291v2` | — |
-| LUQ author project page（`https://shubhangb97.github.io/LUQ/`） | `snapshot-2026-09-15` | 获取：None；标识：luq-author-project-snapshot-2026-09-15 |
+| LUQ author project page（`https://shubhangb97.github.io/LUQ/`） | `snapshot-2026-09-15` | 获取日期：2026-09-15；标识：luq-author-project-snapshot-2026-09-15 |

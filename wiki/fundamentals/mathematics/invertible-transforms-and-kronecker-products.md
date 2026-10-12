@@ -243,7 +243,7 @@ M 奇异时仍有平方根，但没有普通逆矩阵。可以明确限制在受
 | Efficient Riemannian Optimization on the Stiefel Manifold via the Cayley Transform（`https://arxiv.org/abs/2002.01113v1`） | `arXiv:2002.01113v1` | — |
 | AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` | — |
 | FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
-| PyTorch orthogonal parametrization（`https://docs.pytorch.org/docs/2.14/generated/torch.nn.utils.parametrizations.orthogonal.html`） | `snapshot-2026-09-15` | 获取：None；标识：orthogonal-parametrization-snapshot-2026-09-15 |
+| PyTorch orthogonal parametrization（`https://docs.pytorch.org/docs/2.14/generated/torch.nn.utils.parametrizations.orthogonal.html`） | `snapshot-2026-09-15` | 获取日期：2026-09-15；标识：orthogonal-parametrization-snapshot-2026-09-15 |
 
 - NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1 §3、附录 F；查询二阶矩与加权变换。第 7 节的统一记号、统计恒等式、变换对照和数值例子为整理者教学推导，沿用 QERA 等既有来源的距离定义。
 

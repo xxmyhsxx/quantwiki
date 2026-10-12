@@ -65,5 +65,5 @@ $$
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |
-| MIT 6.441 Information Theory, Lecture 1（`https://ocw.mit.edu/courses/6-441-information-theory-spring-2010/resources/mit6_441s10_lec01/`） | `Spring 2010, Lecture 1` | 获取：None；标识：2010-mit-6441-lecture-1-snapshot-2026-09-14 |
+| MIT 6.441 Information Theory, Lecture 1（`https://ocw.mit.edu/courses/6-441-information-theory-spring-2010/resources/mit6_441s10_lec01/`） | `Spring 2010, Lecture 1` | 获取日期：2026-09-14；标识：2010-mit-6441-lecture-1-snapshot-2026-09-14 |
 | Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |

@@ -146,7 +146,7 @@ $X^v$ 是视觉输出，$X^{(n)}$ 是最终输出，$q/r$ 区分量化和浮点�
 | --- | --- | --- |
 | Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |
 | QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | — |
-| MIT 6.441 Information Theory, Lecture 1（`https://ocw.mit.edu/courses/6-441-information-theory-spring-2010/resources/mit6_441s10_lec01/`） | `Spring 2010, Lecture 1` | 获取：None；标识：2010-mit-6441-lecture-1-snapshot-2026-09-14 |
+| MIT 6.441 Information Theory, Lecture 1（`https://ocw.mit.edu/courses/6-441-information-theory-spring-2010/resources/mit6_441s10_lec01/`） | `Spring 2010, Lecture 1` | 获取日期：2026-09-14；标识：2010-mit-6441-lecture-1-snapshot-2026-09-14 |
 | ChangyuanWang17/QVLM（`https://github.com/ChangyuanWang17/QVLM/tree/191bdc9a833b7ed273c234d9f7b69ceb51d33b6f`） | `191bdc9a833b7ed273c234d9f7b69ceb51d33b6f` | — |
 
 ## 教学计算材料

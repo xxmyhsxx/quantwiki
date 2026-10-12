@@ -251,5 +251,5 @@ $$
 | SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
 | FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
 | AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` | — |
-| PyTorch orthogonal parametrization（`https://docs.pytorch.org/docs/2.14/generated/torch.nn.utils.parametrizations.orthogonal.html`） | `snapshot-2026-09-15` | 获取：None；标识：orthogonal-parametrization-snapshot-2026-09-15 |
+| PyTorch orthogonal parametrization（`https://docs.pytorch.org/docs/2.14/generated/torch.nn.utils.parametrizations.orthogonal.html`） | `snapshot-2026-09-15` | 获取日期：2026-09-15；标识：orthogonal-parametrization-snapshot-2026-09-15 |
 | ruikangliu/FlatQuant（`https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1`） | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
