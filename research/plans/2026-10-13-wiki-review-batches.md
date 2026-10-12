@@ -6,7 +6,7 @@
 
 “已完成”表示本批页面职责与核心解释已核读、发现的问题已处理；来源核验是针对核心主张与疑点的定向核对，不表示所有上游代码或论文证明均重新审计。第 1 批沿用上一轮六页抽查，第 2 批沿用已完成的重构推导复核，第 3 批沿用已完成的 GPTQ 方法复核；相关正文在本轮开始时未变化。
 
-当前完成 26 批、159 个知识页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
+当前完成 27 批、167 个知识页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
 
 后续批次最多八页；若一批包含独立计算链或问题较多，再拆分。没有问题的页面无需为凑修改而改写。新出现的跨页问题可回修已审页，并记录影响。
 
@@ -290,7 +290,7 @@
 
 ## 第 26 批 · 部署、内存与批处理 2
 
-状态：已完成；6 页。提交：随本批清单更新。
+状态：已完成；6 页。提交：`a0cb92f`。
 
 - [vllm-attention-operator-design](../../wiki/implementation/vllm-attention-operator-design.md)
 - [vllm-inference-execution](../../wiki/implementation/vllm-inference-execution.md)
@@ -301,7 +301,7 @@
 
 ## 第 27 批 · MoE、MLA 与设备执行链 1
 
-状态：待审；8 页。
+状态：已完成；8 页。提交：随本批清单更新。
 
 - [deepep-moe-communication-execution](../../wiki/implementation/deepep-moe-communication-execution.md)
 - [deepgemm-moe-expert-execution](../../wiki/implementation/deepgemm-moe-expert-execution.md)

@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 27 批
+
+- 核读 MoE 路由/EP、DeepEP/DeepGEMM、普通 MLA、DCP、packed DSA 与设备链八页；回查 LL 容量/scale stride、专家 tile 有效范围、LSE 底数、空分片归约、主缓存恢复与 indexer 页平面。主要机制和跨页接口一致，解释深度足够。
+- MLA 集中说明源码解释与未运行条件，删除各阶段重复声明；DSA 空行段保留合法索引、有限输入和已分配缓存条件，移除极端输入清单。压缩单设备 MoE 和 DeepGEMM 的重复尾注，保留固定版本差异、dtype/维度 guard、DCP 空分片 NaN 风险及未核读分支。
+- 无 ingest 或 GPU 运行；累计完成 167 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 26 批
 
 - 核读 vLLM 执行/Attention、Atom、DQ、Ideogram 与 QServe 六页；回查缓存 shape/stride、进度与在途计数、分段归约、阶段 mask/backward、Atom 配方及 QServe 表3和延迟分项。具体机制与相邻实现页一致。

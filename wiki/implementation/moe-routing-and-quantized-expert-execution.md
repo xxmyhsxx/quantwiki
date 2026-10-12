@@ -69,7 +69,7 @@ MoE 的 top-k 结果只是专家 ID 与权重；完整执行还要把 token–�
 
 路由部分采用该类支持的 `topk_method="noaux_tc"`、sigmoid 打分、correction bias、grouped top-k 和 `norm_topk_prob=True` 配置。`DeepseekV2MoE` 是多个模型共用的实现类，类名不等于本页全部行为来自 DeepSeek-V2。尤其这些有偏 sigmoid/group 规则不能替换 [V2 论文的 softmax affinity](../fundamentals/model/mixture-of-experts-and-routing.md#1.%20%E5%85%B1%E4%BA%AB%E4%B8%93%E5%AE%B6%E3%80%81%E8%B7%AF%E7%94%B1%E4%B8%93%E5%AE%B6%E4%B8%8E%20gate%20%E5%88%86%E5%88%AB%E5%81%9A%E4%BB%80%E4%B9%88)；原 V2 配置和其他 backend 应分别核对。[1][2]
 
-这些条件确定一条可追踪的源码分支，不代表本机或某个指定 checkpoint 已接受该配置。`Fp8Config` 要求块量化来自 FP8 serialized checkpoint 且 activation 为 dynamic；当前 CUDA 量化包装还要求归约维可被 activation group size 整除。因此下面的 $D,I$ 均取 128 的倍数。配置入口的 capability 检查也不能代替实际低精度 dot 的硬件、Triton 与依赖验证，更不能据此声称 A100 已运行这条 FP8 路径。[6][15]
+`Fp8Config` 要求块量化来自 FP8 serialized checkpoint 且 activation 为 dynamic；当前 CUDA 量化包装还要求归约维可被 activation group size 整除。因此下面的 $D,I$ 均取 128 的倍数。[6][15]
 
 | 阶段 | 本页实际调用 | 交付给下一阶段的对象 |
 | --- | --- | --- |
@@ -329,7 +329,7 @@ vLLM 对照来自 vllm-project/vllm 固定 commit（`https://github.com/vllm-pro
 | [V18] | `vllm/_custom_ops.py` | `silu_and_mul_per_block_quant` 的 FP8/scales 分配与 C++ 调用 |
 | [V19] | `csrc/libtorch_stable/quantization/fused_kernels/fused_silu_mul_block_quant.cu` | FP32 SiLU×up、组 amax、最小尺度、量化和输入条件 |
 | [V20] | `csrc/libtorch_stable/moe/moe_align_sum_kernels.cu` | 专家计数/前缀和/配对写入与 FP32 moe_sum；未遍历全部优化变体 |
-| [V21] | `csrc/libtorch_stable/quantization/w8a8/fp8/per_token_group_quant.cu` | 普通 E4M3 行组尺度与编码；未运行或编译 |
+| [V21] | `csrc/libtorch_stable/quantization/w8a8/fp8/per_token_group_quant.cu` | 普通 E4M3 行组尺度与编码 |
 | [V22] | `vllm/utils/deep_gemm.py` | 仅核读 E8M0 scale 的全局启用判定，不展开 DeepGEMM 专家执行 |
 | [V23] | `vllm/model_executor/layers/fused_moe/topk_weight_and_reduce.py` | `TopKWeightAndReduceNoOP` 的已加权已归约契约和输出复制 |
 | [V24] | `vllm/model_executor/layers/fused_moe/runner/shared_experts.py` | `NO_OVERLAP` 选择、单次 shared 调用及当前输出存取 |

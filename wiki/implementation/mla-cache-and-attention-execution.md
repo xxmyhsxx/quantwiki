@@ -62,6 +62,8 @@ updated: 2026-10-07
 
 MLA 的历史状态是联合 KV 潜变量与位置 key；执行时既可以临时展开为多头 K/V，也可以让 query 进入潜空间，直接读取压缩表示。两条计算路径可以使用同一缓存池，却具有不同的矩阵形状、临时内存和舍入位置。本页把 [MLA 的代数与缓存对象](../fundamentals/model/multi-head-latent-attention.md)接到实际模型层、槽位布局和 Attention 调用。 第 1–8 节核读 SGLang 调用端，第 9–14 节核读独立 FlashInfer 库快照，第 15–20 节以 vLLM 普通 CUDA 路径作针对性对照；三个固定来源的版本与实际执行范围分别保留。
 
+公式、容量与索引例子是依据源码整理的解释；本页未安装、编译或运行三个快照，未测量误差、显存或性能。
+
 ## 1. SGLang 固定版本与所选路径
 
 本节核对 SGLang commit `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` 的普通非 DSA DeepSeek MLA、单设备、FlashInfer backend，沿 eager 的 extend/decode 与 prefix 读取展开。DSA、推测执行、LoRA、DCP/CP 和其他硬件分支不作为本节的执行主线；遇到它们时只用于说明所选分支的条件。
@@ -131,7 +133,7 @@ $$
 
 该函数还揭示 checkpoint 格式不等于实际 BMM 格式：AWQ packed 的 `kv_b_proj` 可先反量化；某些块缩放 FP8 路径会恢复到 BF16，某些 FP8 路径则转换为单 tensor scale 后调用 `bmm_fp8`。满足专门条件时可保留 DeepGEMM 的块 scale。`forward_absorb_prepare/core` 的 `self.w_scale`、`w_scale_k/v` 与动态 activation scale 属于这些**权重/矩阵乘路径**，不是普通 MLA cache 的 per-token scale。
 
-吸收的实数恒等式不能证明量化展开路径与量化吸收路径逐位相同。矩阵表示、重新量化、中间 dtype 与累计次序都可能不同；本节仅核对代码分支，没有测量误差或性能。
+吸收的实数恒等式不能证明量化展开路径与量化吸收路径逐位相同。矩阵表示、重新量化、中间 dtype 与累计次序都可能不同。
 
 ## 4. 持久缓存保存什么，槽位怎样写入
 
@@ -240,13 +242,11 @@ out_cache_loc  = [20,21,30]
 
 ## 8. 已核读范围与验证边界
 
-前述 SGLang 部分完成固定源码的模型维度、普通投影吸收、展开/吸收分派、联合池的地址/dtype、请求索引与 FlashInfer 调用端核读。正文的矩阵结合式、容量式和缩小的索引例子是整理者解释；没有安装 SGLang 或 FlashInfer、运行模型、编译 kernel、测量误差/显存/吞吐。
-
 该 SGLang 声明依赖的 FlashInfer 0.6.12 底层设备程序尚未独立核验；以下核读的是库 v0.6.17 的另一份固定源码。其他未核验实现包括 JIT CUDA 缓存批量写内部、完整图执行、LoRA 修正、DSA 特殊 cache/索引、多设备与所有量化配置组合。后续比较应固定模型参数、cache dtype、backend、Q/KV 长度、prefix、阶段和是否计入转换/plan/workspace，沿 [算子测量](kernel-correctness-and-benchmarking.md)与 [服务评测](serving-performance-evaluation.md)分别报告。
 
 ## 9. FlashInfer v0.6.17：plan/run 的接口单位
 
-以下独立核读 FlashInfer v0.6.17、commit `a0a6b019b9b27d49d209f85d028a1ae5a9b347d7` 的标准 `BatchMLAPagedAttentionWrapper`。这是另一份固定源码；上一节 SGLang 的声明依赖是 0.6.12，不能将本节的新增参数、dtype 限制或底层实现直接当作该 SGLang 部署正在使用的版本。两侧尚未联合安装、编译或运行。
+以下独立核读 FlashInfer v0.6.17、commit `a0a6b019b9b27d49d209f85d028a1ae5a9b347d7` 的标准 `BatchMLAPagedAttentionWrapper`。这是另一份固定源码；上一节 SGLang 的声明依赖是 0.6.12，不能将本节的新增参数、dtype 限制或底层实现直接当作该 SGLang 部署正在使用的版本。
 
 实际类定义在 `flashinfer/mla/_core.py`，`mla/__init__.py` 只导出入口。该 wrapper 的 fa2/fa3 路径接收**已经吸收到潜空间的 query**，输出也是 latent 加权和；它不负责 query 上投影、RoPE、Value 上投影和输出投影，亦不在 run 中追加 KV。模型/框架必须先完成新 token 的写入与槽位映射。
 
@@ -315,7 +315,7 @@ $$\texttt{ckv\_base}+p\,\texttt{ckv\_stride\_page}+r\,\texttt{ckv\_stride\_n}+c.
 
 `load_kv` 按有效长度和 split 范围间接取页，异步搬到 shared memory。fa2 的 `compute_mla_qk` 分别计算位置与 latent 点积、相加后进入一次在线 softmax；`compute_mla_pv` 用同一 latent tile 做概率加权。没有从全局缓存展开成 $H$ 份内容 K/V，也不要求物化完整 $Q\times L$ score 矩阵。共享 latent 是持久表示事实，具体多个 head 的加载复用程度仍由 tile 与工作安排决定，不能据此承诺历史只被读取一次。
 
-fa2 launcher 按 shared-memory 容量选择 KV tile、pipeline stage 和 warpgroup 的 QK 分工，用 MMA 完成标准路径。fa3 的 Hopper 入口固定所选 64×64 tile、两阶段流水，将搬运与计算分配给 producer/consumer warpgroups，计算侧使用 WGMMA。这里追到实际 kernel 与内存读写责任，未逐条审查全部寄存器排列或证明这些分派在当前机器运行成功。
+fa2 launcher 按 shared-memory 容量选择 KV tile、pipeline stage 和 warpgroup 的 QK 分工，用 MMA 完成标准路径。fa3 的 Hopper 入口固定所选 64×64 tile、两阶段流水，将搬运与计算分配给 producer/consumer warpgroups，计算侧使用 WGMMA。
 
 ## 12. 在线归一化、split 合并和 LSE 的底
 
@@ -339,7 +339,7 @@ $$z^{(e)}=(\ln2)z^{(2)}=\ln\sum_j\exp(\ell_j).$$
 
 ## 13. 原生 FP8 cache 读取与 SGLang 的 cast 路径不同
 
-本固定 wrapper 的 `plan` 允许 KV dtype 为 FP16、BF16、FP8 E4M3FN；FP8 还受明确限制：**fa3、SM90、BF16 query、$d_c=512,d_R=64$**。其他 1 字节存储如 uint8、FP4、E5M2 不能因字节宽度相同就按此接口解释为 FP8；fa2 的这条标准 wrapper 路径也没有 FP8 KV 支持。这里记录代码 guard 与静态限制，未据此声称所有允许组合已在本地验证。
+本固定 wrapper 的 `plan` 允许 KV dtype 为 FP16、BF16、FP8 E4M3FN；FP8 还受明确限制：**fa3、SM90、BF16 query、$d_c=512,d_R=64$**。其他 1 字节存储如 uint8、FP4、E5M2 不能因字节宽度相同就按此接口解释为 FP8；fa2 的这条标准 wrapper 路径也没有 FP8 KV 支持。
 
 FP8 `run` 要求有限正数的 `ckv_scale` 与 `kpe_scale`，语义为
 
@@ -360,8 +360,6 @@ z_{t,i}=\sum_j a_{t,j,i}(s_c\widetilde c_j).$$
 与 SGLang 所读调用端比较：其普通 paged MLA 先对 `get_key_buffer` 做整池 `.to(q.dtype)`，再将工作 dtype cache 传入 run；本库的 FP8 路径则让 `kv_data_type=FP8` 与 cache scale 进入设备 kernel。两者能表达相同 latent 对象，却具有不同的转换位置、临时内存和版本要求。对 SGLang 0.6.12 调用端不能因本库 v0.6.17 新接口而改写成已使用 fused FP8 dequant。
 
 ## 14. 本次库侧核读范围
-
-实际核读 `BatchMLAPagedAttentionWrapper` 的普通构造/plan/run、backend 与 dtype 选择、fa2/fa3 JIT 配置、两套 C++ plan/run/binding、共同 `MLAPlan`/params、设备 cache 地址、两项 QK 与 latent PV、mask、在线 softmax、partial output 与 LSE 合并，另核对 fa3 的 FP8 tile 反量化。公式和页例子是依据源码整理的解释，没有执行库测试、编译 CUDA 或测量设备性能。
 
 同一 Python 模块还包含 CUTLASS/Blackwell、TRTLLM、CuteDSL 与稀疏 MLA 入口，本节没有核读这些设备路径。`backend="auto"` 是基于设备条件的选择：该标准 wrapper 在满足 SM90/CUDA 条件时选 fa3，否则 fa2；不能等同于所有架构和 decode 形状都已选择最优后端。其他入口采用不同输入布局、scale、能力限制或输出协议，不能用本节的两个 kernel 覆盖它们。
 
@@ -471,7 +469,7 @@ Prefill workspace 的 token 容量由 batch、最大序列长度和 block size �
 
 这个表比较代码中的对象和执行契约，不提供性能排序。对照结果说明：共享 latent、FP8 cache、paged attention 或 LSE merge 这些名称都不足以确定实际读写位置、scale、工作精度和临时量。
 
-本页 vLLM 单设备部分已核读模型投影/RoPE 调用、公共吸收与权重拆分、联合 cache spec、普通 CUDA writer 和 prefix gather、Triton grouped decode 的地址/反量化/QK/PV/两阶段归一化、FlashAttention prefill 的调用与合并契约。没有核读其他 MLA decode kernel、FlashAttention 库内 kernel、稀疏 DSA、`fp8_ds_mla` packed 表示、ROCm/AITER、DCP/PCP、推测执行、LoRA、完整 CUDA graph、量化输出融合或所有维度组合；也没有安装三个快照、运行模型、编译 GPU kernel 或测误差/性能。SGLang 声明依赖的 FlashInfer 0.6.12、独立 FlashInfer v0.6.17 与本节 vLLM 快照仍是三项分开的版本证据。
+本页 vLLM 部分未核读其他 MLA decode kernel、FlashAttention 库内 kernel、ROCm/AITER、推测执行、LoRA、完整 CUDA graph 或量化输出融合。DCP 与 packed/DSA 的专用接口由下列页面接续。
 
 PCP=1 的普通 vLLM DCP 已在[分布式执行页](vllm-mla-context-parallel-execution.md)接续：全局 token 到本地 page、query head 收集、局部 LSE 加权与输出返回，以及 prefix prefill 的缓存收集/展开分别核读。该页限定 Model Runner V1 与所选 BF16/Triton 路径，不扩大本页单设备核读范围，也不覆盖 PCP 或 packed/DSA。
 

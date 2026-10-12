@@ -103,7 +103,7 @@ masked 的 `expected_m` 进入估计块数/波次的配置比较，实际任务�
 
 `sm90_fp8_gemm_1d2d.hpp` 生成包含设备头的模板实例，默认 `compiled_dims="nk"` 把 $N_g,K_g$ 编入模板，$M$ 保留运行参数；group 数、tile、stage、SM/cluster 与模式也进入代码。`LaunchRuntime::generate` 加入 include hash；`Compiler::build` 按 kernel 名、编译器 signature、flags、生成代码计算 cache 身份，命中则复用，否则生成 cubin，再按当前 CUDA stream launch。
 
-SGLang execution hook 可按 kernel 类型、N/K/group 暖编译一批 M，contiguous M 先按外部 alignment 过滤；缓存目录来自 `SGLANG_DG_CACHE_DIR`，编译器选择可由 `SGL_DG_USE_NVRTC` 覆盖，默认 NVCC。暖编译仍调用 JIT 路径。PDL 的 runtime 开关与 SBO 的 signal 参数是不同接口；当前版本的 `get_compile_mode/set_compile_mode` 未在定制顶层导出，SGLang 用 `hasattr` 保护。这里仅核机制，没有执行编译或核验 cache 命中。
+SGLang execution hook 可按 kernel 类型、N/K/group 暖编译一批 M，contiguous M 先按外部 alignment 过滤；缓存目录来自 `SGLANG_DG_CACHE_DIR`，编译器选择可由 `SGL_DG_USE_NVRTC` 覆盖，默认 NVCC。暖编译仍调用 JIT 路径。PDL 的 runtime 开关与 SBO 的 signal 参数是不同接口；当前版本的 `get_compile_mode/set_compile_mode` 未在定制顶层导出，SGLang 用 `hasattr` 保护。
 
 ## 4. 调度如何选择专家与行
 

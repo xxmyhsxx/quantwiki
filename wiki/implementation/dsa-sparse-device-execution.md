@@ -199,9 +199,9 @@ O=\sum_r2^{L_{2,r}-L_2}O_r$$
 
 Decode 空 split 的内部状态为 O=0、log2 LSE=$-\infty$；所有 split 无效时，最终 LSE 使用 $+\infty$ sentinel。Combine 显式处理全 $-\infty$ 的 max 和零分母；这里的 sentinel 不应作为普通有效 logsumexp 直接参与其他库的 DCP 归约。所选 vLLM 单设备路径没有导出这份 LSE 做跨 rank 通信。（`splitkv_mla.cuh` 的 sum/epilogue、`combine.cu:82–98`；vLLM `forward_mqa`。）
 
-上述空行说明针对有分配 cache、合法 tensor 内容、有限有效 Q/候选的接口路径。DeepGEMM 空 context 不等于 logits 已清零/清 $-\infty$，paged kernel 的 padding 任务还可能读取 page0；完全空 page pool、负 lens、非法物理页、任意 NaN、空 batch 的硬件行为均未在本轮接受验证。不能把 static mask、上游 reference 或 shape smoke test 写成这些极端输入已通过。
+上述空行约定以已分配 cache、合法索引与有限有效 Q/候选为前提。DeepGEMM 空 context 不等于 logits 已清零/清 $-\infty$，paged kernel 的 padding 任务还可能读取 page0。
 
-本轮闭合了所选 SM90、FP8 indexer、BF16 sparse prefill 与 V32/H128 packed decode 的设备链。没有展开 FP4、SM100/SM120、MODEL1、native multi-query、varlen、DCP/PCP、其他 backend 或所有维度。源码保存完整不表示构建环境齐备；没有安装、编译、执行上游测试、GPU/model/服务数值验证或性能测量。选择误差、主 cache 舍入与候选集合变化的关系接续[Attention 误差传播](../theory/attention-quantization-error-propagation.md)，具体质量结论仍需对应模型协议。
+本页设备链限定 SM90、FP8 indexer、BF16 sparse prefill 与 V32/H128 packed decode；未展开 FP4、SM100/SM120、MODEL1、native multi-query、varlen、DCP/PCP 或其他 backend。选择误差、主 cache 舍入与候选集合变化的关系接续[Attention 误差传播](../theory/attention-quantization-error-propagation.md)，具体质量结论仍需对应模型协议。
 
 ## 来源身份
 
