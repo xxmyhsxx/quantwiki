@@ -8,14 +8,14 @@ tags:
   - second-order
 sources:
   - raw/papers/2026-09-21/brecq/paper.pdf
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # BRECQ：块级重构与二阶误差的粒度选择
 
 逐层重构把每层的输出误差压到最小，但在位宽继续下降时反而不再有效：单层看上去接近无损，整网输出却偏得很远。BRECQ 的问题是，重构应该在哪个粒度上定义——一层、一个基本模块、一个 stage，还是整个网络。它给出的答案是把基本模块（block）作为重构单元，并把这一点建立在对二阶误差的分解上。
 
-本页依据 BRECQ: Pushing the Limit of Post-Training Quantization by Block Reconstruction（arXiv:2102.05426，ICLR 2021，下称论文，全文研读；抽取文本缺表格，已回查作者 TeX 源码核对全部结果表）。所有数字均为作者报告，本轮未运行模型。
+本页依据 BRECQ: Pushing the Limit of Post-Training Quantization by Block Reconstruction（arXiv:2102.05426v2，ICLR 2021，下称论文；既有研读覆盖全文，结果表已按作者 TeX 核对）。所有数字均为作者报告，未在本项目复现。
 
 ## 1. 对象与动机
 
@@ -25,7 +25,11 @@ updated: 2026-09-22
 
 ## 2. 二阶误差的两个极端
 
-论文先给出一个可以把参数空间的二阶误差转换到网络输出的结论。对收敛到局部极小的模型，Hessian 可近似为 Gauss-Newton 矩阵
+论文先用 Gauss–Newton 近似，把参数空间的二阶误差转换到网络输出。链式求导给出
+
+$$H^{(\theta)}=J^{\mathsf T}H^{(z)}J+\sum_k\frac{\partial L}{\partial z_k}\nabla_\theta^2 z_k.$$
+
+这里 $z$ 是网络输出。忽略后一项才得到下面的近似；参数梯度 $J^{\mathsf T}\nabla_zL$ 接近零，本身不保证输出梯度或被忽略项小。论文 §3.1 用收敛后的输出梯度较小来支持这一步，属于额外近似条件。
 
 $$\mathbf H^{(\theta)}\approx\mathbf G^{(\theta)}=\mathbf J_{\vec z^{(n)}}(\theta)^{\mathsf T}\mathbf H^{(\vec z^{(n)})}\mathbf J_{\vec z^{(n)}}(\theta),$$
 
@@ -33,7 +37,7 @@ $$\mathbf H^{(\theta)}\approx\mathbf G^{(\theta)}=\mathbf J_{\vec z^{(n)}}(\thet
 
 $$\arg\min_{\widehat\theta}\Delta\theta^{\mathsf T}\overline{\mathbf H}^{(\theta)}\Delta\theta\approx\arg\min_{\widehat\theta}\mathbb E\left[\Delta\vec z^{(n),\mathsf T}\mathbf H^{(\vec z^{(n)})}\Delta\vec z^{(n)}\right].$$
 
-等号右边只依赖网络最终输出的变化，形式上与知识蒸馏一致。论文同时指出它的实用问题：蒸馏需要与常规训练相当的算力与数据，而 PTQ 只有少量校准样本。
+右侧只依赖网络最终输出的变化，形式上与知识蒸馏一致。论文同时指出它的实用问题：蒸馏需要与常规训练相当的算力与数据，而 PTQ 只有少量校准样本。
 
 作者进一步给出经验判断：**在 1024 张校准图上优化整个网络容易过拟合。** 当参数量远多于样本数时，训练误差下降不保证测试误差下降；而逐层重构相当于一种正则，通过匹配每层的输出分布降低泛化误差。于是两个极端各有毛病：逐层忽略层间依赖，整网则方差过大。合理的做法是取中间粒度。
 
@@ -55,9 +59,9 @@ $$\arg\min_{\widehat\theta}\Delta\theta^{\mathsf T}\overline{\mathbf H}^{(\theta
 | ResNet-18 | 65.19 | 66.39 | 66.01 | 54.15 |
 | MobileNetV2 | 52.13 | 59.67 | 54.23 | 40.76 |
 
-块级在两个模型上都最好，整网最差，与第 2 节的判断一致。作者的机理解释是：Hessian 中主要的非对角损失集中在每个块内部，块间的部分较小，而残差连接进一步提高了块内的依赖；stage 与整网则被泛化误差压过。
+块级在两个模型上都最好，整网最差，与第 2 节的判断一致。作者的机理解释是：Hessian 中主要的非对角损失集中在每个块内部，块间的部分较小，而残差连接进一步提高了块内的依赖；stage 与整网则被泛化误差压过。这组消融比较重构粒度，没有单独分离 Fisher 加权的贡献。
 
-论文对此保持了诚实的边界：这个分析**没有**给出最优粒度的理论解，块级是实验结论；选它的理由是它不含额外超参数，且在作者测试的所有模型与任务上适用。移动端与检测任务的实现细节（例如哪些层不属于任何块）见第 5 节。
+这个分析没有给出最优粒度的理论解，块级是实验选择；作者的理由是它不含额外超参数，且在所测试的模型与任务上适用。不属于任何块的层如何处理，见第 5 节。
 
 ## 4. 预激活 Hessian 的近似
 
@@ -65,11 +69,11 @@ $$\arg\min_{\widehat\theta}\Delta\theta^{\mathsf T}\overline{\mathbf H}^{(\theta
 
 $$\overline{\mathbf F}^{(\theta)}=\mathbb E\left[\nabla_\theta\log p_\theta(y|x)\nabla_\theta\log p_\theta(y|x)^{\mathsf T}\right],$$
 
-其对角元素是梯度平方的期望，样本梯度平方是相应估计信号。不能用批量平均梯度再平方替代：不同样本的梯度可能相互抵消。于是优化目标成为
+模型 Fisher 的期望对输入分布及 $y\sim p_\theta(\cdot\mid x)$ 取值；使用校准样本及其他标签得到的梯度平方通常是经验代理，区别见 [任务 Hessian 与 Fisher](../theory/curvature-weighted-quantization-error.md#1.%20%E4%BB%BB%E5%8A%A1%20Hessian%E3%80%81%E6%A8%A1%E5%9E%8B%20Fisher%20%E4%B8%8E%E7%BB%8F%E9%AA%8C%E6%A2%AF%E5%BA%A6%E5%A4%96%E7%A7%AF)。不能用批量平均梯度再平方替代样本梯度平方的平均：不同样本可能相互抵消。BRECQ 用这一对角信号形成目标
 
 $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mathrm{diag}\left(\left(\frac{\partial\mathcal L}{\partial \vec z^{(\ell)}_1}\right)^2,\dots\right)\Delta\vec z^{(\ell)}\right].$$
 
-直观差别是：梯度绝对值大的输出元素在重构中被赋予更大权重，而常数对角假设一视同仁。论文引用 Lee 等的结果说明，当模型分布与真实数据分布一致时损失 Hessian 等于 FIM；并承认这个条件无法严格满足，只是在模型已收敛的前提下能做到的最好近似。这里的「最好」是相对该近似框架而言，不是对任务损失的全局保证。
+梯度绝对值大的输出元素在重构中被赋予更大权重，而 $cI$ 一视同仁。论文以模型分布接近真实数据分布支持用 Fisher 近似任务曲率，并承认无法严格满足；具体标签与梯度采集协议仍需实现核对。
 
 ## 5. 算法与实现
 
@@ -137,14 +141,14 @@ $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mat
 
 这组对照支持论文的核心主张：在 MobileNetV2 上，PTQ 可以超过同表的 QAT 结果，且耗时低两个数量级；用零样本的蒸馏数据也能在 4 bit 上接近完整校准集的效果。作者同时说明自己的 GPU 小时包含三档统一精度的训练，混合精度只需查表。
 
-**检测任务。** 在 MS COCO 上，4 bit 权重加 8 bit 激活的 Faster R-CNN（ResNet-18 骨干）mAP 仅下降 0.21%；在 RetinaNet（ResNet-50 骨干）上比 ZeroQ 的混合精度方法高约 3% mAP；权重降到 2 bit 时 mAP 仍接近原始模型。检测任务只用 256 张 COCO 图像校准，且只在骨干上做块重构——论文说明 FPN 等结构没有块结构，其余部分退回逐层重构。
+**检测任务。** 在 MS COCO 上，4 bit 权重加 8 bit 激活的 Faster R-CNN（ResNet-18 骨干）mAP 为 34.55→34.34，下降 0.21 点；RetinaNet（ResNet-50 骨干）为 36.65，比 ZeroQ 混合精度的 33.7 高 2.95 点。前者权重降到 2 bit 时为 31.82，仍低于浮点基线。检测任务只用 256 张 COCO 图像校准，且只在骨干上做块重构；FPN 等其余部分退回逐层重构。
 
-**首末层与数据量。** 论文的结论是保留首末层为 8 bit 并无必要：ResNet-18 全部 4 bit 的时延为 53.3 ms，反而快于「2 bit 加首末层 8 bit」的 59.8 ms，精度还高 4%。数据方面，4 bit 下增加校准样本收益很小，2 bit 下样本数增加可带来约 5% 的精度提升；用 BN 统计蒸馏出的合成数据在 4 bit 上表现不错，在 2 bit 上仍有明显差距。
+**首末层与数据量。** 在作者测试的 ResNet-18 配置中，全部 4 bit 的时延为 53.3 ms，快于「2 bit 加首末层 8 bit」的 59.8 ms，准确率还高约 4 个百分点。数据方面，4 bit 下增加校准样本收益很小，2 bit 下样本数增加可带来约 5 个百分点的提升；用 BN 统计蒸馏出的合成数据在 4 bit 上表现不错，在 2 bit 上仍有明显差距。
 
 ## 7. 局限与适用条件
 
 - **粒度结论来自实验。** 块级最优没有理论证明，论文自己也指出该分析不给出最优配置；换个网络族时块的定义与层间依赖都会变。
-- **需要块结构。** 方法要求模型由可识别的块组成；不属于任何块的层只能退回逐层重构，检测模型里的 FPN 就是一例。
+- **块的定义影响收益。** 块级重构需要选定内部依赖较强的单元；不属于这些单元的层可退回逐层重构，检测模型里的 FPN 就是一例。整个模型无需都由块组成。
 - **FIM 近似有条件。** 用梯度平方替代预激活 Hessian 成立的前提是模型分布接近数据分布，论文承认无法严格满足。
 - **仍依赖校准数据与优化。** 每个块 2 万次迭代、1024 张图的成本低于 QAT，但高于纯解析方法；2 bit 下对数据量更敏感。
 - **混合精度的硬件结论绑定特定实现。** 时延来自自研加速器模拟器与特定的 ARM 低位宽 GEMM 实现，不能外推到其它后端。
@@ -156,12 +160,6 @@ $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mat
 与 [层输出重构与二阶误差补偿](../theory/layer-reconstruction-second-order-compensation.md) 中 GPTQ 一类解析方法相比，二者都在重构完一层/一块后继续处理下一单元，但优化对象不同：GPTQ 在连续空间直接求解其余权重的补偿量，BRECQ 在离散舍入空间上做松弛优化并学习激活步长。它们共享「局部重构是任务损失的代理」这一前提，也共享同样的边界——局部最优不等于整网最优。
 
 在混合精度这条线上，BRECQ 提供的是卷积网络侧的一个完整实例：敏感度来自重构过程本身，搜索用遗传算法，约束是时延或体积。语言模型侧的对应做法（按层分配位宽、用代理指标排序、前缀搜索）见 [混合精度分配](../theory/mixed-precision-allocation.md)；两者的共同问题是代价模型与选择变量的定义，区别在于硬件与网络结构。
-
-## 9. 未验证
-
-- 未运行作者实现，未复现任何精度、时延或耗时数字；本页数据全部来自论文与其附录。
-- 论文的加速器模拟器与移动端 GEMM 实现属于作者自研环境，本页不评价其在其它硬件上的可用性。
-- 论文的 2 bit 结果依赖 FIM 加权与块级重构的组合，本页没有区分两者的单独贡献（论文的粒度消融是在 2 bit 权重、逐层重构对照下给出的）。
 
 ## 来源身份
 
