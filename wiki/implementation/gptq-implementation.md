@@ -165,7 +165,7 @@ SGLang 分别注册 GPTQConfig 与 GPTQMarlinConfig。对尚未标为 Marlin 格
 2. **组排序**处理动态分组恢复原坐标后交错的组。Marlin 排序 g_idx，repack 用 g_idx_sort_indices 读取原列，执行接口同时接收排序信息，保持输入、权重与尺度的对应。
 3. **物理 tile 重排**把编码改为内核的线程访问顺序。即使没有组排序也要做。Python repack 的 perm 必传但可为空，输出 int32 容器形状为 $(K/16,N\times16/p)$。
 
-教学上，一致置换满足 $XW^{\mathsf T}=(XP^{\mathsf T})(WP^{\mathsf T})^{\mathsf T}$；只改权重或错配组尺度会改变结果。这一恒等式不代表 CUDA 已验证。tile 契约见 [权重量化反量化内核](weight-only-dequant-kernels.md)，批处理动机见 [Marlin](marlin-batched-w4a16-gemm.md)。
+教学上，一致置换满足 $XW^{\mathsf T}=(XP^{\mathsf T})(WP^{\mathsf T})^{\mathsf T}$；只改权重或错配组尺度会改变结果。tile 契约见 [权重量化反量化内核](weight-only-dequant-kernels.md)，批处理动机见 [Marlin](marlin-batched-w4a16-gemm.md)。
 
 **TP 的尺度复制。** 两框架 Marlin 均区分全量 $K$ 与局部 $K_p$。act-order 使局部列可能使用任意全局组，故保留全局尺度；group_size=-1 且 row-parallel 时，唯一尺度由全量输入轴定义，也要复制。其他对齐分组才切组轴，不能无条件用 $K_p/g$ 重建元数据。`is_k_full` 则描述 act-order 与 row-parallel 组合下归约维是否完整，不是“是否加载了完整模型”。
 
@@ -179,13 +179,13 @@ SGLang 分别注册 GPTQConfig 与 GPTQMarlinConfig。对尚未标为 Marlin 格
 4. 实际选中哪个后端，发生了哪些 shuffle/repack/padding，token 数是否触发重建？
 5. 再测模型精度、跨引擎输出、prefill/decode 延迟与峰值显存。
 
-本页已核对原始 CUDA GEMV 与 SGLang 原生 host 分派；未逐行覆盖全部位宽 device kernel、所有 vLLM 候选后端或 MoE。网格范围搜索与 Marlin 分组裁剪同属离线工作但目标不同，不以名称相似判为等价。没有模型/GPU 运行证据，不能报告部署复现或性能收益。
+量化时的网格范围搜索，与加载时的分组尺度切分、权重重排承担不同职责。
 
 ### CPU 教学核对
 
 4 项检查覆盖跨 int32 的 3-bit 位流与反量化点积、越界编码污染邻位、组排序的坐标一致性、按样本序列计数的 Hessian 归约。教学形状含 N=7，仅测试 CPU 位流，不满足原始 CUDA 的输出维对齐要求，未用于 GPU 调用。
 
-可复跑的[脚本](../assets/gptq-implementation/check_contracts.py)与[2026-09-22 结果](../assets/gptq-implementation/checks-2026-09-22.json)已保存；运行方式为 `python3 wiki/assets/gptq-implementation/check_contracts.py`，需 NumPy。默认只打印，指定 `--output` 才写结果。这些计算没有导入或执行上游模型/CUDA 代码，不构成 checkpoint 可加载、内核数值正确或性能复现的证据。
+可复跑的[脚本](../assets/gptq-implementation/check_contracts.py)与[2026-09-22 结果](../assets/gptq-implementation/checks-2026-09-22.json)已保存；运行方式为 `python3 wiki/assets/gptq-implementation/check_contracts.py`，需 NumPy。默认只打印，指定 `--output` 才写结果；仅核对上述 CPU 代数与位流，不调用上游模型/CUDA。
 
 设备端的 16×64 repack 坐标、U4B8 位转换、在线输入置换、异步流水和三类跨 CTA 合并，见 [现代 Marlin 的 GPTQ 主循环](weight-only-dequant-kernels.md#10.%20GPTQ%20%E2%86%92%20%E7%8E%B0%E4%BB%A3%20Marlin%EF%BC%9Arepack%20%E5%90%8E%E6%80%8E%E6%A0%B7%E5%8F%82%E4%B8%8E%E8%AE%A1%E7%AE%97)。这也解释了为什么 FP32 MMA 不等于所有临时结果都保留 FP32。
 

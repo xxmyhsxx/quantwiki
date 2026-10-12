@@ -8,8 +8,9 @@ tags:
   - distillation
   - kernels
 sources:
+  - raw/papers/2026-09-21/llm-int8/paper.pdf
   - raw/papers/2026-09-21/zeroquant/paper.pdf
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # ZeroQuant：逐组权重、逐 token 激活与逐层蒸馏
@@ -89,7 +90,7 @@ $$\mathcal L_{\mathrm{LKD},k}=\mathrm{MSE}\left(L_k\cdots L_1(\mathbf X)-\wideha
 
 **能否不用原始数据。** 作者在 350M、W4/8A8 下比较三种数据来源：随机整数 token、Hugging Face 的 Wikipedia、原始 PILE。用随机数据即可把准确率提升 1.1%、困惑度从 92.1 降到 40.6；Wikipedia 数据把准确率提到 36.2、困惑度降到 30.4，与使用原始数据相当。作者的解释是 LKD 只学习层内依赖、不优化端到端流程，因此数据只需要提供可用的内部激活统计。这条结论限定了适用条件：无标签只说明不需要人工标签，不能推出输入分布无关；随机 token、Wikipedia 与 PILE 的可用性来自这组实验，而不是目标形式本身的保证——[校准数据与量化范围选择](../theory/calibration-and-range-selection.md) 中依赖分布形状与范围的方案仍然需要数据覆盖。
 
-**20B 规模上的失败与修正。** 对 GPT-NeoX 20B，把所有权重矩阵与激活都降到 8 bit 会显著掉精度。作者逐一定位后归因于自注意力计算的输入激活量化，于是保留该处激活为 FP16、其余用 INT8，精度恢复到与基线接近，同时把推理所需 GPU 从 2 张 A100 减到 1 张、延迟从 65 ms 降到 25 ms，合计约 5.2 倍效率提升。作者称由于缺少同规模开源模型与完整评测，无法验证该归因是否适用于其它模型。这一点与 [LLM.int8()](llm-int8.md) 把注意力投影列为退化来源、[SmoothQuant](smoothquant.md) 报告部分配置需保留注意力输入精度，指向同一个薄弱位置。
+**20B 规模上的失败与修正。** 对 GPT-NeoX 20B，把所有权重矩阵与激活都降到 8 bit 会显著掉精度。作者逐一定位后归因于自注意力计算的输入激活量化，于是保留该处激活为 FP16、其余用 INT8，精度恢复到与基线接近，同时把推理所需 GPU 从 2 张 A100 减到 1 张、延迟从 65 ms 降到 25 ms，合计约 5.2 倍效率提升。作者称由于缺少同规模开源模型与完整评测，无法验证该归因是否适用于其它模型。[SmoothQuant](smoothquant.md) 的相关基线也保留该输入精度。相比之下，[LLM.int8()](llm-int8.md) v2 附录 E–F 对注意力投影退化的讨论属于训练／微调，不是同一个 20B 推理实验。
 
 ## 8. 延迟证据
 
@@ -116,13 +117,11 @@ $$\mathcal L_{\mathrm{LKD},k}=\mathrm{MSE}\left(L_k\cdots L_1(\mathbf X)-\wideha
 
 与 [SmoothQuant](smoothquant.md) 的关系有直接的历史联系：SmoothQuant 论文的基线表列出了 ZeroQuant，并说明其自身实现为该基线保留了自注意力输入的 FP16——本页第 7 节的 GPT-NeoX 归因正好解释了这类保留为什么必要。两者的差别在于 SmoothQuant 用等价缩放改变量化难度、不需要额外训练，而 ZeroQuant 用蒸馏更新层参数。
 
-与 [GPTQ](gptq.md)、[AWQ](awq.md) 相比，ZeroQuant 的主要量化对象包含激活，因此要处理动态范围与整数 GEMM 的输出再量化；后两者以权重量化为主，主要处理权重误差的补偿。执行侧的分类见 [执行路径](../implementation/quantized-matmul-scaling-execution.md)，位宽组合在部署框架里的表达见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)。
+与 [GPTQ](gptq.md)、[AWQ](awq.md) 相比，ZeroQuant 的主要量化对象包含激活，需处理动态范围、整数累加后的反量化及后继激活量化；第 5 节的 GEMM 融合输出为 FP16。后两者以权重量化为主：GPTQ 做二阶补偿，AWQ 做等价缩放与裁剪。执行侧的分类见 [执行路径](../implementation/quantized-matmul-scaling-execution.md)，位宽组合在部署框架里的表达见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)。
 
 ## 11. 未验证
 
-- 未运行 DeepSpeed 实现，未复现任何精度、延迟或成本数字；本页数据全部来自论文与其附录。
 - 未核对论文实现与 DeepSpeed 当前版本的差别（分组大小、融合算子范围、是否仍使用 CUTLASS 调度）。
-- 20B 模型上「自注意力输入激活是退化来源」的归因只在该论文的一个模型上给出，作者也标注未完全验证；本页保留这一限制，不把它当作通用结论。
 
 ## 来源身份
 
@@ -130,4 +129,5 @@ $$\mathcal L_{\mathrm{LKD},k}=\mathrm{MSE}\left(L_k\cdots L_1(\mathbf X)-\wideha
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale（`https://arxiv.org/abs/2208.07339v2`） | `arXiv:2208.07339v2` | 附录 E–F，训练／微调与推理场景的区分 |
 | ZeroQuant: Efficient and Affordable Post-Training Quantization for Large-Scale Transformers（`https://arxiv.org/abs/2206.01861v1`） | `arXiv:2206.01861v1` | — |

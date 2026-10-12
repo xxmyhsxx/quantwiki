@@ -150,13 +150,11 @@ scheme 创建 INT8 $(N_p,K_p)$ weight；channel 权重尺度为 FP32 $(N_p,1)$�
 
 TensorRT-LLM 的 `int8_sq` 是另一套显式平滑量化工具链，保留在 [部署框架与后端支持](quantized-llm-deployment-backends.md)，不能从 SGLang 的空接口倒推出它的前处理行为。
 
-本页完成上述固定版本代码核对，未运行校准、模型导出、注意力 BMM device kernel、完整 TP 或 GPU benchmark。论文精度与本地代码阅读分别保留；不能把 fake-quant 的 F.linear 结果写成 INT8 加速，也不能把格式中有 weight_scale 当成 SmoothQuant 算法身份证明。
-
 ### CPU 教学核对
 
 4 项检查覆盖共享消费者与 LayerNorm bias 的融合、INT8 输出网格系数、逐 token/逐输出尺度的外维乘法、静态 clipping 与动态范围。使用 NumPy float64/整数代数，不模拟 CUDA 的全部 round、饱和和浮点累加细节。
 
-可复跑的[脚本](../assets/smoothquant-implementation/check_contracts.py)与[2026-09-22 结果](../assets/smoothquant-implementation/checks-2026-09-22.json)已保存；运行方式为 `python3 wiki/assets/smoothquant-implementation/check_contracts.py`，需 NumPy。默认只打印，指定 `--output` 才写结果。这些计算没有导入或执行上游模型/CUDA 代码，不构成 checkpoint 可加载、内核数值正确或性能复现的证据。
+可复跑的[脚本](../assets/smoothquant-implementation/check_contracts.py)与[2026-09-22 结果](../assets/smoothquant-implementation/checks-2026-09-22.json)已保存；运行方式为 `python3 wiki/assets/smoothquant-implementation/check_contracts.py`，需 NumPy。默认只打印，指定 `--output` 才写结果；仅核对上述 CPU 代数，不调用上游模型/CUDA。
 
 ## 来源身份
 
