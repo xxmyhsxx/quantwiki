@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 11 批
+
+- 核读 QuIP、SharQ、SpQR、SqueezeLLM、StagQ、VPTQ、XOR-Trellis 与低比特表示设计八页；未发现新增算法性错误。压缩四个方法页重复的运行尾注，将 StagQ 阅读范围移至来源说明，删除表示设计页重复的例外收益限制。
+- 定向回查 SqueezeLLM 敏感性目标与稀疏零值修正、StagQ 前缀/保护值与半步定义、VPTQ 同列选码及加权初始化、XOR-Trellis 局部候选和路径目标。QuIP、SharQ、SpQR 的所选实现沿用第 9 批有效核对；预算、来源差异与具体运行限制保留。
+- 无 ingest 或模型运行；累计完成 71 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 10 批
 
 - 核读 DBW、FlexQ、FluxBin、GPTVQ、PV-Tuning、QTIP、QuantForge、QuIP# 八页，核心表示、选码目标与跨页承接一致。精简 DBW 末节重复的训练、执行和优化限制，保留表 19 的独有预算差异；压缩 FluxBin、QuantForge、QuIP# 重复运行声明。

@@ -127,8 +127,8 @@ StagQ 将多精度可读性、元数据和 decoder 放在同一约束下：共�
 
 [DBW](dbw.md)在低秩分量上联合分配 rank/bit，StagQ 则对原权重主体建立多个前缀 operating points；两者的选择单元和 decoder 不同，名义 2 bit 不能直接对比压缩率或吞吐。对具体部署，应先核全部字段/布局、精度切换加载成本、保护位置重建、量化逆变换与完整质量，再测实际 decoder/服务成本。
 
-当前证据限于论文给出的 dense 模型、配置和单卡 batch-one 描述；MoE、更大模型、生产服务中的运行时切换尚是后续方向。本次已核读正文和附录 A–G，核对关键公式、代表表和页图；未取得作者实现、运行质量或性能实验，未重算全部任务附表。JPEG2000 附录 H 用于辨认 embedded quantization 的背景，不将其 Laplacian 重建常数直接套到 LLM。
+当前证据限于论文给出的 dense 模型、配置和单卡 batch-one 描述；MoE、更大模型、生产服务中的运行时切换尚是后续方向。JPEG2000 附录 H 用于辨认 embedded quantization 的背景，不将其 Laplacian 重建常数直接套到 LLM。
 
 ## 来源身份
 
-- StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs（`https://arxiv.org/abs/2610.05977v1`），`arXiv:2610.05977v1`，2026-10-05 首次提交；2026-10-07 取得固定 PDF [1] 和同版 TeX 源包 [2]。章节、式号、表号按该版本。正文代数展开和预算解释为整理者说明，表中性能与质量均为作者报告。
+- StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs（`https://arxiv.org/abs/2610.05977v1`），`arXiv:2610.05977v1`，2026-10-05 首次提交；2026-10-07 取得固定 PDF [1] 和同版 TeX 源包 [2]。使用正文和附录 A–G，核对关键公式、代表表和页图，未重算全部任务附表。章节、式号、表号按该版本。正文代数展开和预算解释为整理者说明，表中性能与质量均为作者报告。

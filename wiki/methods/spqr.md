@@ -82,7 +82,7 @@ LLaMA-65B 的元数据消融在近似存储预算下，3 bit 元数据配更小�
 
 A100、batch 1、从头生成 100 token 的 LLaMA-7B 实验中，FP16、SpQR 配 PyTorch 稀疏算子、优化稀疏实现分别为 $47\pm2.3$、$30\pm2.2$、$57\pm2.4$ token/s。精度与格式没有自动带来速度，例外分支实现是必要部分。（Experimental Validation，LLaMA、消融和 inference 表。）
 
-与 [SqueezeLLM](squeezellm.md) 相比，SpQR 的主体是小组均匀网格、敏感性来自可补偿的层误差；后者是任务梯度加权的非均匀标量码本。两者共享稀疏保留思想，但不能互换选择依据与部署格式。本页未执行原算法或 GPU 复现。
+与 [SqueezeLLM](squeezellm.md) 相比，SpQR 的主体是小组均匀网格、敏感性来自可补偿的层误差；后者是任务梯度加权的非均匀标量码本。两者共享稀疏保留思想，但不能互换选择依据与部署格式。
 
 ## 来源身份
 
