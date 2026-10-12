@@ -9,7 +9,13 @@ tags:
 sources:
   - raw/papers/2026-09-21/quip-sharp/paper.pdf
   - raw/papers/2026-09-21/quip-sharp/source.eprint
-updated: 2026-09-28
+  - raw/repositories/2026-09-21/quip-sharp/source/lib/algo/quip.py
+  - raw/repositories/2026-09-21/quip-sharp/source/lib/algo/finetune.py
+  - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
+  - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
+  - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/hfize_llama.py
+  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu
+updated: 2026-10-12
 ---
 
 # QuIP#：Hadamard 非相干处理与 E8P 格码本
@@ -71,6 +77,8 @@ $$
 
 推理需要输入变换、码本解码和乘加、输出变换。小 batch decode 常受权重读取限制，固定小码本的优势要通过实际访存与解码实现兑现；不能直接假设现有 AWQ/Marlin kernel 能接收 E8P。通用执行边界见 [量化矩阵乘法](../implementation/quantized-matmul-scaling-execution.md)。
 
+固定1d8f873e的所选Llama/E8P12/rank0实现已核离线协方差加回均值、逆序块反馈/128列buffer、微调与packed保存/HF加载；单行融合解码与多行先展开FP16权重是不同执行分支。16bit逻辑码还会交错重排，不能以相同容量的连续uint16数组替代；默认评速脚本也不是完整生成协议。具体格式、恢复尺度、形状条件及可选训练缓存的静态前提见[所选E8P实现](../implementation/quip-sharp-e8p-packing-and-inference.md)。这些是代码阅读与教学核算，未运行模型或复现本节实验。
+
 ## 5. 证据：区分码本、微调与模型规模
 
 v2 的 Llama-2 实验用 RedPajama 6144 段、原生长度 4096 估计 Hessian；块内微调用另设训练/验证划分。WikiText2、上下文 4096、Llama-2-7B 的 2 bit 消融为：
@@ -89,3 +97,5 @@ v2 的 Llama-2 实验用 RedPajama 6144 段、原生长度 4096 估计 Hessian�
 ## 来源身份
 
 [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2)，arXiv:2402.04396v2。使用方法、实验、微调算法与实现细节附录；未将全部附录证明或官方 kernel 复现计入本次范围。
+
+[固定QuIP#实现](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，1d8f873e9a2a8b86b12bb1064c312c5689b77d98；本轮核所选Llama/E8P12/rank0/had的统计、编码/微调、保存/加载与单行CUDA、多行恢复，其余分支与运行未核。

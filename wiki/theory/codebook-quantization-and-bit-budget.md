@@ -26,6 +26,9 @@ sources:
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
   - raw/papers/2026-09-21/fluxbin/source/sections/4_methodology.tex
   - raw/papers/2026-09-21/fluxbin/source/sections/appendix.tex
+  - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
+  - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
+  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu
 updated: 2026-10-12
 ---
 
@@ -75,6 +78,16 @@ AQLM 使用残差 K-means 初始化，随后交替更新索引和码本。原文
 例如二维 $b=1$ 的四个中心满足 $c_{00}+c_{11}=c_{01}+c_{10}$，是平行四边形；任意四点未必满足此关系。这个整理者例子说明低存储来自结构约束。FP16 映射与理想紧凑编码的预算为 $b+16(d^2+d)/(mn)$ bit/weight，不包含其他状态和容器。更大的 $d$ 增加局部混合自由度，也增加输入投影成本。
 
 令 $N$ 为输入行数，$X_i\in\mathbb R^{N\times d}$ 为第 $i$ 组输入，$Z_i\in\mathbb Z^{m\times d}$ 为对应整数码块，$\mathbf1_m\in\mathbb R^m$ 为全1列向量。这种结构还允许 $X_i(AZ_i^\mathsf T+B\mathbf1_m^\mathsf T)=(X_iA)Z_i^\mathsf T+(X_iB)\mathbf1_m^\mathsf T$，把查表改为浮点小投影、低比特整数主体和广播偏移；正确的实数重排不保证有限精度或任意 kernel 同速。离散码在 QAT 中仍由硬舍入取得，反向代理另有条件。（LC-QAT v1式3、7–8；平行四边形例与预算为整理者展开。）
+
+### 4.2 逻辑码字与物理打包为什么需要分别核对
+
+一个16bit逻辑索引表达8D E8P码字，不决定它在GPU上的位置。固定QuIP# E8P12把相邻两输出行与相邻两向量块的四个逻辑码，重排进一个int64：低32位放四个模式字节，高32位将四组符号的第j位交错到4j+i。两者仍共64bit，但无法通过连续读取四个uint16直接恢复正确行/列。
+
+逻辑码的低8位b还将符号与四分之一平移耦合：由八位XOR得到p，实际符号为b XOR p，仅p=1时翻转最低位；p同时决定±1/4平移，模式底表已有自身的奇偶修正。论文的“8位模式、7位符号、1位平移”是自由度分解，不保证物理格式把三者分别存成连续字段。解码必须核符号/平移、分量排列及tile地址。（[固定QuIP#](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，latticee8_padded12.py的get_full_grid/maybe_pack_idxs及quiptools_e8p_gemv.cu。）
+
+对于m×n权重，所选格式为m×(n/32)个int64，kernel view为[m/16,n/64,8,4]；主体预算 $64m(n/32)=2mn$。16×64教学tile只占256字节，展开FP16需2048字节；它既不是每码都花64bit，也不是完整模型压缩比已证明8倍。
+
+单行可在kernel中边解码边乘加，多行可先生成整个FP16矩阵再计算。它们保存相同的packed主体，运行临时内存和数值路径却不同。底表1KiB也不包括参考网格、变换向量、其他参数或临时空间。沿[所选E8P实现](../implementation/quip-sharp-e8p-packing-and-inference.md)的保存、加载和实际消费判断物理格式，避免把码率、文件字节数、GPU驻留与峰值混成一个数字。
 
 ## 5. 三类格式怎样计账
 
@@ -232,6 +245,8 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 固定每组相同位宽时，$\sum a_\ell$ 决定预测失真。对固定坐标方差乘积，混合坐标使各组体积接近可减少 AM–GM 间隙，但一个具体离散分组未必能完全均衡。设计时应依次核对：来源分布和目标、近似适用区间、整数索引预算、元数据、编码/解码成本，最后才是任务效果。
 
 ## 来源身份
+
+- [固定QuIP#实现](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，1d8f873e9a2a8b86b12bb1064c312c5689b77d98；§4.2核逻辑符号/平移与物理载荷、所选单行/多行消费，位预算为教学展开。
 
 - [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1)，arXiv:2608.15602v1；式3/11/14–15、附录C.1–C.2，第6.2节的分组尺度与操作计数为教学展开。
 
