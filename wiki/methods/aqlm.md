@@ -82,7 +82,7 @@ v4 的 Llama-2 主实验使用 RedPajama、长度 4096，AQLM 校准约 8M token
 
 固定仓库 `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` 的根 `finetune.py` 已包含 [PV-Tuning](pv-tuning.md) 路线：一次整网KL反向同时服务中心/尺度与连续选码目标，随后以L2搜索整数码，再写回恢复权重。这是原始激活感知校准后的另一阶段；不能把这里没有传 `XTX` 的搜索写成原始联合编码器的全部实现。
 
-[PV训练与选码实现页](../implementation/aqlm-pv-training-and-code-updates.md)记录绝对目标、新中心时序、STE缓冲、更新比例与非严格trust阈值，以及数据/配置/保存边界。[原始校准与推理实现页](../implementation/aqlm-calibration-export-and-inference.md)接续 token 加权二阶矩、原始激活选码、条件转换及 CUDA 2×8 前向读取；其他后端与全部适配器仍未完整核读。代码版本与上文论文 v4 的实验分别登记，未运行模型。
+[PV训练与选码实现页](../implementation/aqlm-pv-training-and-code-updates.md)记录绝对目标、新中心时序、STE缓冲、更新比例与非严格trust阈值，以及数据/配置/保存边界。[原始校准与推理实现页](../implementation/aqlm-calibration-export-and-inference.md)接续 token 加权二阶矩、原始激活选码、条件转换及 CUDA 2×8 前向读取；其他后端与全部适配器仍未完整核读。代码版本与上文论文 v4 的实验分别登记。
 
 ## 来源身份
 

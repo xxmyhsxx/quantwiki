@@ -114,5 +114,3 @@ QuantizedLinear.forward按x.shape[1]循环逐向量调用，最后固定reshape[
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
 | Vahe1994/SpQR（`https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e`） | 543d10e56f921e5eeb10d5f0aaaccd30b6662d0e | 所选Linear校准/保护、两级分组、旧保存/恢复、3/16/16优化转换及CSR/PTCSR融合matvec，必要容器/测试/计时入口 |
-
-固定身份和历史885文件完整性依归档登记，本轮没有新的独立Git对象/归档可重新比字节；只读所选文件并核本地指纹。未取得新材料、执行作者函数/模型/设备或复现论文质量/性能，未完成全部模型/形状/配置、HF外部加载和设备生命周期正确性审查。

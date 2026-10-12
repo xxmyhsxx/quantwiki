@@ -43,7 +43,7 @@ updated: 2026-10-12
 
 ## 2. 格式、尺度与训练存储不是同一个位宽
 
-设一块权重覆盖 $g_o\times g_i$ 个元素，码本数为 $M$，每本有 $K=2^b$ 个中心。$N_o$、$N_i$ 分别是输出、输入组数，即 `out_features / g_o`、`in_features / g_i`；块索引 $a,b$ 分别指向输出组、输入组。代码布局为
+设一块权重覆盖 $g_o\times g_i$ 个元素，码本数为 $M$，每本索引占 $b_c$ bit、共有 $K=2^{b_c}$ 个中心。$N_o$、$N_i$ 分别是输出、输入组数，即 `out_features / g_o`、`in_features / g_i`；块索引 $a,b$ 分别指向输出组、输入组。代码布局为
 
 $$
 C\in\mathbb R^{M\times K\times g_o\times g_i},
@@ -58,7 +58,7 @@ $$
 
 `scale_nbits=0` 仍有每输出组一个尺度，沿输入组广播，并非没有尺度。其他配置可有每块尺度或尺度码本。所选直接中心/尺度路径的具体浮点dtype来自加载与训练配置；`codebook_value_nbits>=16` 只是返回原中心参数，不自动将其转为FP16。低位中心值与低位尺度还有重新聚类和STE分支，本页只核其接口，不把它们当成所选常规路径的默认行为。（`aq.py:QuantizedWeight`、`get_codebooks/get_scales/forward`。）
 
-逻辑索引率为 $Mb/(g_og_i)$，训练中整数张量可以用 `int32` 或指定dtype保存。`IntCodes` 为FSDP把整数存储的**原始字节**装进默认float64容器，必要时在末尾填充，读回时按原dtype重解释；它不是将码值做数值浮点转换，也没有把任意 $b$ 位码重新紧密打包。`estimate_nbits_per_parameter` 是表示预算估计，不等于优化器、稠密缓冲或序列化文件的实际字节数。（`utils.py:IntCodes`、`aq.py:get_codes/wrap_codes_for_fsdp_`。）
+逻辑索引率为 $Mb_c/(g_og_i)$，训练中整数张量可以用 `int32` 或指定dtype保存。`IntCodes` 为FSDP把整数存储的**原始字节**装进默认float64容器，必要时在末尾填充，读回时按原dtype重解释；它不是将码值做数值浮点转换，也没有把任意 $b_c$ 位码重新紧密打包。`estimate_nbits_per_parameter` 是表示预算估计，不等于优化器、稠密缓冲或序列化文件的实际字节数。（`utils.py:IntCodes`、`aq.py:get_codes/wrap_codes_for_fsdp_`。）
 
 ## 3. 一次反向如何连接到 P 与 V
 

@@ -106,5 +106,3 @@ eval_speed默认BS1、seqlen1、100次，重复同一token张量，use_cache=Fal
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
 | Cornell-RelaxML/quip-sharp（`https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98`） | 1d8f873e9a2a8b86b12bb1064c312c5689b77d98 | 所选Llama/E8P12/rank0/had统计、编码/微调、保存/加载与packed单行CUDA及多行恢复；其余分支/运行未核 |
-
-固定身份依归档登记；本轮未取得新的独立Git对象或归档，不能把历史60文件完整性记录称为本轮重新比对。教学位恢复/格式计数及静态代码审查只支持所述机制，未复现模型质量、CUDA数值、同步/越界或性能。

@@ -82,8 +82,6 @@ Balance.fasterquant保留变换坐标内的w/quant_w，调用postproc还原layer
 
 opt_eval是关闭cache的固定不重叠窗口PPL：截到完整seq块、每块首token没有预测项、丢尾部，再汇总CrossEntropy。它与带历史上下文的sliding window或生成质量不同；结果仍需绑定模型、窗口与dataset具体版本。默认后评测为wikitext2/ptb-new/c4-new，不能将C4校准来源与C4新验证协议混同。benchmark调用在主入口被注释，所选脚本也不提供本次已经测过的推理时间。
 
-已核到的是校准/预处理、所选逆序LDLQ及lazy/排序条件、网格/恢复/保存和局部诊断边界。未执行OPT、等价检查脚本、生成或CUDA，未验证全部shape/退化输入/其他方法/模型，也未复现论文PPL或性能。
-
 ## 来源身份
 
 | 来源 | 固定身份 | 本页范围 |

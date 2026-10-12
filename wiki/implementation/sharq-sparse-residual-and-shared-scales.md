@@ -83,8 +83,6 @@ E2M1载荷无NaN/Inf的编码定义已与原附录差异分开，见方法页；
 
 run_exp.py再调用外部vLLM bench latency/throughput，默认batch8、input1024、output128、500 prompts，与论文batch4/等长decode不同。脚本把config.json存在视为可跳过量化的条件，不能据此确认全部权重键、框架注册、加载消费或模型结果正确。本次未核外部vLLM改版、完整加载/设备主循环和服务曲线，未执行脚本。
 
-已核实的是所选NVFP4表示、pair规则、残差定义、两尺度视图、BF16/FP32接口与融合/模拟/导出边界。编译/GPU数值与同步、所有shape、完整模型/专家/VLM/视频、HiF4/MXFP4 native和性能复现仍未验证。
-
 ## 来源身份
 
 | 来源 | 固定身份 | 本页范围 |
