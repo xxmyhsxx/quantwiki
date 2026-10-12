@@ -8,7 +8,7 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-09-23/sphquant/paper.pdf
-updated: 2026-09-28
+updated: 2026-10-13
 ---
 
 # SPHQuant：符号、球面方向与半径的独立编码
@@ -75,7 +75,7 @@ $$\min_{\rho,\phi}\mathbb E\|F_l^{SPH}(x_q;\rho,\phi)-F_l^{FP}(x_{fp})\|^2.$$
 
 $$\theta_j=\epsilon+(\pi/2-2\epsilon)\operatorname{sigmoid}(\phi_j)$$
 
-使方向始终在正球面内部，无需每步重新单位化。代价是边界方向只能逼近，sigmoid 饱和和多个正弦乘积仍可能造成梯度变小；“避免投影”不是对所有优化问题收敛更快的定理。
+当 $0<\epsilon<\pi/4$ 时，角度位于 $(\epsilon,\pi/2-\epsilon)$，方向始终在正球面内部，无需每步重新单位化。固定正 $\epsilon$ 还会排除靠近边界的一部分方向：例如 $c_1\in(\sin\epsilon,\cos\epsilon)$，不能任意逼近 0 或 1。这是由参数化得到的表示限制；sigmoid 饱和和多个正弦乘积也可能造成梯度变小。
 
 Qwen3-VL 校准还保存 DeepStack 视觉特征及其注入层上下文。只缓存第一层 hidden states 而漏掉后续视觉注入，会优化错误的执行路径；附录 §8 的这项约定是理解 VLM 重构的重要条件。
 
@@ -87,7 +87,7 @@ Qwen3-VL 校准还保存 DeepStack 视觉特征及其注入层上下文。只缓
 
 作者描述的 kernel：256线程/block、每block计算8输出通道；线程分片每次消费32个FP16激活（4个8D向量），从转置共享表取四组 half2，恢复符号和半径，在寄存器重构权重，立即乘激活并以FP32累加，再通过warp shuffle和共享归约合并。它不将完整反量化矩阵写回显存，也没有输入/输出旋转。
 
-上述是 W2/g128/8D 的 GEMV 契约，不能用于推断 W3、大batch GEMM 或任意输入尾部的实现。单表1KiB、对齐位布局与真实归约精度都需代码和GPU验证；本文没有将论文描述升格为源码核实。
+上述描述覆盖 W2/g128/8D 的 GEMV，不提供 W3、大 batch GEMM 或任意输入尾部的执行契约。
 
 ## 6. 消融分别支持什么
 
