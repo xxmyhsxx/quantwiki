@@ -130,6 +130,7 @@ sources: []
 | [NOVA-KV：查询加权变换与分组 VQ](methods/nova-kv.md) | 精确加权距离、等体积分组、校准与编码/读取成本。 |
 | [AKVQ-VL：多模态 token 精度保护](methods/akvq-vl.md) | TSA/PSA、pivot 代理、Hadamard 与实际混合位宽。 |
 | [CalibQuant：视觉 KV 的逐通道一位量化与分数校准](methods/calibquant.md) | 双端点、后缩放与子集归一化怎样配套，质量/吞吐表有哪些条件。 |
+| [VidKV：视频 KV 的混合位宽、FFT 与三值保护](methods/vidkv.md) | 保护轴、频域编码和三值字母表怎样分开计费，缓存更新与质量表有哪些条件。 |
 | [Kitty：动态通道提精度与缓存页](methods/kitty.md) | 幅值选通道、双 2-bit 位面、模拟/内核差异与真实字节。 |
 | [CoRePrune：条件可删除性](methods/coreprune.md) | 删除失真、集合方向交互、深度刷新与两阶段视觉剪枝。 |
 | [SAPrune：选层与双路径视觉剪枝](methods/saprune.md) | 校准层深时机、子空间/熵预算、query 响应覆盖与逐层计算成本。 |

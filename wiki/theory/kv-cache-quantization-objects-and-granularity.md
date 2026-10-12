@@ -38,7 +38,8 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_backend.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
-updated: 2026-10-08
+  - raw/papers/2026-09-21/plug-and-play-kv-quantization/paper.pdf
+updated: 2026-10-12
 ---
 
 # KV cache 量化的对象与粒度
@@ -219,6 +220,14 @@ Kitty 的 `KVCache_Layer.__init__` 按最大 batch 和最大长度预分配页�
 
 [SAW-INT4 所选统一 INT4 记录](../methods/saw-int4.md#43-持久记录地址与完整预算)则把通道分成两半：byte $j$ 的低、高 nibble 对应 $j,j+64$，K/V 每token/KV head各存64字节码和8字节FP32 scale/浮点zero，合计144字节、4.5 bit/元素、相对BF16约3.56倍。其所选GQA reader在FP32中用码与s/z恢复，再转BF16，与上例OSCAR先把s/z转BF16的顺序不同；存储dtype相同不足以证明恢复数值相同。（`memory_pool.py:840–884`；`kv_quant_kernels.py:120–158`；`decode_attention.py:1047–1070,1115–1133`。）
 
+### 11.1 非整数位宽要先确定字母表和坐标表示
+
+三个可恢复值的字母表容量是 $\log_2 3\approx1.585$，不表示每个独立记录能占1.585个二进制位；固定长度记录至少两位。[码率与熵](codebook-quantization-and-bit-budget.md#11-固定码率熵与率失真下界)解释这个区别。整理者示例：五个三值码映射为五位三进制整数，因 $3^5=243\le256$，可存进一个字节，主体为1.6位/值；不足五个的尾块、解包和随机访问仍需协议，没有此编码就不能据三值字母表宣称物理节省。
+
+保护比例还必须对应**被计费的元素集合**。若某区域比例p改为两位，其余三值，理想字母表预算为 $2p+(1-p)\log_2 3$；若实际采用两位记录，两条路径的码主体仍都是两位。只保护视觉token时，全prefix中的p要再乘视觉占比，且另计E/mapping、范围、残差与工作缓冲。[VidKV](../methods/vidkv.md)的1.66是按1.58和视觉保护比例.2得到的名义值，原件未登记完整物理格式。
+
+变换域还会改变坐标数量：普通实数FFT产生复系数，若保留同样数量的系数并将实/虚各编码一位，每原始实数便需两位主体；不能只按单个实分量的码宽计费。实FFT、共轭约束或其它紧凑布局可改变数量，但必须登记保存和恢复规则。VidKV算法3的[l,2d] reshape提出了这个核对问题，不能据此猜出实际作者布局或声称其必定没有压缩。（v2式5–7、算法2–3及整理者预算。）
+
 ## 12. 缓存的生命周期会改变数值路径
 
 对一类带 sink、K 分组缓冲、V 最近窗口的设计，单步可以按以下顺序理解：追加当前 K/V → attention 读取当前完整历史 → 满组缓冲编码入页 → 清空缓冲计数，复用原有内存。Kitty 的 `update`、`quantize_decode` 与模型侧调用属于这一顺序。另一实现若在本步 attention **之前**压缩满组，本步就已经读取量化值，二者不能只因最终字节格式相同而视为数值等价。
@@ -236,6 +245,8 @@ $$T=s_t+GP_K+q_K=s_t+GP_V+q_V+\ell_t.$$
 OSCAR在decode Attention前先把一批旧BF16 recent行量化、remap到QP，再写当前BF16 K/V；当前Attention因此已读到刚移出的量化历史。其FA3 prefill接口虽先更新缓存，本次chunk仍读取dense BF16，仅历史前缀从缓存恢复；二者的量化时刻与读取对象分别核对。[窗口时间线与两tier读取](../implementation/oscar-mixed-kv-cache-execution.md#5-extend-与-decode-怎样移动窗口)进一步给出位置守恒、flush前等待与局部LSE合并，避免仅凭最终格式判定数值等价。（`triton_backend.py:1694–1859`；池的extend/decode写点见该实现页。）
 
 SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残差窗口；FA3 prefill host也先写当前chunk，再把含该chunk的完整缓存交flatten恢复，原Q与恢复后的K/V进入FA3。因而它的当前chunk也走缓存编码/恢复，不能沿用OSCAR的dense旁路结论。所选 BF16/K-only/page_size=1 flatten 按页表 gather 逻辑历史，在 FP32 中恢复并对 K 逆 Hadamard 后转 BF16，V 则直接恢复到 BF16。两份临时张量为 `[sum(N_b),Hkv,D]`，同时保留持久 INT4 池；Hkv8/D128 时合计 `4096*sum(N_b)` 字节，不能把持久记录的压缩倍数直接用作 prefill 峰值显存比。（`triton_backend.py:1017–1081`；`flashattention_backend.py:769–780,892–951`；`flatten_kv_cache.py:143–260,288–385,515–581`；[SAW恢复与工作缓冲](../methods/saw-int4.md#45-fa3-prefill从分页-int4-恢复到原-q-坐标)。）
+
+VidKV算法1的prefill返回原始K/V，压缩状态用于后续decode；decode先attention，浮点残差满R后V只追加新码，K却按字面重新量化“恢复旧K+新残差”的全部历史。后者可能重选通道/范围并再次引入旧值误差，与冻结旧码只追加新组不同；这只是伪代码路径核对，尚未取得匹配实现。token数量守恒也不足以排除这种重复数值变化。
 
 这也解释了为什么离线 fake quant 的质量不能直接证明实际缓存的质量。需要同时对齐量化公式、保护区域、触发时刻、mask 与位置，再对齐读取实现；具体步骤见 [从模拟到真实执行的对齐](../implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)。
 
@@ -270,3 +281,5 @@ SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残�
 - Kitty（`https://arxiv.org/abs/2511.18643v1`），v1；通道提精度与双位面布局；代码细节见方法页登记。
 
 - Kitty 官方实现（`https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1`），固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
+
+- Plug-and-Play 1.x-Bit KV Cache Quantization for Video Large Language Models（`https://arxiv.org/abs/2503.16257v2`），`arXiv:2503.16257v2`；式5–7、算法1–3，三值/FFT预算和残差后整段K重新量化的证据范围。

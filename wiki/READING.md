@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **125 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **126 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [VidKV](methods/vidkv.md)<br>arXiv:2503.16257v2<br>来源 `https://arxiv.org/abs/2503.16257v2` | §3–5、附录A–G；回查PDF1–10、14–18，式1–7、表1–6、图1–7及算法1–3，核通道选择/FFT、三值/STP、缓存更新与质量 | [方法页](methods/vidkv.md)；[非整数位宽与物理坐标](theory/kv-cache-quantization-objects-and-granularity.md#111-非整数位宽要先确定字母表和坐标表示)；[缓存生命周期](theory/kv-cache-quantization-objects-and-granularity.md#12-缓存的生命周期会改变数值路径) | 保留式/算法、粒度/主附表差异及幅值/pack/索引/选择协议不足；未取得匹配代码、核全部引用/曲线点、运行模型/FFT内核/GPU或计时 | [2026-10-12](LOG.md#2026-10-12--vidkv-ingest-与独立评审) |
 | [CalibQuant](methods/calibquant.md)<br>arXiv:2502.14882v2<br>来源 `https://arxiv.org/abs/2502.14882v2` | §3–5、附录A/A.1；回查PDF1–9、11–12，式1–8、表1–8、图1–3及算法1–2，核视觉K/V编码、后缩放/校准、打包与质量/吞吐 | [方法页](methods/calibquant.md)；[子集偏移与V恢复](theory/attention-quantization-error-propagation.md#31-共同偏移只在同一归一化域内消去) | 未取得匹配作者实现、核全文引用/曲线点或运行模型/Triton/GPU；保留τ搜索/混合归一化/范围更新、算法及表文/计时差异 | [2026-10-12](LOG.md#2026-10-12--calibquant-ingest-与独立评审) |
 | [VEQ](methods/veq.md)<br>arXiv:2602.01037v1<br>来源 `https://arxiv.org/abs/2602.01037v1` | 正文方法/实验、式1–5、表1–3及图1–7，回查PDF1–8；核专家分数、跨专家耦合、加权二阶矩及平均/消融口径 | [VEQ](methods/veq.md)；[专家覆盖与权重位置](theory/calibration-and-range-selection.md#61-moe-校准须记录专家覆盖与权重位置) | 保留p的logit/非负化、梯度统计、主校准/软件/计分协议不足及2.98/3.09差异；未取得匹配实现、逐点重建热图/全部引用或运行模型/量化/SGLang/评测 | [2026-10-12](LOG.md#2026-10-12--veq-ingest-与独立评审) |
 | [SmoothQuant+](methods/smoothquant-plus.md)<br>arXiv:2312.03788v1<br>来源 `https://arxiv.org/abs/2312.03788v1` | 正文方法/实验、式1–6、表1–5和图1–7；回查PDF1–11关键布局/主表，核通道/MLP融合、全模型α搜索与HumanEval校准、W4A16/服务协议 | [SmoothQuant+](methods/smoothquant-plus.md)；[评测输入与校准选择](theory/calibration-and-range-selection.md#53-使用评测输入校准时要保留选择边界) | 全模型loss/生成与服务协议不足、表间Python与笼统AWQ文字差异保留；未取得匹配作者实现/软件pin，未逐点重建曲线或审计全部引用，未运行模型/代码评测/GPU | [2026-10-12](LOG.md#2026-10-12--smoothquant-ingest-与独立评审) |
@@ -247,11 +248,11 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下104个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下103个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；QuIP#所选E8P12的逻辑/物理码、保存加载与单行/多行消费已接续；SpQR所选两级尺度/保护与旧恢复/3bit优化格式已接续，第6批完成；第7批QSLAW论文/所选uniform实现已整合，补尺度作用、数据阶段及浮点恢复边界；SmoothQuant+论文已补通道/MLP融合、评测输入校准与W4A16服务边界；VEQ论文已补专家目标/亲和曲率及其条件；MASQuant/QIG解读已回查，第7批完成；第8批CalibQuant已补视觉编码/校准与吞吐条件；下一项VidKV，再核FlashInfer三个接口及第9批评测协议；具体优先缺口见 SELF（`SELF.md#6-下一步建设与维护`）。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；QuIP#所选E8P12的逻辑/物理码、保存加载与单行/多行消费已接续；SpQR所选两级尺度/保护与旧恢复/3bit优化格式已接续，第6批完成；第7批QSLAW论文/所选uniform实现已整合，补尺度作用、数据阶段及浮点恢复边界；SmoothQuant+论文已补通道/MLP融合、评测输入校准与W4A16服务边界；VEQ论文已补专家目标/亲和曲率及其条件；MASQuant/QIG解读已回查，第7批完成；第8批CalibQuant已补视觉编码/校准与吞吐条件；VidKV已补混合位宽、FFT/三值保护与完整预算条件；下一项FlashInfer三个接口及第9批评测协议；具体优先缺口见 SELF（`SELF.md#6-下一步建设与维护`）。
 
-### 论文（41条）
+### 论文（40条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -275,7 +276,6 @@ updated: 2026-10-12
 | Compression Strategies for Efficient Multimodal LLMs in Medical Contexts（`https://arxiv.org/abs/2507.21976v3`） | `arXiv:2507.21976v3` |
 | MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark（`https://arxiv.org/abs/2406.01574v6`） | `arXiv:2406.01574v6` |
 | Fast Transformer Decoding: One Write-Head is All You Need（`https://arxiv.org/abs/1911.02150v1`） | `arXiv:1911.02150v1` |
-| Plug-and-Play 1.x-Bit KV Cache Quantization for Video Large Language Models（`https://arxiv.org/abs/2503.16257v2`） | `arXiv:2503.16257v2` |
 | Qwen2.5-Omni Technical Report（`https://arxiv.org/abs/2503.20215v1`） | `arXiv:2503.20215v1` |
 | Qwen2.5-VL Technical Report（`https://arxiv.org/abs/2502.13923v1`） | `arXiv:2502.13923v1` |
 | Qwen3 Technical Report（`https://arxiv.org/abs/2505.09388v1`） | `arXiv:2505.09388v1` |
