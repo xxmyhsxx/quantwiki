@@ -26,14 +26,14 @@ sources:
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # PTQ、QAT 与代理梯度
 
 PTQ 从已训练模型出发完成量化转换，可能包含统计、搜索或局部优化；QAT 在训练前向中模拟量化影响，并通过训练调整模型。两者不是“完全不优化”和“做优化”的二分，也不是无数据与有数据的二分。判断时应说明调整哪些变量、使用什么目标与数据、梯度经过哪些层。
 
-本页依据量化白皮书 v1（W）§3–4，以及 Jacob 等整数推理论文 arXiv v1（J）§3、附录 C–D。两篇的 QAT 实验主要属于特定模型与训练设置，不代表量化训练的全部可能形式。
+本页从量化白皮书 v1（W）§3–4，以及 Jacob 等整数推理论文 arXiv v1（J）§3、附录 C–D 出发，结合 LSQ 和 LLM 方法解释优化变量、代理梯度、训练目标与部署图。各方法的效果保留其模型、数据与前向配置。
 
 ## 1. 区分范式与可调整变量
 
@@ -229,8 +229,6 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 “数据效率”还要声明分母是已有基座上的额外 QAT、指令微调，还是从头预训练。[LC-QAT](../../methods/lc-qat.md#5.%20%E6%95%B0%E6%8D%AE%E6%95%88%E7%8E%87%E8%AF%81%E6%8D%AE%E6%94%AF%E6%8C%81%E5%88%B0%E5%93%AA%E9%87%8C)的4B/30B比较取得较高QA均分而PPL较差；与BitNet的4B/4T又跨越额外训练与从头训练。预训练基座及各任务的变化不能从预算比例中消失。准确率均值、PPL和总训练成本需要分别判断。（LC-QAT v1表2–3。）
 
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
-
-> 来源维护（2026-09-21）：上列固定 commit 的外部代码引用对应已移除的本地快照；保留原版本身份，本轮未重新审查相关代码结论。
 
 ## 来源身份
 

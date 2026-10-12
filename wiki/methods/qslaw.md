@@ -92,7 +92,7 @@ $$q(a)=\operatorname{clip}\!\left(\operatorname{round}\!\left(\frac{W}{\Delta a}
 
 该路线适合用下游监督调整组级自由度，并将校准初始化、尺度阶段和指令适配分别评估。必须保留基础Δ/z、分组轴与尺度作用位置，说明整数码是否每步重算；数据顺序、混合比例、训练长度和后续LoRA都会影响比较。
 
-[固定实现页](../implementation/qslaw-scale-learning-and-float-export.md)进一步核了尺度参数、浮点fake quant、Dataset的比例/索引条件和保存入口。源码中的“real quant”路径把恢复浮点值写回普通Linear，没有在该路径打包4bit码或接低位kernel；这限制了可声称的驻留内存和执行方式，没有否定论文独立报告的质量/成本。所有模型、数据与依赖组合的训练、保存重载及性能仍未运行验证。
+[固定实现页](../implementation/qslaw-scale-learning-and-float-export.md)进一步核了尺度参数、浮点fake quant、Dataset的比例/索引条件和保存入口。源码中的“real quant”路径把恢复浮点值写回普通Linear，没有在该路径打包4bit码或接低位kernel；因此该路径的质量模拟不能作为4bit驻留和低位执行的证据。
 
 ## 来源身份
 

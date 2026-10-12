@@ -89,4 +89,4 @@ builder的所选LLaVA+LoRA+model_base入口可再调用omniquant_from_checkpoint
 | --- | --- | --- |
 | xjjxmu/QSLAW（`https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802`） | 264dfb081c210a8bab6a3fb5707d827ade7b6802 | 所选LLaVA/Vicuna uniform/group128，分层初始化、fake尺度前向、优化器、mix数据、脚本阶段、保存与浮点恢复/LoRA消费入口 |
 
-ZIP原件和本页14个文件与归档逐字节核对；历史174文件完整性依归档登记，本轮未重新审计整仓库或新取Git对象。没有导入上游/下载权重或数据/安装/训练/运行模型/GPU。NF4、bnb、其他模型/尾组、完整attention/tokenizer/image/依赖接口、实际warmup采样、保存重载及论文质量/成本继续保留未验证范围。
+ZIP原件和本页14个文件与归档逐字节核对；历史174文件完整性依归档登记，本轮未重新审计整仓库或新取Git对象。

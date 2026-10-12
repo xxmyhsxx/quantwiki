@@ -6,7 +6,7 @@
 
 “已完成”表示本批页面职责与核心解释已核读、发现的问题已处理；来源核验是针对核心主张与疑点的定向核对，不表示所有上游代码或论文证明均重新审计。第 1 批沿用上一轮六页抽查，第 2 批沿用已完成的重构推导复核，第 3 批沿用已完成的 GPTQ 方法复核；相关正文在本轮开始时未变化。
 
-当前完成 14 批、82 个知识页。Q-VLM 本轮只提前同步来源日期，整页正文仍列为待审。原有 `wiki/research/mbq-vlmq-comparison.md` 改动保留；审到该页时区分本轮修复与已有改动。
+当前完成 15 批、90 个知识页。Q-VLM 本轮只提前同步来源日期，整页正文仍列为待审。原有 `wiki/research/mbq-vlmq-comparison.md` 改动保留；审到该页时区分本轮修复与已有改动。
 
 后续批次最多八页；若一批包含独立计算链或问题较多，再拆分。没有问题的页面无需为凑修改而改写。新出现的跨页问题可回修已审页，并记录影响。
 
@@ -157,14 +157,14 @@
 
 ## 第 14 批 · 敏感性与混合精度分配 2
 
-状态：已完成；2 页。提交：随本批清单更新。
+状态：已完成；2 页。提交：`6cf06b6`。
 
 - [splitq](../../wiki/methods/splitq.md)
 - [mixed-precision-allocation](../../wiki/theory/mixed-precision-allocation.md)
 
 ## 第 15 批 · QAT 与学习式量化
 
-状态：待审；8 页。
+状态：已完成；8 页。提交：随本批清单更新。
 
 - [post-training-and-quantization-aware-training](../../wiki/fundamentals/quantization/post-training-and-quantization-aware-training.md)
 - [qslaw-scale-learning-and-float-export](../../wiki/implementation/qslaw-scale-learning-and-float-export.md)
