@@ -19,7 +19,7 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/model_executor/model_runner.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
-updated: 2026-10-08
+updated: 2026-10-13
 ---
 
 # SAW-INT4：面向真实服务约束的 4 bit KV cache 量化
@@ -232,25 +232,17 @@ $$
 
 论文还报告在四种模型-硬件组合（Qwen3-4B、Qwen3-8B、Qwen3-32B 在 2×H100，GLM-4.7 358B 在 8×H100）上，INT4+BDR 在多数运行区间匹配或略优于纯 INT4 并优于 BF16；与更复杂方法的完整对照在附录。§2 的跨方法吞吐图还比较了 Kitty 等方案，但图注明确非 SGLang BF16 项使用 Hugging Face `model.generate`，缺少连续批处理与 PagedAttention。该图同时改变算法和服务后端，不能把全部差距归因于 Kitty 的量化复杂度，也不能据此给出同后端的方法速度排名。
 
-## 6. Strong / Weak
+## 6. 与相邻方法的关系
 
-**Strong：**把「能否部署」作为第一约束来筛选方法，而不是先比离线精度；给出的方案（token 级 INT4 加块对角 Hadamard 旋转，且只旋转键）足够简单，能用环境变量级的配置表达；把旋转融进解码内核并给出内核级与端到端两套证据，说明代价去哪了；用系统吞吐与逐请求吞吐的背离，指出一个容易误读的评价陷阱。
-
-**Weak：**精度结论依赖「思考模式、32k 序列、5 个推理与代码任务」这一设定，朴素 INT4 的完全崩溃说明该设定对低比特极不友好，换到短回答或检索类任务上各方法的排序未必相同；GLM-4.7 上连朴素 INT4 都接近 BF16，说明结论高度模型相关；Hessian 感知与向量量化的实现对作者版本敏感，本页不把它当作这些方法的一般评价；论文为预印本，未经过同行评审；评测与内核由作者在 SGLang 分支上实现，与上游版本的对应关系未核对。
-
-## 7. 与相邻方法的关系
-
-与 [KIVI](kivi.md) 的对照最有信息量：KIVI 用逐通道键量化、逐 token 值量化加未量化残差窗口换取精度，而论文把「混合精度残差缓冲」列为与分页布局冲突的做法，其替代是旋转加统一的逐 token INT4 布局。这不是说 KIVI 无益，而是说两者的设计目标不同——KIVI 追求 2 bit 级别的压缩，SAW-INT4 在 4 bit 上追求零服务开销。阅读两者时应把「压缩到多少位」与「在什么布局下、付出多少系统代价」分开比较。
+与 [KIVI](kivi.md) 的对照最有信息量：KIVI 用逐通道键量化、逐 token 值量化加未量化残差窗口换取精度，而论文把「混合精度残差缓冲」列为与分页布局冲突的做法，其替代是旋转加统一的逐 token INT4 布局。KIVI 追求 2 bit 级别的压缩，SAW-INT4 在 4 bit 上通过融合降低旋转的额外服务开销。阅读两者时应把「压缩到多少位」与「在什么布局下、付出多少系统代价」分开比较。
 
 与 [QuaRot](quarot.md)、[正交旋转与量化](../theory/orthogonal-rotation-and-hadamard-quantization.md) 的关系是同一机制的延续与收缩：旋转抑制离群值的想法相同，但这里把旋转限制在块对角、只作用于键、并融进解码内核；论文也引用 SpinQuant 说明学习旋转的路线，其自身的 Hessian 感知对照显示在该设定下学习旋转的收益不如简单 Hadamard。
 
 与 [QServe](qserve.md) 都强调「低比特方案必须与系统一起设计」，区别在对象与粒度：QServe 的 KV4 是逐 head 动态量化配合分页页内元数据，本方法强调统一 INT4 布局与旋转的无额外算子化。
 
-## 8. 未验证
+## 7. 代码核对范围
 
-- 未运行论文的实现或任何服务，未复现精度、吞吐与剖析数据；模型/性能数值来自论文，第4节字节预算、地址与教学算例来自静态源码及独立计算。
-- fast-rotation 子模块已核所选 BF16/GQA4/D128/Hadamard128/K-only/FUSE1 的 writer、decode 及第4.5节 page_size=1的 prefill flatten 设备链；FA3 库内、kmeans/Hessian、其他 dtype/order/后端、多设备、graph 与特殊 attention 分支未全面研读，未构建或运行。资料已展开、静态链已核与运行验证分别说明。
-- 论文为预印本，其精度与吞吐结论尚待同行评审与独立复现；本页按预印本状态记录。
+fast-rotation 子模块已核所选 BF16/GQA4/D128/Hadamard128/K-only/FUSE1 的 writer、decode 及第4.5节 page_size=1 的 prefill flatten 设备链；FA3 库内、kmeans/Hessian、其他 dtype/order/后端、多设备、graph 与特殊 attention 分支未全面研读。该 SGLang 分支与上游版本的对应关系尚未核对。
 
 ## 来源身份
 

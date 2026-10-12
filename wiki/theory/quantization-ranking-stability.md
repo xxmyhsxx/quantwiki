@@ -9,7 +9,7 @@ sources:
   - raw/papers/2026-09-23/bos-sink-topology/paper.pdf
   - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
   - raw/papers/2026-10-03/decision-flips/paper.pdf
-updated: 2026-10-07
+updated: 2026-10-13
 ---
 
 # 量化后的排序稳定性：间隔、检索损害与精度分配
@@ -46,7 +46,7 @@ $$z'_a-z'_j=g_j+\delta_a-\delta_j\ge g_j-2\epsilon.$$
 
 ## 3. 为什么间隔要与扰动一起看
 
-分离比 $r=g_2/(2\epsilon)$ 无量纲，正比例缩放分数会同时缩放分子分母；共同平移不影响两者。logit 与余弦相似度可以通过此比值进行稳定性分析，但对分数作非线性 softmax 后，实际扰动和间隔都改变，不能沿用原比值。
+在 $\epsilon>0$ 时，分离比 $r=g_2/(2\epsilon)$ 无量纲，正比例缩放分数会同时缩放分子分母；共同平移不影响两者。$\epsilon=0$ 表示分数未受扰动，无需计算该比值。logit 与余弦相似度可以通过此比值进行稳定性分析，但对分数作非线性 softmax 后，实际扰动和间隔都改变，不能沿用原比值。
 
 分类训练通常鼓励正确类领先竞争类；检索训练约束正负样本，却不普遍保证部署语料中最高两个候选之间有大间隔。不是“所有检索损失都不产生间隔”的定理。论文采用相同 checkpoint 的分类/检索对照，并补充 Qwen 线性 probe 对照，减少架构与训练变化的混淆。
 
