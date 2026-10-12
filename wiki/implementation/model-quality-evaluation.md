@@ -20,6 +20,8 @@ sources:
   - raw/papers/2026-09-21/longbench-v2/paper.pdf
   - raw/papers/2026-09-21/mmlu-pro/paper.pdf
   - raw/papers/2026-09-21/ruler/paper.pdf
+  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_default_template_yaml
+  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_mmlu_pro.yaml
 updated: 2026-10-12
 ---
 
@@ -94,6 +96,12 @@ PPL 给的是“真实上下文上的预测损失”。自由生成会把模型�
 以下为教学集合计分：非空gold集合G、按预定parser/去重得到的预测集合P，recall为 $|G\cap P|/|G|$，非空P的precision为 $|G\cap P|/|P|$。四目标找回三项是75%召回，整题仍不完整；全含四目标但加十个错误项，召回100%，precision却约28.6%。顺序、重复和输出格式另按任务判断。
 
 逐例平均召回与汇总目标计数也不同：两例分别1/1、0/9，宏平均50%，目标微平均10%。[RULER](ruler-task-complexity-and-effective-context.md)采用目标出现的recall-based计分，但其具体字符串匹配/归一化仍待实现核对；上述集合公式不是对作者parser的运行验证。量化对照应同时保留遗漏、多余项和整题成功，避免单一召回隐藏输出变化。
+
+### 3.4 请求、过滤和聚合须分别核对
+
+生成字符串与候选loglikelihood是不同请求；parser选首/末匹配、取首个重复响应和metric忽略大小写也是不同操作。[harness固定实现](lm-evaluation-harness-request-filter-and-aggregation.md)的MMLU-Pro只启用一条大小写敏感regex，失败计零，后续exact_match归一化不能恢复已漏掉的字母。任务名相同仍须对齐执行协议。
+
+学科内逐例均值a_s、实际样本数n_s时，按样本加权总分是 $\sum_s n_s a_s/\sum_s n_s$；学科等权平均则回答另一问题，PPL等非线性指标另按其计数汇总。保留最终配置、原始/过滤响应、指标键与实际分母，并隔离会复用旧输入或模型输出的缓存；没有新模型调用的缓存命中不能证明本次压缩配置已经评测。（所选harness代码及整理者对照要求。）
 
 ## 4. 校准与错误排序是两个问题
 
@@ -255,3 +263,5 @@ CI含零与质量等价按[第8节](#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E
 - MMLU-Pro，`arXiv:2406.01574v6`；实际选项数与论文随机兜底，阅读范围和表/图差异见协议页。
 
 - RULER，`arXiv:2404.06654v3`；任务/长度汇总、有效长度阈值与recall-based计分，原件差异与阅读范围见协议页。
+
+- lm-evaluation-harness，Summer-Summer fork固定`62617a8cbd7f3beddc2a9c029536e0e387976beb`；所选MMLU-Pro配置与共用执行/过滤/聚合，实际静态与夹具范围见实现页。

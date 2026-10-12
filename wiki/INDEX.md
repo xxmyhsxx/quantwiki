@@ -235,6 +235,7 @@ sources: []
 | [DeepEP 通信设备执行](implementation/deepep-moe-communication-execution.md) | normal/HT 的 rank/组去重、LL 的专家复制、FP8 消息/scale/handle、BF16 回传与 FP32 gate 归约怎样执行。 |
 | [DeepGEMM 专家设备执行](implementation/deepgemm-moe-expert-execution.md) | SGLang 匹配版本的 contiguous/masked 行选择、TMA scale、分组 WGMMA、padding 与 BF16 输出怎样配合。 |
 | [TTS 量化敏感性与评测](implementation/tts-quantization-evaluation.md) | 组件消融、统计等价、模拟与真实低比特图及系统成本。 |
+| [harness：请求、过滤与聚合](implementation/lm-evaluation-harness-request-filter-and-aggregation.md) | 固定任务怎样从输入走到计分，以及缓存、解析与样本权重为何影响压缩对照。 |
 | [RULER：复杂度与有效上下文](implementation/ruler-task-complexity-and-effective-context.md) | 单针、多目标和聚合任务的差别，以及召回、阈值与长度权重怎样影响报告。 |
 | [MMLU-Pro：选项与答案解析](implementation/mmlu-pro-options-and-answer-extraction.md) | 题目筛选、可变选项、CoT和随机兜底怎样共同影响准确率。 |
 | [LongBench v2：上下文与计分](implementation/longbench-v2-context-and-scoring.md) | 语料长度、实际输入、两阶段CoT与无效输出为何改变长上下文对照。 |
