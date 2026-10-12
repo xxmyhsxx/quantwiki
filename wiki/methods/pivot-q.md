@@ -30,7 +30,7 @@ updated: 2026-10-08
 
 PIVOT-Q 在已有量化 VLA 策略上增加恢复训练。机器人执行量化学生的动作，冻结的浮点教师评估同一状态；方法根据当前与随后几步的动作差异，从轨迹各阶段选少量状态蒸馏，再用干净分布的行为锚点限制策略偏移。它主要改变**训练状态、权重和 LoRA 参数**，没有提出新的整数存储格式。
 
-本页依据 arXiv:2610.05745v1 正文及附录 A–F，并核作者仓库 `74d6e1f8994a03eb45aae5c316a743abda2cba15` 的主 GR00T-N1.5 + QuantVLA 路径。论文的行为锚点描述、结果和 seed 口径与固定仓库存在差异，下文分别保留。代码分析为静态阅读，没有导入或执行上游，也未运行模型、机器人或 GPU。前置的量化训练与状态覆盖见 [PTQ/QAT](../fundamentals/quantization/post-training-and-quantization-aware-training.md)和[校准状态选择](../theory/calibration-and-range-selection.md#12-具身策略的状态选择与时序覆盖)。
+本页依据 arXiv:2610.05745v1 正文及附录 A–F，并核作者仓库 `74d6e1f8994a03eb45aae5c316a743abda2cba15` 的主 GR00T-N1.5 + QuantVLA 路径。论文的行为锚点描述、结果和 seed 口径与固定仓库存在差异，下文分别保留。代码分析为静态阅读，没有导入或执行上游，也未运行模型、机器人或 GPU。前置的量化训练与状态覆盖见 [PTQ/QAT](../fundamentals/quantization/post-training-and-quantization-aware-training.md)和[校准状态选择](../theory/calibration-and-range-selection.md#12.%20%E5%85%B7%E8%BA%AB%E7%AD%96%E7%95%A5%E7%9A%84%E7%8A%B6%E6%80%81%E9%80%89%E6%8B%A9%E4%B8%8E%E6%97%B6%E5%BA%8F%E8%A6%86%E7%9B%96)。
 
 ## 1. 要恢复的是闭环行为
 
@@ -173,7 +173,7 @@ $$
 
 论文表3的 GR00T/QuantVLA 同16状态预算消融：随机分段78.5±0.8、均匀分段79.4±1.0、全局贪心78.8±0.7、去未来项79.6±1.2、去锚点78.8±1.5，完整方法81.3±0.4。它支持这组设置下选择、覆盖与锚点共同起作用，不是单靠稀疏即可恢复。固定代码的 global vulnerability 分支同时改用全局秩、移除段配额及时间间隔，不能将差值全归因于一个控制量。
 
-附录 E 的恢复日志、最终策略诊断和最终成功/失败统计不是同一批轨迹。作者按任务身份将选择诊断关联到最终结果；OpenVLA 有560个最终结果但558个选择记录。恢复数多于退化数支持净改进，不能用选中状态的平均差异确定预测某次成功；[评测页](../implementation/model-quality-evaluation.md#10-策略恢复要分清适配范围与统计单位)说明如何保留这些单位。
+附录 E 的恢复日志、最终策略诊断和最终成功/失败统计不是同一批轨迹。作者按任务身份将选择诊断关联到最终结果；OpenVLA 有560个最终结果但558个选择记录。恢复数多于退化数支持净改进，不能用选中状态的平均差异确定预测某次成功；[评测页](../implementation/model-quality-evaluation.md#10.%20%E7%AD%96%E7%95%A5%E6%81%A2%E5%A4%8D%E8%A6%81%E5%88%86%E6%B8%85%E9%80%82%E9%85%8D%E8%8C%83%E5%9B%B4%E4%B8%8E%E7%BB%9F%E8%AE%A1%E5%8D%95%E4%BD%8D)说明如何保留这些单位。
 
 ## 8. 与 OnPTQ 和原生整数 VLA 的关系
 

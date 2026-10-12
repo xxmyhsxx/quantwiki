@@ -163,7 +163,7 @@ flowchart LR
 
 若选中 `MarlinLinearKernel`，它会在允许条件下补齐 tile 维度、调用 **gptq_marlin_repack**、重排 scales/zero-points，并建立 workspace 与空 g_idx。函数名里的 GPTQ 指输入布局协议，不代表模型重新用 GPTQ 量化。AWQ 本来没有 act-order，不应伪造置换。
 
-本轮接续已选 Dense `kU4/G128`、整数零点、FP16/BF16 与 SM80+，取本分片 K≥256且按128整除、N按8整除。此时只将 N 补为64的倍数；标准 qzeros 先转置解包，再补列、按64元素列置换与 nibble interleave，保持相同整数零点，不加1、不减8或预乘尺度。设备让 q 与 z 以相同浮点基底恢复，相减后乘组尺度，再进入 MMA；这与对称 GPTQ 固定减8和 TinyChat scaled-zero 格式不同。列对应、组边界搬运、FP32归约与低精度 bias，及 K=128/SM75 的相邻分支，见 [非对称 AWQ 的 Marlin 零点消费](weight-only-dequant-kernels.md#11-非对称-awq--vllm-marlin整数零点怎样参与计算)。这里的 SM80+ 是本轮核读范围，FP16 的其他架构支持仍按具体模板判断。
+本轮接续已选 Dense `kU4/G128`、整数零点、FP16/BF16 与 SM80+，取本分片 K≥256且按128整除、N按8整除。此时只将 N 补为64的倍数；标准 qzeros 先转置解包，再补列、按64元素列置换与 nibble interleave，保持相同整数零点，不加1、不减8或预乘尺度。设备让 q 与 z 以相同浮点基底恢复，相减后乘组尺度，再进入 MMA；这与对称 GPTQ 固定减8和 TinyChat scaled-zero 格式不同。列对应、组边界搬运、FP32归约与低精度 bias，及 K=128/SM75 的相邻分支，见 [非对称 AWQ 的 Marlin 零点消费](weight-only-dequant-kernels.md#11.%20%E9%9D%9E%E5%AF%B9%E7%A7%B0%20AWQ%20%E2%86%92%20vLLM%20Marlin%EF%BC%9A%E6%95%B4%E6%95%B0%E9%9B%B6%E7%82%B9%E6%80%8E%E6%A0%B7%E5%8F%82%E4%B8%8E%E8%AE%A1%E7%AE%97)。这里的 SM80+ 是本轮核读范围，FP16 的其他架构支持仍按具体模板判断。
 
 **张量并行条件。** 普通 AWQ 创建缓冲时检查本分片 K 能否被有效组长整除、本分片 N 能否被 8 整除；Marlin 可补某些 tile 尾部，但不能靠 padding 修复一个量化组跨越 TP rank 的问题。须区分全局 shape、本分片 shape 与补齐后 shape，不能把模型原始维度直接传入分片内核。
 

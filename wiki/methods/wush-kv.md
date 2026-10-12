@@ -39,7 +39,7 @@ $$
 \qquad M=XX^\top,\quad H=2WW^\top.
 $$
 
-M 描述输入在哪些方向有能量，H 描述误差在哪些方向更昂贵；只白化 M 或只控制峰值没有同时处理两件事。Gram 不需要减均值，相关概念见[二阶统计与加权距离](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7-二阶统计如何定义误差距离)。（§3。）
+M 描述输入在哪些方向有能量，H 描述误差在哪些方向更昂贵；只白化 M 或只控制峰值没有同时处理两件事。Gram 不需要减均值，相关概念见[二阶统计与加权距离](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7.%20%E4%BA%8C%E9%98%B6%E7%BB%9F%E8%AE%A1%E5%A6%82%E4%BD%95%E5%AE%9A%E4%B9%89%E8%AF%AF%E5%B7%AE%E8%B7%9D%E7%A6%BB)。（§3。）
 
 WUSH-KV 主方法选择如下局部代理：
 
@@ -54,7 +54,7 @@ $$
 
 这里 $W_{O,g}\in\mathbb R^{d\times d_{model}}$。H_K 度量未缩放、未掩码的全配对 Q/K 点积平方误差，未加入 softmax 和 Value；H_V 度量各输出投影对 V 的直接读取，未加入 attention 概率以及不同 query heads 合成输出的交叉项。它们是清楚、便宜的双线性代理，不是完整 attention 输出或任务损失的精确 Hessian。（§4.2、式 (4)；附录 D.1 对诊断位置的说明。）
 
-论文的 WUSH-A 改用包含 softmax、因果可见性、Value 差异与输出投影的局部 Hessian；只需前向量即可构造。在零扰动处，重构损失 Hessian 等于 Jacobian 的 $2J^\top J$，不需要语言模型损失反传。具体推导与 GQA 的 head 交叉项见[attention 的局部敏感度](../theory/attention-quantization-error-propagation.md#8-从局部输出导数到-gqa-缓存敏感度)。主实验中它改善幅度有限，作者因此采用简单代理，而非声称简单 H 就等于精确 H。
+论文的 WUSH-A 改用包含 softmax、因果可见性、Value 差异与输出投影的局部 Hessian；只需前向量即可构造。在零扰动处，重构损失 Hessian 等于 Jacobian 的 $2J^\top J$，不需要语言模型损失反传。具体推导与 GQA 的 head 交叉项见[attention 的局部敏感度](../theory/attention-quantization-error-propagation.md#8.%20%E4%BB%8E%E5%B1%80%E9%83%A8%E8%BE%93%E5%87%BA%E5%AF%BC%E6%95%B0%E5%88%B0%20GQA%20%E7%BC%93%E5%AD%98%E6%95%8F%E6%84%9F%E5%BA%A6)。主实验中它改善幅度有限，作者因此采用简单代理，而非声称简单 H 就等于精确 H。
 
 ## 2. WUSH 的闭式构造在平衡什么
 
@@ -122,7 +122,7 @@ i=\operatorname{clip}\left(\left\lfloor x/\Delta\right\rfloor,
 \mathcal Q(x)=\Delta(i+1/2).
 $$
 
-这是 $2^b$ 个 bin center，偶数级网格不含零；零向量专门返回零。$\alpha_b$ 来自标准高斯固定尺度网格的 MSE 最优端点，不是逐组在线搜索。它与[尺度敏感性页](../theory/calibration-and-range-selection.md#10-极低位宽为什么更依赖尺度选择)中 W2 的三值网格不同，不能混用解析尺度常数。（§4.3、式 (5)。）
+这是 $2^b$ 个 bin center，偶数级网格不含零；零向量专门返回零。$\alpha_b$ 来自标准高斯固定尺度网格的 MSE 最优端点，不是逐组在线搜索。它与[尺度敏感性页](../theory/calibration-and-range-selection.md#10.%20%E6%9E%81%E4%BD%8E%E4%BD%8D%E5%AE%BD%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9B%B4%E4%BE%9D%E8%B5%96%E5%B0%BA%E5%BA%A6%E9%80%89%E6%8B%A9)中 W2 的三值网格不同，不能混用解析尺度常数。（§4.3、式 (5)。）
 
 定理 2、附录 B 给出的保证有明确条件：M/H 正定，理想 WUSH 使用 $\gamma=0$；舍入建模为独立均匀噪声，裁剪保留真实残差；WUSH 的归一化坐标尾部由高斯尾界控制，裁剪误差没有过度对齐 B_T 的敏感方向，相关界常数不随维度和位宽变坏。竞争者限于 B_T 对角值相等的 sensitivity-balanced 可逆变换。
 
@@ -142,7 +142,7 @@ $$1+\frac{1+3C_{tail}C_{align}}{\alpha_b^2-1}.$$
 
 两个窗口不再重叠后，长期全精度条目为 $S_{sink}+S_{keep}$。短序列占比更高；不能只拿下游任务最大上下文下的“不到 1%”描述所有长度。论文也说明 SGLang 集成的存储更新发生在 attention 前，但当前 token/prefill chunk 仍用 BF16；这是实现与算法表述需要核对的次序差别。（§4.4、§5.3。）
 
-L 层缓存有 $2Ln_{kv}dS$ 个 K/V 元素，还要保存 $Ln_{kv}$ 个固定 d×d Key 变换。若某时刻有 r 个全精度位置，忽略元数据的平均编码位宽为 $b+(16-b)r/S$；再加逐组尺度/零点、页对齐和暂存。这里的 2 bit 是量化中段整数编码的标称位宽，不能据此说整机显存或缓存真实字节数缩小八倍。计账方式见[KV 格式与生命周期](../theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。
+L 层缓存有 $2Ln_{kv}dS$ 个 K/V 元素，还要保存 $Ln_{kv}$ 个固定 d×d Key 变换。若某时刻有 r 个全精度位置，忽略元数据的平均编码位宽为 $b+(16-b)r/S$；再加逐组尺度/零点、页对齐和暂存。这里的 2 bit 是量化中段整数编码的标称位宽，不能据此说整机显存或缓存真实字节数缩小八倍。计账方式见[KV 格式与生命周期](../theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)。
 
 公开前置代码的 [OSCAR 混合缓存执行](../implementation/oscar-mixed-kv-cache-execution.md) 已核到固定 commit `41ebcdba3db5f0ce1339c3727caea80df575d437`：逐 token/head affine INT2、浮点 scale/zero、sink/recent 的 BF16保护与flush，以及两种精度按LSE合并。它使用每层共用的正交rotation、输出乘 `Rv.T`，不能代替本方法每KV head的一般可逆T及逆转置配对；WUSH作者修改后的SGLang仍未核读。OSCAR普通prefill与flush的裁剪算法还有差别，不能只凭“同一百分位”宣称真实编码一致。
 

@@ -41,7 +41,7 @@ $$q(a)=\operatorname{clip}\!\left(\operatorname{round}\!\left(\frac{W}{\Delta a}
 
 论文PDF第4页与TeX式8实际将零点写在外乘之后，即Δq−zp；若zp是整数零点，它与Δ(q−zp)不同。整理者零值检查：Δ=2、zp=1、W=0时，前者得到1，后者得到0。所选代码采用后者；本页保留原文差异，没有静默把原公式当作一致。以上公式描述所选uniform解释，不冒充论文给出的完整梯度规范。
 
-通过回答交叉熵来选择a，模型同时考虑当前数据、projector及后续层，而不是对每个权重独立最小化欧氏误差。在非饱和区，所选代码用round_ste反向得到 $\widetilde{\partial}\widetilde w/\partial a=-w/a^2$；硬前向本身在未跨过舍入边界时几乎处处不变。代理梯度及其条件见[尺度放在哪一侧](../fundamentals/quantization/post-training-and-quantization-aware-training.md#35-学习尺度前先确定它进入哪一侧)。论文没有给出对这种非凸训练的单调下降或全局最优证明。
+通过回答交叉熵来选择a，模型同时考虑当前数据、projector及后续层，而不是对每个权重独立最小化欧氏误差。在非饱和区，所选代码用round_ste反向得到 $\widetilde{\partial}\widetilde w/\partial a=-w/a^2$；硬前向本身在未跨过舍入边界时几乎处处不变。代理梯度及其条件见[尺度放在哪一侧](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.5%20%E5%AD%A6%E4%B9%A0%E5%B0%BA%E5%BA%A6%E5%89%8D%EF%BC%8C%E5%85%88%E7%A1%AE%E5%AE%9A%E5%AE%83%E8%BF%9B%E5%85%A5%E5%93%AA%E4%B8%80%E4%BE%A7)。论文没有给出对这种非凸训练的单调下降或全局最优证明。
 
 一组128个权重对应一个尺度时，尺度参数数目约为所选权重数/128；整网仍要传播梯度，可训练参数少不等于没有激活、反向或浮点基座成本。论文表1列84.25M对500.70M，比例约16.83%，属于该实验配置的总可训练参数口径，不能推广为所有模型/LoRA rank的固定比例。
 

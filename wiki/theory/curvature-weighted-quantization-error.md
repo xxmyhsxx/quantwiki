@@ -72,7 +72,7 @@ RGSQ 先用模态系数分别混合 A/S，再做乘积。它产生跨模态因�
 
 若 A/S 正定，线性映射 $T(W)=S^{1/2}WA^{1/2}$ 可逆；目标范数可以欧氏化，但量化约束也必须变为 $T(\mathcal Q)$。对 $T(W)$ 直接应用原来的整数网格，通常求解了另一个问题。
 
-这与低秩近似有关键区别：可逆左右变换保持矩阵秩，所以 [加权低秩近似](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6-激活加权的低秩近似) 可以保留秩约束；一般混合矩阵不保持逐元素量化网格、分组共享尺度或指定打包格式。
+这与低秩近似有关键区别：可逆左右变换保持矩阵秩，所以 [加权低秩近似](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6.%20%E6%BF%80%E6%B4%BB%E5%8A%A0%E6%9D%83%E7%9A%84%E4%BD%8E%E7%A7%A9%E8%BF%91%E4%BC%BC) 可以保留秩约束；一般混合矩阵不保持逐元素量化网格、分组共享尺度或指定打包格式。
 
 因此检查“可直接套用旧量化器”时，应分别问：目标是否等价、可行集合是否等价、求解器是否解该目标、映回结果是否可部署。RGSQ 的具体反例及论文/代码差异见 [RGSQ](../methods/rgsq.md)。
 

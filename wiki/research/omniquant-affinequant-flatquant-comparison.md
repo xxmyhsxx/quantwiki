@@ -61,7 +61,7 @@ updated: 2026-09-15
 
 例如第二块，前两者的基本参考是 $F_2(F_1(x))$，学生计算 $\widehat F_2(\widehat F_1(x))$；FlatQuant 的所读校准实现则比较 $F_2(F_1(x))$ 与 $\widehat F_2(F_1(x))$。前者要求当前块在受扰输入上对齐原路径，后者隔离当前块自身的量化误差。两种目标各有侧重，不能只凭是否包含前层误差判定哪个最终任务更好。
 
-OmniQuant/AffineQuant 开启 `aug_loss` 时再加参考 $F_l(x_l^q)$；等权相加在输出目标层面等价于拟合两个参考的均值，推导见 [OmniQuant 的双参考目标](../methods/omniquant.md#5-训练流程数据与参数设置)。FlatQuant 的 $L/\operatorname{stopgrad}(L)$ 则保留同一个参考、按当前损失改变梯度尺度，没有增加第二个教师。这两项不能统一概括成“增强重构”。
+OmniQuant/AffineQuant 开启 `aug_loss` 时再加参考 $F_l(x_l^q)$；等权相加在输出目标层面等价于拟合两个参考的均值，推导见 [OmniQuant 的双参考目标](../methods/omniquant.md#5.%20%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E3%80%81%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE)。FlatQuant 的 $L/\operatorname{stopgrad}(L)$ 则保留同一个参考、按当前损失改变梯度尺度，没有增加第二个教师。这两项不能统一概括成“增强重构”。
 
 ## 3. 计算图位置决定表达力能否用上
 

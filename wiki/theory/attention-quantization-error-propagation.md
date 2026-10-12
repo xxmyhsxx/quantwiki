@@ -20,7 +20,7 @@ updated: 2026-10-12
 
 KV 重构误差经过 query 点积、softmax 和 Value 加权，才变成 attention 输出误差；后续还要经过投影、残差、其他层和自回归反馈。各阶段的误差指标不能互相替代。本页从一个固定 attention 调用推导这些关系，再说明哪些结论能够延伸到生成。
 
-前置是矩阵乘法、概率期望和二范数；[KV 对象与粒度](kv-cache-quantization-objects-and-granularity.md)解释缓存本身的结构，[加权距离](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7-二阶统计如何定义误差距离)解释矩阵度量。下列恒等式、反例和条件化界是依据 NOVA-KV 附录 E/F、QJL 的估计问题与 TurboQuant 的 MSE/IP 区分所作的教学展开，不是新的模型实验。
+前置是矩阵乘法、概率期望和二范数；[KV 对象与粒度](kv-cache-quantization-objects-and-granularity.md)解释缓存本身的结构，[加权距离](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7.%20%E4%BA%8C%E9%98%B6%E7%BB%9F%E8%AE%A1%E5%A6%82%E4%BD%95%E5%AE%9A%E4%B9%89%E8%AF%AF%E5%B7%AE%E8%B7%9D%E7%A6%BB)解释矩阵度量。下列恒等式、反例和条件化界是依据 NOVA-KV 附录 E/F、QJL 的估计问题与 TurboQuant 的 MSE/IP 区分所作的教学展开，不是新的模型实验。
 
 ## 1. 固定比较对象，才能归因误差
 
@@ -45,7 +45,7 @@ $$\|\Delta Z\|_F^2=\frac1d\operatorname{tr}(E_KM_qE_K^\top),\qquad M_q=Q^\top Q.
 
 这说明相同的 K-MSE 可以产生不同 logit 误差。教学例：$q=(10,0)$，两个 key 误差 $e_a=(0.1,0)$、$e_b=(0,0.1)$ 的范数相同，点积误差却分别为 1 和 0。范围或通道幅值只能作为代理，不能代替读取方向。
 
-$M_q=Q^\top Q$ 是未归一化的 Gram 矩阵，对应误差求和；有 $N$ 个等权 query 时，经验未中心化二阶矩为 $M_q/N$。GQA 的一个 KV head 被多个 query heads 读取时，对总平方误差目标应累加各 head 的 $Q_h^\top Q_h$；若希望不同 heads 等权、不同长度样本等权，必须先定义并归一化相应权重。统计约定见 [Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#gram二阶矩与协方差)。
+$M_q=Q^\top Q$ 是未归一化的 Gram 矩阵，对应误差求和；有 $N$ 个等权 query 时，经验未中心化二阶矩为 $M_q/N$。GQA 的一个 KV head 被多个 query heads 读取时，对总平方误差目标应累加各 head 的 $Q_h^\top Q_h$；若希望不同 heads 等权、不同长度样本等权，必须先定义并归一化相应权重。统计约定见 [Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#Gram%E3%80%81%E4%BA%8C%E9%98%B6%E7%9F%A9%E4%B8%8E%E5%8D%8F%E6%96%B9%E5%B7%AE)。
 
 **因果可见性会改变精确度量。** 若第 $j$ 个 key 只被集合 $I_j$ 内的 query 读取，可见 logits 的精确平方误差为
 
@@ -128,7 +128,7 @@ $$\mathbb E(\widehat a-a)^2=\operatorname{Var}(\widehat a)+(\mathbb E\widehat a-
 | teacher-forced 整模型 | 相同输入及后续 token 序列 | 条件计算下的逐层/逐位置传播；隐藏状态仍可能不同 |
 | 自由生成与任务指标 | 相同提示、可比采样协议 | 状态和 token 反馈后的实际任务质量 |
 
-这些层次互相补充。先在固定输入上找到第一处可解释差异，再看传播和任务结果；不要把自由生成后完全不同位置的张量 MSE 当成同一局部误差。实现侧还需 [模拟与真实缓存验证](../implementation/quantization-error-diagnosis.md#7-低比特-kv-从模拟到真实执行的对齐)，以排除布局和状态机错误。
+这些层次互相补充。先在固定输入上找到第一处可解释差异，再看传播和任务结果；不要把自由生成后完全不同位置的张量 MSE 当成同一局部误差。实现侧还需 [模拟与真实缓存验证](../implementation/quantization-error-diagnosis.md#7.%20%E4%BD%8E%E6%AF%94%E7%89%B9%20KV%20%E4%BB%8E%E6%A8%A1%E6%8B%9F%E5%88%B0%E7%9C%9F%E5%AE%9E%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AF%B9%E9%BD%90)，以排除布局和状态机错误。
 
 配套 [CPU 教学计算](../assets/attention-quantization-error-propagation/check_mechanisms.py) 使用 Python 3 与 NumPy，复算本页误差关系及相关页的二阶统计、码本例子、位打包和简化缓存轨迹；它不调用模型或 GPU，也不能替代真实实现验证。
 

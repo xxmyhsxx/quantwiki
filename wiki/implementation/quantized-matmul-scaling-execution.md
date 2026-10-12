@@ -280,7 +280,7 @@ $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}.$$
 
 [Atom](../methods/atom.md) v3 §4.2/图8把每组恢复及浮点相加放进MMA流水，省去部分和写回全局内存再发另一kernel的成本。融合不会消除参数读取、类型转换、尺度乘法与跨组相加，也不自动保证计算与访存完全重叠。组变小改善局部范围，但元数据及恢复次数会增加；真实收益仍需按相同shape和测量协议判断。
 
-具体精度也需追到代码：Atom所选DenseLayerGEMM_i4.cu先以FP16相乘两侧尺度，再转float恢复INT32部分和、跨组FP32累加并输出FP16。它与论文的FP16恢复/相加描述及“先在FP32计算尺度乘积”均有区别。原生路径、元数据复制和质量模拟条件见 [Atom实现](atom-mixed-gemm-and-paged-kv.md#3-native-gemm的表示尺度和累加)。数学恒等式不消除有限精度舍入，也不证明实现已达到某个速度。
+具体精度也需追到代码：Atom所选DenseLayerGEMM_i4.cu先以FP16相乘两侧尺度，再转float恢复INT32部分和、跨组FP32累加并输出FP16。它与论文的FP16恢复/相加描述及“先在FP32计算尺度乘积”均有区别。原生路径、元数据复制和质量模拟条件见 [Atom实现](atom-mixed-gemm-and-paged-kv.md#3.%20native%20GEMM%E7%9A%84%E8%A1%A8%E7%A4%BA%E3%80%81%E5%B0%BA%E5%BA%A6%E5%92%8C%E7%B4%AF%E5%8A%A0)。数学恒等式不消除有限精度舍入，也不证明实现已达到某个速度。
 
 ## 16. 多位整数怎样用二值点积执行
 

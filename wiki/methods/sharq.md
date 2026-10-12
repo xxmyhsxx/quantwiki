@@ -47,7 +47,7 @@ $$X-(\widetilde X_{sp}+\widetilde R)=R-\widetilde R.$$
 $$\|X\bar W-\widehat Y\|_F
 \le\|R-\widetilde R\|_F\|\bar W\|_2.$$
 
-它只界定激活近似造成的输出扰动。相对原浮点W还存在 $X(W-\bar W)$；不同路径尺度若解码成不同W，恒等式也要增加路径差异项。有限精度GEMM、BF16中间输出/累加舍入不在该实数界内。完整分解见[公共残差解释](../implementation/quantized-matmul-scaling-execution.md#17-稀疏主干与量化残差怎样共用权重)。不能由这个上界推出必定优于dense NVFP4或所有模型质量单调提高。
+它只界定激活近似造成的输出扰动。相对原浮点W还存在 $X(W-\bar W)$；不同路径尺度若解码成不同W，恒等式也要增加路径差异项。有限精度GEMM、BF16中间输出/累加舍入不在该实数界内。完整分解见[公共残差解释](../implementation/quantized-matmul-scaling-execution.md#17.%20%E7%A8%80%E7%96%8F%E4%B8%BB%E5%B9%B2%E4%B8%8E%E9%87%8F%E5%8C%96%E6%AE%8B%E5%B7%AE%E6%80%8E%E6%A0%B7%E5%85%B1%E7%94%A8%E6%9D%83%E9%87%8D)。不能由这个上界推出必定优于dense NVFP4或所有模型质量单调提高。
 
 ## 3. 共用权重仍需要两种尺度视图
 

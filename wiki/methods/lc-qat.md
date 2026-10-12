@@ -88,7 +88,7 @@ $$
 
 实验取 $\delta=1,k=5$。在远离区间中点的位置，上式导数可由链式法则得到；$k>1$ 时在 $x=\delta/2$ 发散。区间内 $k\to\infty$ 的值趋于两端阶跃，中点仍为 $\delta/2$；不是处处光滑且有界的梯度。论文以“smooth gradients”解释其稳定性，图5则报告 DGE 比 STE 的训练曲线更稳定；后者是实验观察，不能代替前者的数学条件。
 
-原文未完整交代多个整数区间的局部坐标归一化、中点防发散、clamp 外梯度等实现细节。没有作者实现时，不补写 epsilon 或把它当成真实舍入导数。公共页[代理函数与坐标变换](../fundamentals/quantization/post-training-and-quantization-aware-training.md#33-代理函数和坐标变换要分别核对)给出为何这些条件影响反向的说明。
+原文未完整交代多个整数区间的局部坐标归一化、中点防发散、clamp 外梯度等实现细节。没有作者实现时，不补写 epsilon 或把它当成真实舍入导数。公共页[代理函数与坐标变换](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.3%20%E4%BB%A3%E7%90%86%E5%87%BD%E6%95%B0%E5%92%8C%E5%9D%90%E6%A0%87%E5%8F%98%E6%8D%A2%E8%A6%81%E5%88%86%E5%88%AB%E6%A0%B8%E5%AF%B9)给出为何这些条件影响反向的说明。
 
 ### 4.2 预处理的尺度不是码本尺度
 

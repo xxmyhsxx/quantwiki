@@ -79,7 +79,7 @@ $$ \mathbf Z=(\mathbf Q\mathbf\Lambda)\cdot(\mathbf K\mathbf\Lambda^{-1})^{\math
 
 $$ \lambda_i=\max(|\mathbf K_i|)^{\alpha},$$
 
-实践中 $\alpha=0.5$ 足够。**位置编码带来的额外约束：** 把缩放融合进前置线性层权重（$\mathbf W_Q\lambda$ 与 $\lambda^{-1}\mathbf W_K$）可以省去额外的内核调用，但 RoPE 在同一 head 内把通道 $i$ 与 $i+D/2$ 配对旋转，因此必须加上 $\lambda_i=\lambda_{i+D/2}$ 的硬约束，取两者幅值的较大者作为公共值。这个条件与 [平移与位置编码的融合边界](../theory/diagonal-scaling-equivalent-transform.md#7-平移与注意力位置编码的融合边界) 中推导的「缩放需与相对旋转交换」一致，只是这里直接按配对结构构造满足条件的缩放。
+实践中 $\alpha=0.5$ 足够。**位置编码带来的额外约束：** 把缩放融合进前置线性层权重（$\mathbf W_Q\lambda$ 与 $\lambda^{-1}\mathbf W_K$）可以省去额外的内核调用，但 RoPE 在同一 head 内把通道 $i$ 与 $i+D/2$ 配对旋转，因此必须加上 $\lambda_i=\lambda_{i+D/2}$ 的硬约束，取两者幅值的较大者作为公共值。这个条件与 [平移与位置编码的融合边界](../theory/diagonal-scaling-equivalent-transform.md#7.%20%E5%B9%B3%E7%A7%BB%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E7%9A%84%E8%9E%8D%E5%90%88%E8%BE%B9%E7%95%8C) 中推导的「缩放需与相对旋转交换」一致，只是这里直接按配对结构构造满足条件的缩放。
 
 这一观察与 [KIVI](kivi.md) 的独立结论一致（键有固定通道离群值、值没有），但两者在粒度与布局上给出不同方案：KIVI 对键用逐通道量化并保留全精度残差窗口，QServe 用逐 head 动态量化并把尺度与零点存进分页；[SAW-INT4](saw-int4.md) 则强调混合精度残差和跨 token 分组会增加其目标分页系统的管理与并行成本；这不是对所有分页实现的不可兼容证明。共同结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
 

@@ -43,7 +43,7 @@ updated: 2026-10-12
 
 hessian_offline_llama在原始浮点模型逐block前传，对q/o/up/down输入挂hook；q与up分别代表具有共同输入的QKV和up/gate。register_H_hook将token展平，以FP64累加 $S=\sum_t x_tx_t^\top$、$u=\sum_t x_t$ 和token数T，跨worker加和后保存FP32的下三角协方差 $C=S/T-\mu\mu^\top$ 与 $\mu=u/T$、n/ct。不是在每块量化后重新采样的量化前缀统计。
 
-quantize_linear将flatH还原对称矩阵，并加回 $\mu\mu^\top$，得到未中心化二阶矩 $H=S/T$；然后除以平均对角并加sigma_reg I，默认1e-2。直接把保存的flatH当作最终重构H会漏掉均值方向；将其称为任务损失Hessian也不准确。归约及尺度意义见[二阶矩的合并](../theory/layer-reconstruction-second-order-compensation.md#11-二阶矩的归约与分片合并)。
+quantize_linear将flatH还原对称矩阵，并加回 $\mu\mu^\top$，得到未中心化二阶矩 $H=S/T$；然后除以平均对角并加sigma_reg I，默认1e-2。直接把保存的flatH当作最终重构H会漏掉均值方向；将其称为任务损失Hessian也不准确。归约及尺度意义见[二阶矩的合并](../theory/layer-reconstruction-second-order-compensation.md#1.1%20%E4%BA%8C%E9%98%B6%E7%9F%A9%E7%9A%84%E5%BD%92%E7%BA%A6%E4%B8%8E%E5%88%86%E7%89%87%E5%90%88%E5%B9%B6)。
 
 离线统计CLI默认256段、4096 token；量化/微调入口默认384段、4096 token，验证128段。论文的6144段与这些默认值属于不同配置，文件同名不能证明本轮复现了论文协议。sample_rp1t只选token长度达到ctx_size的文档前段，未核数据集版本或实际样本分布。
 
@@ -69,7 +69,7 @@ E8P12有codesz8、packsz4、idx_dtype int64、version1。逻辑上每8个权重�
 
 底表256个int32，共1024字节；每个word放8个4bit分量，先按[0,2,4,6,1,3,5,7]重排，利用模式奇偶性修正末分量，再将半整数a编码为2a+8。逻辑码c的高8位选模式，低8位b表示符号；p为这8位的XOR，实际符号用b XOR p（翻转最低位），p还选择−1/4或+1/4。因此不能把代码低8位直接解释为8个独立符号，再假设有一个另外存放的平移位。（latticee8_padded12.py的get_packed_abs_grid/get_full_grid。）
 
-maybe_pack_idxs一次取相邻两输出行、相邻两8D输入块的四个逻辑码。64bit的低32位按顺序放四个模式字节；高32位将四个码的符号位交错，第j个符号位位于4j+i。随后以16输出行×64输入列tile重排，最终Qidxs为m×(n/32)个int64，传kernel时view为[m/16,n/64,8,4]。理想主体位数仍为 $64m(n/32)=2mn$；不能用连续uint16原顺序数组替代同容量的物理格式。共享解释见[逻辑码与载荷](../theory/codebook-quantization-and-bit-budget.md#42-逻辑码字与物理打包为什么需要分别核对)。
+maybe_pack_idxs一次取相邻两输出行、相邻两8D输入块的四个逻辑码。64bit的低32位按顺序放四个模式字节；高32位将四个码的符号位交错，第j个符号位位于4j+i。随后以16输出行×64输入列tile重排，最终Qidxs为m×(n/32)个int64，传kernel时view为[m/16,n/64,8,4]。理想主体位数仍为 $64m(n/32)=2mn$；不能用连续uint16原顺序数组替代同容量的物理格式。共享解释见[逻辑码与载荷](../theory/codebook-quantization-and-bit-budget.md#4.2%20%E9%80%BB%E8%BE%91%E7%A0%81%E5%AD%97%E4%B8%8E%E7%89%A9%E7%90%86%E6%89%93%E5%8C%85%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%88%AB%E6%A0%B8%E5%AF%B9)。
 
 如m=16、n=64，32个int64占256字节，表示1024个权重；展开FP16为2048字节。这个8倍只针对理想主体，不包含SU/SV、可选scaleWH、融合尺度、码本、未量化层、容器或运行临时空间。模块导入仍生成完整65,536×8的FP32参考网格；1KiB描述的是紧凑底表，不能扩大为整个Python进程的码本相关内存。
 

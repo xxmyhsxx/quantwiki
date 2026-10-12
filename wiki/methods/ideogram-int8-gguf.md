@@ -50,7 +50,7 @@ D=\operatorname{diag}(\lambda_j),\quad X'=XD^{-1},\quad W'=WD.$$
 
 三套PartiPrompts派生集合分别为128条校准、200条无文字质量prompt和100条文字prompt；后者63条具有机器可检查OCR目标。作者用LLM按公开caption规范重建expander，再用CaptionVerifier检查，300条评测caption均通过。它不是原厂生产API。每种量化版本共享相同JSON caption、seed1000、48步、1024×1024与V4_QUALITY_48预设。
 
-论文报告raw提示下OCR exact-match约为零，JSON下约54–57%。它说明该模型的输入协议影响文字能力能否被合理测量，不支持任意模型通过JSON包装都提高约55个百分点。扩写过程也可能增加细节；只有各版本共享同一扩写结果，量化对照才没有混入版本各自不同的输入。（§3–4、表4；公共解释见[生成质量与输入协议](../implementation/model-quality-evaluation.md#12-生成质量保真度和提示协议怎样分开评测)。）
+论文报告raw提示下OCR exact-match约为零，JSON下约54–57%。它说明该模型的输入协议影响文字能力能否被合理测量，不支持任意模型通过JSON包装都提高约55个百分点。扩写过程也可能增加细节；只有各版本共享同一扩写结果，量化对照才没有混入版本各自不同的输入。（§3–4、表4；公共解释见[生成质量与输入协议](../implementation/model-quality-evaluation.md#12.%20%E7%94%9F%E6%88%90%E8%B4%A8%E9%87%8F%E3%80%81%E4%BF%9D%E7%9C%9F%E5%BA%A6%E5%92%8C%E6%8F%90%E7%A4%BA%E5%8D%8F%E8%AE%AE%E6%80%8E%E6%A0%B7%E5%88%86%E5%BC%80%E8%AF%84%E6%B5%8B)。）
 
 ## 5. 三类质量指标分别保留
 
@@ -65,11 +65,11 @@ D=\operatorname{diag}(\lambda_j),\quad X'=XD^{-1},\quad W'=WD.$$
 
 表2按prompt配对、bootstrap10,000次计算95% CI，固定一个seed，未校正多重比较。INT8−FP8的CLIP为−0.005、CI [−0.146,+0.133]，Pick为−0.007、CI [−0.040,+0.027]；Q4_K−NF4两项CI也含零。它们表示此协议/样本未分辨出差异；没有预先声明等价界限，不能证明正式等价。表2并非所有区间含零：Q4_K−FP8的CLIP为+0.154 [0.014,0.298]、Pick为−0.055 [−0.093,−0.017]。作者关于“无实质分离”的解释，不能写成全指标统计上无差异。
 
-HPSv2的最大点估计差实际为0.0044，未给逐图CI。OCR NED：FP8/NF4/INT8/Q4_K为0.133/0.116/0.099/0.123；INT8−NF4的NED CI据正文含零，但没有刊出端点。CI只反映固定seed下prompt抽样变化，不覆盖跨seed、所有文字任务、别的judge或硬件变化。与已有[质量等价判据](../implementation/model-quality-evaluation.md#8-无显著差异不等于满足质量等价)保持同一边界。
+HPSv2的最大点估计差实际为0.0044，未给逐图CI。OCR NED：FP8/NF4/INT8/Q4_K为0.133/0.116/0.099/0.123；INT8−NF4的NED CI据正文含零，但没有刊出端点。CI只反映固定seed下prompt抽样变化，不覆盖跨seed、所有文字任务、别的judge或硬件变化。与已有[质量等价判据](../implementation/model-quality-evaluation.md#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E5%BC%82%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%BB%A1%E8%B6%B3%E8%B4%A8%E9%87%8F%E7%AD%89%E4%BB%B7)保持同一边界。
 
 ## 6. GGUF格式与作者编码器贡献需区分
 
-Q8_0和Q4_K是weight-only存储格式，名义码宽不包括全部元数据。[GGUF格式](../implementation/gguf-block-quantization-formats.md#3-二级尺度k-quant-超块)中，Q4_K的256元素超块有128字节INT4码、12字节子块参数和4字节FP16超块参数，共144字节，即4.5 bit/weight；Q8_0为32个INT8加一个FP16尺度，共34字节，即8.5 bit/weight。仅比4与8这两个整数会漏掉参数成本。
+Q8_0和Q4_K是weight-only存储格式，名义码宽不包括全部元数据。[GGUF格式](../implementation/gguf-block-quantization-formats.md#3.%20%E4%BA%8C%E7%BA%A7%E5%B0%BA%E5%BA%A6%EF%BC%9AK-quant%20%E8%B6%85%E5%9D%97)中，Q4_K的256元素超块有128字节INT4码、12字节子块参数和4字节FP16超块参数，共144字节，即4.5 bit/weight；Q8_0为32个INT8加一个FP16尺度，共34字节，即8.5 bit/weight。仅比4与8这两个整数会漏掉参数成本。
 
 论文称自行实现NumPy Q4_K superblock quantizer和Torch反量化、与参考decoder验证。这个作者报告不能替代本项目取得代码、检验bit序或真实checkpoint。同段“没有GGUF量化器提供Q4_K encoder”不能作为GGUF生态的一般事实：既有llama.cpp固定快照的ggml-quants.c已有quantize_row_q4_K_ref，ggml.c的Q4_K类型表登记from_float_ref，实际量化入口也调用quantize_q4_K。该快照获取于2026-07-01，未再追溯论文6月版本所指工具环境；它能说明这一固定版本有通用编码器，不能说明该工具直接支持Ideogram的完整导出/执行。
 

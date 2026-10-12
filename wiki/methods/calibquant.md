@@ -42,7 +42,7 @@ $$g(x)=a(x-\gamma)+\gamma-\tau_1=ax+c,\quad a=1+\frac{\tau_1-\tau_2}{\delta-\gam
 
 它让两个端点都向下移动。$\tau_2>\tau_1$且 $\delta-\gamma>\tau_2-\tau_1$ 时，0<a<1压缩差值；$\tau_1=\tau_2$ 时只平移；若a≤0则会抹平或反转排序，不能笼统称为“总能收缩极值”。$\delta=\gamma$亦须另有策略；极值统计须限定有效分数，不能将mask的负无穷代入。论文先写τ>0，实际搜索集合却是{0,1,2,3}，未登记退化区间与斜率约束。
 
-若**整行**都应用同一个g，共同c被softmax消掉，只剩 $\operatorname{softmax}(az)$；τ相等时概率完全不变。若只校准视觉分数，c相对文字仍会改变模态质量。教学例：视觉/文字logits原为(0,0)，只给视觉减1，视觉概率从1/2变为 $1/(1+e)\approx0.269$。因此必须区分全行、视觉子集及极值统计范围；原件的纯视觉公式不能补出混合路径的完整mask、拼接与归约实现。公共[子集偏移条件](../theory/attention-quantization-error-propagation.md#31-共同偏移只在同一归一化域内消去)承接此区别。
+若**整行**都应用同一个g，共同c被softmax消掉，只剩 $\operatorname{softmax}(az)$；τ相等时概率完全不变。若只校准视觉分数，c相对文字仍会改变模态质量。教学例：视觉/文字logits原为(0,0)，只给视觉减1，视觉概率从1/2变为 $1/(1+e)\approx0.269$。因此必须区分全行、视觉子集及极值统计范围；原件的纯视觉公式不能补出混合路径的完整mask、拼接与归约实现。公共[子集偏移条件](../theory/attention-quantization-error-propagation.md#3.1%20%E5%85%B1%E5%90%8C%E5%81%8F%E7%A7%BB%E5%8F%AA%E5%9C%A8%E5%90%8C%E4%B8%80%E5%BD%92%E4%B8%80%E5%8C%96%E5%9F%9F%E5%86%85%E6%B6%88%E5%8E%BB)承接此区别。
 
 作者用网格选τ并跨输入、层和head固定，图1/2在InternVL2.5-8B、COCO展示logits分布与softmax MSE改善。主搜索数据划分、目标、最终τ值、样本ID及留出协议没有给足，不能把直方图对齐视作全部任务质量保证。
 

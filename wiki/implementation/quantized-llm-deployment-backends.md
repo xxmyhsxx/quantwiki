@@ -68,7 +68,7 @@ online（含 fp8_per_tensor、fp8_per_block 等在线量化简写）
 
 两个值得注意的命名模式：
 
-**量化方法名不与内核一一对应。** 此快照非 CPU 的 AWQ checkpoint 可把 `awq`、`awq_marlin` 等选择统一为 `auto_awq`，随后按配置和层形状选择普通 AWQ 或 MPLinear 路径；后者再选择可实现的 kernel。`AutoAWQMarlinLinearMethod` 的类名也不保证最终调用 Marlin。性能记录需保留最终后端、环境开关和输入规模；具体加载与执行条件见 [AWQ 实现](awq-implementation.md#5-跨引擎vllm)，不能从注册名称清单直接推断运行路径。
+**量化方法名不与内核一一对应。** 此快照非 CPU 的 AWQ checkpoint 可把 `awq`、`awq_marlin` 等选择统一为 `auto_awq`，随后按配置和层形状选择普通 AWQ 或 MPLinear 路径；后者再选择可实现的 kernel。`AutoAWQMarlinLinearMethod` 的类名也不保证最终调用 Marlin。性能记录需保留最终后端、环境开关和输入规模；具体加载与执行条件见 [AWQ 实现](awq-implementation.md#5.%20%E8%B7%A8%E5%BC%95%E6%93%8E%EF%BC%9AvLLM)，不能从注册名称清单直接推断运行路径。
 
 **格式名与生态来源并不统一。** `compressed-tensors`、`modelopt`、`quark`、`bitsandbytes`、`torchao`、`inc` 对应各自的工具链与序列化格式，`fp8` 与 `fbgemm_fp8` 则区分了 FP8 的两条实现路径。看到「vLLM 支持 X」时，需要进一步确认是哪条内核路径。
 

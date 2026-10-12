@@ -95,7 +95,7 @@ convert_legacy_model_format.load_legacy_tensor将同一outliers_matrix转CSR，�
 
 在CSR下，p为真实保护值密度，额外列/值约32p位，每行累计指针为 $32(m+1)/(mn)$ 位，另有每输入列16bit置换，即16/m位；若perm未保存则去掉。主体4位仍覆盖全部位置，稀疏项另加。容器、未量化参数、边界/对齐和运行缓存另计。
 
-PTCSR每16输出行取最大行长度k，把16行的条目交错并补到16k，row_offsets按行块存；col_vals包含零填充。此时nnz/density计入填充，不能当真实保护比例，存储与负载平衡之间要结合实际分布判断。[格式预算与保护协议](../theory/codebook-quantization-and-bit-budget.md#52-保护值应覆盖还是相加由保存协议决定)区分这些口径。
+PTCSR每16输出行取最大行长度k，把16行的条目交错并补到16k，row_offsets按行块存；col_vals包含零填充。此时nnz/density计入填充，不能当真实保护比例，存储与负载平衡之间要结合实际分布判断。[格式预算与保护协议](../theory/codebook-quantization-and-bit-budget.md#5.2%20%E4%BF%9D%E6%8A%A4%E5%80%BC%E5%BA%94%E8%A6%86%E7%9B%96%E8%BF%98%E6%98%AF%E7%9B%B8%E5%8A%A0%EF%BC%8C%E7%94%B1%E4%BF%9D%E5%AD%98%E5%8D%8F%E8%AE%AE%E5%86%B3%E5%AE%9A)区分这些口径。
 
 ## 5. packed matvec怎样恢复并消费
 

@@ -1,5 +1,12 @@
 # Wiki 变动记录
 
+## 2026-10-12 · Wiki 章节链接修复
+
+- 将 85 页中 426 处 GitHub 式 slug 引用改为 URL 编码的完整标题，逐项唯一对应 225 个现有章节；原先 128 项中文标点提示是其中一部分。仅改章节地址，保留显示文字、文件路径、目标章节和其余正文。
+- 链接 lint 将与完整标题不同的所有 slug 列为兼容待核，覆盖普通编号、英文空格与大小写；34 项回归通过，完整严格检查无错误或待核项，raw 保留说明页仍无点击关系。
+- Astra 核对规则和管理导航、AWQ/SAPrune 等代表关系，未发现需删除的无用途链接；本次不代表逐条审过全库知识关系。章节形式依据 Obsidian 官方说明，当前窗口不可用，客户端实际跳转尚未验证。
+
+
 ## 2026-10-12 · FlashInfer 分页KV文档 ingest 与独立评审
 
 - 读取三份0.6.14官方文档保存正文/追加例子、布局数学重录与4张补采图；新增分页写入/布局/NVFP4实现页，公共KV页补页表与数值写入职责。区分页/token/mask单位、追加后元数据、NHD/HND、分段mask、MLA/cascade view，以及K/V块尺度/全局恢复因子的方向。
@@ -313,7 +320,7 @@
 
 ## 2026-10-07 · AWQ Marlin 零点设备源码 ingest 和 review
 
-- 接续既有 AWQ 加载与对称 GPTQ Marlin 主线，在[内核契约页](implementation/weight-only-dequant-kernels.md#11-非对称-awq--vllm-marlin整数零点怎样参与计算)增补固定 vLLM `568afb3a13806beb53bb2e6bd518269357b237c0` 的 Dense `kU4/G128/A16/no-act-order/SM80+`。核 checkpoint→MPLinear 标准化→Marlin 权重/scale/packed zeros 配套布局→host/template→设备消费，限定本分片 K≥256且按128整除、N按8整除；本范围只补 N 至64倍数，没有重新量化模型。
+- 接续既有 AWQ 加载与对称 GPTQ Marlin 主线，在[内核契约页](implementation/weight-only-dequant-kernels.md#11.%20%E9%9D%9E%E5%AF%B9%E7%A7%B0%20AWQ%20%E2%86%92%20vLLM%20Marlin%EF%BC%9A%E6%95%B4%E6%95%B0%E9%9B%B6%E7%82%B9%E6%80%8E%E6%A0%B7%E5%8F%82%E4%B8%8E%E8%AE%A1%E7%AE%97)增补固定 vLLM `568afb3a13806beb53bb2e6bd518269357b237c0` 的 Dense `kU4/G128/A16/no-act-order/SM80+`。核 checkpoint→MPLinear 标准化→Marlin 权重/scale/packed zeros 配套布局→host/template→设备消费，限定本分片 K≥256且按128整除、N按8整除；本范围只补 N 至64倍数，没有重新量化模型。
 - 核零点64列置换与 nibble interleave、shared ring 组首复制/复用和 lane→列/尺度对应。FP16/BF16 的 q 与整数 z 分别恢复为1024/128的共同基底，相减抵消后在低精度 B fragment 上乘组尺度，再做 FP32 MMA。区分对称 GPTQ 的固定减8、TinyChat scaled-zero 与未选 float-zp 分支。
 - 明确 vLLM atomic 环境开关实际生效且默认关闭、FP32跨CTA缓冲默认开启；bias先转换到输出类型再加一次。保留 K=128单组后乘scale、SM75 FP16多组低精度MMA/二阶段流水、atomic条件与不同舍入顺序，未把这些相邻分支混入 SM80+ 多组主线。
 - 同步 AWQ 承接页、INDEX/READING/SELF；沿用同一 vLLM 研读记录，85条有依据、60条范围待核实不变。下一项可执行代码库P1为单设备W4A16 MoE的专家配对/两次GEMM/零点尺度/gate汇合，所需固定来源已存在；OnPTQ/WUSH-KV仍待匹配实现材料。
@@ -392,11 +399,11 @@
 
 ## 2026-10-07 · 量化优化、变换与生成行为逐论文 ingest
 
-- 第一篇完成 RMSE v1：在[层输出重构](theory/layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)补齐损失尺度、输出/参数梯度、等大小分组与四种归约、离线流程及实验条件。保留非零残差条件、分组改变目标、Qwen W3 表间变体映射差异和单任务反例。
-- 第二篇完成 Scale Sensitivity v1：在[校准页](theory/calibration-and-range-selection.md#10-极低位宽为什么更依赖尺度选择)补齐奇数级网格、高斯 RTN 极限、相对尺度曲率、六种选择规则与 HIP/GPTQ 边界；保留解析尺度在原始权重上的失败，以及预测更准而重构更差的局部对照。
-- 第三篇完成 [ConQuR v2](methods/conqur.md)，新增方法解释，并补[公共旋转目标](theory/orthogonal-rotation-and-hadamard-quantization.md#9-从激活几何目标到闭式旋转更新)：顶点代理与 Procrustes 子问题、共享/头内旋转、逐批量化感知校准、质量与校准成本的条件。
+- 第一篇完成 RMSE v1：在[层输出重构](theory/layer-reconstruction-second-order-compensation.md#11.%20%E9%87%8D%E6%9E%84%E6%8D%9F%E5%A4%B1%E7%9A%84%E5%B0%BA%E5%BA%A6%E6%80%8E%E6%A0%B7%E5%BD%B1%E5%93%8D%E4%BC%98%E5%8C%96)补齐损失尺度、输出/参数梯度、等大小分组与四种归约、离线流程及实验条件。保留非零残差条件、分组改变目标、Qwen W3 表间变体映射差异和单任务反例。
+- 第二篇完成 Scale Sensitivity v1：在[校准页](theory/calibration-and-range-selection.md#10.%20%E6%9E%81%E4%BD%8E%E4%BD%8D%E5%AE%BD%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9B%B4%E4%BE%9D%E8%B5%96%E5%B0%BA%E5%BA%A6%E9%80%89%E6%8B%A9)补齐奇数级网格、高斯 RTN 极限、相对尺度曲率、六种选择规则与 HIP/GPTQ 边界；保留解析尺度在原始权重上的失败，以及预测更准而重构更差的局部对照。
+- 第三篇完成 [ConQuR v2](methods/conqur.md)，新增方法解释，并补[公共旋转目标](theory/orthogonal-rotation-and-hadamard-quantization.md#9.%20%E4%BB%8E%E6%BF%80%E6%B4%BB%E5%87%A0%E4%BD%95%E7%9B%AE%E6%A0%87%E5%88%B0%E9%97%AD%E5%BC%8F%E6%97%8B%E8%BD%AC%E6%9B%B4%E6%96%B0)：顶点代理与 Procrustes 子问题、共享/头内旋转、逐批量化感知校准、质量与校准成本的条件。
 - 第四篇完成 [WUSH-KV v1](methods/wush-kv.md)，展开双侧统计的闭式可逆变换、GQA 局部代理/精确 Hessian、post-RoPE 位置与双窗口；同步公共误差与缓存页，区分 QuEST 近最优条件、模拟结果和 OSCAR 量化器的 SGLang 评测。
-- 第五篇完成 Decision Flips v1，整合至[排序稳定性](theory/quantization-ranking-stability.md#8-语言模型的分布距离怎样变成-token-翻转)和[评测协议](implementation/model-quality-evaluation.md#9-输出分布一致性要固定前缀和指标口径)：局部平方根规律、Jensen 因子、TV 严格界与经验比、留出失败条件及推测解码的接受/成本区别。
+- 第五篇完成 Decision Flips v1，整合至[排序稳定性](theory/quantization-ranking-stability.md#8.%20%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%86%E5%B8%83%E8%B7%9D%E7%A6%BB%E6%80%8E%E6%A0%B7%E5%8F%98%E6%88%90%20token%20%E7%BF%BB%E8%BD%AC)和[评测协议](implementation/model-quality-evaluation.md#9.%20%E8%BE%93%E5%87%BA%E5%88%86%E5%B8%83%E4%B8%80%E8%87%B4%E6%80%A7%E8%A6%81%E5%9B%BA%E5%AE%9A%E5%89%8D%E7%BC%80%E5%92%8C%E6%8C%87%E6%A0%87%E5%8F%A3%E5%BE%84)：局部平方根规律、Jensen 因子、TV 严格界与经验比、留出失败条件及推测解码的接受/成本区别。
 - 第六篇完成 [OnPTQ v1](methods/onptq.md)，展开量化策略轨迹、边界损伤、量化分支/浮点评估、context anchor 与刷新；补校准状态选择和多模态目标的公共联系。区分单步共同 continuation 的理论界与风险代理、历史与共同流程的基线、正确性 flip 与 token flip，保留底层参数更新配置缺口。
 - 同步 [INDEX](INDEX.md)、[READING](READING.md) 与 SELF（`SELF.md`）：新增三方法入口与六条定向阅读路径，建立[按问题选择量化路线](INDEX.md#按问题选择量化路线)的导航表；READING 登记固定版本、实际研读范围及未核查部分，SELF 移除已补齐缺口并更新优先顺序。
 - 本批研读六篇正文与必要理论、算法和实验附录，结合固定 TeX 与原始 PDF 页图核对核心公式和代表图表；内容复核覆盖本批新增解释与跨页联系，未逐步重证全部附录证明或逐格重算全部任务附表。

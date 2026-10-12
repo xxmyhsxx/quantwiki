@@ -105,7 +105,7 @@ $q$ 是整数码值，$\widehat W$ 才是重构前向使用的实数权重。论
 
 代码 `UniformAffineQuantizer` 为每输出通道、或每行内的每个 group 建立一对强度，潜变量初值为 4，即 sigmoid 后约 0.982。若权重矩阵有 $C_{out}$ 行、每行 $C_{in}$ 个元素、组长 $G$，裁剪变量数量约为 $2C_{out}\lceil C_{in}/G\rceil$，不是全模型只有两个参数。图 A1 的强度分布反映范围收缩，不能据此说“裁掉一半权重”。
 
-**梯度怎样通过量化。**`quantize/quantizer.py:round_ste` 前向做真实舍入，反向把舍入的局部导数近似为 1；裁剪仍影响梯度。固定当前权重极值时，$\partial h/\partial g=b\gamma(1-\gamma)/K$、$\partial h/\partial b_0=-a\beta(1-\beta)/K$，于是块损失可经步长回传到强度。LET 的梯度还经过变换权重和范围计算。代码零点使用普通 `.round()`，没有对零点套同一个 STE。代理规则见 [代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3-为什么需要-ste)；它不是离散目标真实可导或全局最优的保证。
+**梯度怎样通过量化。**`quantize/quantizer.py:round_ste` 前向做真实舍入，反向把舍入的局部导数近似为 1；裁剪仍影响梯度。固定当前权重极值时，$\partial h/\partial g=b\gamma(1-\gamma)/K$、$\partial h/\partial b_0=-a\beta(1-\beta)/K$，于是块损失可经步长回传到强度。LET 的梯度还经过变换权重和范围计算。代码零点使用普通 `.round()`，没有对零点套同一个 STE。代理规则见 [代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.%20%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%20STE)；它不是离散目标真实可导或全局最优的保证。
 
 进一步固定反向中的整数零点 $z$，令 $v=w/h$、$r=\operatorname{round}(v)$。不在裁剪边界时，该代码计算图给出的代理导数为
 
@@ -176,7 +176,7 @@ $$
 
 V 的对应变换可通过输出投影抵消：当每行注意力概率之和为 1 时，$P[(V-\mathbf1\delta_v)D_v^{-1}]$ 等于 $(PV-\mathbf1\delta_v)D_v^{-1}$，后继线性层配合改权重、偏置即可。若概率被量化而行和不再为 1，平移抵消还会引入额外误差；默认 Softmax 不量化不能自动覆盖所有改动后的设置。
 
-**不能省略 RoPE。**RoFormer v5 §3.1–3.2 用位置相关的二维旋转对 Q/K 成对编码。若把点积处的任意逐通道缩放直接移到 RoPE 前，一般需要缩放与相对旋转交换才能保持等价。每个旋转对使用相同缩放是一个充分条件。推导与反例见 [平移与位置编码的融合边界](../theory/diagonal-scaling-equivalent-transform.md#7-平移与注意力位置编码的融合边界)。
+**不能省略 RoPE。**RoFormer v5 §3.1–3.2 用位置相关的二维旋转对 Q/K 成对编码。若把点积处的任意逐通道缩放直接移到 RoPE 前，一般需要缩放与相对旋转交换才能保持等价。每个旋转对使用相同缩放是一个充分条件。推导与反例见 [平移与位置编码的融合边界](../theory/diagonal-scaling-equivalent-transform.md#7.%20%E5%B9%B3%E7%A7%BB%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E7%9A%84%E8%9E%8D%E5%90%88%E8%BE%B9%E7%95%8C)。
 
 当前 `models/transformation.py:smooth_q_k_temporary/inplace` 将自由缩放写入 Q/K 投影，`QuantLlamaAttention.forward` 在投影后执行 RoPE，所读路径没有施加旋转对共享约束。因此不能仅用式 5 证明该路径对任意学得参数都严格保持未量化函数。这是代数与代码定位得到的限制；没有测量其在具体 checkpoint 上造成的误差，也不由此否定论文所有实验。
 

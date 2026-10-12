@@ -54,7 +54,7 @@ p是当前token对当前专家的亲和性，β没有进入这里。使用sqrt(c
 
 原文在贡献/消融段混用“logits”和“概率/信心”，没有给足softmax前后、top-k重归一化等定义。实数sqrt(C)和半正定曲率要求c≥0；若p实际是可负原始logit，必须先明确非负化规则。即使非负，少量/低权token仍可能使矩阵奇异；逆矩阵、未覆盖专家及正则策略需要匹配实现。这是公式适用条件，尚未观察到作者代码失败。
 
-MoE输出通常含router加权和：若仅考虑固定router、单专家线性扰动，最终平方误差对应p²；多个专家还存在交叉项。因此论文使用p的矩阵是其校准代理，不能称为完整MoE最终任务损失的精确Hessian。有关误差目标与曲率的关系见[GPTQ](gptq.md)及[校准加权条件](../theory/calibration-and-range-selection.md#61-moe-校准须记录专家覆盖与权重位置)。
+MoE输出通常含router加权和：若仅考虑固定router、单专家线性扰动，最终平方误差对应p²；多个专家还存在交叉项。因此论文使用p的矩阵是其校准代理，不能称为完整MoE最终任务损失的精确Hessian。有关误差目标与曲率的关系见[GPTQ](gptq.md)及[校准加权条件](../theory/calibration-and-range-selection.md#6.1%20MoE%20%E6%A0%A1%E5%87%86%E9%A1%BB%E8%AE%B0%E5%BD%95%E4%B8%93%E5%AE%B6%E8%A6%86%E7%9B%96%E4%B8%8E%E6%9D%83%E9%87%8D%E4%BD%8D%E7%BD%AE)。
 
 ## 4. 质量报告、平均口径与消融
 

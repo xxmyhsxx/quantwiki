@@ -43,7 +43,7 @@ $$\widehat W=\sum_{c\in S}\widehat\sigma_c\widehat u_c\widehat v_c^{\mathsf T},\
 
 删除分量使两次稠密矩阵乘的公共维度从 $C$ 变为 $r$，不需要逐权重稀疏索引。这里“秩 $r$”更严格地说是因子宽度，上式只保证 $\operatorname{rank}(\widehat W)\le r$；训练或量化后的向量不必线性独立。（P §2.2、图 1；C `utils/decompose.py:build_svd_cache`、`fake_dbw.py:get_quv/get_w`。）
 
-**SVD 是起点，不是每步保持的约束。**C 在 FP32 下分解原始权重，将因子保存为 FP16；训练直接更新因子和系数，并逐行归一化恢复后的两侧向量。逐行单位范数不等于所有列相互正交，因此训练后的系数也不能无条件继续解释为有效矩阵的真实奇异值。原始薄 SVD、一般可训练因子和最佳截断 SVD 的解析保证应分开，见[低秩近似基础](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6-激活加权的低秩近似)。
+**SVD 是起点，不是每步保持的约束。**C 在 FP32 下分解原始权重，将因子保存为 FP16；训练直接更新因子和系数，并逐行归一化恢复后的两侧向量。逐行单位范数不等于所有列相互正交，因此训练后的系数也不能无条件继续解释为有效矩阵的真实奇异值。原始薄 SVD、一般可训练因子和最佳截断 SVD 的解析保证应分开，见[低秩近似基础](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6.%20%E6%BF%80%E6%B4%BB%E5%8A%A0%E6%9D%83%E7%9A%84%E4%BD%8E%E7%A7%A9%E8%BF%91%E4%BC%BC)。
 
 它也不同于 [LoftQ](loftq.md) 或 [QERA](qera.md) 的低秩残差分支：DBW 用两个因子替换整个主权重，不再额外执行一个完整量化主体加旁路；后两者则在量化主体之外保留补偿容量。
 
@@ -69,7 +69,7 @@ $$\rho_{\rm factor}=1-\frac{r(m+n)}{mn},$$
 
 而分量删除比例是 $\rho_{\rm component}=1-r/C$。C `get_effective_avg_bit` 和块统计累计使用前者；P 附录 E.1 将 42.91%–48.90% 叙述为删除的 SVD components，但表 17 的 `Ratio` 与代码的参数减少口径相连，不能据此把它直接代入 $1-r/C$。本页保留这处措辞与统计口径差异，避免用表中的 `Ratio` 反推未经确认的 rank。
 
-完整预算还要加入每组两侧尺度/偏移、系数、位宽组计数、尾部空位和未量化模块；运行峰值另含恢复后的浮点因子及激活。[混合精度预算](../theory/mixed-precision-allocation.md#2-平均位宽和完整内存必须分别计算)解释了这几种口径不能互换。
+完整预算还要加入每组两侧尺度/偏移、系数、位宽组计数、尾部空位和未量化模块；运行峰值另含恢复后的浮点因子及激活。[混合精度预算](../theory/mixed-precision-allocation.md#2.%20%E5%B9%B3%E5%9D%87%E4%BD%8D%E5%AE%BD%E5%92%8C%E5%AE%8C%E6%95%B4%E5%86%85%E5%AD%98%E5%BF%85%E9%A1%BB%E5%88%86%E5%88%AB%E8%AE%A1%E7%AE%97)解释了这几种口径不能互换。
 
 ## 3. 连续分配怎样成为预算内的整数位宽
 

@@ -15,7 +15,7 @@ updated: 2026-10-08
 
 SAPrune 用离线 attention 统计选择三个剪枝层，再在每个选定层按当前输入保留一部分视觉 token。保留集合由两部分组成：高动作注意力的核心，以及补充动作/指令响应差异的候选。它压缩序列长度，不提出新的量化格式；training-free 表示不更新模型权重，仍有离线校准和在线选择成本。
 
-本页依据 arXiv:2610.05273v1 的正文与必要附录，重点核对选层规则、双路径公式、复杂度和实验协议。当前材料未取得匹配作者实现，具体接入与性能均未本地运行。视觉 token、删除集合与位置的基础见[视觉语言模型中的 token 与量化对象](../fundamentals/model/vision-language-model-tokens-and-quantization.md#7-剪枝额外改变序列集合深度与位置)。
+本页依据 arXiv:2610.05273v1 的正文与必要附录，重点核对选层规则、双路径公式、复杂度和实验协议。当前材料未取得匹配作者实现，具体接入与性能均未本地运行。视觉 token、删除集合与位置的基础见[视觉语言模型中的 token 与量化对象](../fundamentals/model/vision-language-model-tokens-and-quantization.md#7.%20%E5%89%AA%E6%9E%9D%E9%A2%9D%E5%A4%96%E6%94%B9%E5%8F%98%E5%BA%8F%E5%88%97%E9%9B%86%E5%90%88%E3%80%81%E6%B7%B1%E5%BA%A6%E4%B8%8E%E4%BD%8D%E7%BD%AE)。
 
 ## 1. 两个选择分别回答什么
 
@@ -45,7 +45,7 @@ $$
 
 默认 $\kappa=0.125$，$N$ 为视觉 token 数，$T$ 遍历校准 rollout 的全部步骤。因此 $\mu_l$ 按步骤平均，较长轨迹贡献更多，不是每条轨迹或每个任务等权；图4的任务均值只用于可视化。（§2.2、§3.2，式3–5。）
 
-**这里没有规定先在视觉集合内重新归一化。** $S_l$ 同时受总视觉 attention mass 和视觉内部集中程度影响；它不是纯粹的条件集中度。即便 $S_l$ 不变，最高 attention 所在的 token 仍可能完全换位。后面的跨层差也只是这个标量的变化，不是整张 attention 分布的距离；相关分解与反例见[公共基础 §7.1](../fundamentals/model/vision-language-model-tokens-and-quantization.md#71-attention-总量集中度与所关注对象是三件事)。
+**这里没有规定先在视觉集合内重新归一化。** $S_l$ 同时受总视觉 attention mass 和视觉内部集中程度影响；它不是纯粹的条件集中度。即便 $S_l$ 不变，最高 attention 所在的 token 仍可能完全换位。后面的跨层差也只是这个标量的变化，不是整张 attention 分布的距离；相关分解与反例见[公共基础 §7.1](../fundamentals/model/vision-language-model-tokens-and-quantization.md#7.1%20attention%20%E6%80%BB%E9%87%8F%E3%80%81%E9%9B%86%E4%B8%AD%E5%BA%A6%E4%B8%8E%E6%89%80%E5%85%B3%E6%B3%A8%E5%AF%B9%E8%B1%A1%E6%98%AF%E4%B8%89%E4%BB%B6%E4%BA%8B)。
 
 ### 2.2 从变化曲线得到三个层号
 
@@ -149,7 +149,7 @@ F_{\rm backbone}
 +(L-b_3)C(n_3).
 $$
 
-对32层及 $[2,16,26]$，各段为3、14、10、5层。还需另算所选 query attention、QR、top-k、功能签名/贪心和 gather；作者报告的总 FLOPs 比例额外包含 routing，而上式只算骨干。公共的逐层预算解释见[视觉 token 基础 §7.2](../fundamentals/model/vision-language-model-tokens-and-quantization.md#72-最终-token-数不等于逐层工作量)。
+对32层及 $[2,16,26]$，各段为3、14、10、5层。还需另算所选 query attention、QR、top-k、功能签名/贪心和 gather；作者报告的总 FLOPs 比例额外包含 routing，而上式只算骨干。公共的逐层预算解释见[视觉 token 基础 §7.2](../fundamentals/model/vision-language-model-tokens-and-quantization.md#7.2%20%E6%9C%80%E7%BB%88%20token%20%E6%95%B0%E4%B8%8D%E7%AD%89%E4%BA%8E%E9%80%90%E5%B1%82%E5%B7%A5%E4%BD%9C%E9%87%8F)。
 
 实际接入至少需要在目标模块拿到 action/text query 对视觉 token 的 attention 行，并使 gather 后的 mask、位置和多图对应保持一致。论文报告 SDPA、eager 和 FlashAttention-2 的兼容结果，未提供本轮可核的具体实现。附录 C 也指出：当 VLM 与 DiT 动作专家分离、action query 仅在下游可用时，需要额外适配；删 VLM token 不会直接消除动作专家的去噪计算。
 
@@ -179,7 +179,7 @@ AgileX Piper 的 $\pi_0$ 真实实验每个任务100次、共四项任务。表4
 
 校准迁移须按实验区分。§3.2列举默认 LIBERO，以及 SIMPLER 30、真实40、混合270条 rollout；附录 B.4.5 及表10另做 OpenVLA 的30/60/120等规模比较，不存在一个适用于所有实验的固定样本数。例如真实30条得到 $[2,17,27]$、LIBERO-Long 47.6%，真实60条得到 $[2,17,26]$、51.1%；默认 LIBERO 层表的该项为50.8%。这些是所测骨干的迁移证据，不代表任意新模型都无需校准。
 
-附录 B.4.6/表11用 **$\pi_{0.5}$、300条标准 LIBERO 校准轨迹**，不使用 LIBERO-Plus 校准或重校准，再对相同10030个变体各评一次：整体成功率85.7%→84.5%，整体按各类样本数加权，不是七类均值简单平均。这与 [PIVOT-Q](pivot-q.md#7-作者结果与版本差异) 的同任务适配协议不同，数字不能直接排名。论文未完整给出主表全部 seed、重复试验与置信区间信息，接近的均值不等于统计等价。
+附录 B.4.6/表11用 **$\pi_{0.5}$、300条标准 LIBERO 校准轨迹**，不使用 LIBERO-Plus 校准或重校准，再对相同10030个变体各评一次：整体成功率85.7%→84.5%，整体按各类样本数加权，不是七类均值简单平均。这与 [PIVOT-Q](pivot-q.md#7.%20%E4%BD%9C%E8%80%85%E7%BB%93%E6%9E%9C%E4%B8%8E%E7%89%88%E6%9C%AC%E5%B7%AE%E5%BC%82) 的同任务适配协议不同，数字不能直接排名。论文未完整给出主表全部 seed、重复试验与置信区间信息，接近的均值不等于统计等价。
 
 ## 6. 可以复用的认识与尚缺的实现证据
 

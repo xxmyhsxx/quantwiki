@@ -74,7 +74,7 @@ check_nbits只检查不同值数量不超过2^b；它不是packing检查或完�
 
 OPT的 `--save`直接torch.save(model.state_dict())，opt_pack3调用被注释；load_quant也将make_quant3注释后加载普通模型。legacy Quant3Linear/pack3/load_quant3是另一组定义，不能据这些名字宣称本路径已压缩、保存了U/V/A或有原生W2 CUDA读取。QuantMethod.free清掉投影/尺度/Gram；本轮未核legacy 3bit接口的完整打包、加载和执行。
 
-数学上，可以保留变换坐标的低位权重，推理在线做输入/输出变换；也可以像所选路径那样先还原成稠密矩阵，再做普通浮点Linear。两者在实数域表达同一近似，但物理存储、舍入及运行成本不同，见[两种恢复位置](../theory/orthogonal-rotation-and-hadamard-quantization.md#41-先恢复浮点权重与保留量化坐标分别意味着什么)。实际压缩接口需要独立证据。
+数学上，可以保留变换坐标的低位权重，推理在线做输入/输出变换；也可以像所选路径那样先还原成稠密矩阵，再做普通浮点Linear。两者在实数域表达同一近似，但物理存储、舍入及运行成本不同，见[两种恢复位置](../theory/orthogonal-rotation-and-hadamard-quantization.md#4.1%20%E5%85%88%E6%81%A2%E5%A4%8D%E6%B5%AE%E7%82%B9%E6%9D%83%E9%87%8D%E4%B8%8E%E4%BF%9D%E7%95%99%E9%87%8F%E5%8C%96%E5%9D%90%E6%A0%87%E5%88%86%E5%88%AB%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88)。实际压缩接口需要独立证据。
 
 ## 5. 错误统计与评测还要核坐标
 

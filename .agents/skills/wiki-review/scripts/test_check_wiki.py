@@ -45,7 +45,7 @@ class LinkLintTests(unittest.TestCase):
                               capture_output=True, text=True)
 
     def test_valid_internal_navigation_assets_and_headings(self):
-        result = self.lint('# Page\n[nav](../INDEX.md)\n[section](target.md#a-heading)\n'
+        result = self.lint('# Page\n[nav](../INDEX.md)\n[section](target.md#A%20heading)\n'
                            '[same](#Page)\n[explicit](target.md#fixed)\n'
                            '![image](../assets/image.png)\n<img src="../assets/image.png">\n'
                            '<a href="target.md">target</a>\n')
@@ -175,6 +175,20 @@ class LinkLintTests(unittest.TestCase):
 
     def test_exact_chinese_heading_has_no_slug_compatibility_warning(self):
         result = self.lint('[a](<target.md#7. 剪枝额外改变序列集合、深度与位置>)\n')
+        self.assertEqual(result['status'], 'passed', result)
+
+    def test_numbered_and_english_slugs_also_need_client_review(self):
+        self.write('wiki/methods/target.md', '# Target\n## 1. Scale selection\n## A heading\n')
+        result = self.lint('[number](target.md#1-scale-selection)\n'
+                           '[english](target.md#a-heading)\n')
+        self.assertFalse(result['errors'], result)
+        self.assertEqual(self.codes(result, 'warning'), ['heading_compatibility'] * 2)
+        self.assertEqual(result['status'], 'needs_review')
+
+    def test_encoded_full_heading_retains_punctuation_spaces_and_case(self):
+        self.write('wiki/methods/target.md', '# Target\n## 1. Q/K：INT4 → BF16（GQA）\n')
+        result = self.lint('[section](target.md#1.%20Q%2FK%EF%BC%9AINT4%20%E2%86%92%20'
+                           'BF16%EF%BC%88GQA%EF%BC%89)\n')
         self.assertEqual(result['status'], 'passed', result)
 
     def test_identifiable_unparsed_candidate_and_block_anchor_are_disclosed(self):

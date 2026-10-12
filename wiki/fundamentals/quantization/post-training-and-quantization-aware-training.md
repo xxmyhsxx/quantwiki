@@ -80,7 +80,7 @@ $$
 
 模拟节点要对应部署真正保存或转换的张量边界。融合的卷积/线性层、偏置和激活函数可能只在最终输出量化一次；残差两支、BN 融合后的权重也需按实际图处理。J 图 1.1、附录图 C.1–C.8 展示了这些区别。任意给每个浮点算子后面插一个量化节点，可能模拟了另一张图。
 
-J §3 中偏置“不量化”指没有像权重一样施加低比特 fake quant；部署时它仍按输入与权重的步长乘积编码为 int32。完整单位换算和输出再量化见 [整数执行展开](../../implementation/quantized-matmul-scaling-execution.md#6-从整数累加到下一层网格)。
+J §3 中偏置“不量化”指没有像权重一样施加低比特 fake quant；部署时它仍按输入与权重的步长乘积编码为 int32。完整单位换算和输出再量化见 [整数执行展开](../../implementation/quantized-matmul-scaling-execution.md#6.%20%E4%BB%8E%E6%95%B4%E6%95%B0%E7%B4%AF%E5%8A%A0%E5%88%B0%E4%B8%8B%E4%B8%80%E5%B1%82%E7%BD%91%E6%A0%BC)。
 
 ## 3. 为什么需要 STE
 
@@ -170,7 +170,7 @@ $$
 W^{k+1}-W^k=(\overline W-W^k)+(W^{k+1}-\overline W).
 $$
 
-即使能约束第二项，也不能忽略第一项而声称整步满足同一相对上界。[AQLM固定PV实现](../../implementation/aqlm-pv-training-and-code-updates.md#5-更新比例与-trust-ratio-的实际边界)恰以 $\overline W$ 测选码变化；其前缀截断还保留首个达到或超过阈值的组，本身也不是硬上界。候选数量、索引变化、解码权重变化与整步变化是不同的限制对象，应沿实际时序核对。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`pv_optimizer.py:step`、`beam_search_l2.py:beam_search_optimal_codes`。）
+即使能约束第二项，也不能忽略第一项而声称整步满足同一相对上界。[AQLM固定PV实现](../../implementation/aqlm-pv-training-and-code-updates.md#5.%20%E6%9B%B4%E6%96%B0%E6%AF%94%E4%BE%8B%E4%B8%8E%20trust%20ratio%20%E7%9A%84%E5%AE%9E%E9%99%85%E8%BE%B9%E7%95%8C)恰以 $\overline W$ 测选码变化；其前缀截断还保留首个达到或超过阈值的组，本身也不是硬上界。候选数量、索引变化、解码权重变化与整步变化是不同的限制对象，应沿实际时序核对。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`pv_optimizer.py:step`、`beam_search_l2.py:beam_search_optimal_codes`。）
 
 ### 3.3 代理函数和坐标变换要分别核对
 
@@ -180,7 +180,7 @@ $$
 
 ### 3.4 重构误差怎样进入 STE 更新的条件界
 
-恒等 STE 将 $r=w+\Delta$ 处的梯度施加给潜在参数 $w$，造成 $e=\nabla\mathcal L(r)-\nabla\mathcal L(w)$。[QUASAR](../../methods/quasar.md#3-理论连接为何需要额外条件) v1定理1先用线段积分
+恒等 STE 将 $r=w+\Delta$ 处的梯度施加给潜在参数 $w$，造成 $e=\nabla\mathcal L(r)-\nabla\mathcal L(w)$。[QUASAR](../../methods/quasar.md#3.%20%E7%90%86%E8%AE%BA%E8%BF%9E%E6%8E%A5%E4%B8%BA%E4%BD%95%E9%9C%80%E8%A6%81%E9%A2%9D%E5%A4%96%E6%9D%A1%E4%BB%B6) v1定理1先用线段积分
 
 $$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
 
@@ -198,7 +198,7 @@ $$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
 | $d=a[\operatorname{round}_{STE}(w/a)+z-z]$ | 舍入与恢复同时变 | 舍入代理为round(w/a)−w/a |
 | $d=\Delta[\operatorname{round}_{STE}(w/(\Delta a))+z-z]$ | 进入固定网格的权重坐标 | 舍入代理为−w/a² |
 
-中间行按该简化零点抵消和不含裁剪边界的图展开；实际有clip、尺度参数化、整数码更新或梯度归一化时必须回到相应图。前两行分别对应固定码尺度优化和常见步长学习的区别；[QSLAW所选uniform](../../implementation/qslaw-scale-learning-and-float-export.md#3-前向与反向的量不同)采用第三种：除以Δa，最后只乘Δ，码在每次前向重算。
+中间行按该简化零点抵消和不含裁剪边界的图展开；实际有clip、尺度参数化、整数码更新或梯度归一化时必须回到相应图。前两行分别对应固定码尺度优化和常见步长学习的区别；[QSLAW所选uniform](../../implementation/qslaw-scale-learning-and-float-export.md#3.%20%E5%89%8D%E5%90%91%E4%B8%8E%E5%8F%8D%E5%90%91%E7%9A%84%E9%87%8F%E4%B8%8D%E5%90%8C)采用第三种：除以Δa，最后只乘Δ，码在每次前向重算。
 
 第三种硬前向在码不变时真实导数为0，−w/a²来自STE链式法则，不能用有限差分把两者认成一致。整理者例w=1.2、Δ=0.5、z=2，a在1附近的小范围内给d=1，硬函数不变；STE在a=1给−1.2。a=2则给d=0.5，而不是把原恢复值再乘2。它也没有成对的输入补偿，不是自动保持WX的等价通道变换。
 
@@ -218,7 +218,7 @@ J §3.1 延迟启用激活量化，并用指数移动平均跟踪范围，以避
 
 推理时 BN 统计固定，可以并入前一仿射算子；训练时 batch 统计变化，直接把它当成常数会改变训练过程。J 图 C.7–C.8 使用额外路径估计统计，再模拟融合后的权重量化。W §4.2、表 7 比较静态融合、额外前向估计及保留 BN 等策略，并在相应实验中调学习率。不能只看“多跑一次前向”就判断质量或总成本。
 
-融合的代数和适用条件见 [BN 与跨层均衡](../../theory/diagonal-scaling-equivalent-transform.md#6-固定-bn-融合与跨层均衡)。普通 LayerNorm/RMSNorm 的统计依赖当前输入，不能把整层照 BN 推理公式并入固定权重。基础的图一致性要求共通，具体融合方式由算子决定。
+融合的代数和适用条件见 [BN 与跨层均衡](../../theory/diagonal-scaling-equivalent-transform.md#6.%20%E5%9B%BA%E5%AE%9A%20BN%20%E8%9E%8D%E5%90%88%E4%B8%8E%E8%B7%A8%E5%B1%82%E5%9D%87%E8%A1%A1)。普通 LayerNorm/RMSNorm 的统计依赖当前输入，不能把整层照 BN 推理公式并入固定权重。基础的图一致性要求共通，具体融合方式由算子决定。
 
 ## 6. 怎样比较 PTQ 与 QAT 的结果
 
@@ -226,7 +226,7 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 
 公平比较需同时列出浮点基线是否经过同等微调、训练/校准数据、量化节点、各层实际位宽、粒度、优化成本与独立评测。QAT 高于原浮点分数，也可能受额外训练影响；仅凭该结果不能证明量化带来正则化收益。W §4.5 的跨模型表格支持特定配置的可行性，不支持“QAT 总是胜出”或“per-channel 总是更好”。
 
-“数据效率”还要声明分母是已有基座上的额外 QAT、指令微调，还是从头预训练。[LC-QAT](../../methods/lc-qat.md#5-数据效率证据支持到哪里)的4B/30B比较取得较高QA均分而PPL较差；与BitNet的4B/4T又跨越额外训练与从头训练。预训练基座及各任务的变化不能从预算比例中消失。准确率均值、PPL和总训练成本需要分别判断。（LC-QAT v1表2–3。）
+“数据效率”还要声明分母是已有基座上的额外 QAT、指令微调，还是从头预训练。[LC-QAT](../../methods/lc-qat.md#5.%20%E6%95%B0%E6%8D%AE%E6%95%88%E7%8E%87%E8%AF%81%E6%8D%AE%E6%94%AF%E6%8C%81%E5%88%B0%E5%93%AA%E9%87%8C)的4B/30B比较取得较高QA均分而PPL较差；与BitNet的4B/4T又跨越额外训练与从头训练。预训练基座及各任务的变化不能从预算比例中消失。准确率均值、PPL和总训练成本需要分别判断。（LC-QAT v1表2–3。）
 
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 

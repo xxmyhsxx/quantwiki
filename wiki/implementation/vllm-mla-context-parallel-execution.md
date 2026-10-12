@@ -73,7 +73,7 @@ M_{\rm group}=DB_aP(d_c+d_R)b,$$
 
 其中 $b$ 是每元素字节数。各 rank 预留 $B_aP$ 行，组内有效行合计仍是 $L$；上式计入尾页空行，未含页表、scale、通信、attention workspace、权重或其他层。$d_c=512,d_R=64$ 的 BF16 行为 1,152 字节，一张 $P=16$ 的本地 page 为 18,432 字节。分片降低每 rank 的历史份额，不能据 $D$ 直接宣称整机峰值显存缩小 $D$ 倍。
 
-普通复制 KV A 权重路径中，KV 输入投影不按 TP 拆 latent；结合各子组重复的 owner 规则，同一 TP group 的 $T/D$ 个 DCP 子组各保留一份逻辑历史。这个条件下，整个 TP group 的预留 payload 是 $TB_aP(d_c+d_R)b$，有效 payload 为 $(T/D)L(d_c+d_R)b$。（`deepseek_v2.py` 的复制 KV A/fused A 投影、`linear.py`、`mla.py` 与 DCP 分组/slot 规则。）全模型的逻辑缓存容量见[MLA 容量推导](../fundamentals/model/multi-head-latent-attention.md#4-缓存容量怎样计算)。持久页、有效 token 与临时通信张量是不同口径。
+普通复制 KV A 权重路径中，KV 输入投影不按 TP 拆 latent；结合各子组重复的 owner 规则，同一 TP group 的 $T/D$ 个 DCP 子组各保留一份逻辑历史。这个条件下，整个 TP group 的预留 payload 是 $TB_aP(d_c+d_R)b$，有效 payload 为 $(T/D)L(d_c+d_R)b$。（`deepseek_v2.py` 的复制 KV A/fused A 投影、`linear.py`、`mla.py` 与 DCP 分组/slot 规则。）全模型的逻辑缓存容量见[MLA 容量推导](../fundamentals/model/multi-head-latent-attention.md#4.%20%E7%BC%93%E5%AD%98%E5%AE%B9%E9%87%8F%E6%80%8E%E6%A0%B7%E8%AE%A1%E7%AE%97)。持久页、有效 token 与临时通信张量是不同口径。
 
 ## 3. 全局 token 如何找到 owner 和本地槽位
 
@@ -141,7 +141,7 @@ $$L_{\max,{\rm local}}^{\rm bound}=I\left\lceil\frac{L_{\max}}{DI}\right\rceil.$
 
 Triton 的 split-KV 再拆的是**本 rank 的局部历史**；$S$ 由局部长度上界与 SM 数选择。最终 O/LSE tensor 用 Q dtype 创建，FP32 scratch 不代表交换的 LSE 一定是 FP32，也不能把 decode 的 $[B,H_g]$ LSE 当作 prefill 的 $[h,N_p]$。（`triton_mla.py::_compute_num_kv_splits/forward_mqa`、`triton_decode_attention.py` 两阶段。）
 
-普通 FP8 cache 分支在本地加载时将 latent 与位置 key 用共同 `_k_scale` 恢复到 Q 工作 dtype；latent 同时参与 PV。所读 Triton 关闭公共 FP8 query 量化，局部 O/LSE 仍随 Q dtype，CUDA FP8 cache 构造检查要求 SM89+。cache 位宽不等于 query 通信或输出位宽；本页主线仍为 BF16，不覆盖 `fp8_ds_mla`。（同一 Triton impl/kernel；普通 scale 规则见[单设备缓存接口](mla-cache-and-attention-execution.md#17-vllm-联合分页缓存与-fp8-scale)）。
+普通 FP8 cache 分支在本地加载时将 latent 与位置 key 用共同 `_k_scale` 恢复到 Q 工作 dtype；latent 同时参与 PV。所读 Triton 关闭公共 FP8 query 量化，局部 O/LSE 仍随 Q dtype，CUDA FP8 cache 构造检查要求 SM89+。cache 位宽不等于 query 通信或输出位宽；本页主线仍为 BF16，不覆盖 `fp8_ds_mla`。（同一 Triton impl/kernel；普通 scale 规则见[单设备缓存接口](mla-cache-and-attention-execution.md#17.%20vLLM%20%E8%81%94%E5%90%88%E5%88%86%E9%A1%B5%E7%BC%93%E5%AD%98%E4%B8%8E%20FP8%20scale)）。
 
 ## 6. 跨 rank 合并需要恢复同一个 softmax 分母
 

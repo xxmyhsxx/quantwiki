@@ -167,7 +167,7 @@ $$
 \widehat y_{\rm high}=\operatorname{BF16}((\operatorname{FP32}((b\gg4)\mathbin{\mathrm{AND}}15)-z_{\rm FP32})s_{\rm FP32}).
 $$
 
-即 **FP32 元数据在 FP32 中参与恢复，结果再转 BF16**，不同于 [OSCAR 所选 GQA reader](../implementation/oscar-mixed-kv-cache-execution.md#6-decode-分层读取与尺度精度)先将 $s,z$ 转 BF16。V 元数据在该 kernel 中复用 K 元数据的 stride；本池的两者 shape/连续布局相同，不能推广为任意不同 stride 也受支持。（`decode_attention.py:1047–1070,1115–1133`。）
+即 **FP32 元数据在 FP32 中参与恢复，结果再转 BF16**，不同于 [OSCAR 所选 GQA reader](../implementation/oscar-mixed-kv-cache-execution.md#6.%20Decode%20%E5%88%86%E5%B1%82%E8%AF%BB%E5%8F%96%E4%B8%8E%E5%B0%BA%E5%BA%A6%E7%B2%BE%E5%BA%A6)先将 $s,z$ 转 BF16。V 元数据在该 kernel 中复用 K 元数据的 stride；本池的两者 shape/连续布局相同，不能推广为任意不同 stride 也受支持。（`decode_attention.py:1047–1070,1115–1133`。）
 
 QK 由两个 BF16 半区 dot 的 FP32 结果相加，再乘 caller 的 attention scaling；这个缩放与 Q/K FWHT 各自的归一化系数分开。online softmax 的 max、分母与 PV accumulator 为 FP32，但概率 $p$ **先转 BF16 才进入 PV dot**，分母仍累加未转 BF16 的 $p$。stage1 将局部归一化 Value 输出 $O_s$ 与自然对数 LSE $\lambda_s$ 写 FP32 scratch；名为 `attn_logits` 的张量承载 $O_s$，不是完整 score 矩阵。（`decode_attention.py:1070–1190`。）
 
@@ -187,7 +187,7 @@ $$
 O=\sum_s e^{\lambda_s-\Lambda}O_s.
 $$
 
-它不直接平均或相加局部输出；共同推导见 [分段 attention 的合并](../implementation/sglang-attention-operator-design.md#4-decode把历史维拆开再按-lse-合并)。wrapper 用输出 `o.shape[-1]` 给 stage2 推出完整128维，未把 packed V 的64字节末维当成输出维度，也未为此恢复完整历史 V。最终写 BF16 输出；K-only 的 V 保持原坐标，caller 不执行输出逆旋转。attention 核心仍为 stage1/stage2 两次调用，writer 与其他模型算子另算。（`decode_attention.py:1915–2000,2272–2289`；`triton_backend.py:1082–1091`。）
+它不直接平均或相加局部输出；共同推导见 [分段 attention 的合并](../implementation/sglang-attention-operator-design.md#4.%20Decode%EF%BC%9A%E6%8A%8A%E5%8E%86%E5%8F%B2%E7%BB%B4%E6%8B%86%E5%BC%80%EF%BC%8C%E5%86%8D%E6%8C%89%20LSE%20%E5%90%88%E5%B9%B6)。wrapper 用输出 `o.shape[-1]` 给 stage2 推出完整128维，未把 packed V 的64字节末维当成输出维度，也未为此恢复完整历史 V。最终写 BF16 输出；K-only 的 V 保持原坐标，caller 不执行输出逆旋转。attention 核心仍为 stage1/stage2 两次调用，writer 与其他模型算子另算。（`decode_attention.py:1915–2000,2272–2289`；`triton_backend.py:1082–1091`。）
 
 ### 4.5 FA3 prefill：从分页 INT4 恢复到原 Q 坐标
 

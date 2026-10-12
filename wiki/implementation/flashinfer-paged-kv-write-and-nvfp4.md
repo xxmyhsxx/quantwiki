@@ -75,7 +75,7 @@ MLA缓存存latent `ckv`与位置分量`kpe`，可共用[pages,P,Dckv+Dkpe]再�
 
 调用方可提供FP32标量张量`*_global_sf`；省略时按FLOAT8_E4M3_MAX/对应缓存amax计算。返回的是其**倒数**，不能把输入量化乘数直接当成reader恢复乘数。K/V各自有全局因子与块FP8尺度；尺度的解释、物理顺序与 reader 必须匹配。文档未给完整V交织地址公式、字节内FP4顺序、非整D/padding、amax=0或非有限值处理；`D//2`和`D//16`不是奇数/余组已受支持的证明。
 
-教学账取D=128、两份K/V：码128字节，块尺度16字节，共144字节/页内token/head，相对BF16的512字节约3.56倍；两全局恢复因子、完整页/尾块、页表与工作缓冲另计。此接口转换分配新产物时还可能与原BF16缓存同时存在，不能用持久记录比代替峰值内存或实时加速。相同NVFP4名称也不保证能直接读取[GGUF块记录](gguf-block-quantization-formats.md)；[块尺度格式](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md#5-从标准到实际存储格式)说明元素码、存储块与尺度共享组的区别。
+教学账取D=128、两份K/V：码128字节，块尺度16字节，共144字节/页内token/head，相对BF16的512字节约3.56倍；两全局恢复因子、完整页/尾块、页表与工作缓冲另计。此接口转换分配新产物时还可能与原BF16缓存同时存在，不能用持久记录比代替峰值内存或实时加速。相同NVFP4名称也不保证能直接读取[GGUF块记录](gguf-block-quantization-formats.md)；[块尺度格式](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md#5.%20%E4%BB%8E%E6%A0%87%E5%87%86%E5%88%B0%E5%AE%9E%E9%99%85%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)说明元素码、存储块与尺度共享组的区别。
 
 ## 来源身份
 

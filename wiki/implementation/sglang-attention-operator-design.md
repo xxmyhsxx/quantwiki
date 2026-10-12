@@ -31,7 +31,7 @@ SGLang 的模型层通过 RadixAttention 接入具体 Attention backend。Radix 
 
 ## 1. 从模型层到 Backend 的分工
 
-`models/llama.py` 的普通 `forward_prepare_native` 执行 QKV projection、拆分 Q/K/V，再按 positions 对 Q/K 做 RoPE；`forward` 将它们连同 `ForwardBatch` 传给 `RadixAttention`，最后做输出投影。权重量化配置如何落到线性层与 Marlin，沿用[AWQ 的 SGLang 实现](awq-implementation.md#6-跨引擎sglang)。
+`models/llama.py` 的普通 `forward_prepare_native` 执行 QKV projection、拆分 Q/K/V，再按 positions 对 Q/K 做 RoPE；`forward` 将它们连同 `ForwardBatch` 传给 `RadixAttention`，最后做输出投影。权重量化配置如何落到线性层与 Marlin，沿用[AWQ 的 SGLang 实现](awq-implementation.md#6.%20%E8%B7%A8%E5%BC%95%E6%93%8E%EF%BC%9ASGLang)。
 
 `RadixAttention` 保存本地 head 数、head dimension、scale、layer id 等约束，整理 K/V 的形状后调用当前 backend。`AttentionBackend.forward` 对普通 DECODE 调 `forward_decode`，普通 EXTEND 和 GPU MIXED 进入 `forward_extend`；特定平台与模式另有分支。模型前向接口可以相同，但后台不必用同一个设备程序处理所有阶段。
 

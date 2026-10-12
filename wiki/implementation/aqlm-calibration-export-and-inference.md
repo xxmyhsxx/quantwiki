@@ -43,7 +43,7 @@ G_n=\frac1n\sum_{t=1}^n x_tx_t^\mathsf T,
 G_{n+m}=\frac{n}{n+m}G_n+\frac1{n+m}\sum_{t=n+1}^{n+m}x_tx_t^\mathsf T.
 $$
 
-这对应源码先缩放旧 `XTX`，再把新输入乘 $1/\sqrt{n+m}$ 后累加矩阵乘积。它是未中心化二阶矩，默认用 FP64 累积；没有减去均值，也不是整网任务损失的 Hessian。`init_aq_engines_parallel` 按各设备实际 token 数加权合并局部均值，不能直接等权平均不同大小的数据分片。公共推导与归约条件见[输入统计与二阶重构](../theory/layer-reconstruction-second-order-compensation.md#11-二阶矩的归约与分片合并)。
+这对应源码先缩放旧 `XTX`，再把新输入乘 $1/\sqrt{n+m}$ 后累加矩阵乘积。它是未中心化二阶矩，默认用 FP64 累积；没有减去均值，也不是整网任务损失的 Hessian。`init_aq_engines_parallel` 按各设备实际 token 数加权合并局部均值，不能直接等权平均不同大小的数据分片。公共推导与归约条件见[输入统计与二阶重构](../theory/layer-reconstruction-second-order-compensation.md#1.1%20%E4%BA%8C%E9%98%B6%E7%9F%A9%E7%9A%84%E5%BD%92%E7%BA%A6%E4%B8%8E%E5%88%86%E7%89%87%E5%90%88%E5%B9%B6)。
 
 `AQEngine._compute_mse` 对 $W,\widehat W\in\mathbb R^{r\times d}$ 使用
 
@@ -61,7 +61,7 @@ $$
 
 `AQEngine.quantize` 的一个 epoch 先用 Adam 更新所有 `requires_grad=True` 的量化参数，随后调用激活相关 beam search 更新整数码。Adam 的 betas 为 `(0, 0.95)` 且启用 AMSGrad；步数、学习率和早停阈值来自入口参数。早停在新 epoch 的第一个连续更新前比较此前 beam search 后的损失，不是每个 Adam 小步均要求严格下降。
 
-`QuantizedWeight.beam_search_update_codes_` 显式传入 `XTX` 时选择 `beam_search_xtx`；[PV 的选码](aqlm-pv-training-and-code-updates.md#4-v-步的距离候选与更新单元)没有传它，转入权重 L2 搜索。不能因共用函数名就合并两种度量。
+`QuantizedWeight.beam_search_update_codes_` 显式传入 `XTX` 时选择 `beam_search_xtx`；[PV 的选码](aqlm-pv-training-and-code-updates.md#4.%20V%20%E6%AD%A5%E7%9A%84%E8%B7%9D%E7%A6%BB%E3%80%81%E5%80%99%E9%80%89%E4%B8%8E%E6%9B%B4%E6%96%B0%E5%8D%95%E5%85%83)没有传它，转入权重 L2 搜索。不能因共用函数名就合并两种度量。
 
 ### 一次替换怎样利用整个输入相关性
 

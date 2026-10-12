@@ -41,7 +41,7 @@ $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}
 \sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
 \operatorname{BMMA}(A_g^{(r)},W_g^{(s)})_{tj}.$$
 
-这里BMMA只计算0/1位平面沿组内K的内积，尺度恢复和位权是另外两层操作。固定代码确实有temp_mul的位权与符号处理；原式缺项不应据此升级成作者实际kernel缺少位权。公共解释见[位分解执行](../implementation/quantized-matmul-scaling-execution.md#16-多位整数怎样用二值点积执行)。
+这里BMMA只计算0/1位平面沿组内K的内积，尺度恢复和位权是另外两层操作。固定代码确实有temp_mul的位权与符号处理；原式缺项不应据此升级成作者实际kernel缺少位权。公共解释见[位分解执行](../implementation/quantized-matmul-scaling-execution.md#16.%20%E5%A4%9A%E4%BD%8D%E6%95%B4%E6%95%B0%E6%80%8E%E6%A0%B7%E7%94%A8%E4%BA%8C%E5%80%BC%E7%82%B9%E7%A7%AF%E6%89%A7%E8%A1%8C)。
 
 ## 3. 紧凑存储需要适合指令的布局
 

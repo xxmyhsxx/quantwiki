@@ -208,7 +208,7 @@ C0 `pre_quant.py:102`、quantizer.py:106。C0 在当前 block 的缩放／裁剪
 
 ### 5.4 校准数据不是一个默认数字
 
-P0 §5.1 给出从 Pile 取小校准集、20 点搜索；图 8 的消融明确每条序列为 2048 tokens。C0 `run_awq` 默认 `n_samples=512,seqlen=512`，数据函数筛选文本后拼接再切块；输入文本条数不等于最终块数。CLI `entry.py` 又显式覆盖为 `n_samples=128,seqlen=512`，因此函数默认、实际调用与论文实验是三个层次。具体产物和加载顺序见 [实现页](../implementation/awq-implementation.md#2-原仓库从搜索到加载的状态变化)。这些代码设置不能填回原文所有实验。calib_data.py:5。
+P0 §5.1 给出从 Pile 取小校准集、20 点搜索；图 8 的消融明确每条序列为 2048 tokens。C0 `run_awq` 默认 `n_samples=512,seqlen=512`，数据函数筛选文本后拼接再切块；输入文本条数不等于最终块数。CLI `entry.py` 又显式覆盖为 `n_samples=128,seqlen=512`，因此函数默认、实际调用与论文实验是三个层次。具体产物和加载顺序见 [实现页](../implementation/awq-implementation.md#2.%20%E5%8E%9F%E4%BB%93%E5%BA%93%EF%BC%9A%E4%BB%8E%E6%90%9C%E7%B4%A2%E5%88%B0%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%8A%B6%E6%80%81%E5%8F%98%E5%8C%96)。这些代码设置不能填回原文所有实验。calib_data.py:5。
 
 ## 6. 与相关方法的关系
 
@@ -281,7 +281,7 @@ P0 表 9 的 INT2-g64 结果是 **AWQ+GPTQ** 组合：OPT-6.7B 的 GPTQ PPL=16.6
 
 ## 8. TinyChat 怎样把压缩转化为加速
 
-本节的压缩权重、反量化与浮点计算属于 weight-only 执行路径。它与模拟量化、W8A8 整数矩阵乘及低精度浮点点积的区别见 [量化的执行路径](../implementation/quantized-matmul-scaling-execution.md#3-低比特执行路径)；下面保留 TinyChat 特有的实现与测量条件。
+本节的压缩权重、反量化与浮点计算属于 weight-only 执行路径。它与模拟量化、W8A8 整数矩阵乘及低精度浮点点积的区别见 [量化的执行路径](../implementation/quantized-matmul-scaling-execution.md#3.%20%E4%BD%8E%E6%AF%94%E7%89%B9%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84)；下面保留 TinyChat 特有的实现与测量条件。
 
 TinyChat 是 AWQ 配套的原生内核；同一份 AWQ 权重也可以交给为批处理设计的通用内核执行，例如 [Marlin](../implementation/marlin-batched-w4a16-gemm.md)，以及 vLLM 中单独列出的 awq_marlin 方法（见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)）。两者硬件与批量条件不同，加速比不能互换。
 

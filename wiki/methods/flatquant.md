@@ -138,7 +138,7 @@ $$
 
 它冻结原始权重，学习重参数化和网格，而非全模型 QAT。含反向的 PTQ 分类、舍入代理梯度见 [PTQ、QAT 与代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)。
 
-**矩阵参数化。**附录 B.1 采用 $P_i=U_i\operatorname{diag}(s_i)V_i^\mathsf T$，用正交 $U_i,V_i$ 和对角倒数构造逆。代码的 `SVDSingleTransMatrix` / `SVDDecomposeTransMatrix` 直接学习这些因子，`inv_t=True` 返回 $P_i^{-\mathsf T}$，不是每步对已形成的矩阵做一次 SVD。U/V 使用 PyTorch Cayley 参数化；相应 API 的定义及用途已纳入 [矩阵基础](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#3-svd-形式怎样表示可逆矩阵)，参考文档只作这一解释。
+**矩阵参数化。**附录 B.1 采用 $P_i=U_i\operatorname{diag}(s_i)V_i^\mathsf T$，用正交 $U_i,V_i$ 和对角倒数构造逆。代码的 `SVDSingleTransMatrix` / `SVDDecomposeTransMatrix` 直接学习这些因子，`inv_t=True` 返回 $P_i^{-\mathsf T}$，不是每步对已形成的矩阵做一次 SVD。U/V 使用 PyTorch Cayley 参数化；相应 API 的定义及用途已纳入 [矩阵基础](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#3.%20SVD%20%E5%BD%A2%E5%BC%8F%E6%80%8E%E6%A0%B7%E8%A1%A8%E7%A4%BA%E5%8F%AF%E9%80%86%E7%9F%A9%E9%98%B5)，参考文档只作这一解释。
 
 代码将对角值初始化为 1 并直接学习，未对其施加正值或离零下界；因此数学可逆性需要 $s_i\ne0$，数值上还需远离病态。不能把“用了 SVD 形式”写成“永远不会奇异”。直接求逆分支会临时转 double 后求逆再转回，这也是代码事实，不证明任意混合精度环境都稳定。
 

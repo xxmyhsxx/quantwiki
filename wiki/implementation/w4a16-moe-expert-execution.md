@@ -41,7 +41,7 @@ updated: 2026-10-07
 
 # vLLM W4A16 MoE：AWQ 专家格式、配对读取与低精度加权
 
-Dense W4A16 已解释一块低比特矩阵怎样恢复；MoE 还需要确定**当前 tile 属于哪个专家、输入来自哪个 token、输出写回哪个配对，以及 gate 在哪种精度下乘**。本页连接 AWQ 加载、Marlin 专家设备计算与 token 汇合；路由规则和模型侧 shared/rho 归属由[既有 MoE 执行页](moe-routing-and-quantized-expert-execution.md#8-vllm-对照同一-fp8-计算由-factory-与-modular-kernel-分工)承接。
+Dense W4A16 已解释一块低比特矩阵怎样恢复；MoE 还需要确定**当前 tile 属于哪个专家、输入来自哪个 token、输出写回哪个配对，以及 gate 在哪种精度下乘**。本页连接 AWQ 加载、Marlin 专家设备计算与 token 汇合；路由规则和模型侧 shared/rho 归属由[既有 MoE 执行页](moe-routing-and-quantized-expert-execution.md#8.%20vLLM%20%E5%AF%B9%E7%85%A7%EF%BC%9A%E5%90%8C%E4%B8%80%20FP8%20%E8%AE%A1%E7%AE%97%E7%94%B1%20factory%20%E4%B8%8E%20modular%20kernel%20%E5%88%86%E5%B7%A5)承接。
 
 固定来源为 vLLM commit 568afb3a13806beb53bb2e6bd518269357b237c0（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`）。本文是静态源码核对，教学例子为独立索引与舍入计算，没有加载模型、编译或运行 GPU。
 
@@ -66,7 +66,7 @@ Dense W4A16 已解释一块低比特矩阵怎样恢复；MoE 还需要确定**�
 | `w13_scales` / `w13_qzeros` | `[E,D/128,2I]` / `[E,D/128,2I/8]` | 形状相同，分别重排列序 |
 | `w2_scales` / `w2_qzeros` | `[E,I/128,D]` / `[E,I/128,D/8]` | 形状相同，分别重排列序 |
 
-`process_weights_after_loading` 委托 WNA16 oracle 的 `_process_awq_weights_marlin`。它为每个专家直接调用 `awq_marlin_repack`；这与 [Dense AWQ](awq-implementation.md#mplinear标准化后再选择内核布局) 的“先标准化、再 `gptq_marlin_repack`”不同。MoE 包装循环传入每个 `[k,n/8]` AWQ 矩阵，CUDA repack 要求 k 被16、n被64整除，输出 `[k/16,2n]`。本页 D/I 条件满足这些要求，无需额外 intermediate padding。[1][2][15][16]
+`process_weights_after_loading` 委托 WNA16 oracle 的 `_process_awq_weights_marlin`。它为每个专家直接调用 `awq_marlin_repack`；这与 [Dense AWQ](awq-implementation.md#MPLinear%EF%BC%9A%E6%A0%87%E5%87%86%E5%8C%96%E5%90%8E%E5%86%8D%E9%80%89%E6%8B%A9%E5%86%85%E6%A0%B8%E5%B8%83%E5%B1%80) 的“先标准化、再 `gptq_marlin_repack`”不同。MoE 包装循环传入每个 `[k,n/8]` AWQ 矩阵，CUDA repack 要求 k 被16、n被64整除，输出 `[k/16,2n]`。本页 D/I 条件满足这些要求，无需额外 intermediate padding。[1][2][15][16]
 
 尺度沿每专家做 Marlin 64元素置换。零点先解包并撤销 AWQ nibble 次序，再做相同64列置换、nibble interleave 和 INT32 packing；保持原整数 z，不加1、不减8、不预乘 scale。最终 qweight、scales、qzeros 必须作为配套格式使用，不能只换权重。[2][4]
 
@@ -105,7 +105,7 @@ $B_M$ 从 `[8,16,32,48,64]` 中选择首个满足 $MR/(E B_M)<0.9$ 的值，没�
 
 例如第一 GEMM 的 D=256、I=256，即 k=256、n=512、L=2。专家1的 B/scales/zeros 基址分别为4096/128/32个16字节向量；它的组1 scales/zeros 基址为192/48个向量，后者等于192个 INT32 word。这个独立地址例同时满足两次 GEMM 的主线形状条件。[18]
 
-进入 shared 后，组元数据按128个 reduction 元素更新；thread-K 为64时可复用两段，thread-K 为128时一段对应一组。整数 z 和 q 使用相同 lane→输出列关系以及 FP16/BF16 的1024/128共同浮点基底，先相减抵消基底，再在 T 类型的 B fragment 上乘本组尺度。64列置换、lane/word/fragment 对应和 shared ring 细节沿用[Dense Marlin 零点消费](weight-only-dequant-kernels.md#11-非对称-awq--vllm-marlin整数零点怎样参与计算)；MoE 新增的专家轴由上述 stride 承接。MoE 模板直接包含共同 dequant/dtype/MMA 代码，本页没有把对称 GPTQ 固定减8或 float-zp 混入整数 z 路径。[4][18][25–27]
+进入 shared 后，组元数据按128个 reduction 元素更新；thread-K 为64时可复用两段，thread-K 为128时一段对应一组。整数 z 和 q 使用相同 lane→输出列关系以及 FP16/BF16 的1024/128共同浮点基底，先相减抵消基底，再在 T 类型的 B fragment 上乘本组尺度。64列置换、lane/word/fragment 对应和 shared ring 细节沿用[Dense Marlin 零点消费](weight-only-dequant-kernels.md#11.%20%E9%9D%9E%E5%AF%B9%E7%A7%B0%20AWQ%20%E2%86%92%20vLLM%20Marlin%EF%BC%9A%E6%95%B4%E6%95%B0%E9%9B%B6%E7%82%B9%E6%80%8E%E6%A0%B7%E5%8F%82%E4%B8%8E%E8%AE%A1%E7%AE%97)；MoE 新增的专家轴由上述 stride 承接。MoE 模板直接包含共同 dequant/dtype/MMA 代码，本页没有把对称 GPTQ 固定减8或 float-zp 混入整数 z 路径。[4][18][25–27]
 
 转换与累加精度的前置解释见[浮点表示与累加](../fundamentals/numeric-formats/floating-point-and-accumulation.md)。若用 $\operatorname{RN}_T$ 表示转换/运算结果落到 T 的舍入，一个恢复元素可表示为
 
@@ -156,7 +156,7 @@ $$
 
 cache 互换避免输出归约与仍被消费的数据别名。专家结果已在 down 阶段乘 gate、在 `moe_sum` 阶段归约；`finalize_weight_and_reduce_impl` 返回 `TopKWeightAndReduceNoOP`，所选 CUDA modular 的 NoDPEP finalize 将 routed workspace 复制到调用者输出，没有再乘一次 gate 或再做一次专家 sum。[3][7][8][14]
 
-模型继续怎样用 routed 结果取决于 runner：BF16 DeepSeek 所选分支的 routed rho 缩放、原始 X 的 shared MLP、两者相加及外层 residual，见[既有模型汇合链](moe-routing-and-quantized-expert-execution.md#85-cache-是临时-workspacefinalize-不再加权一次)。本页替换的是该链中的 routed experts 执行；不据此推断 FP16 的 shared/rho 补偿、其他模型或多设备归约都相同。
+模型继续怎样用 routed 结果取决于 runner：BF16 DeepSeek 所选分支的 routed rho 缩放、原始 X 的 shared MLP、两者相加及外层 residual，见[既有模型汇合链](moe-routing-and-quantized-expert-execution.md#8.5.%20cache%20%E6%98%AF%E4%B8%B4%E6%97%B6%20workspace%EF%BC%8Cfinalize%20%E4%B8%8D%E5%86%8D%E5%8A%A0%E6%9D%83%E4%B8%80%E6%AC%A1)。本页替换的是该链中的 routed experts 执行；不据此推断 FP16 的 shared/rho 补偿、其他模型或多设备归约都相同。
 
 ## 来源身份
 

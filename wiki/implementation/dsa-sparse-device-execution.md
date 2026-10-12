@@ -123,7 +123,7 @@ $q,x$ 为 576 维，latent value $\widehat c$ 为前 512 维；64 维 RoPE 参�
 
 $$\mathrm{LSE}=\ln\ell+m\ln2.$$
 
-这与[普通 MLA 分段归约](mla-cache-and-attention-execution.md#18-triton-mla从-block-table-读取一次-latent分段归一化)需要同一分母的原理相同，具体 LSE 存储单位和空行 sentinel 必须按库分别核对。本页不传 attention sink 或 extra KV。
+这与[普通 MLA 分段归约](mla-cache-and-attention-execution.md#18.%20Triton%20MLA%EF%BC%9A%E4%BB%8E%20block%20table%20%E8%AF%BB%E5%8F%96%E4%B8%80%E6%AC%A1%20latent%EF%BC%8C%E5%88%86%E6%AE%B5%E5%BD%92%E4%B8%80%E5%8C%96)需要同一分母的原理相同，具体 LSE 存储单位和空行 sentinel 必须按库分别核对。本页不传 attention sink 或 extra KV。
 
 ## 5. FlashMLA BF16 sparse prefill：有效前缀与 CTA 内计算
 

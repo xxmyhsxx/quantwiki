@@ -67,7 +67,7 @@ MoE 的 top-k 结果只是专家 ID 与权重；完整执行还要把 token–�
 
 第 1–7 节选定 `DeepseekV2MoE.forward_normal` 的普通 CUDA 路径：单设备，MoE TP/EP 均为 1，`moe-a2a-backend=none`、`moe-runner-backend=triton`；使用已序列化的 FP8 checkpoint，普通 E4M3 权重、`weight_block_size=[128,128]`、dynamic activation。MoE 层未被 ignored-layers 排除，没有 LoRA、EPLB、冗余专家、hash 路由、SBO/TBO 或特殊 graph 执行；本页先按非 TMA 的指针载入分支，关闭 fused sum/all-reduce。共享专家融合也关闭，以单独的共享 MLP 解释汇合。[1][4][5][6][10][14]
 
-路由部分采用该类支持的 `topk_method="noaux_tc"`、sigmoid 打分、correction bias、grouped top-k 和 `norm_topk_prob=True` 配置。`DeepseekV2MoE` 是多个模型共用的实现类，类名不等于本页全部行为来自 DeepSeek-V2。尤其这些有偏 sigmoid/group 规则不能替换 [V2 论文的 softmax affinity](../fundamentals/model/mixture-of-experts-and-routing.md#1-共享专家路由专家与-gate-分别做什么)；原 V2 配置和其他 backend 应分别核对。[1][2]
+路由部分采用该类支持的 `topk_method="noaux_tc"`、sigmoid 打分、correction bias、grouped top-k 和 `norm_topk_prob=True` 配置。`DeepseekV2MoE` 是多个模型共用的实现类，类名不等于本页全部行为来自 DeepSeek-V2。尤其这些有偏 sigmoid/group 规则不能替换 [V2 论文的 softmax affinity](../fundamentals/model/mixture-of-experts-and-routing.md#1.%20%E5%85%B1%E4%BA%AB%E4%B8%93%E5%AE%B6%E3%80%81%E8%B7%AF%E7%94%B1%E4%B8%93%E5%AE%B6%E4%B8%8E%20gate%20%E5%88%86%E5%88%AB%E5%81%9A%E4%BB%80%E4%B9%88)；原 V2 配置和其他 backend 应分别核对。[1][2]
 
 这些条件确定一条可追踪的源码分支，不代表本机或某个指定 checkpoint 已接受该配置。`Fp8Config` 要求块量化来自 FP8 serialized checkpoint 且 activation 为 dynamic；当前 CUDA 量化包装还要求归约维可被 activation group size 整除。因此下面的 $D,I$ 均取 128 的倍数。配置入口的 capability 检查也不能代替实际低精度 dot 的硬件、Triton 与依赖验证，更不能据此声称 A100 已运行这条 FP8 路径。[6][15]
 
@@ -164,7 +164,7 @@ $$Y_{p,n}\approx\sum_q a_{t,q}s_{e,\lfloor n/128\rfloor,q}
 
 这是一条按核读接口写出的值语义，不是硬件每一步舍入的 bit-exact 规范。CUDA activation 包装依条件进入 JIT/AOT 实现；所核读 JIT v2 的普通 E4M3、非 UE8M0 分支以组内绝对最大值和小正下界计算 $a=\max(\max_k|x_k|,10^{-10})/448$，保存 $a$，将 $x/a$ 限幅后转换为 FP8。其 Python 包装与 C++ 数值核分开，不能把读到其中一个实现写成已经确认运行环境采用它。[15–17]
 
-Triton 核按配对索引、专家 ID 与输出块读取 A/B。FP8 `tl.dot(a,b)` 的部分和乘当前 K 组的 A/B scale，再累加到 FP32 accumulator；最后转成输入隐藏状态对应的 BF16/FP16 compute type 写回。因 K 组 scale 可不同，不能先完成整个无尺度点积，再乘一个固定总 scale；其共通原因见 [量化矩阵乘的缩放](quantized-matmul-scaling-execution.md#1-矩阵乘法的外维与归约维)。本页是普通 FP8 dot 加块尺度的 kernel，不等同于 [MXFP4/MXFP8 的 `tl.dot_scaled` 教程](block-scaled-matmul-execution.md)。[13][14]
+Triton 核按配对索引、专家 ID 与输出块读取 A/B。FP8 `tl.dot(a,b)` 的部分和乘当前 K 组的 A/B scale，再累加到 FP32 accumulator；最后转成输入隐藏状态对应的 BF16/FP16 compute type 写回。因 K 组 scale 可不同，不能先完成整个无尺度点积，再乘一个固定总 scale；其共通原因见 [量化矩阵乘的缩放](quantized-matmul-scaling-execution.md#1.%20%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95%E7%9A%84%E5%A4%96%E7%BB%B4%E4%B8%8E%E5%BD%92%E7%BA%A6%E7%BB%B4)。本页是普通 FP8 dot 加块尺度的 kernel，不等同于 [MXFP4/MXFP8 的 `tl.dot_scaled` 教程](block-scaled-matmul-execution.md)。[13][14]
 
 非 TMA 分支按配对位置 $p$ 写 gate/up 中间值 `[MK,2I]`，所以后续可以用普通连续行调用 SiLU-and-mul。第一轮没有提前乘 router gate，因为本页 `apply_router_weight_on_input=False`；否则 gate 插在非线性之前一般会改变函数，不能认为在任意位置乘 gate 都等价。[10][13]
 
@@ -198,7 +198,7 @@ $$y_t=y_t^{(r)}+y_t^{(s)}.$$
 
 ## 7. SGLang 主线的覆盖与验证边界
 
-这次核读已经连接四个过去需要分别查证的对象：router 选择与 gate 的区别；配对索引、逐专家 padding 与原 token 次序；专家权重/二维块尺度与 activation 行组尺度；routed 归约、缩放和独立共享输出。它可以承接 [MoE 基础](../fundamentals/model/mixture-of-experts-and-routing.md#4-总容量单-token-计算与批次成本为何不同)中“单 token 激活参数量不等于批次访存/吞吐”的问题。
+这次核读已经连接四个过去需要分别查证的对象：router 选择与 gate 的区别；配对索引、逐专家 padding 与原 token 次序；专家权重/二维块尺度与 activation 行组尺度；routed 归约、缩放和独立共享输出。它可以承接 [MoE 基础](../fundamentals/model/mixture-of-experts-and-routing.md#4.%20%E6%80%BB%E5%AE%B9%E9%87%8F%E3%80%81%E5%8D%95%20token%20%E8%AE%A1%E7%AE%97%E4%B8%8E%E6%89%B9%E6%AC%A1%E6%88%90%E6%9C%AC%E4%B8%BA%E4%BD%95%E4%B8%8D%E5%90%8C)中“单 token 激活参数量不等于批次访存/吞吐”的问题。
 
 未覆盖 EP/DeepEP 的通信与物理 expert 映射、EPLB、FP4/INT4/WNA16、其他 runner、LoRA 和完整 weight-loader 的所有 checkpoint 名称重映射；TMA、CUDA graph、并行 overlap 也未作为另一条执行链完整核读。源码对不同分支的能力说明不等于本项目已支持全部组合。
 

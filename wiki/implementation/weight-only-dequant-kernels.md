@@ -153,7 +153,7 @@ def _jit_gptq_marlin_module(dtype: torch.dtype) -> Module:
 
 `awq_dequantize.cuh` 的主机包装启动 16×16 线程块，横轴索引打包输出列，纵轴索引 K 行。每线程处理一个 int32 的 8 个码，按 `row // group_size` 读取一组元数据，计算 `(q-z)*s` 后写连续的 8 个浮点数；FP16 采用前述 1024 位技巧，BF16 有独立常量和编译架构门槛。主机匹配张量的 shape、dtype 和设备，不能据此推断任意 stride 或畸形分组都能运行。
 
-这一 kernel 写出完整 `(K,N)` 浮点矩阵，随后普通 AWQ backend 调用 matmul；Marlin 则在矩阵乘里消费预先重排的整数权重。配置选择及两种转换的发生时机见 [AWQ 的 SGLang 路径](awq-implementation.md#6-跨引擎sglang)。
+这一 kernel 写出完整 `(K,N)` 浮点矩阵，随后普通 AWQ backend 调用 matmul；Marlin 则在矩阵乘里消费预先重排的整数权重。配置选择及两种转换的发生时机见 [AWQ 的 SGLang 路径](awq-implementation.md#6.%20%E8%B7%A8%E5%BC%95%E6%93%8E%EF%BC%9ASGLang)。
 
 ## 6. SGLang：repack 的几何
 
@@ -266,7 +266,7 @@ CTA 的工作划分采用跨 K/N 的 stripe，使部分输出列 tile 可能由�
 
 ## 11. 非对称 AWQ → vLLM Marlin：整数零点怎样参与计算
 
-本节使用固定 vLLM 源码，限定 **已选中 `MarlinLinearKernel` 的 Dense `kU4`、整数独立零点、G128、FP16/BF16 激活与同 dtype 尺度、无 act-order、SM80+**，不启用 INT8/FP8 input override。K、N 指 TP 本分片的逻辑输入/输出宽度，取 $K\ge256$、$K\bmod128=0$、$N\bmod8=0$，因此组数 $G=K/128>1$。配置类名字包含 Marlin 不保证最终 backend 为 Marlin，选择条件见 [AWQ 加载与后端](awq-implementation.md#5-跨引擎vllm)。
+本节使用固定 vLLM 源码，限定 **已选中 `MarlinLinearKernel` 的 Dense `kU4`、整数独立零点、G128、FP16/BF16 激活与同 dtype 尺度、无 act-order、SM80+**，不启用 INT8/FP8 input override。K、N 指 TP 本分片的逻辑输入/输出宽度，取 $K\ge256$、$K\bmod128=0$、$N\bmod8=0$，因此组数 $G=K/128>1$。配置类名字包含 Marlin 不保证最终 backend 为 Marlin，选择条件见 [AWQ 加载与后端](awq-implementation.md#5.%20%E8%B7%A8%E5%BC%95%E6%93%8E%EF%BC%9AvLLM)。
 
 ### 11.1 三种布局保存同一组整数码与零点
 

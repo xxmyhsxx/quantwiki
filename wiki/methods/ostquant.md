@@ -41,7 +41,7 @@ $$V_X=\frac{\pi^{d/2}}{\Gamma(d/2+1)}c^{d/2}\sqrt{\det\Sigma}.$$
 
 $$x_j^{\max/\min}=\mu_j\pm\sqrt{c\Sigma_{jj}}.$$
 
-这是对 $e_j^{\mathsf T}\Sigma^{1/2}u$ 用 Cauchy–Schwarz 得到的教学推导；涉及全部特征方向，而非仅最大特征向量。若使用所有坐标共享的上下界，立方体边长应为 $\max_j(\mu_j+\sqrt{c\Sigma_{jj}})-\min_j(\mu_j-\sqrt{c\Sigma_{jj}})$。零均值时的体积比、白化以及二维反例详见 [旋转机制页的 QSUR 分析](../theory/orthogonal-rotation-and-hadamard-quantization.md#7-qsur-的椭球解释与白化边界)。
+这是对 $e_j^{\mathsf T}\Sigma^{1/2}u$ 用 Cauchy–Schwarz 得到的教学推导；涉及全部特征方向，而非仅最大特征向量。若使用所有坐标共享的上下界，立方体边长应为 $\max_j(\mu_j+\sqrt{c\Sigma_{jj}})-\min_j(\mu_j-\sqrt{c\Sigma_{jj}})$。零均值时的体积比、白化以及二维反例详见 [旋转机制页的 QSUR 分析](../theory/orthogonal-rotation-and-hadamard-quantization.md#7.%20QSUR%20%E7%9A%84%E6%A4%AD%E7%90%83%E8%A7%A3%E9%87%8A%E4%B8%8E%E7%99%BD%E5%8C%96%E8%BE%B9%E7%95%8C)。
 
 原文式 21 将单位向量最大分量下界写为 $d^{1/2}$；应使用绝对最大值 $\|q\|_\infty\ge d^{-1/2}$。式 6 的负端符号与式 4/22 不一致，式 7 又没有保留绝对值。即使修正这些排印/符号问题，主轴端点也不能替代坐标极值。附录 A.2.3 的白化结论可在正定、零均值椭球模型下另行证明，但不能据此声称找到了整个量化网络的最优变换。
 
@@ -67,7 +67,7 @@ $$A_h(V_hR_{ov}^hS_{ov}^h)\bigl((S_{ov}^h)^{-1}(R_{ov}^h)^{\mathsf T}W_o^h\bigr)
 
 这里混合头内特征，不任意混合具有不同 $A_h$ 的头；GQA 中共享 K/V 的头如何共享变换，v1 的逐头写法不足以规定全部实现细节。
 
-**RoPE 是需要保留的条件。**§4.1 称 $S_{qk}$ 可并入 Q/K 权重，但“位置编码具有乘法形式”不足以推出这一点。若对角尺度提前到 RoPE 前，它必须与对应位置旋转交换；每个实际 RoPE 坐标对使用相同尺度是充分条件。任意独立通道尺度通常失败，已有 [RoPE 缩放反例](../theory/diagonal-scaling-equivalent-transform.md#7-平移与注意力位置编码的融合边界) 给出证明。未核对代码前，不能声称 OSTQuant 已采用这一约束，也不能由论文文字断言实现一定错误。
+**RoPE 是需要保留的条件。**§4.1 称 $S_{qk}$ 可并入 Q/K 权重，但“位置编码具有乘法形式”不足以推出这一点。若对角尺度提前到 RoPE 前，它必须与对应位置旋转交换；每个实际 RoPE 坐标对使用相同尺度是充分条件。任意独立通道尺度通常失败，已有 [RoPE 缩放反例](../theory/diagonal-scaling-equivalent-transform.md#7.%20%E5%B9%B3%E7%A7%BB%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E7%9A%84%E8%9E%8D%E5%90%88%E8%BE%B9%E7%95%8C) 给出证明。未核对代码前，不能声称 OSTQuant 已采用这一约束，也不能由论文文字断言实现一定错误。
 
 FFN 则有更直接的逐元素恒等式。令 $z=\operatorname{SiLU}(g)\odot u$，则 $zS=\operatorname{SiLU}(g)\odot(uS)$。若接着应用正交 Hadamard $H$，需保存 $H^{\mathsf T}S^{-1}W_{down}$，因为 $(zSH)(H^{\mathsf T}S^{-1}W_{down})=zW_{down}$。一般不能把 $H$ 搬进 SiLU。这是按图 5 解释的教学改写，也说明“学到的变换可融合”不等于整套方法没有在线变换成本。
 
@@ -81,7 +81,7 @@ $$R_{res}=U_WH^{\mathsf T},$$
 
 依据协方差 $U_W\Lambda U_W^{\mathsf T}$ 可推得：旋转后的协方差是 $H\Lambda H^{\mathsf T}$；归一化 Hadamard 的元素绝对值相同，所以对角元素都为 $\operatorname{tr}(\Lambda)/d$。这给出均衡坐标方差的解释，**不保证每个有限样本的最大值下降，不保证激活也同时最优**。表 7 中 LLaMA-3-8B W4A4KV4 的 WOMI/随机 Hadamard 九任务均分仅为 61.40/61.38，不能把完整训练收益全归给初始化。
 
-优化时冻结基座参数，以整个网络的教师/学生输出损失更新变换。论文使用 RiemannAdam：正交变量需在 $O^{\mathsf T}O=I$ 的约束下更新，尺度需保持可逆。普通逐元素 Adam 更新不能自动保持正交，普通尺度更新也不会自动防止过零。Stiefel 切空间与约束更新的基础见 [矩阵基础](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#cayley-参数化与约束更新不是同一个步骤)；v1 未完整给出所用流形度量、回缩、动量运输、尺度参数化及舍入代理梯度，不能从优化器名称补写实现。
+优化时冻结基座参数，以整个网络的教师/学生输出损失更新变换。论文使用 RiemannAdam：正交变量需在 $O^{\mathsf T}O=I$ 的约束下更新，尺度需保持可逆。普通逐元素 Adam 更新不能自动保持正交，普通尺度更新也不会自动防止过零。Stiefel 切空间与约束更新的基础见 [矩阵基础](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#Cayley%20%E5%8F%82%E6%95%B0%E5%8C%96%E4%B8%8E%E7%BA%A6%E6%9D%9F%E6%9B%B4%E6%96%B0%E4%B8%8D%E6%98%AF%E5%90%8C%E4%B8%80%E4%B8%AA%E6%AD%A5%E9%AA%A4)；v1 未完整给出所用流形度量、回缩、动量运输、尺度参数化及舍入代理梯度，不能从优化器名称补写实现。
 
 学习参数少也仍需要整网反向；教师前向、激活保留、优化器状态和量化模拟影响显存。v1 没有给出足够细节来把它等同于 SpinQuant 的“W16 学旋转后再 GPTQ”流程。
 

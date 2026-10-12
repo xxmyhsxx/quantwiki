@@ -106,9 +106,9 @@ $$M_{\rm MLA}=N_lBL(d_c+d_R)b.$$
 
 $$M_{\rm MLA}=N_lBL\left(d_c\frac{p_c}{8}+d_R\frac{p_R}{8}\right)+M_{\rm metadata}.$$
 
-实际分配还要处理尺度、对齐、页表、保护窗口、复制与临时张量，见 [缓存格式与生命周期](../../theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。576 个元素本身既不是 576 字节，也不能直接解释作者相对另一个已部署模型报告的显存比例。
+实际分配还要处理尺度、对齐、页表、保护窗口、复制与临时张量，见 [缓存格式与生命周期](../../theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)。576 个元素本身既不是 576 字节，也不能直接解释作者相对另一个已部署模型报告的显存比例。
 
-具体分布式框架还会按 token 分片和复制这份逻辑历史，预留页与临时张量需要另计；[vLLM 普通 MLA DCP](../../implementation/vllm-mla-context-parallel-execution.md#2-调度-block-与每-rank-的物理-page)给出每 rank、DCP 子组和 TP group 的条件化记账，不改变本节的联合缓存对象。
+具体分布式框架还会按 token 分片和复制这份逻辑历史，预留页与临时张量需要另计；[vLLM 普通 MLA DCP](../../implementation/vllm-mla-context-parallel-execution.md#2.%20%E8%B0%83%E5%BA%A6%20block%20%E4%B8%8E%E6%AF%8F%20rank%20%E7%9A%84%E7%89%A9%E7%90%86%20page)给出每 rank、DCP 子组和 TP group 的条件化记账，不改变本节的联合缓存对象。
 
 ## 5. 潜变量量化怎样同时影响 K 和 V
 

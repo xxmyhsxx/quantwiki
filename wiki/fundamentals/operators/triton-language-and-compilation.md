@@ -131,7 +131,7 @@ JIT 编译缓存回答“这个版本的二进制能否复用”；autotune 缓�
 
 固定版本的 Debugging Triton 文档提供 `static_print/static_assert` 做编译期观察，`device_print/device_assert` 做设备运行时观察；`device_assert` 需要 `TRITON_DEBUG=1`。`TRITON_INTERPRET=1` 使用 NumPy 类操作顺序模拟各 program，适合检查中间地址和值；它有 dtype、间接访问等支持限制，不能证明 GPU 上的竞争、流水同步、资源用量或性能正确。
 
-直接 Python 包装调用 Triton 与 C++ dispatcher 注册是不同接入方式。需要将它封装成自定义算子时，输入修改、元信息和 backward 仍按具体 PyTorch 接口承担；不能因设备函数是 Triton 就略过这些职责。使用实际 PyTorch 版本时再选择接入 API，通用职责见[CUDA 编译与接入](../../implementation/cuda-operator-build-and-integration.md#4-可调用可编译图使用可训练是不同责任)。
+直接 Python 包装调用 Triton 与 C++ dispatcher 注册是不同接入方式。需要将它封装成自定义算子时，输入修改、元信息和 backward 仍按具体 PyTorch 接口承担；不能因设备函数是 Triton 就略过这些职责。使用实际 PyTorch 版本时再选择接入 API，通用职责见[CUDA 编译与接入](../../implementation/cuda-operator-build-and-integration.md#4.%20%E5%8F%AF%E8%B0%83%E7%94%A8%E3%80%81%E5%8F%AF%E7%BC%96%E8%AF%91%E5%9B%BE%E4%BD%BF%E7%94%A8%E3%80%81%E5%8F%AF%E8%AE%AD%E7%BB%83%E6%98%AF%E4%B8%8D%E5%90%8C%E8%B4%A3%E4%BB%BB)。
 
 ## 来源身份
 

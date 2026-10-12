@@ -187,7 +187,7 @@ SGLang 分别注册 GPTQConfig 与 GPTQMarlinConfig。对尚未标为 Marlin 格
 
 可复跑的[脚本](../assets/gptq-implementation/check_contracts.py)与[2026-09-22 结果](../assets/gptq-implementation/checks-2026-09-22.json)已保存；运行方式为 `python3 wiki/assets/gptq-implementation/check_contracts.py`，需 NumPy。默认只打印，指定 `--output` 才写结果。这些计算没有导入或执行上游模型/CUDA 代码，不构成 checkpoint 可加载、内核数值正确或性能复现的证据。
 
-设备端的 16×64 repack 坐标、U4B8 位转换、在线输入置换、异步流水和三类跨 CTA 合并，见 [现代 Marlin 的 GPTQ 主循环](weight-only-dequant-kernels.md#10-gptq--现代-marlinrepack-后怎样参与计算)。这也解释了为什么 FP32 MMA 不等于所有临时结果都保留 FP32。
+设备端的 16×64 repack 坐标、U4B8 位转换、在线输入置换、异步流水和三类跨 CTA 合并，见 [现代 Marlin 的 GPTQ 主循环](weight-only-dequant-kernels.md#10.%20GPTQ%20%E2%86%92%20%E7%8E%B0%E4%BB%A3%20Marlin%EF%BC%9Arepack%20%E5%90%8E%E6%80%8E%E6%A0%B7%E5%8F%82%E4%B8%8E%E8%AE%A1%E7%AE%97)。这也解释了为什么 FP32 MMA 不等于所有临时结果都保留 FP32。
 
 ## 来源身份
 

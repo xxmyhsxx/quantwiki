@@ -79,7 +79,7 @@ $$
 
 1. 从校准输入估计 $H$ 并加阻尼。先做对角平衡 $W\leftarrow WA$、$H\leftarrow A^{-1}HA^{-1}$，其中 $A_{ii}=(H_{ii}/(W^\mathsf TW)_{ii})^{1/4}$；这是额外启发式，退化通道需要数值处理。
 2. 采样随机正交 $U_o,V_o$，得到 $\widetilde W=U_oWA V_o^\mathsf T$ 与相应 $\widetilde H$。原始 QuIP 用两个较小正交矩阵的 Kronecker 乘积，并加入随机置换。
-3. 以 $s=\rho\|\widetilde W\|_F/\sqrt{mn}$ 定范围，映射到 $[0,2^b-1]$，执行带裁剪的 LDLQ。可选贪心坐标更新用于进一步优化代理误差；是否单调降低需结合网格和实际更新条件，所选实现的轮末裁剪与残差同步见[实现页](../implementation/quip-ldlq-and-coordinate-restoration.md#3-网格逆序反馈与可选贪心分别是什么)。不能把这个选项与所有结果混同。
+3. 以 $s=\rho\|\widetilde W\|_F/\sqrt{mn}$ 定范围，映射到 $[0,2^b-1]$，执行带裁剪的 LDLQ。可选贪心坐标更新用于进一步优化代理误差；是否单调降低需结合网格和实际更新条件，所选实现的轮末裁剪与残差同步见[实现页](../implementation/quip-ldlq-and-coordinate-restoration.md#3.%20%E7%BD%91%E6%A0%BC%E3%80%81%E9%80%86%E5%BA%8F%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%8F%AF%E9%80%89%E8%B4%AA%E5%BF%83%E5%88%86%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88)。不能把这个选项与所有结果混同。
 4. 数学上的压缩推理可保留低位载荷及恢复所需的尺度和变换信息。其形式为 $y\approx U_o^\mathsf T\widehat{\widetilde W}(V_oA^{-1}x)$，这里 $\widehat{\widetilde W}$ 已恢复为实际数值单位。
 
 随机种子可以减少变换的存储，却不会消除执行成本。两个均衡 Kronecker 因子的向量变换约需 $O(n\sqrt n)$，仍须与权重解码、输入变换和输出变换一起实现。[正交旋转页](../theory/orthogonal-rotation-and-hadamard-quantization.md) 解释浮点等价与量化误差为何能同时成立；[QuIP#](quip-sharp.md) 进一步改变变换与码本以降低这些代价。

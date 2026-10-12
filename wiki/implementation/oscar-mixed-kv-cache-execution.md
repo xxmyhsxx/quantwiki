@@ -35,9 +35,9 @@ updated: 2026-10-08
 
 # OSCAR 的混合 KV 缓存：INT2 格式、窗口更新与分层 Attention
 
-低位宽缓存需要把三个接口接起来：**怎样编码历史 K/V、何时把保护窗口里的值移入量化区，以及 Attention 怎样同时读两种精度并恢复输出**。本页核对 OSCAR 公开仓库中 vendored SGLang 的实际路径，连接[KV 格式与生命周期](../theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。
+低位宽缓存需要把三个接口接起来：**怎样编码历史 K/V、何时把保护窗口里的值移入量化区，以及 Attention 怎样同时读两种精度并恢复输出**。本页核对 OSCAR 公开仓库中 vendored SGLang 的实际路径，连接[KV 格式与生命周期](../theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)。
 
-固定来源为 `FutureMLS-Lab/OSCAR` commit `41ebcdba3db5f0ce1339c3727caea80df575d437`。这是 [WUSH-KV](../methods/wush-kv.md#5-流式缓存窗口与真实成本) 所用量化器的公开前置实现；本页没有取得 WUSH-KV 作者修改后的 SGLang，不能用 OSCAR 的正交旋转代码证明 WUSH 的一般可逆变换已接入。本文是静态源码核对及独立教学算术，没有安装、导入上游程序、编译、运行模型/GPU 或测质量、显存与性能。
+固定来源为 `FutureMLS-Lab/OSCAR` commit `41ebcdba3db5f0ce1339c3727caea80df575d437`。这是 [WUSH-KV](../methods/wush-kv.md#5.%20%E6%B5%81%E5%BC%8F%E7%BC%93%E5%AD%98%E3%80%81%E7%AA%97%E5%8F%A3%E4%B8%8E%E7%9C%9F%E5%AE%9E%E6%88%90%E6%9C%AC) 所用量化器的公开前置实现；本页没有取得 WUSH-KV 作者修改后的 SGLang，不能用 OSCAR 的正交旋转代码证明 WUSH 的一般可逆变换已接入。本文是静态源码核对及独立教学算术，没有安装、导入上游程序、编译、运行模型/GPU 或测质量、显存与性能。
 
 ## 1. 固定一条可连通的执行路径
 
@@ -56,7 +56,7 @@ updated: 2026-10-08
 $$Q'=QR_K,\qquad K'=KR_K,\qquad V'=VR_V,$$
 $$Q'(K')^\top=QK^\top\quad\text{若 }R_KR_K^\top=I,\qquad O=O'R_V^\top.$$
 
-正交性的作用和 [WUSH 的逆转置配对](../methods/wush-kv.md#3-变换放在哪里如何保持未量化计算)不同；运行时矩阵已经转成 BF16，裁剪、量化及矩阵乘舍入也改变结果，不能把上述实数等式称为执行中逐 bit 等价。浮点舍入的背景见[浮点格式与舍入](../fundamentals/numeric-formats/floating-point-and-accumulation.md)。
+正交性的作用和 [WUSH 的逆转置配对](../methods/wush-kv.md#3.%20%E5%8F%98%E6%8D%A2%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C%EF%BC%8C%E5%A6%82%E4%BD%95%E4%BF%9D%E6%8C%81%E6%9C%AA%E9%87%8F%E5%8C%96%E8%AE%A1%E7%AE%97)不同；运行时矩阵已经转成 BF16，裁剪、量化及矩阵乘舍入也改变结果，不能把上述实数等式称为执行中逐 bit 等价。浮点舍入的背景见[浮点格式与舍入](../fundamentals/numeric-formats/floating-point-and-accumulation.md)。
 
 普通未预旋转接口中，pool的 `_rotate_kv_inplace` 得到BF16的 `K @ Rk_BF16`；所选FA3 prefill则先由 `prepare_quantized_extend_qkv` 做相同BF16旋转，传入已变换标记让pool跳过再次旋转。V absorption 在模型加载后以 FP32 `Rv.T @ Wv` 折入 V 权重，再转回权重 dtype；池收到的 V 已处于旋转坐标，仅转成 BF16。该折叠不能被当成“先算原 V，再做 BF16 V@Rv”逐 bit 等价，也没有把输出逆旋转折入 O 投影。[10:565–600][19:107–151][21:500–509,685–726][22:665–667]
 
@@ -171,7 +171,7 @@ backend分配FP32局部输出 `[batch,Hq,HPcap+QPcap,128]` 与FP32局部LSE，wr
 
 $$\Lambda=\operatorname{logsumexp}_s\lambda_s,\qquad O'=\sum_s e^{\lambda_s-\Lambda}O_s.$$
 
-它需要用局部分母恢复全历史的softmax质量，**不能将HP与QP各自归一化输出直接相加**。这个公式的共同推导见[在线 softmax 与分段 Attention](sglang-attention-operator-design.md#4-decode把历史维拆开再按-lse-合并)。此处wrapper不要求最终LSE输出；stage2先将结果存成BF16，再由backend执行独立BF16 `O'@Rv.T` 恢复Value坐标并返回模型输出dtype。V absorption仍保留这一输出逆旋转。[18:2265–2367][17:1848–1856]
+它需要用局部分母恢复全历史的softmax质量，**不能将HP与QP各自归一化输出直接相加**。这个公式的共同推导见[在线 softmax 与分段 Attention](sglang-attention-operator-design.md#4.%20Decode%EF%BC%9A%E6%8A%8A%E5%8E%86%E5%8F%B2%E7%BB%B4%E6%8B%86%E5%BC%80%EF%BC%8C%E5%86%8D%E6%8C%89%20LSE%20%E5%90%88%E5%B9%B6)。此处wrapper不要求最终LSE输出；stage2先将结果存成BF16，再由backend执行独立BF16 `O'@Rv.T` 恢复Value坐标并返回模型输出dtype。V absorption仍保留这一输出逆旋转。[18:2265–2367][17:1848–1856]
 
 本页把“元数据存储FP32 → 读取s/z转BF16 → 概率转BF16 → 局部O/LSE与合并FP32 → 最终BF16 → BF16逆旋转”分开，是为了说明低位宽码之外的数值接口；没有据此估计模型误差或GPU速度。
 

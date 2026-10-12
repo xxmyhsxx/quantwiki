@@ -25,7 +25,7 @@ $$s_t=(I,x,y_{<t}),\qquad y_t\sim\pi_{Q_\theta}(\cdot\mid s_t).$$
 
 静态校准在固定的 $d_{static}$ 下优化重构误差，部署却访问随 θ 变化的 $d_{Q_\theta}$。即使 image/instruction 样本不变，某一步选了不同 token，后续 hidden states 与条件输出都可能变化。dynamic per-token 激活量化只改变网格如何估计，并没有解决校准前缀的覆盖问题。（§3、式 (1)–(2)。）
 
-OnPTQ 每轮使用当前 Q 的轨迹，并让 D/Q 在**同一个量化前缀**上比较。不能先分别运行两条自由生成轨迹，再把第 t 步的不同状态当成同一局部量化误差。[Decision Flips 的同前缀分析](../theory/quantization-ranking-stability.md#8-语言模型的分布距离怎样变成-token-翻转)主要使用浮点或自然文本参考；这里选择的是当前量化策略访问的状态。
+OnPTQ 每轮使用当前 Q 的轨迹，并让 D/Q 在**同一个量化前缀**上比较。不能先分别运行两条自由生成轨迹，再把第 t 步的不同状态当成同一局部量化误差。[Decision Flips 的同前缀分析](../theory/quantization-ranking-stability.md#8.%20%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%86%E5%B8%83%E8%B7%9D%E7%A6%BB%E6%80%8E%E6%A0%B7%E5%8F%98%E6%88%90%20token%20%E7%BF%BB%E8%BD%AC)主要使用浮点或自然文本参考；这里选择的是当前量化策略访问的状态。
 
 论文 §3 的诊断还说明，只增加 on-policy 覆盖不够：均匀重构所有量化轨迹让首次分叉延后 3.54 token，却降低约 2.5 个准确率百分点；局部 JS 与未来分支影响的 Pearson 相关仅 0.232。这些是所测 Qwen/W4A8 诊断，支持保留 context anchor 与选择性校准，不能外推所有生成模型。
 
@@ -95,7 +95,7 @@ $$
 
 Huber 对 $|u|\le1$ 使用 $u^2/2$，否则使用 $|u|-1/2$。pair 损失同时惩罚边界缩小与扩大；风险 e 只用于挑选方向受损的状态，两者目的不同。j/A 的风险计算采用 JS，但 response loss 采用 KL，不能把全部 OnPTQ 目标简称“JS 蒸馏”。（式 (12)–(17)。）
 
-这些项仍是浮点参考的无标签校准目标，无需任务标签或 reward model。它们没有消除[损失尺度与归约](../theory/layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)的影响；论文没有验证将本页 MSE 一律换为分组 RMSE。也不能把“校准参数可学习”自动升级为预训练主体全参数微调。
+这些项仍是浮点参考的无标签校准目标，无需任务标签或 reward model。它们没有消除[损失尺度与归约](../theory/layer-reconstruction-second-order-compensation.md#11.%20%E9%87%8D%E6%9E%84%E6%8D%9F%E5%A4%B1%E7%9A%84%E5%B0%BA%E5%BA%A6%E6%80%8E%E6%A0%B7%E5%BD%B1%E5%93%8D%E4%BC%98%E5%8C%96)的影响；论文没有验证将本页 MSE 一律换为分组 RMSE。也不能把“校准参数可学习”自动升级为预训练主体全参数微调。
 
 ## 5. 参数更新后必须重新访问状态
 
@@ -140,7 +140,7 @@ $$
 
 $$\frac1N\sum_i\mathbf1[c_i^D\ne c_i^Q],\qquad c_i^D,c_i^Q\in\{0,1\}.$$
 
-它同时包含 correct→incorrect 与 incorrect→correct，净 accuracy 变化是后者减前者。两条都错但答案 ID 不同不计为此 flip；与[Decision Flips 的 token 首选不一致](../theory/quantization-ranking-stability.md#81-比较对象与三个指标)不同。图 4 使用 ScienceQA-IMG N=2,017 和 MMMU N=900 的单次配对评测，不能直接拿其百分比与 teacher-forced token flip 相比。（附录 C.3。）
+它同时包含 correct→incorrect 与 incorrect→correct，净 accuracy 变化是后者减前者。两条都错但答案 ID 不同不计为此 flip；与[Decision Flips 的 token 首选不一致](../theory/quantization-ranking-stability.md#8.1%20%E6%AF%94%E8%BE%83%E5%AF%B9%E8%B1%A1%E4%B8%8E%E4%B8%89%E4%B8%AA%E6%8C%87%E6%A0%87)不同。图 4 使用 ScienceQA-IMG N=2,017 和 MMMU N=900 的单次配对评测，不能直接拿其百分比与 teacher-forced token flip 相比。（附录 C.3。）
 
 ## 8. 消融支持与仍需保留的边界
 

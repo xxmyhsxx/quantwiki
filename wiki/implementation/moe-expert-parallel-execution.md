@@ -118,7 +118,7 @@ $$\operatorname{owner}(e)=\lfloor e/L\rfloor,\qquad
 
 正常 top-k 形成后还有 expert-location postprocess 接口。`topk_ids_logical_to_physical` 在 `info=None` 时原样返回；有真实 placement metadata 时会改写成物理 ID。本节选 trivial、无冗余的恒等 placement，只解释这个接口位置，不展开 EPLB 的副本选择与迁移。[S9，1339–1344、1727–1764 行][S10，79–107 行]
 
-进入 DeepEP 前 `topk_ids[M_q,K]` 转为 int64；`topk_weights` 保留对应关系。normal 的返回 `recv_topk_ids` 被 SGLang 消费者当作**本地专家 ID**：`ep_scatter` 用每个非负 ID 直接索引长度为 $L$ 的专家起点表。远端不可用 top-k 槽通过负值跳过。匹配固定 Buffer 的 [设备 dispatch](deepep-moe-communication-execution.md#3-intranode-normalht前缀队列与本地-id)已确认有效 ID 减去本 rank 的全局专家起点，非本地 ID 为 -1、对应 gate 为 0，并按目的 rank 去重隐藏状态；hierarchical 分组条件另由设备页保留。[S4，489–490、553–572、884–895 行][S7，756–833、853 行]
+进入 DeepEP 前 `topk_ids[M_q,K]` 转为 int64；`topk_weights` 保留对应关系。normal 的返回 `recv_topk_ids` 被 SGLang 消费者当作**本地专家 ID**：`ep_scatter` 用每个非负 ID 直接索引长度为 $L$ 的专家起点表。远端不可用 top-k 槽通过负值跳过。匹配固定 Buffer 的 [设备 dispatch](deepep-moe-communication-execution.md#3.%20Intranode%20normal%2FHT%EF%BC%9A%E5%89%8D%E7%BC%80%E3%80%81%E9%98%9F%E5%88%97%E4%B8%8E%E6%9C%AC%E5%9C%B0%20ID)已确认有效 ID 减去本 rank 的全局专家起点，非本地 ID 为 -1、对应 gate 为 0，并按目的 rank 去重隐藏状态；hierarchical 分组条件另由设备页保留。[S4，489–490、553–572、884–895 行][S7，756–833、853 行]
 
 ## 3. SGLang normal：二维接收行到专家连续行
 
@@ -134,7 +134,7 @@ normal `dispatch_a` 在 `ENABLE_JIT_DEEPGEMM and use_fp8` 条件下，先在 SGL
 - 对接收行 $r$ 的每个有效本地 top-k 槽 $j$，`ep_scatter` 用 atomic add 在相应专家区间取得计算行 $a$，复制这一行的 FP8 数值及尺度，并保存 `output_index[r,j]=a`。同一接收行有多个本地专家时，在这一阶段才扩成多个专家计算行。
 - 负 ID 槽不复制、不写有效 output index。专家内 atomic 顺序不是原 token 次序；最终靠 `output_index` 找回对应结果。[S7，723–918 行]
 
-这与单设备 Triton 的“保存原 `[M,D]`，kernel 依配对位置间接回读”不同：这里 rank 间通信已经返回接收行，SGLang 又物理复制到按本地专家组织的连续输入。不能把 `R`、`A`、原 rank 输入行数 $M_q$ 与全局配对数混用；所选 Buffer 按目的 rank 去重已由 [设备源码](deepep-moe-communication-execution.md#2-rank-行数与专家配对数不同)核实，但队列元素计费、跨节点组 fanout 与实际链路流量仍应分开判断。
+这与单设备 Triton 的“保存原 `[M,D]`，kernel 依配对位置间接回读”不同：这里 rank 间通信已经返回接收行，SGLang 又物理复制到按本地专家组织的连续输入。不能把 `R`、`A`、原 rank 输入行数 $M_q$ 与全局配对数混用；所选 Buffer 按目的 rank 去重已由 [设备源码](deepep-moe-communication-execution.md#2.%20Rank%20%E8%A1%8C%E6%95%B0%E4%B8%8E%E4%B8%93%E5%AE%B6%E9%85%8D%E5%AF%B9%E6%95%B0%E4%B8%8D%E5%90%8C)核实，但队列元素计费、跨节点组 fanout 与实际链路流量仍应分开判断。
 
 `Fp8MoEMethod` 创建 `DeepGemmMoeQuantInfo`，传入本地 FP8 权重、块 scale 和 block shape；`MoeRunner` 按 dispatch format `deepep_normal` 查 pre/post adapter，core 选 `_run_contiguous_gemm`。第一 grouped GEMM 用 `m_indices` 选择局部专家，写 BF16 `[A,2I]`；SiLU×up 形成 BF16 `[A,I]`，重新按行和 128 个 $I$ 通道量化，第二 grouped GEMM 写 BF16 `[A,D]`。两个 GEMM 的调用都没有 gate 权重参数，未在 input 或 down 输出中乘 $g$。[S8，1764–1789、1941–1978 行][S5，137–165 行][S6，164–295 行]
 
@@ -148,7 +148,7 @@ $$z_r=\sum_{j:\,\mathrm{recv\_id}_{r,j}\ge0} g_{r,j}\,\widetilde f_{\ell_{r,j}}(
 
 最后转为 BF16 `[R,D]`。$\widetilde f$ 包含 FP8 与中间舍入误差；这里只是本 rank 持有专家的加权贡献，还没回到源 rank 汇合所有目的 rank。kernel 跳过负 ID，也因此不会读取对应未写的 output index。[S6，800–826 行][S7，922–1022 行]
 
-normal combine 包装直接采用这个已经本地加权的张量，调用 `Buffer.combine(x,self.handle,...)`；这个调用没有传 top-k weights，所以 SGLang 层不能再给返回结果乘一次 $g$。Buffer 负责按 handle 回传/汇合；[设备返程](deepep-moe-communication-execution.md#4-normal-fp8-平面六项-handle-与返程)将 BF16 行提升为 float 做跨 rank sum，再转 BF16；hierarchical 另有组内归约后转为 BF16 的中间舍入。完整外部协议与真实拓扑/性能未运行验证。[S4，588–621 行]
+normal combine 包装直接采用这个已经本地加权的张量，调用 `Buffer.combine(x,self.handle,...)`；这个调用没有传 top-k weights，所以 SGLang 层不能再给返回结果乘一次 $g$。Buffer 负责按 handle 回传/汇合；[设备返程](deepep-moe-communication-execution.md#4.%20Normal%20FP8%20%E5%B9%B3%E9%9D%A2%E3%80%81%E5%85%AD%E9%A1%B9%20handle%20%E4%B8%8E%E8%BF%94%E7%A8%8B)将 BF16 行提升为 float 做跨 rank sum，再转 BF16；hierarchical 另有组内归约后转为 BF16 的中间舍入。完整外部协议与真实拓扑/性能未运行验证。[S4，588–621 行]
 
 该版本 CUDA normal 的 `combine_a` 只接受 JIT DeepGEMM（以及本节不采用的 AITER/NPU）条件，else 直接抛 `NotImplementedError`，注释说明 Triton normal combine 临时禁用。原单设备页可以完整读通 Triton，不代表相同 runner 能直接沿 DeepEP normal 跑通。[S4，595–598 行]
 
@@ -156,9 +156,9 @@ normal combine 包装直接采用这个已经本地加权的张量，调用 `Buf
 
 `DeepEPMode.AUTO` 在 batch 含 extend 时 resolve 为 normal，否则为 low latency；这是 batch 级条件，不是仅按每个请求的 token 数自动选择。显式 mode 保留其值。[S11，147–175 行][S4，953–961 行]
 
-low latency `dispatch_a` 将 BF16 原输入与 int64 top-k ID 交给 `Buffer.low_latency_dispatch`，传 `use_fp8=True`。SGLang 在这个入口没有先调用自己的 per-token-group quant；FP8 转换发生于外部 Buffer 路径；匹配默认来源已确认每 token/128 通道动态量化、正 FP32 restoring scale 与 per-expert 发送，详见 [LL 设备 dispatch](deepep-moe-communication-execution.md#6-ll-dispatch发送量化与专家容量)。在 Blackwell DeepGEMM 条件下包装会请求 `round_scale/use_ue8m0`，本节 SM90 传这两个条件为 False。[S4，648–746 行][S12，37–39 行]
+low latency `dispatch_a` 将 BF16 原输入与 int64 top-k ID 交给 `Buffer.low_latency_dispatch`，传 `use_fp8=True`。SGLang 在这个入口没有先调用自己的 per-token-group quant；FP8 转换发生于外部 Buffer 路径；匹配默认来源已确认每 token/128 通道动态量化、正 FP32 restoring scale 与 per-expert 发送，详见 [LL 设备 dispatch](deepep-moe-communication-execution.md#6.%20LL%20dispatch%EF%BC%9A%E5%8F%91%E9%80%81%E9%87%8F%E5%8C%96%E4%B8%8E%E4%B8%93%E5%AE%B6%E5%AE%B9%E9%87%8F)。在 Blackwell DeepGEMM 条件下包装会请求 `round_scale/use_ue8m0`，本节 SM90 传这两个条件为 False。[S4，648–746 行][S12，37–39 行]
 
-返回 payload 被 SGLang masked runner 按 `[L,C,D]` 消费：第一轴对应本地专家，匹配固定库返回每专家容量 $C=P M_{\max}$。`masked_m[L]` 保存实际有效行数，容量尾部不保证初始化为有效数据；column-major FP32 scale 的逻辑 shape 为 `[L,C,D/128]`，元素 strides 为 `((D/128)*C,1,C)`。[设备布局与有效 segment](deepep-moe-communication-execution.md#6-ll-dispatch发送量化与专家容量)保留 source info/range 与库条件。`topk_ids/topk_weights` 仍是源 rank 原输入的 `[M_q,K]` 对应，未改成 normal 的接收行列表；它们在 dispatch 时没有作为 weights 传入 Buffer，留在 Python 对象中等待返程。[S4，648–703、729–746 行][S6，666–688、401–414 行]
+返回 payload 被 SGLang masked runner 按 `[L,C,D]` 消费：第一轴对应本地专家，匹配固定库返回每专家容量 $C=P M_{\max}$。`masked_m[L]` 保存实际有效行数，容量尾部不保证初始化为有效数据；column-major FP32 scale 的逻辑 shape 为 `[L,C,D/128]`，元素 strides 为 `((D/128)*C,1,C)`。[设备布局与有效 segment](deepep-moe-communication-execution.md#6.%20LL%20dispatch%EF%BC%9A%E5%8F%91%E9%80%81%E9%87%8F%E5%8C%96%E4%B8%8E%E4%B8%93%E5%AE%B6%E5%AE%B9%E9%87%8F)保留 source info/range 与库条件。`topk_ids/topk_weights` 仍是源 rank 原输入的 `[M_q,K]` 对应，未改成 normal 的接收行列表；它们在 dispatch 时没有作为 weights 传入 Buffer，留在 Python 对象中等待返程。[S4，648–703、729–746 行][S6，666–688、401–414 行]
 
 包装计算的提示值严格是
 
@@ -166,9 +166,9 @@ $$\mathrm{expected\_m}=\left\lfloor\frac{M_q P K+E}{E}\right\rfloor.$$
 
 它是按本 rank 行数估算的平均配对负载提示，用作 masked grouped-GEMM 参数；它不是 `masked_m` 的真实计数、buffer 上限或 token 丢弃阈值，代码也不在这里裁掉超过平均值的行。$M_qPK$ 恰好整除 $E$ 时，这个表达式仍比商多 1，不能无条件改写成通常的 ceil。[S4，656–659 行][S6，406–414、478–487 行]
 
-LL 的 pre-adapter 不再 scatter；它把已经三维组织好的输入和 scale 直接交给 `_run_masked_gemm`。两次 GEMM 依 `masked_m/expected_m` 计算：FP8 输入和本地 `w13` → BF16 `[L,C,2I]` → SiLU×up 与每 128 通道量化 → FP8 `[L,C,I]`/FP32 scale `[L,C,I/128]` → BF16 down `[L,C,D]`。所选 fallback activation kernel 只迭代 `token_index < masked_m[expert_id]`，对有效行做 SiLU×up 与动态 group scale，容量尾部不应被读作有效专家输出。匹配 [masked 设备调度](deepgemm-moe-expert-execution.md#4-调度如何选择专家与行)按有效计数选择 tile 与 math warp-group 起点，没有逐行 masked store，尾 tile 仍可计算/写容量 padding；所选默认 `Mmax=128` 保持每专家容量按 M tile 对齐。[S6，362–496、829–919 行][S7，289–429 行]
+LL 的 pre-adapter 不再 scatter；它把已经三维组织好的输入和 scale 直接交给 `_run_masked_gemm`。两次 GEMM 依 `masked_m/expected_m` 计算：FP8 输入和本地 `w13` → BF16 `[L,C,2I]` → SiLU×up 与每 128 通道量化 → FP8 `[L,C,I]`/FP32 scale `[L,C,I/128]` → BF16 down `[L,C,D]`。所选 fallback activation kernel 只迭代 `token_index < masked_m[expert_id]`，对有效行做 SiLU×up 与动态 group scale，容量尾部不应被读作有效专家输出。匹配 [masked 设备调度](deepgemm-moe-expert-execution.md#4.%20%E8%B0%83%E5%BA%A6%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9%E4%B8%93%E5%AE%B6%E4%B8%8E%E8%A1%8C)按有效计数选择 tile 与 math warp-group 起点，没有逐行 masked store，尾 tile 仍可计算/写容量 padding；所选默认 `Mmax=128` 保持每专家容量按 M tile 对齐。[S6，362–496、829–919 行][S7，289–429 行]
 
-LL core 和 post-adapter 都没有乘 $g$ 或 $\rho$。post-adapter 仅把未加权 down 输出与保存的原 ID/weight 包装成 `DeepEPLLCombineInput`。随后 `Buffer.low_latency_combine(x,topk_idx,topk_weights,handle)` 得到源 rank 的输出。因此这里 gate 的应用/跨专家归约归属 low latency combine 的外部接口，SGLang runner 不先本地乘一次；匹配固定库的 [LL combine](deepep-moe-communication-execution.md#7-ll-combine回到原-token-后施加-gate)按源端原 top-k 槽序读取 BF16 专家输出，乘 FP32 gate、用 float 累加，最后写 BF16。[S6，692–704 行][S4，748–819 行]
+LL core 和 post-adapter 都没有乘 $g$ 或 $\rho$。post-adapter 仅把未加权 down 输出与保存的原 ID/weight 包装成 `DeepEPLLCombineInput`。随后 `Buffer.low_latency_combine(x,topk_idx,topk_weights,handle)` 得到源 rank 的输出。因此这里 gate 的应用/跨专家归约归属 low latency combine 的外部接口，SGLang runner 不先本地乘一次；匹配固定库的 [LL combine](deepep-moe-communication-execution.md#7.%20LL%20combine%EF%BC%9A%E5%9B%9E%E5%88%B0%E5%8E%9F%20token%20%E5%90%8E%E6%96%BD%E5%8A%A0%20gate)按源端原 top-k 槽序读取 BF16 专家输出，乘 FP32 gate、用 float 累加，最后写 BF16。[S6，692–704 行][S4，748–819 行]
 
 ## 6. SGLang：shared、rho 与一次往返的生命周期
 
@@ -180,7 +180,7 @@ $$y_t=\rho\sum_{j=1}^{K}g_{t,j}\widetilde f_{e_{t,j}}(x_t)+y_t^{(s)}.$$
 
 这条路径的 FP8 通信指 dispatch 的 hidden-state payload。两次 down grouped GEMM 的输出均为 BF16，normal combine 和 LL combine 的调用不在 SGLang 包装内对返程专家输出再执行 FP8 量化。不能把“FP8 dispatch”写成 router、专家输出、整个往返通信与所有累加都只有 8 bit；也不能由位宽独自推出端到端速度。[S4][S6]
 
-通信 Buffer 与每次路由 handle 的生命周期不同。`DeepEPBuffer` 以 class 成员缓存 Buffer，通过 normal config 的 size hints 与 LL size hint 建立通信存储；模式从 normal 切到 low latency 时先 `clean_low_latency_buffer`。[设备页](deepep-moe-communication-execution.md#8-传输eventhook-与-buffer-生命周期)已核 odd/even 共用布局与两套 signaling clean；clean 不表示全部容量尾部激活清零。[S4，161–296 行]
+通信 Buffer 与每次路由 handle 的生命周期不同。`DeepEPBuffer` 以 class 成员缓存 Buffer，通过 normal config 的 size hints 与 LL size hint 建立通信存储；模式从 normal 切到 low latency 时先 `clean_low_latency_buffer`。[设备页](deepep-moe-communication-execution.md#8.%20%E4%BC%A0%E8%BE%93%E3%80%81event%E3%80%81hook%20%E4%B8%8E%20buffer%20%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)已核 odd/even 共用布局与两套 signaling clean；clean 不表示全部容量尾部激活清零。[S4，161–296 行]
 
 每个 dispatcher implementation 把 dispatch 返回的 opaque `handle` 放在实例成员里，供同一轮 combine 使用，不作为 `DeepEPNormalDispatchOutput/DeepEPLLDispatchOutput` 的字段传播。normal `_dispatch_core` 的注释明确说明尝试随 tokens 传 handle 曾发生同步问题，所以当前采用成员保存。这是固定版本现状，不应由文档自行设计一套新状态对象。[S4，95–149、364、547–559、613–620 行]
 
@@ -188,7 +188,7 @@ $$y_t=\rho\sum_{j=1}^{K}g_{t,j}\widetilde f_{e_{t,j}}(x_t)+y_t^{(s)}.$$
 
 创建入口为 normal 设置 `async_finish=True`，LL 设置 `return_recv_hook=True`。normal 在预量化完成后 `Buffer.capture()`，layout/dispatch/combine 接力 `previous_event`，dispatch_b/combine_b 调 `event.current_stream_wait()` 后交给后续消费，normal combine_b 再清 handle。LL 的 A 段发起外部 dispatch/combine，B 段执行 recv hook；若 return_recv_hook=False 则等待 event。LL `_combine_core` 在发起 combine 后就清 Python `packed_recv_count/handle`，但最终数据可消费仍由 B 段的 hook/event 衔接，不能把 `handle=None` 当成 GPU 通信已完成。[S2，101–116 行][S4，484–511、588–608、674–684、748–819 行]
 
-[设备页](deepep-moe-communication-execution.md#8-传输eventhook-与-buffer-生命周期)确认 event 是 CUDA stream 依赖，LL hook 分开 SEND/RECV phase，并核 Buffer IPC/NVSHMEM 回收入口。SBO、多 stream down/communication overlap、CUDA graph capture/replay、完整 NVSHMEM/IBGDA 协议与真实拓扑/故障仍未沿运行链验证。
+[设备页](deepep-moe-communication-execution.md#8.%20%E4%BC%A0%E8%BE%93%E3%80%81event%E3%80%81hook%20%E4%B8%8E%20buffer%20%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F)确认 event 是 CUDA stream 依赖，LL hook 分开 SEND/RECV phase，并核 Buffer IPC/NVSHMEM 回收入口。SBO、多 stream down/communication overlap、CUDA graph capture/replay、完整 NVSHMEM/IBGDA 协议与真实拓扑/故障仍未沿运行链验证。
 
 ## 7. vLLM：固定配置与 EP group
 
@@ -258,13 +258,13 @@ HT P/F 按如下顺序连接通信与专家：
 4. `TritonExperts` 对接收 top-k 生成 token–expert 配对和 padding；`expert_map` 把对应 block 的 global expert ID 改成 local slot，非本地为 -1，GEMM 对这些 block 写零。这里“本地加总”仅得到该 rank 所持专家对接收 token 的贡献，不是来源 token 的完整 routed output。[VEP9，271–304；VEP19，19–45、90–103；VEP20，407–434]
 5. 普通 Triton 专家的 GEMM2 在 FP32 accumulator 上乘 `topk_weights`，再 cast 输出；`ops.moe_sum` 汇掉该接收行的 top-k 维。`finalize_weight_and_reduce_impl()` 返回 `NoOP`，表示专家已经完成这一层权重/局部归约。HT finalize 不再次乘权重，调用 `buffer.combine(x=fused_expert_output,handle=handle,topk_weights=None)`；wrapper 明确要求 combine 输入 BF16。外部 combine 依据 handle 返回来源 rank 的行，P/F 把结果复制到 `[M_r,D]` 输出，并报告 `output_is_reduced=True`。[VEP9，148–149、464–486、535–539；VEP20，562–576；VEP15，347–409；VEP21，44–77]
 
-HT 的 $M_{recv}$ 是 dispatch 后的接收行数，不能直接写成 $M_rk$，也不能把一个接收行等同一个专家配对。匹配固定库已确认按目的 rank 去重，接收行再展开专家配对；普通 scale 原样复制为行连续 `[M_recv,D/128]`。[通信设备页](deepep-moe-communication-execution.md#3-intranode-normalht前缀队列与本地-id)给出 prefix/队列、六项 handle 与 hierarchical 组去重差异；本页不将逻辑行数计费当作精确网络字节。
+HT 的 $M_{recv}$ 是 dispatch 后的接收行数，不能直接写成 $M_rk$，也不能把一个接收行等同一个专家配对。匹配固定库已确认按目的 rank 去重，接收行再展开专家配对；普通 scale 原样复制为行连续 `[M_recv,D/128]`。[通信设备页](deepep-moe-communication-execution.md#3.%20Intranode%20normal%2FHT%EF%BC%9A%E5%89%8D%E7%BC%80%E3%80%81%E9%98%9F%E5%88%97%E4%B8%8E%E6%9C%AC%E5%9C%B0%20ID)给出 prefix/队列、六项 handle 与 hierarchical 组去重差异；本页不将逻辑行数计费当作精确网络字节。
 
 ## 10. vLLM LL：三维专家执行与通信尺度
 
 LL 不把 top-k weights 传入 `low_latency_dispatch`。它传原始 `a1:[M_r,D]`、dispatch ID、每 rank 最大 token 数、全局专家数，以及 `use_fp8` / scale 编码标志。所选块 FP8 的 `use_fp8_dispatch=True`：量化在外部 DeepEP dispatch 内完成，vLLM 没有先调用来源端 `moe_kernel_quantize_input`。dispatch 返回分本地专家的激活/scale、每专家有效行数与 handle。[VEP6，174–207；VEP14，229–325]
 
-进入 batched 专家的形状契约为 `x:[E_local,T_cap,D]`，每专家的有效行数记录在 `expert_tokens_meta.expert_num_tokens:[E_local]`，未使用区间由计数控制；P/F 不返回 dispatched top-k。vLLM batched 专家 workspace/output 按 `max_tokens_per_rank*num_dispatchers` 的容量分配，但这不是“每个专家真实处理这么多 token”，也不是实际网络包都按容量发送。匹配固定库返回每专家 $P M_{\max}$ 行容量，values 连续、首层 scale 为 token 轴连续的转置 view；[LL 设备布局](deepep-moe-communication-execution.md#6-ll-dispatch发送量化与专家容量)给出确切 strides 与有效 segment。[VEP14，328–342；VEP10，817–837、875–884]
+进入 batched 专家的形状契约为 `x:[E_local,T_cap,D]`，每专家的有效行数记录在 `expert_tokens_meta.expert_num_tokens:[E_local]`，未使用区间由计数控制；P/F 不返回 dispatched top-k。vLLM batched 专家 workspace/output 按 `max_tokens_per_rank*num_dispatchers` 的容量分配，但这不是“每个专家真实处理这么多 token”，也不是实际网络包都按容量发送。匹配固定库返回每专家 $P M_{\max}$ 行容量，values 连续、首层 scale 为 token 轴连续的转置 view；[LL 设备布局](deepep-moe-communication-execution.md#6.%20LL%20dispatch%EF%BC%9A%E5%8F%91%E9%80%81%E9%87%8F%E5%8C%96%E4%B8%8E%E4%B8%93%E5%AE%B6%E5%AE%B9%E9%87%8F)给出确切 strides 与有效 segment。[VEP14，328–342；VEP10，817–837、875–884]
 
 `BatchedTritonExperts` 的 MM1 按三维 expert 轴读取权重，用 `expert_num_tokens` 避开无效行；SiLU×up 后生成三维中间 `[E_local,T_cap,I]`，再按专家有效行量化、调用 MM2，输出仍为 `[E_local,T_cap,D]`。batched kernel 以 `tl.program_id(axis=0)` 选择本地 expert，没有再通过 global expert_map 路由，也没有在 GEMM2 中乘 top-k 权重。[VEP10，250–375、897–976]
 
@@ -276,7 +276,7 @@ LL 的生产 factory 只有在 `quant_dtype==current_platform.fp8_dtype()` 且 `
 
 `DeepEPLLPrepareAndFinalize._do_quant` 对返回 tuple 的复用条件只检查 `block_k==128`：满足时直接复用 DeepEP 的 `(x,x_scales)`，没有恢复再量化。若显式构造 P/F 使 `use_fp8_dispatch=True` 但 block_k 不匹配，则以 FP32 乘 128-element scales 恢复，转回原 `a1_dtype`，再按专家量化配置执行 `moe_kernel_quantize_input`。因此外部传输格式与专家输入格式不一致时可能存在恢复/再量化；但不能把这个恢复分支说成无条件保护所有 dtype mismatch，因为 block_k=128 的分支没有再检查 qdtype。实际 factory 的严格选择条件把本页生产链限定在匹配的 FP8/128 配置。[VEP14，34–49、160–224]
 
-普通 LL+batched Triton 的 scale 接口需能按 `[expert,row,K_group]` 读取，Triton wrapper 取 `stride(0/1/2)`，不会因为逻辑 shape 为三维就要求连续。`normalize_batched_scales_shape` 仅把标量复制为 `[E_local,1,1]`，把二维非标量 view 为 `[E_local,-1,last_dim]`；它不是任意转置或 swizzle 的转换器。MM2 新量化的激活 scale 在普通 block 分支分配 FP32 `[E_local,T_cap,ceil(I/128)]`。匹配 DeepEP 的首层 scale 先分配 `[E_local,D/128,T_cap]` 再转置，逻辑 `[E_local,T_cap,D/128]` 的 strides 为 `((D/128)*T_cap,1,T_cap)`，不同于 MM2 新分配的 row/group scale。[设备页](deepep-moe-communication-execution.md#6-ll-dispatch发送量化与专家容量)核对其实际写入。[VEP10，378–445、651–714、920–959；VEP16，365–378]
+普通 LL+batched Triton 的 scale 接口需能按 `[expert,row,K_group]` 读取，Triton wrapper 取 `stride(0/1/2)`，不会因为逻辑 shape 为三维就要求连续。`normalize_batched_scales_shape` 仅把标量复制为 `[E_local,1,1]`，把二维非标量 view 为 `[E_local,-1,last_dim]`；它不是任意转置或 swizzle 的转换器。MM2 新量化的激活 scale 在普通 block 分支分配 FP32 `[E_local,T_cap,ceil(I/128)]`。匹配 DeepEP 的首层 scale 先分配 `[E_local,D/128,T_cap]` 再转置，逻辑 `[E_local,T_cap,D/128]` 的 strides 为 `((D/128)*T_cap,1,T_cap)`，不同于 MM2 新分配的 row/group scale。[设备页](deepep-moe-communication-execution.md#6.%20LL%20dispatch%EF%BC%9A%E5%8F%91%E9%80%81%E9%87%8F%E5%8C%96%E4%B8%8E%E4%B8%93%E5%AE%B6%E5%AE%B9%E9%87%8F)核对其实际写入。[VEP10，378–445、651–714、920–959；VEP16，365–378]
 
 UE8M0 是另外一层条件。LL 构造时 `use_ue8m0_dispatch=False`；`post_init_setup(fused_experts)` 只有在专家声明 `supports_packed_ue8m0_act_scales()` 且使用 FP8 dispatch 时才置 True，随后向 DeepEP 传 `round_scale=True,use_ue8m0=True`。普通 batched Triton 继承默认 False，所以本页不把 LL scales 说成 packed UE8M0。[VEP14，117–137、298–305；VEP5，755–760]
 
@@ -307,7 +307,7 @@ $$n_r=\sum_t\mathbf 1\{r\in\mathcal R_t\},\qquad
 m_e=\sum_{t,j}\mathbf 1\{e_{t,j}=e\},\qquad
 c_r=\sum_{e:\operatorname{owner}(e)=r}m_e.$$
 
-求和跨本轮所有源 rank 的 token，token 身份应包含源 rank 与源行号。$n_r$ 和 $c_r$ 不等价：同一 token 在 rank 内选了两个专家，在此记账中贡献一个唯一 token、两个专家配对。normal/HT 的布局接口同时返回 rank 计数与 expert 计数；SGLang normal 用 `ep_scatter` 物理复制为专家连续行，vLLM HT+Triton 则保留二维接收输入、建立配对索引，由第一 GEMM 间接回读原行。LL 直接向 expert-batched 消费者交付输入与有效行计数。通用教学计数不能单独证明实际复制策略；所选 normal/HT 的 rank 去重和 LL 的每专家复制另由 [固定设备源码](deepep-moe-communication-execution.md#2-rank-行数与专家配对数不同)核实，其他分支仍需沿其实现判断。[S4，normal layout/dispatch][S6，normal pre-permute][S7，`ep_scatter`][VEP15，HT layout/receiver][VEP9，`TritonExperts.apply`][VEP20，第一 GEMM 的 `offs_token//top_k`][VEP14，LL receiver]
+求和跨本轮所有源 rank 的 token，token 身份应包含源 rank 与源行号。$n_r$ 和 $c_r$ 不等价：同一 token 在 rank 内选了两个专家，在此记账中贡献一个唯一 token、两个专家配对。normal/HT 的布局接口同时返回 rank 计数与 expert 计数；SGLang normal 用 `ep_scatter` 物理复制为专家连续行，vLLM HT+Triton 则保留二维接收输入、建立配对索引，由第一 GEMM 间接回读原行。LL 直接向 expert-batched 消费者交付输入与有效行计数。通用教学计数不能单独证明实际复制策略；所选 normal/HT 的 rank 去重和 LL 的每专家复制另由 [固定设备源码](deepep-moe-communication-execution.md#2.%20Rank%20%E8%A1%8C%E6%95%B0%E4%B8%8E%E4%B8%93%E5%AE%B6%E9%85%8D%E5%AF%B9%E6%95%B0%E4%B8%8D%E5%90%8C)核实，其他分支仍需沿其实现判断。[S4，normal layout/dispatch][S6，normal pre-permute][S7，`ep_scatter`][VEP15，HT layout/receiver][VEP9，`TritonExperts.apply`][VEP20，第一 GEMM 的 `offs_token//top_k`][VEP14，LL receiver]
 
 若教学模型假定同一 token 每个远端目的 rank 只发送一次，通信输入宽度为 $D$、每元素 $b_x$ 字节、每 $G$ 个元素一项 $b_s$ 字节尺度，则其逻辑有效载荷为
 
@@ -315,20 +315,20 @@ $$B_{\mathrm{dispatch}}^{\mathrm{logical}}=
 \sum_t |\mathcal R_t\setminus\{\operatorname{source}(t)\}|
 \left(D b_x+\left\lceil D/G\right\rceil b_s\right).$$
 
-这排除了本地目的 rank，尚未计路由 ID/gate、handle 元数据、对齐、协议、节点转发或网络中的重复传输。FP8 值加 FP32 的 128 元素组尺度在整除条件下为每元素 $1+4/128$ 字节；不能简单说整个往返通信都减半。两个框架所选 normal/HT 返回 BF16，LL 返回也消费专家输出；输入压缩不会自动压缩返回贡献。UE8M0 打包尺度则须按实际格式重新计费。 已核 LL 按专家 selection 发送副本，其报文与 slot 预留分别见 [通信设备页](deepep-moe-communication-execution.md#6-ll-dispatch发送量化与专家容量)，不能套用 normal 的目的 rank 唯一行假设。[S4][S6][VEP15，prepare/finalize][VEP14，`_do_quant/post_init_setup`]
+这排除了本地目的 rank，尚未计路由 ID/gate、handle 元数据、对齐、协议、节点转发或网络中的重复传输。FP8 值加 FP32 的 128 元素组尺度在整除条件下为每元素 $1+4/128$ 字节；不能简单说整个往返通信都减半。两个框架所选 normal/HT 返回 BF16，LL 返回也消费专家输出；输入压缩不会自动压缩返回贡献。UE8M0 打包尺度则须按实际格式重新计费。 已核 LL 按专家 selection 发送副本，其报文与 slot 预留分别见 [通信设备页](deepep-moe-communication-execution.md#6.%20LL%20dispatch%EF%BC%9A%E5%8F%91%E9%80%81%E9%87%8F%E5%8C%96%E4%B8%8E%E4%B8%93%E5%AE%B6%E5%AE%B9%E9%87%8F)，不能套用 normal 的目的 rank 唯一行假设。[S4][S6][VEP15，prepare/finalize][VEP14，`_do_quant/post_init_setup`]
 
 | 容量或行数 | 具体含义 | 如何影响结果与成本 |
 | --- | --- | --- |
 | runtime buffer capacity | 通信缓冲区按上限分配的空间 | 约束配置与显存，未读 overflow 实现时不能宣称超限会静默 dropping |
 | 实际 expert token count | 专家本轮有效输入行 | 决定有效工作，不等于平均负载提示或容量 |
 | GEMM/布局 padding | 为 alignment/tile/支持的维度补空间 | 结果由有效计数、mask 或逆映射限制；补齐空间可能仍产生额外执行工作，不自动改变模型路由 |
-| 模型 token dropping | 取消选中 token–专家的一项贡献 | 改变该次 MoE 值语义；V2 训练条件见[负载与 dropping](../fundamentals/model/mixture-of-experts-and-routing.md#3-平衡损失与-token-dropping-解决什么问题) |
+| 模型 token dropping | 取消选中 token–专家的一项贡献 | 改变该次 MoE 值语义；V2 训练条件见[负载与 dropping](../fundamentals/model/mixture-of-experts-and-routing.md#3.%20%E5%B9%B3%E8%A1%A1%E6%8D%9F%E5%A4%B1%E4%B8%8E%20token%20dropping%20%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98) |
 
 例如 SGLang normal 按对齐计数建立全部 $A$ 行的 `m_indices`，contiguous GEMM 接收容量张量；最终 gather 只按有效 top-k 的 `output_index` 回读结果。这里不能说所有 padding 都在 GEMM 中被 mask 掉。[S6，contiguous core/normal pre-post][S7，`ep_scatter/ep_gather`]
 
 判断 EP 成本要沿 layout/count → dispatch → 接收侧排列/尺度转换 → 专家 GEMM → 本地归约 → combine 与同步分别定位。没有 overlap 的分项可相加；有 overlap 时应观察实际依赖与关键路径，不能把 `async_finish` 或 hook 的存在当作通信已经完全隐藏。
 
-同一批 token 总数下，$m_e$、$n_r$、$c_r$ 的分布仍会不同，热点专家或 rank 可形成尾部等待。实际评测应记录这些分布、padding 后形状、输入/返回 dtype 与尺度、EP/TP/DP group、网络拓扑、prefill/decode 和 backend，再用[服务性能口径](serving-performance-evaluation.md)判断 TTFT、TPOT、尾延迟与 goodput。权重量化减少常驻载荷，与通信量化减少 dispatch 载荷是两个决策；其关系还可对照[张量并行的通信边界](tensor-parallel-quantization.md#5-省掉权重流量不代表通信同步缩小)。
+同一批 token 总数下，$m_e$、$n_r$、$c_r$ 的分布仍会不同，热点专家或 rank 可形成尾部等待。实际评测应记录这些分布、padding 后形状、输入/返回 dtype 与尺度、EP/TP/DP group、网络拓扑、prefill/decode 和 backend，再用[服务性能口径](serving-performance-evaluation.md)判断 TTFT、TPOT、尾延迟与 goodput。权重量化减少常驻载荷，与通信量化减少 dispatch 载荷是两个决策；其关系还可对照[张量并行的通信边界](tensor-parallel-quantization.md#5.%20%E7%9C%81%E6%8E%89%E6%9D%83%E9%87%8D%E6%B5%81%E9%87%8F%EF%BC%8C%E4%B8%8D%E4%BB%A3%E8%A1%A8%E9%80%9A%E4%BF%A1%E5%90%8C%E6%AD%A5%E7%BC%A9%E5%B0%8F)。
 
 ## 13. 本页确认范围
 

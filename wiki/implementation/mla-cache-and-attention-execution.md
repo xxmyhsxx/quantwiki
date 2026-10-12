@@ -68,7 +68,7 @@ MLA 的历史状态是联合 KV 潜变量与位置 key；执行时既可以临�
 
 该版本 `python/pyproject.toml` 固定 `flashinfer_cubin==0.6.12`、`flashinfer_python[cu13]==0.6.12`。SGLang 调用端可以独立核读，但另一个 FlashInfer 固定快照不能自动视为它的部署依赖；版本间接口分析也不能作为这两个快照已联合安装或实际运行的证据。
 
-阅读前置是 [SGLang 的请求与 KV 槽位](sglang-inference-execution.md#5-请求位置怎样映射到实际-kv)。该页解释请求如何取得 `out_cache_loc`；这里回答这些位置保存的元素是什么，以及读取端怎样解释它们。[普通 MHA/GQA 算子页](sglang-attention-operator-design.md)中的独立 K/V buffer 不直接代替 MLA 的联合表示。
+阅读前置是 [SGLang 的请求与 KV 槽位](sglang-inference-execution.md#5.%20%E8%AF%B7%E6%B1%82%E4%BD%8D%E7%BD%AE%E6%80%8E%E6%A0%B7%E6%98%A0%E5%B0%84%E5%88%B0%E5%AE%9E%E9%99%85%20KV)。该页解释请求如何取得 `out_cache_loc`；这里回答这些位置保存的元素是什么，以及读取端怎样解释它们。[普通 MHA/GQA 算子页](sglang-attention-operator-design.md)中的独立 K/V buffer 不直接代替 MLA 的联合表示。
 
 ## 2. 从模型维度到缓存和工作张量
 
@@ -149,7 +149,7 @@ $$[S_{\rm alloc}+P,\ 1,\ d_c+d_R]$$
 
 $$M_{\rm pool}=N_l(S_{\rm alloc}+P)(d_c+d_R)\,\operatorname{sizeof}(\texttt{store\_dtype}).$$
 
-它尚未包括请求映射、allocator、workspace、展开 K/V 和 dtype 转换临时量。有效 token 变少时，预分配池不因此自动缩小。量化预算口径见 [从位宽到可执行存储格式](../theory/kv-cache-quantization-objects-and-granularity.md#11-从位宽到可执行存储格式)。
+它尚未包括请求映射、allocator、workspace、展开 K/V 和 dtype 转换临时量。有效 token 变少时，预分配池不因此自动缩小。量化预算口径见 [从位宽到可执行存储格式](../theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)。
 
 ### 4.2 写入位置与当前分支的先后关系
 
@@ -162,7 +162,7 @@ $$M_{\rm pool}=N_l(S_{\rm alloc}+P)(d_c+d_R)\,\operatorname{sizeof}(\texttt{stor
 - 展开 MHA 路径在 `forward_normal_prepare` 已通过 `_set_mla_kv_buffer` 保存 normalized latent 和 rotated key，随后 `attn_mha(..., save_kv_cache=False)`；临时展开 K/V 不覆盖联合缓存。
 - 吸收 MLA 路径由 `FlashInferMLAAttnBackend.forward_extend/forward_decode` 根据 `save_kv_cache` 在计算之前写入，然后读取缓存。普通 decode 的完整历史因此包含当前 token。
 
-这个顺序意味着缓存表示会参与当前读取的路径需与“先用未转换的新 K/V 完成计算，再写低精度历史”的路径区分。相同最终 cache shape 不能保证本轮数值路径相同，生命周期的一般问题见 [缓存生命周期与数值路径](../theory/kv-cache-quantization-objects-and-granularity.md#12-缓存的生命周期会改变数值路径)。
+这个顺序意味着缓存表示会参与当前读取的路径需与“先用未转换的新 K/V 完成计算，再写低精度历史”的路径区分。相同最终 cache shape 不能保证本轮数值路径相同，生命周期的一般问题见 [缓存生命周期与数值路径](../theory/kv-cache-quantization-objects-and-granularity.md#12.%20%E7%BC%93%E5%AD%98%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%BC%9A%E6%94%B9%E5%8F%98%E6%95%B0%E5%80%BC%E8%B7%AF%E5%BE%84)。
 
 ## 5. Prefill 与 decode 不是固定的一对实现
 
@@ -190,7 +190,7 @@ one-shot 且有 prefix 时，先写新 latent，再按当前所有历史槽位�
 
 历史较长而选 chunked-KV 时，`forward_normal_chunked_kv_core` 先算当前扩展段，取得 output 与 LSE；`_chunked_prefix_attn_mha` 按 prefix chunk 索引取 latent、调用 `kv_b_proj`，临时恢复该 chunk 的每头 K/V，算出另一组 output/LSE，再用 `merge_state_v2` 合并。历史 prefix 已在所有新 query 之前，因此 prefix wrapper 使用 `causal=False`，当前扩展段使用 `causal=True`。
 
-两部分合并的是同一个注意力归一化。按 [LSE 分段合并](sglang-attention-operator-design.md#4-decode把历史维拆开再按-lse-合并)，若两段局部结果为 $o_1,o_2$、LSE 为 $z_1,z_2$，全局结果为
+两部分合并的是同一个注意力归一化。按 [LSE 分段合并](sglang-attention-operator-design.md#4.%20Decode%EF%BC%9A%E6%8A%8A%E5%8E%86%E5%8F%B2%E7%BB%B4%E6%8B%86%E5%BC%80%EF%BC%8C%E5%86%8D%E6%8C%89%20LSE%20%E5%90%88%E5%B9%B6)，若两段局部结果为 $o_1,o_2$、LSE 为 $z_1,z_2$，全局结果为
 
 $$o=\frac{e^{z_1-m}o_1+e^{z_2-m}o_2}{e^{z_1-m}+e^{z_2-m}},\qquad m=\max(z_1,z_2).$$
 

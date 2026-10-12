@@ -16,7 +16,7 @@ updated: 2026-10-12
 
 ResQ 先选出承载较大激活能量的低秩子空间，将其系数保留为8 bit，其余系数量化为4 bit；然后在两个子空间内部各自旋转，以改善量化分布。它保护的是投影后的信号分量，并保留完整输入维度，不是先量化再用低秩矩阵补偿误差，也不是删掉低能量维度。依据为 ResQ v2（`https://arxiv.org/abs/2412.14363v2`） 正文、必要证明和实现附录；原文最优性证明存在下述代数问题，经验结果与证明有效性分别判断。
 
-与 [CMPQ](cmpq.md) 的原输入通道保护不同，ResQ 先改变坐标再分配组内精度；与 [SpinQuant](spinquant.md) 的任务损失训练不同，它通过校准统计量选择基底。公共推导见[高精度子空间与能量代理](../theory/orthogonal-rotation-and-hadamard-quantization.md#10-先选高精度子空间再在组内旋转)，固定代码的实际配置和执行边界见[实现页](../implementation/resq-basis-and-fake-quantization.md)。
+与 [CMPQ](cmpq.md) 的原输入通道保护不同，ResQ 先改变坐标再分配组内精度；与 [SpinQuant](spinquant.md) 的任务损失训练不同，它通过校准统计量选择基底。公共推导见[高精度子空间与能量代理](../theory/orthogonal-rotation-and-hadamard-quantization.md#10.%20%E5%85%88%E9%80%89%E9%AB%98%E7%B2%BE%E5%BA%A6%E5%AD%90%E7%A9%BA%E9%97%B4%EF%BC%8C%E5%86%8D%E5%9C%A8%E7%BB%84%E5%86%85%E6%97%8B%E8%BD%AC)，固定代码的实际配置和执行边界见[实现页](../implementation/resq-basis-and-fake-quantization.md)。
 
 ## 1. 两个精度分组怎样得到一个输出
 
@@ -49,7 +49,7 @@ $$\|X-\widehat X\|_F^2=\|E_l\|_F^2+\|E_h\|_F^2.$$
 
 | 位置 | 作用与实施条件 |
 | --- | --- |
-| $U_A$，残差流/attention与FFN输入 | 共享隐藏特征基底；配套修改 embedding、head、输入与输出线性投影，并处理归一化增益。浮点等价条件见[旋转与残差](../theory/orthogonal-rotation-and-hadamard-quantization.md#3-归一化和残差为什么重要)。 |
+| $U_A$，残差流/attention与FFN输入 | 共享隐藏特征基底；配套修改 embedding、head、输入与输出线性投影，并处理归一化增益。浮点等价条件见[旋转与残差](../theory/orthogonal-rotation-and-hadamard-quantization.md#3.%20%E5%BD%92%E4%B8%80%E5%8C%96%E5%92%8C%E6%AE%8B%E5%B7%AE%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81)。 |
 | $U_B$，value头内 | 将V旋转并在输出投影抵消，可折入两侧权重；按每层/头统计选择基底，不能把它与全局 $U_A$ 混用。 |
 | $U_C$，RoPE之后的Q/K | Q、K同乘正交矩阵才保持未量化点积；RoPE阻断随意向前融合，需在线投影。论文用8-bit投影与输入降低成本，量化后的变换不再保证精确正交或无误差。 |
 | $U_D$，FFN中间激活至`down_proj` | 非线性阻断向前融合，激活在线做Hadamard，逆变换折入down权重。该层权重/激活统一低精度，未使用一般的高精度 $d_{FFN}/8$ 子空间。 |

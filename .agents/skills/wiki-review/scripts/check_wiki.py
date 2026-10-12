@@ -366,10 +366,9 @@ def inspect_links(root, bodies):
                     slugs, titles, explicit = cache[target]
                     if fragment not in set(slugs) | titles | explicit:
                         issue(path, link, 'error', 'missing_heading', 'heading or explicit anchor does not exist')
-                    elif (in_wiki and fragment in slugs and fragment not in titles | explicit and
-                          re.search(r'[、，。：；！？（）《》【】]', slugs[fragment])):
+                    elif in_wiki and fragment in slugs and fragment not in titles | explicit:
                         issue(path, link, 'warning', 'heading_compatibility',
-                              'slug removes Chinese heading punctuation; verify the client jump')
+                              'slug differs from heading text; use the encoded heading or verify the client jump')
     return graph, counts, errors, warnings, findings
 
 

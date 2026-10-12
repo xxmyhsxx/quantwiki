@@ -56,7 +56,7 @@ $$
 
 固定编码数量时，扩大范围通常意味着增大步长：能容纳更多极端值，却让常见值附近的网格变稀；缩小范围则降低区间内舍入误差，却让尾部值承担更多裁剪误差。判断哪种更好，要看优化的目标。最小化 $\|\widehat W-W\|$、最小化 $\|(\widehat W-W)X\|$、保持下游任务分数，分别是不同问题。
 
-AWQ 的裁剪搜索采用输入相关的分组输出误差，具体归约维度见 [AWQ 的裁剪目标](../../methods/awq.md#51-裁剪目标不是纯权重-mse)，不能直接称为“让权重 MSE 最小”。两种误差目标为什么不同、输入相关性如何影响误差，可进一步读 [层输出重构与二阶误差补偿](../../theory/layer-reconstruction-second-order-compensation.md)。
+AWQ 的裁剪搜索采用输入相关的分组输出误差，具体归约维度见 [AWQ 的裁剪目标](../../methods/awq.md#5.1%20%E8%A3%81%E5%89%AA%E7%9B%AE%E6%A0%87%E4%B8%8D%E6%98%AF%E7%BA%AF%E6%9D%83%E9%87%8D%20MSE)，不能直接称为“让权重 MSE 最小”。两种误差目标为什么不同、输入相关性如何影响误差，可进一步读 [层输出重构与二阶误差补偿](../../theory/layer-reconstruction-second-order-compensation.md)。
 
 ## 3. 量化粒度
 
@@ -84,7 +84,7 @@ $$
 
 W4A16 表示相应权重采用 4-bit 表示、激活保持 16-bit；它不意味着乘法和累加全部使用 INT4。AWQ 论文中的 TinyChat 会在运算时把压缩权重反量化到 FP16，再参与相应矩阵计算。AWQ v6§4.2。
 
-模拟量化常把浮点权重映射到网格后，仍以浮点张量保存 $\widehat W$。它可以帮助评估低比特取值带来的质量变化，却没有自动减少物理存储，也没有证明后端实际运行了高效内核。实际压缩还需要编码打包、保存元数据以及读取这些数据的运算实现；不同路径的区别和代码实例见 [量化的实际执行路径](../../implementation/quantized-matmul-scaling-execution.md#3-低比特执行路径)。
+模拟量化常把浮点权重映射到网格后，仍以浮点张量保存 $\widehat W$。它可以帮助评估低比特取值带来的质量变化，却没有自动减少物理存储，也没有证明后端实际运行了高效内核。实际压缩还需要编码打包、保存元数据以及读取这些数据的运算实现；不同路径的区别和代码实例见 [量化的实际执行路径](../../implementation/quantized-matmul-scaling-execution.md#3.%20%E4%BD%8E%E6%AF%94%E7%89%B9%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84)。
 
 PTQ 是从训练好的模型出发做量化；它可以使用校准数据、搜索甚至局部优化，并不等于完全无数据或不调整参数。QAT 则在训练前向中考虑量化影响并训练模型。范式、可调整变量与代理梯度的区别见 [PTQ、QAT 与代理梯度](post-training-and-quantization-aware-training.md)。AWQ 属于前者，使用校准输入进行统计和候选比较，不执行权重梯度训练。这里仅说明术语与 AWQ 的关系，不评价两类方法在所有模型上的优劣。AWQ v6 §2、§3.2。
 
@@ -96,7 +96,7 @@ AWQ 论文式 (1) 使用 $\Delta=\max(|w|)/2^{b-1}$ 和不显式写饱和的形�
 
 ## 6. 静态、动态与不同含义的分组
 
-对激活而言，**静态量化**在校准时确定步长并在推理复用；**动态量化**根据运行时输入重新确定步长。它们与 per-token/per-tensor 这类粒度是两个分析维度。[SmoothQuant 的 O1–O3 配置](../../methods/smoothquant.md#4-量化配置与算子范围)中，O1/O2 分别是动态 per-token/per-tensor，O3 是静态 per-tensor；三者的通道平滑因子仍在离线获得。静态步长省去运行时范围统计，但校准没有覆盖的极端值可能产生饱和误差。SmoothQuant v7 §2、表 2。
+对激活而言，**静态量化**在校准时确定步长并在推理复用；**动态量化**根据运行时输入重新确定步长。它们与 per-token/per-tensor 这类粒度是两个分析维度。[SmoothQuant 的 O1–O3 配置](../../methods/smoothquant.md#4.%20%E9%87%8F%E5%8C%96%E9%85%8D%E7%BD%AE%E4%B8%8E%E7%AE%97%E5%AD%90%E8%8C%83%E5%9B%B4)中，O1/O2 分别是动态 per-token/per-tensor，O3 是静态 per-tensor；三者的通道平滑因子仍在离线获得。静态步长省去运行时范围统计，但校准没有覆盖的极端值可能产生饱和误差。SmoothQuant v7 §2、表 2。
 
 在行 token 的激活矩阵 $X\in\mathbb R^{T\times d}$ 中，per-token 指每行共享参数，per-input-channel 指每列共享参数。后者改善某些离群值的表示，却不能简单用普通整数 GEMM 后的外维缩放完成；推导见[量化矩阵乘法的缩放与执行路径](../../implementation/quantized-matmul-scaling-execution.md)。
 
@@ -107,7 +107,7 @@ GPTQ 的算法列块 $B$ 用于批量补偿，量化 group size $g$ 用于共享
 
 均匀网格不要求步长为 2 的幂。power-of-two scale 进一步限制步长，有助于用移位换算尺度，也减少了可选网格；一般步长则可以由整数固定点乘法和移位近似其比值，仍形成整数推理路径。（白皮书 §2.2.3；Jacob 等 arXiv v1 §2.2。）
 
-存储位宽、乘法输入位宽、累加位宽和输出位宽应分别记录。例如 8-bit 输入可使用 int32 累加，然后再量化到 8-bit 输出；bias 与累加具有共同实数单位，不能直接把浮点 bias 当成整数相加。推导和小例子见 [整数累加、偏置与再量化](../../implementation/quantized-matmul-scaling-execution.md#6-从整数累加到下一层网格)。误差与模型质量的检查关系见 [量化误差诊断与验证](../../implementation/quantization-error-diagnosis.md)。
+存储位宽、乘法输入位宽、累加位宽和输出位宽应分别记录。例如 8-bit 输入可使用 int32 累加，然后再量化到 8-bit 输出；bias 与累加具有共同实数单位，不能直接把浮点 bias 当成整数相加。推导和小例子见 [整数累加、偏置与再量化](../../implementation/quantized-matmul-scaling-execution.md#6.%20%E4%BB%8E%E6%95%B4%E6%95%B0%E7%B4%AF%E5%8A%A0%E5%88%B0%E4%B8%8B%E4%B8%80%E5%B1%82%E7%BD%91%E6%A0%BC)。误差与模型质量的检查关系见 [量化误差诊断与验证](../../implementation/quantization-error-diagnosis.md)。
 
 ## 8. 非均匀码本与尺度的二次量化
 

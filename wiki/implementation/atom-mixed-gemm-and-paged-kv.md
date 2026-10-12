@@ -63,7 +63,7 @@ Python返回的激活tuple包含尾部INT8、普通packed INT4及各自尺度。
 
 DenseLayerGEMM_i4.cu采用group128；普通路径的MMA为m16n8k64.s32.s4.s4，keeper为m16n8k32.s32.s8.s8。每个归约组得到INT32部分和后，dequant读取两侧FP16尺度，通过__hmul2得到**FP16舍入后的尺度乘积**，转FP32乘整数部分和并加入float accumulator，然后清空INT32部分和；最终输出FP16。论文图8描述FP16恢复/相加，所选代码的跨组累加器实际为FP32，二者需分别记录。（dequant及group循环、keeper分支。）
 
-尺度复制、padding、普通/尾部buffer和输出都占空间。论文4.25 bit元素预算不等于LinearInt4全部容器的实际占用；weight_channel_group=2的模拟布局也不能无需转换就交给native尺度读取。分组恢复的数学位置见[归约维分组](quantized-matmul-scaling-execution.md#15-归约维分组为什么要在累加途中恢复尺度)。
+尺度复制、padding、普通/尾部buffer和输出都占空间。论文4.25 bit元素预算不等于LinearInt4全部容器的实际占用；weight_channel_group=2的模拟布局也不能无需转换就交给native尺度读取。分组恢复的数学位置见[归约维分组](quantized-matmul-scaling-execution.md#15.%20%E5%BD%92%E7%BA%A6%E7%BB%B4%E5%88%86%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8%E7%B4%AF%E5%8A%A0%E9%80%94%E4%B8%AD%E6%81%A2%E5%A4%8D%E5%B0%BA%E5%BA%A6)。
 
 ## 4. 输出INT4与KV的zero-point不是整数零点
 

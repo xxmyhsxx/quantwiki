@@ -105,7 +105,7 @@ $$
 
 $C$ 是去均值投影，具有零空间，不是可逆旋转；最后的外积把被移出的方向补回，批量更新至多 rank 1。将 $\mathbf1^{\mathsf T}B$ 从原权重预计算并保留在高精度分支，可让中心化残差独立接受旋转与量化。这个分解不需要从数据拟合低秩方向，也不等于对量化误差做 SVD。
 
-固定 Sylvester Hadamard 会把常量方向集中到一个坐标；移走该方向可以消除显式均值项，但剩余残差的峰值仍依赖旋转。精确算术下的分解、输入整体偏移的不变性，以及 FP16/BF16 旁路的存储/计算舍入须分开。含 padding 时还要在原生通道上先中心化，再补零，具体机制与反例见 [CentriQ 的均值回注](../methods/centriq.md#2-中心化padding-与均值回注)。（§4.2、附录 B.1、C.5。）
+固定 Sylvester Hadamard 会把常量方向集中到一个坐标；移走该方向可以消除显式均值项，但剩余残差的峰值仍依赖旋转。精确算术下的分解、输入整体偏移的不变性，以及 FP16/BF16 旁路的存储/计算舍入须分开。含 padding 时还要在原生通道上先中心化，再补零，具体机制与反例见 [CentriQ 的均值回注](../methods/centriq.md#2.%20%E4%B8%AD%E5%BF%83%E5%8C%96%E3%80%81padding%20%E4%B8%8E%E5%9D%87%E5%80%BC%E5%9B%9E%E6%B3%A8)。（§4.2、附录 B.1、C.5。）
 
 ## 4. 离线旋转与在线旋转各处理哪里
 
@@ -117,9 +117,9 @@ QuaRot §4 Stage 1a 将全局残差坐标变换折叠到权重中。Stage 1b 则
 
 同一机制用在 KV cache 上会得出不同的结构选择：[SAW-INT4](../methods/saw-int4.md) 用块对角 Hadamard 且只旋转键，块大小必须整除 head 维，并把旋转融进解码内核；其消融显示同时旋转键与值几乎没有额外收益。KV 侧的完整整理见 [KV cache 量化的对象与粒度](kv-cache-quantization-objects-and-granularity.md)。
 
-同一理想Hadamard也不保证不同浮点执行顺序得到相同码。[SAW所选融合writer](../methods/saw-int4.md#42-写入先核舍入再核码与元数据)先在FP32中预缩放并作FWHT，旋转结果经BF16舍入后才取范围；邻接未融合支路先做BF16预缩放。所选GQA decode对Q采用配套FP32预缩放/FWHT后回BF16，并在每个非空split各自计算；旋转已融合，不表示每请求只计算一次。精确算术下的正交点积关系与这些舍入、量化和调度条件应分开核对。（`fused_hadamard_int4_kv.py:150–191`；`memory_pool.py:1161–1189`；`decode_attention.py:970–998`。）
+同一理想Hadamard也不保证不同浮点执行顺序得到相同码。[SAW所选融合writer](../methods/saw-int4.md#4.2%20%E5%86%99%E5%85%A5%EF%BC%9A%E5%85%88%E6%A0%B8%E8%88%8D%E5%85%A5%EF%BC%8C%E5%86%8D%E6%A0%B8%E7%A0%81%E4%B8%8E%E5%85%83%E6%95%B0%E6%8D%AE)先在FP32中预缩放并作FWHT，旋转结果经BF16舍入后才取范围；邻接未融合支路先做BF16预缩放。所选GQA decode对Q采用配套FP32预缩放/FWHT后回BF16，并在每个非空split各自计算；旋转已融合，不表示每请求只计算一次。精确算术下的正交点积关系与这些舍入、量化和调度条件应分开核对。（`fused_hadamard_int4_kv.py:150–191`；`memory_pool.py:1161–1189`；`decode_attention.py:970–998`。）
 
-同样的旋转坐标也可以在读取端还原。[SAW 所选 FA3 prefill](../methods/saw-int4.md#45-fa3-prefill从分页-int4-恢复到原-q-坐标)把量化 K 恢复为 FP32 行 $r$，在 FP32 内逆 Hadamard 后转 BF16，配原 Q；decode 则用旋转后的 Q 配旋转坐标内的 K。归一化对称 Hadamard 满足 $(QH)r^{\mathsf T}=Q(rH)^{\mathsf T}$，说明理想点积为何相同；恢复与逆旋转之间是否先舍入、Q 在何处舍入，则决定实际低精度路径。这里没有证明两个 attention 实现逐位相同。（`flatten_kv_cache.py:190–219`；`decode_attention.py:970–998,1047–1070`。）
+同样的旋转坐标也可以在读取端还原。[SAW 所选 FA3 prefill](../methods/saw-int4.md#4.5%20FA3%20prefill%EF%BC%9A%E4%BB%8E%E5%88%86%E9%A1%B5%20INT4%20%E6%81%A2%E5%A4%8D%E5%88%B0%E5%8E%9F%20Q%20%E5%9D%90%E6%A0%87)把量化 K 恢复为 FP32 行 $r$，在 FP32 内逆 Hadamard 后转 BF16，配原 Q；decode 则用旋转后的 Q 配旋转坐标内的 K。归一化对称 Hadamard 满足 $(QH)r^{\mathsf T}=Q(rH)^{\mathsf T}$，说明理想点积为何相同；恢复与逆旋转之间是否先舍入、Q 在何处舍入，则决定实际低精度路径。这里没有证明两个 attention 实现逐位相同。（`flatten_kv_cache.py:190–219`；`decode_attention.py:970–998,1047–1070`。）
 
 ### 4.1 先恢复浮点权重与保留量化坐标分别意味着什么
 
@@ -225,7 +225,7 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 
 其中固定系数满足 $a>b\ge0$，这个选择也使 $J$ 最小；最大保留能量等于最大的 $r$ 个特征值之和。$a=b$ 时代理不区分子空间，$a<b$ 时推荐方向反转。这是整理者对**指定能量代理**的推导，没有把动态范围、舍入、两侧权重量化或整网任务误差变成固定系数，也不修复ResQ定理4.2原证明中的错误范数等式。
 
-未中心化二阶能量与中心化方差还会选择不同方向。令 $X$ 三行为 $(10,1),(10,-1),(10,0)$，则 $X^\top X=\operatorname{diag}(300,2)$，高能量方向为第一维；减均值后Gram为 $\operatorname{diag}(0,2)$，最大方差方向为第二维。ResQ所选代码累计前者。统计量的语义与归约条件见[Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#gram二阶矩与协方差)，实际基底和投影消费见[实现页](../implementation/resq-basis-and-fake-quantization.md)。
+未中心化二阶能量与中心化方差还会选择不同方向。令 $X$ 三行为 $(10,1),(10,-1),(10,0)$，则 $X^\top X=\operatorname{diag}(300,2)$，高能量方向为第一维；减均值后Gram为 $\operatorname{diag}(0,2)$，最大方差方向为第二维。ResQ所选代码累计前者。统计量的语义与归约条件见[Gram、二阶矩与协方差](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#Gram%E3%80%81%E4%BA%8C%E9%98%B6%E7%9F%A9%E4%B8%8E%E5%8D%8F%E6%96%B9%E5%B7%AE)，实际基底和投影消费见[实现页](../implementation/resq-basis-and-fake-quantization.md)。
 
 最后，组内随机旋转保持能量不代表每个样本峰值都下降，也不使有限维数据严格高斯。选子空间、改善分布、实际量化误差与任务质量是需要分别核验的结论。（ResQ v2 §4.1–4.2、附录A；固定 `get_basis.py` 的 `full_shared` 分支。）
 

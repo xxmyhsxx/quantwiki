@@ -40,7 +40,7 @@ updated: 2026-10-07
 
 DeepSeek Sparse Attention（DSA）在 MLA 之外增加一个 indexer：先用较小的查询与独立历史 key 选择 token，再让主 MLA attention 读取这些 token 的联合 latent/RoPE 状态。`fp8_ds_mla` 则规定主缓存的混合精度字段与内嵌 scale。**缓存量化决定每条记录怎样表示，DSA 决定当前 query 选择哪些记录；两者共同约束读取接口。** top-k 没有把未选历史从缓存中删除。
 
-本页接续 [MLA 的联合潜变量与投影吸收](../fundamentals/model/multi-head-latent-attention.md)和[普通 MLA 的单设备执行](mla-cache-and-attention-execution.md#15-vllm同一缓存对象独立选择-decode-与-prefill-实现)，解释普通连续 FP8 行不能承接的字段、scale 和索引边界。[普通 MLA DCP](vllm-mla-context-parallel-execution.md)的跨 rank 分片与归约属于另一项范围。
+本页接续 [MLA 的联合潜变量与投影吸收](../fundamentals/model/multi-head-latent-attention.md)和[普通 MLA 的单设备执行](mla-cache-and-attention-execution.md#15.%20vLLM%EF%BC%9A%E5%90%8C%E4%B8%80%E7%BC%93%E5%AD%98%E5%AF%B9%E8%B1%A1%EF%BC%8C%E7%8B%AC%E7%AB%8B%E9%80%89%E6%8B%A9%20decode%20%E4%B8%8E%20prefill%20%E5%AE%9E%E7%8E%B0)，解释普通连续 FP8 行不能承接的字段、scale 和索引边界。[普通 MLA DCP](vllm-mla-context-parallel-execution.md)的跨 rank 分片与归约属于另一项范围。
 
 ## 1. 固定版本、入口与所选条件
 
@@ -64,7 +64,7 @@ DeepSeek Sparse Attention（DSA）在 MLA 之外增加一个 indexer：先用较
 | 共享 top-k buffer | `int32` $[T_{\max},S]$ | 本层当前 query 选择的请求内逻辑 token 位置 |
 | 主 attention 中间输出 | $[T,H,512]$ | latent 加权和，随后经 $U_V$ 与输出投影 |
 
-主 latent 的 norm、位置 RoPE 与投影吸收见[普通 MLA 执行](mla-cache-and-attention-execution.md#16-vllm-的投影与吸收位置)。Indexer 的 key 则由另一套模型投影与 `LayerNorm` 生成，不是从主 latent 的 512 个 FP8 字节取出前 128 个。Index head 数 $I$ 与主 attention head 数 $H$ 也不是同一轴。（`deepseek_v2.py::Indexer/DeepseekV32IndexerCache`、`layers/mla.py::MultiHeadLatentAttentionWrapper`。）
+主 latent 的 norm、位置 RoPE 与投影吸收见[普通 MLA 执行](mla-cache-and-attention-execution.md#16.%20vLLM%20%E7%9A%84%E6%8A%95%E5%BD%B1%E4%B8%8E%E5%90%B8%E6%94%B6%E4%BD%8D%E7%BD%AE)。Indexer 的 key 则由另一套模型投影与 `LayerNorm` 生成，不是从主 latent 的 512 个 FP8 字节取出前 128 个。Index head 数 $I$ 与主 attention head 数 $H$ 也不是同一轴。（`deepseek_v2.py::Indexer/DeepseekV32IndexerCache`、`layers/mla.py::MultiHeadLatentAttentionWrapper`。）
 
 ## 3. `fp8_ds_mla` 的 656-byte 主记录
 
@@ -76,7 +76,7 @@ DeepSeek Sparse Attention（DSA）在 MLA 之外增加一个 indexer：先用较
 | $[512,528)$ | 4 个 FP32 scale | 第 $g$ 项恢复 latent 第 $128g$ 到 $128g+127$ 维 |
 | $[528,656)$ | 64 个 BF16 RoPE 值 | 保留 16-bit 位置分支，不进行 FP8 编码 |
 
-因此 $656=512+4\times4+64\times2$。它与[普通联合 FP8](mla-cache-and-attention-execution.md#172-普通-fp8-的一个-scale-同时作用于-latent-和位置-key)的差别不只在 scale 粒度：普通格式将全部 576 个元素编码为 FP8，并使用 layer 的外部 scalar scale；packed 格式保留 BF16 位置分支，把动态分组 scale 放在记录内。（`flashmla_sparse.py` 的 V3.2 格式说明、`cache_kernels.cu::concat_and_cache_ds_mla_kernel`。）
+因此 $656=512+4\times4+64\times2$。它与[普通联合 FP8](mla-cache-and-attention-execution.md#17.2%20%E6%99%AE%E9%80%9A%20FP8%20%E7%9A%84%E4%B8%80%E4%B8%AA%20scale%20%E5%90%8C%E6%97%B6%E4%BD%9C%E7%94%A8%E4%BA%8E%20latent%20%E5%92%8C%E4%BD%8D%E7%BD%AE%20key)的差别不只在 scale 粒度：普通格式将全部 576 个元素编码为 FP8，并使用 layer 的外部 scalar scale；packed 格式保留 BF16 位置分支，把动态分组 scale 放在记录内。（`flashmla_sparse.py` 的 V3.2 格式说明、`cache_kernels.cu::concat_and_cache_ds_mla_kernel`。）
 
 同一源码还用 `fp8_ds_mla` 名称表示 DeepSeek V4 的 584-byte 格式，其内容宽度、scale 编码和字段位置不同。本页限定 V3.2，不能将 dtype 名称当作跨模型通用的字节契约。（`kv_cache_interface.py::MLAAttentionSpec.real_page_size_bytes`。）
 
@@ -151,13 +151,13 @@ Indexer 输出的 $j$ 是请求内逻辑 token 位置。`req_id_per_token` 将�
 
 $$\mathrm{slot}(i,j)=\mathrm{block\_table}_c[i,\lfloor j/P\rfloor]P+(j\bmod P).$$
 
-例如 $P=64$、某请求主 block table 为 `[7,2]`，逻辑位置 65 映射为 $2\times64+1=129$；若 indexer page 编号不同，这不改变所选逻辑 token 的身份。Slot 还需结合主缓存的 656-byte entry stride 才能得到字节地址。这与[runner 的新 token slot mapping](vllm-inference-execution.md#5-从请求列表变成紧凑张量)是同一分页关系的不同使用时点。
+例如 $P=64$、某请求主 block table 为 `[7,2]`，逻辑位置 65 映射为 $2\times64+1=129$；若 indexer page 编号不同，这不改变所选逻辑 token 的身份。Slot 还需结合主缓存的 656-byte entry stride 才能得到字节地址。这与[runner 的新 token slot mapping](vllm-inference-execution.md#5.%20%E4%BB%8E%E8%AF%B7%E6%B1%82%E5%88%97%E8%A1%A8%E5%8F%98%E6%88%90%E7%B4%A7%E5%87%91%E5%BC%A0%E9%87%8F)是同一分页关系的不同使用时点。
 
 `triton_convert_req_index_to_global_index` 对负索引或 block-table 列越界输出 `-1`。Prefill 使用恢复后的 workspace 时，索引变成
 
 $$\mathrm{workspace\_row}(i,j)=\mathrm{workspace\_start}_i+j.$$
 
-这一变换同时可统计每 query 的有效 `topk_length`，但所选 wrapper 保持原列位置，不把它称为排序或压缩到前缀。转换函数不按请求真实 `seq_len` 或每 query 的因果位置再检查 $j$；有效历史和因果范围来自前一阶段的 metadata/top-k。所选合法单设备 top-k 的有效项为连续前缀，因此这个数量符合匹配 FlashMLA prefill 的前缀长度契约；任意内部空洞或 DCP owner 过滤则不能作同样推断，具体条件见[设备读取](dsa-sparse-device-execution.md#51-接口与-invalid-indices)。DCP owner 过滤与另一种 compact wrapper 不在本页单设备主线。（`sparse_utils.py::_convert_req_index_to_global_index_kernel/triton_convert_req_index_to_global_index`。）
+这一变换同时可统计每 query 的有效 `topk_length`，但所选 wrapper 保持原列位置，不把它称为排序或压缩到前缀。转换函数不按请求真实 `seq_len` 或每 query 的因果位置再检查 $j$；有效历史和因果范围来自前一阶段的 metadata/top-k。所选合法单设备 top-k 的有效项为连续前缀，因此这个数量符合匹配 FlashMLA prefill 的前缀长度契约；任意内部空洞或 DCP owner 过滤则不能作同样推断，具体条件见[设备读取](dsa-sparse-device-execution.md#5.1%20%E6%8E%A5%E5%8F%A3%E4%B8%8E%20invalid%20indices)。DCP owner 过滤与另一种 compact wrapper 不在本页单设备主线。（`sparse_utils.py::_convert_req_index_to_global_index_kernel/triton_convert_req_index_to_global_index`。）
 
 ## 7. 主 attention：packed decode 与 BF16 sparse prefill
 
@@ -175,7 +175,7 @@ $$\mathrm{workspace\_row}(i,j)=\mathrm{workspace\_start}_i+j.$$
 
 这里真实的请求内索引已经提前转换；不能把 dummy block table 当成请求的真实历史页表，也不能把其最大长度 buffer 当作每 query 的因果长度。稀疏集合的合法性由前面的选择链承接。CUDA 调用的返回 latent 输出再由 `_v_up_proj` 恢复 value 宽度，随后进入模型输出投影；cache FP8 不表示 query、投影或模型输出全部是 FP8。（`flashmla_sparse.py::_forward_fp8_kv_separate_prefill_decode/_fp8_flash_mla_kernel`、`mla_attention.py::forward_impl/_v_up_proj`。）
 
-Decode helper 为设备接口将 head 数补至 64 或 128，必要时零填 query 并截回实际 heads；所选 $H=128$ 无此 padding。返回 LSE 在这一单设备调用中没有作为跨 rank 合并状态返回，`forward_mqa` 返回 `(attn_out,None)`，不能将它接成[普通 DCP 的 O/LSE 归约](vllm-mla-context-parallel-execution.md#6-跨-rank-合并需要恢复同一个-softmax-分母)。
+Decode helper 为设备接口将 head 数补至 64 或 128，必要时零填 query 并截回实际 heads；所选 $H=128$ 无此 padding。返回 LSE 在这一单设备调用中没有作为跨 rank 合并状态返回，`forward_mqa` 返回 `(attn_out,None)`，不能将它接成[普通 DCP 的 O/LSE 归约](vllm-mla-context-parallel-execution.md#6.%20%E8%B7%A8%20rank%20%E5%90%88%E5%B9%B6%E9%9C%80%E8%A6%81%E6%81%A2%E5%A4%8D%E5%90%8C%E4%B8%80%E4%B8%AA%20softmax%20%E5%88%86%E6%AF%8D)。
 
 ### 7.2 Prefill 恢复联合 latent/RoPE，仍按 top-k 读取
 
@@ -193,7 +193,7 @@ $$\widehat c_{j,a}=\operatorname{BF16}\left(s_{j,\lfloor a/128\rfloor}\operatorn
 
 `MLAAttention.forward_impl` 在 sparse backend 上仍检查：存在 prefill backend、`prefill_max_seq_len<=topk_tokens` 且 `sparse_mla_force_mqa=False` 时，metadata prefill 组可以进入共享的 `forward_mha`；否则把该组行也归入 `forward_mqa`。因此 DSA backend 名称不能证明所有 prefill 都实际执行 top-k sparse kernel。
 
-Dense MHA 的历史读取也针对 packed dtype 分流到 `cp_gather_and_upconvert_fp8_kv_cache`，然后才经 `kv_b_proj` 展开 K/V。`gather_and_maybe_dequant_cache` 的普通连续 320/576 元素与外部 scalar scale 契约不能替代专用恢复。这条接续解释已有[普通 prefix prefill](mla-cache-and-attention-execution.md#19-vllm-prefill展开新-token再分块恢复历史)在缓存格式上的必要变化；本页主线显式强制 MQA，未将 dense 与 sparse 两种结果做运行对比。（`mla_attention.py::forward_impl/MLACommonBaseImpl._compute_prefill_context`。）
+Dense MHA 的历史读取也针对 packed dtype 分流到 `cp_gather_and_upconvert_fp8_kv_cache`，然后才经 `kv_b_proj` 展开 K/V。`gather_and_maybe_dequant_cache` 的普通连续 320/576 元素与外部 scalar scale 契约不能替代专用恢复。这条接续解释已有[普通 prefix prefill](mla-cache-and-attention-execution.md#19.%20vLLM%20prefill%EF%BC%9A%E5%B1%95%E5%BC%80%E6%96%B0%20token%EF%BC%8C%E5%86%8D%E5%88%86%E5%9D%97%E6%81%A2%E5%A4%8D%E5%8E%86%E5%8F%B2)在缓存格式上的必要变化；本页主线显式强制 MQA，未将 dense 与 sparse 两种结果做运行对比。（`mla_attention.py::forward_impl/MLACommonBaseImpl._compute_prefill_context`。）
 
 ## 8. 存储、选择与误差要分别记账
 

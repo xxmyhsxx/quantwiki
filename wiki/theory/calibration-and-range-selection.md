@@ -120,7 +120,7 @@ $$
 
 ### 免校准仍可使用当前 token 的统计
 
-[CentriQ](../methods/centriq.md#3-免校准不等于没有在线统计) v1 §4.2 提供一个不同于固定 BN 统计的例子：先移除当前 token 的均值并旋转，再用其绝对值的0.9995分位数除以半正态分位数，估计散布；固定高斯4位裁剪常数与位宽共同确定动态步长。它没有先用 prompt 数据拟合逐模型参数，但每个 token 仍需在线统计。
+[CentriQ](../methods/centriq.md#3.%20%E5%85%8D%E6%A0%A1%E5%87%86%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%B2%A1%E6%9C%89%E5%9C%A8%E7%BA%BF%E7%BB%9F%E8%AE%A1) v1 §4.2 提供一个不同于固定 BN 统计的例子：先移除当前 token 的均值并旋转，再用其绝对值的0.9995分位数除以半正态分位数，估计散布；固定高斯4位裁剪常数与位宽共同确定动态步长。它没有先用 prompt 数据拟合逐模型参数，但每个 token 仍需在线统计。
 
 这里需要分开三件事：中心化消除均值项是代数关系；半正态换算与高斯裁剪常数是分布模型；下游生成质量是实验结果。固定常数不保证所有真实分布或位宽最优，确定性 Hadamard 也不保证激活成为独立高斯。作者用独立开发集选择设计，因而“免校准”不能改写为“整个方法开发不接触数据”。主表对照、组件消融和低位宽模拟边界见方法页。（附录 A、B.3，表2–3。）
 
@@ -164,7 +164,7 @@ $$
 
 PV-Tuning 报告这项预处理改变在部分模型上改善至多约0.15 PPL，并在比较内匹配预处理；其 §4.1 的表示实验仍保留旧方式用于对齐基线。归因算法效果时，应核每项实验的具体取样方式，不能把数据版本一致当作协议完全一致。
 
-沿[已归档AQLM PV入口](../implementation/aqlm-pv-training-and-code-updates.md#7-训练数据与-kl-的实际接口)还能看到“拼接分块”的具体范围：`prepare_training_dataset` 调用 batched map，`group_texts` 在每次收到的批次内拼接，丢弃该批次不足一个完整块的尾部。若两个map批次各有6个token、块长4，则共保留8个；全局12个token一次分块则可保留12个。这个整理者算例说明批次边界会影响有效样本量。函数本身不再插入EOS；外部已分词数据又会绕过这套预处理，不能仅凭数据集名称断言token覆盖和边界完全相同。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`finetune.py`、`datautils.py`。）
+沿[已归档AQLM PV入口](../implementation/aqlm-pv-training-and-code-updates.md#7.%20%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E4%B8%8E%20KL%20%E7%9A%84%E5%AE%9E%E9%99%85%E6%8E%A5%E5%8F%A3)还能看到“拼接分块”的具体范围：`prepare_training_dataset` 调用 batched map，`group_texts` 在每次收到的批次内拼接，丢弃该批次不足一个完整块的尾部。若两个map批次各有6个token、块长4，则共保留8个；全局12个token一次分块则可保留12个。这个整理者算例说明批次边界会影响有效样本量。函数本身不再插入EOS；外部已分词数据又会绕过这套预处理，不能仅凭数据集名称断言token覆盖和边界完全相同。（AQLM commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`，`finetune.py`、`datautils.py`。）
 
 ### 5.2 生成数据仍有种子先验
 
@@ -234,7 +234,7 @@ SpinQuant 表 11 在所测模型中，128 与 800 样本的 PPL 都约 6.2，100
 
 ## 10. 极低位宽为什么更依赖尺度选择
 
-*Scale Sensitivity* v1 从固定网格的最近舍入（RTN）分析尺度，再用 GPTQ 实验检查趋势能否迁移。它补充的是第 2 节“舍入与裁剪如何权衡”的定量解释，不是所有 GPTQ 配置的最优尺度定理。这里的尺度 $s$ 是量化步长，和[重构损失尺度](layer-reconstruction-second-order-compensation.md#11-重构损失的尺度怎样影响优化)所说的跨阶段损失量级是不同概念。
+*Scale Sensitivity* v1 从固定网格的最近舍入（RTN）分析尺度，再用 GPTQ 实验检查趋势能否迁移。它补充的是第 2 节“舍入与裁剪如何权衡”的定量解释，不是所有 GPTQ 配置的最优尺度定理。这里的尺度 $s$ 是量化步长，和[重构损失尺度](layer-reconstruction-second-order-compensation.md#11.%20%E9%87%8D%E6%9E%84%E6%8D%9F%E5%A4%B1%E7%9A%84%E5%B0%BA%E5%BA%A6%E6%80%8E%E6%A0%B7%E5%BD%B1%E5%93%8D%E4%BC%98%E5%8C%96)所说的跨阶段损失量级是不同概念。
 
 ### 先核对网格，才能使用最优尺度
 
@@ -255,7 +255,7 @@ $$
 {\operatorname{tr}G},\qquad \operatorname{tr}G>0.
 $$
 
-按 trace 归一化去掉输入整体幅度；$G=I$ 时退化为权重逐坐标 MSE。这仍保留输入的方向权重，不是在一般情况下把 $G$ 丢掉。GPTQ 会沿量化顺序改变尚未量化的权重，所以补偿后的误差曲线一般不同；相关补偿见[层输出重构](layer-reconstruction-second-order-compensation.md#3-固定一个权重后为什么其他权重可以补偿)。
+按 trace 归一化去掉输入整体幅度；$G=I$ 时退化为权重逐坐标 MSE。这仍保留输入的方向权重，不是在一般情况下把 $G$ 丢掉。GPTQ 会沿量化顺序改变尚未量化的权重，所以补偿后的误差曲线一般不同；相关补偿见[层输出重构](layer-reconstruction-second-order-compensation.md#3.%20%E5%9B%BA%E5%AE%9A%E4%B8%80%E4%B8%AA%E6%9D%83%E9%87%8D%E5%90%8E%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E5%85%B6%E4%BB%96%E6%9D%83%E9%87%8D%E5%8F%AF%E4%BB%A5%E8%A1%A5%E5%81%BF)。
 
 ### 高斯极限的结论及前提
 

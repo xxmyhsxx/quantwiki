@@ -15,7 +15,7 @@ updated: 2026-10-11
 
 QUASAR 改变 QAT 每次前向中的“潜在浮点权重 → 离散码 → 恢复权重”映射。它保持原来的 STE 反向和训练目标，但在少量裁剪候选中寻找编码，再按在线敏感度拟合恢复尺度与偏移。核心区别是编码范围不必等于最终恢复范围，且随着潜在权重变化持续重做重构；不是只在训练前执行一次更好的 PTQ。
 
-本页依据 `arXiv:2608.13966v1` 的正文、算法1、理论与必要附录 A–D。已核读主要公式、证明链及格式/实验条件，未取得匹配作者实现，未运行训练、模型或 GPU。理解其增量可沿[代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)、[曲率代理](../theory/curvature-weighted-quantization-error.md)、[编码与恢复参数](../theory/calibration-and-range-selection.md#21-选码范围和恢复参数可以分开优化)阅读。
+本页依据 `arXiv:2608.13966v1` 的正文、算法1、理论与必要附录 A–D。已核读主要公式、证明链及格式/实验条件，未取得匹配作者实现，未运行训练、模型或 GPU。理解其增量可沿[代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)、[曲率代理](../theory/curvature-weighted-quantization-error.md)、[编码与恢复参数](../theory/calibration-and-range-selection.md#2.1%20%E9%80%89%E7%A0%81%E8%8C%83%E5%9B%B4%E5%92%8C%E6%81%A2%E5%A4%8D%E5%8F%82%E6%95%B0%E5%8F%AF%E4%BB%A5%E5%88%86%E5%BC%80%E4%BC%98%E5%8C%96)阅读。
 
 ## 1. 前向和更新位于不同权重点
 
@@ -27,7 +27,7 @@ $$e_t=\nabla\mathcal L(r_t)-\nabla\mathcal L(w_t),\qquad \Delta_t=r_t-w_t.$$
 
 $$\widehat S_t(r)=\sum_i h_{t,i}(r_i-w_{t,i})^2,$$
 
-其中 $h$ 来自平方梯度的指数移动平均，AdamW 下复用二阶状态 $v$，SGD 对照则另外维护。它是实用敏感度代理，不是精确任务 Hessian；mini-batch 聚合梯度的平方与逐样本 Fisher 也不是一般恒等式，见[统计对象](../theory/curvature-weighted-quantization-error.md#1-任务-hessian模型-fisher-与经验梯度外积)。
+其中 $h$ 来自平方梯度的指数移动平均，AdamW 下复用二阶状态 $v$，SGD 对照则另外维护。它是实用敏感度代理，不是精确任务 Hessian；mini-batch 聚合梯度的平方与逐样本 Fisher 也不是一般恒等式，见[统计对象](../theory/curvature-weighted-quantization-error.md#1.%20%E4%BB%BB%E5%8A%A1%20Hessian%E3%80%81%E6%A8%A1%E5%9E%8B%20Fisher%20%E4%B8%8E%E7%BB%8F%E9%AA%8C%E6%A2%AF%E5%BA%A6%E5%A4%96%E7%A7%AF)。
 
 ## 2. 每组、每步如何选择恢复权重
 
@@ -35,7 +35,7 @@ $$\widehat S_t(r)=\sum_i h_{t,i}(r_i-w_{t,i})^2,$$
 
 1. 由当前权重极值计算中心 $c=(\min w+\max w)/2$ 与半宽 $\rho=(\max w-\min w)/2$。
 2. 遍历范围因子 $f\in\mathcal F$，在 $[c-f\rho,c+f\rho]$ 上舍入、裁剪得到合法整数 $q_f\in\{0,\ldots,2^b-1\}^g$。主实验 $f=0.30,0.35,\ldots,1.00$，共15个候选。
-3. **固定这些码**，最小化 $\sum_i h_i(sq_{f,i}+o-w_i)^2$，按[加权仿射拟合](../theory/calibration-and-range-selection.md#21-选码范围和恢复参数可以分开优化)取得 $s_f,o_f$。
+3. **固定这些码**，最小化 $\sum_i h_i(sq_{f,i}+o-w_i)^2$，按[加权仿射拟合](../theory/calibration-and-range-selection.md#2.1%20%E9%80%89%E7%A0%81%E8%8C%83%E5%9B%B4%E5%92%8C%E6%81%A2%E5%A4%8D%E5%8F%82%E6%95%B0%E5%8F%AF%E4%BB%A5%E5%88%86%E5%BC%80%E4%BC%98%E5%8C%96)取得 $s_f,o_f$。
 4. 用拟合后的恢复值计算 $\widehat S_t(f)$，选择最小者；前向执行 $r=s_{f^\star}q_{f^\star}+o_{f^\star}$。
 5. 原训练目标反传，通过同一 STE 更新潜在权重，后续前向重算候选与拟合。
 
@@ -49,7 +49,7 @@ $$\widehat S_t(r)=\sum_i h_{t,i}(r_i-w_{t,i})^2,$$
 
 $$\left\|\nabla^2\mathcal L(w_t+u\Delta_t)\Delta_t\right\|^2\le C\widehat S_t.$$
 
-梯度差的线段积分与 Jensen 不等式于是给出 $\|e_t\|^2\le C\widehat S_t$，具体推导见[公共代理梯度页](../fundamentals/quantization/post-training-and-quantization-aware-training.md#34-重构误差怎样进入-ste-更新的条件界)。Adam 的二阶状态本身不保证此条件；若所有敏感度有一致正下界 $h_{\min}$，可取 $C=L^2/h_{\min}$，但源算法未证明该下界始终成立。
+梯度差的线段积分与 Jensen 不等式于是给出 $\|e_t\|^2\le C\widehat S_t$，具体推导见[公共代理梯度页](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.4%20%E9%87%8D%E6%9E%84%E8%AF%AF%E5%B7%AE%E6%80%8E%E6%A0%B7%E8%BF%9B%E5%85%A5%20STE%20%E6%9B%B4%E6%96%B0%E7%9A%84%E6%9D%A1%E4%BB%B6%E7%95%8C)。Adam 的二阶状态本身不保证此条件；若所有敏感度有一致正下界 $h_{\min}$，可取 $C=L^2/h_{\min}$，但源算法未证明该下界始终成立。
 
 当 $0<\eta<1/[L(1+M)]$，定理的联合驻点界为
 

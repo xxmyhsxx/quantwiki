@@ -64,7 +64,7 @@ $$h=\operatorname{sign}(Sr),\quad\gamma=\|r\|_2,\qquad
 
 $$\widehat p(y,x)=y^T\widehat x_0+\frac{\sqrt{\pi/2}}d\gamma(Sy)^Th.$$
 
-条件于第一阶段结果，$r$ 已固定，独立 QJL 的期望恰为 $y^Tr$，所以 $E[\widehat p\mid\widehat x_0]=y^Tx$。它不依赖第一阶段已经无偏；$r=0$ 时修正项为零。由 [QJL 的精确方差](qjl.md#2-为什么不恢复-key-仍能估计内积)，
+条件于第一阶段结果，$r$ 已固定，独立 QJL 的期望恰为 $y^Tr$，所以 $E[\widehat p\mid\widehat x_0]=y^Tx$。它不依赖第一阶段已经无偏；$r=0$ 时修正项为零。由 [QJL 的精确方差](qjl.md#2.%20%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%81%A2%E5%A4%8D%20Key%20%E4%BB%8D%E8%83%BD%E4%BC%B0%E8%AE%A1%E5%86%85%E7%A7%AF)，
 
 $$\operatorname{Var}(\widehat p\mid r)=\frac{(\pi/2)\|y\|_2^2\|r\|_2^2-(y^Tr)^2}{d},$$
 

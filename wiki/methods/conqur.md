@@ -118,7 +118,7 @@ ConQuR 沿用残差与注意力中的计算等价结构。下表对应图 1、�
 
 - [SpinQuant](spinquant.md) 用整网语言模型交叉熵训练正交旋转；ConQuR 用单位激活的顶点距离，通过闭式子问题更新。目标、求解方式与校准成本同时不同。
 - [FlatQuant](flatquant.md) 允许一般可逆变换，以 block 输出重构学习；ConQuR 保留正交与可融合约束，未学习任意拉伸。
-- [尺度敏感性](../theory/calibration-and-range-selection.md#10-极低位宽为什么更依赖尺度选择) 分析给定分布下网格步长怎么选；ConQuR 改变分布坐标，两者不能互相替代。
+- [尺度敏感性](../theory/calibration-and-range-selection.md#10.%20%E6%9E%81%E4%BD%8E%E4%BD%8D%E5%AE%BD%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9B%B4%E4%BE%9D%E8%B5%96%E5%B0%BA%E5%BA%A6%E9%80%89%E6%8B%A9) 分析给定分布下网格步长怎么选；ConQuR 改变分布坐标，两者不能互相替代。
 
 实用判断是先确定量化位置与可融合结构，再看该几何目标能否改善指定量化器和任务；论文的校准成本及代表质量结果可作证据，不能代替目标后端上的运行测量。
 

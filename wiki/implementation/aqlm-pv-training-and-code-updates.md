@@ -119,7 +119,7 @@ $$
 
 整理者算例：三个互不重叠组的变化范数依次为0.03、0.04、0.10，前缀范数为0.03、0.05、约0.1118；阈值0.08时，前两个已满足限制，代码仍保留第三个，使结果超过阈值。因此越界不只限于“至少让第一个组变化”的情形。若阈值超过所有前缀，切片自然保留全部；等于某前缀时则保留到该前缀。
 
-这解释了本快照与论文附录 K 回滚描述的差别。本页记录静态行为和独立算例，不修改上游，也不把它扩写为所有模型一定不稳定。要限制**整步**权重变化，还须核对连续参数与选码两部分，见[公共训练页的分阶段变化](../fundamentals/quantization/post-training-and-quantization-aware-training.md#32-减少更新坐标为什么可能允许更大步长)。
+这解释了本快照与论文附录 K 回滚描述的差别。本页记录静态行为和独立算例，不修改上游，也不把它扩写为所有模型一定不稳定。要限制**整步**权重变化，还须核对连续参数与选码两部分，见[公共训练页的分阶段变化](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.2%20%E5%87%8F%E5%B0%91%E6%9B%B4%E6%96%B0%E5%9D%90%E6%A0%87%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E5%85%81%E8%AE%B8%E6%9B%B4%E5%A4%A7%E6%AD%A5%E9%95%BF)。
 
 ## 6. FSDP、缓冲与保存接口
 
@@ -127,7 +127,7 @@ FSDP 分片学生的稠密参数；量化表示则由 `split_quantized_weights_b
 
 有STE缓冲时，owner持完整目标与聚合梯度。`delta_decay=1` 的多rank分支则不同：只有owner把自己的反量化参数片段加入该类优化器组，非STE分支没有把聚合梯度装成完整可优化目标，而后再聚合参数片段。静态读取不足以声称它与完整矩阵的单rank更新等价。本页不把单rank直接更新的解释自动扩写成全部多rank组合已验证。
 
-训练快照保存学生的rank-local state、优化器状态和metadata；优化器额外保存量化对象与STE缓冲。`save_pv_model` 则按名字导出量化对象，rank0另存未量化参数，并排除对应的稠密恢复权重。这两类产物分别服务继续训练与后续格式转换，不是同一个部署包；[条件转换接口](aqlm-calibration-export-and-inference.md#4-保存格式pv-转换与导出条件)说明 legacy 入口的分支与元数据要求，未验证跨world size恢复或转换后推理。
+训练快照保存学生的rank-local state、优化器状态和metadata；优化器额外保存量化对象与STE缓冲。`save_pv_model` 则按名字导出量化对象，rank0另存未量化参数，并排除对应的稠密恢复权重。这两类产物分别服务继续训练与后续格式转换，不是同一个部署包；[条件转换接口](aqlm-calibration-export-and-inference.md#4.%20%E4%BF%9D%E5%AD%98%E6%A0%BC%E5%BC%8F%E3%80%81PV%20%E8%BD%AC%E6%8D%A2%E4%B8%8E%E5%AF%BC%E5%87%BA%E6%9D%A1%E4%BB%B6)说明 legacy 入口的分支与元数据要求，未验证跨world size恢复或转换后推理。
 
 ## 7. 训练数据与 KL 的实际接口
 
@@ -166,4 +166,4 @@ README 示例显式开启三类参数训练、LAMB和debias；三个训练开关
 - Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；本页各节列出文件与函数，仓库根入口和 `src/finetune.py` 的原始逐块微调不是同一条流程。
 - PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression（`https://arxiv.org/abs/2405.14852v2`），arXiv:2405.14852v2；理论、论文配置和作者报告由[方法页](../methods/pv-tuning.md)承接。
 - [AQLM](../methods/aqlm.md)：加性表示、原始激活感知联合编码及质量/推理证据。
-- [校准采样分布](../theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布)：分词、map批次与尾部规则怎样改变实际数据覆盖。
+- [校准采样分布](../theory/calibration-and-range-selection.md#5.1%20%E5%90%8C%E4%B8%80%E8%AF%AD%E6%96%99%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%90%8C%E4%B8%80%E9%87%87%E6%A0%B7%E5%88%86%E5%B8%83)：分词、map批次与尾部规则怎样改变实际数据覆盖。

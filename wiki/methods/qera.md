@@ -35,7 +35,7 @@ J_X(C)=\mathbb E_x\|x(E-C)\|_2^2.$$
 
 普通截断 SVD 最小化 $J_W$，把各输入方向同等对待；QERA 最小化 $J_X$，关心误差怎样被实际输入激发。它与 [层输出重构](../theory/layer-reconstruction-second-order-compensation.md) 使用相同类型的输入相关度量，但优化变量不同：GPTQ 选择量化权重并补偿尚未确定的权重，QERA 在固定主体之外保留低秩旁路。
 
-已有 [激活加权低秩近似](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6-激活加权的低秩近似) 给出教学反例：$E=\operatorname{diag}(2,1)$，输入加权因子为 $\operatorname{diag}(0.1,10)$，秩为 1。按权重大小保留第一方向时，输出残差平方为 100；按输入加权保留第二方向时为 0.04。低秩预算应保护输出中重要的方向，不必保护最大的权重残差。
+已有 [激活加权低秩近似](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6.%20%E6%BF%80%E6%B4%BB%E5%8A%A0%E6%9D%83%E7%9A%84%E4%BD%8E%E7%A7%A9%E8%BF%91%E4%BC%BC) 给出教学反例：$E=\operatorname{diag}(2,1)$，输入加权因子为 $\operatorname{diag}(0.1,10)$，秩为 1。按权重大小保留第一方向时，输出残差平方为 100；按输入加权保留第二方向时为 0.04。低秩预算应保护输出中重要的方向，不必保护最大的权重残差。
 
 ## 2. Exact：把输出目标转成可解的截断 SVD
 
@@ -154,13 +154,13 @@ exact 需要完整二阶矩、矩阵平方根和加权 SVD；approx 只需逐通
 
 附录 A.8 建议将 approx 用于 QPEFT，把节省的初始化时间用于增加秩或训练步数。表 8 的 LLaMA-2-7B／SlimPajama：exact 秩 16、2 epochs 总计 6.8 h、PPL 6.31；approx 秩 64、2 epochs 为 2.6 h、PPL 6.18；approx 秩 16、4 epochs 为 4.5 h、PPL 6.21。A.4.1 报告 QPEFT 平台为四张 A100 80GB、AMD EPYC 64 核 CPU 和 1024GB RAM，矩阵平方根在 CPU 执行。这组比较同时改变了秩或训练量，支持的是作者平台上的总预算分配取舍，不能解释为同配置初始化的纯消融或其他设备的固定时间比。
 
-在相同形状、秩、dtype 和后端下，exact 与 approx 都可部署成 $x\widetilde W+(xA)B$，没有运行时重新估计二阶矩或求平方根的需要。但相对于只有主体的路径，两者都增加 $k(m+n)$ 个因子元素和两次低秩乘法。详细记账见 [低秩辅助分支](../implementation/quantized-matmul-scaling-execution.md#12-低秩辅助分支不是免费或统一位宽)。不能把“exact 不比 approx 多一条推理分支”改写成“低秩补偿免费”。
+在相同形状、秩、dtype 和后端下，exact 与 approx 都可部署成 $x\widetilde W+(xA)B$，没有运行时重新估计二阶矩或求平方根的需要。但相对于只有主体的路径，两者都增加 $k(m+n)$ 个因子元素和两次低秩乘法。详细记账见 [低秩辅助分支](../implementation/quantized-matmul-scaling-execution.md#12.%20%E4%BD%8E%E7%A7%A9%E8%BE%85%E5%8A%A9%E5%88%86%E6%94%AF%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E6%88%96%E7%BB%9F%E4%B8%80%E4%BD%8D%E5%AE%BD)。不能把“exact 不比 approx 多一条推理分支”改写成“低秩补偿免费”。
 
 ## 8. 适用边界与继续使用
 
 QERA 适合回答“固定这一份量化主体后，怎样用有限秩恢复参考线性层输出”。它的主要增量是目标与解析解，而非新的量化编码格式。复用时应分别核对：统计是否来自目标分布、非对角二阶矩是否重要、逆是否稳定、因子是否仍保持所需精度、低秩预算是否值得其实际成本。
 
-P 图 3 的样本量曲线是特定实验中的观察，不能证明增加数据必然使任务质量单调提高；附录 A.6 将 SST2 校准后的训练异常归因于 padding 时，正文用的是假设，不能写成已隔离验证的因果结论。相关数据条件见 [校准统计与任务目标](../theory/calibration-and-range-selection.md#8-校准统计稳定不等于任务目标一致)。
+P 图 3 的样本量曲线是特定实验中的观察，不能证明增加数据必然使任务质量单调提高；附录 A.6 将 SST2 校准后的训练异常归因于 padding 时，正文用的是假设，不能写成已隔离验证的因果结论。相关数据条件见 [校准统计与任务目标](../theory/calibration-and-range-selection.md#8.%20%E6%A0%A1%E5%87%86%E7%BB%9F%E8%AE%A1%E7%A8%B3%E5%AE%9A%EF%BC%8C%E4%B8%8D%E7%AD%89%E4%BA%8E%E4%BB%BB%E5%8A%A1%E7%9B%AE%E6%A0%87%E4%B8%80%E8%87%B4)。
 
 本轮没有验证具体 checkpoint 的量化模块范围、官方代码的输入统计与分解路径、适配器缩放或低比特 Kernel；没有模型微调、PTQ 精度或端到端速度复现。也没有证明该定理直接覆盖激活／KV 量化，或低精度因子联合优化。所用原文分歧及未确认配置不影响固定 $R$、$E$、秩预算下的主推导，但限制了对应实验的复现与外推。
 
