@@ -24,7 +24,7 @@ sources:
 paper_version: arXiv:2306.00978v6
 code_commit: d6e797a42b9ef7778de8ee2352116e0f48a78d61
 verification: 原文研读与定向代码核对；补充材料缺件；未运行模型实验
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # AWQ：激活感知的权重量化
@@ -37,7 +37,7 @@ AWQ 用校准激活判断哪些输入通道需要更多保护，再通过等价�
 
 建议阅读顺序：[线性层与输入通道](../fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](../fundamentals/quantization/uniform-quantization-and-groups.md) → 本页；[对角缩放与等价变换](../theory/diagonal-scaling-equivalent-transform.md)进一步解释共性原理与计算图条件。
 
-本页讲机制、论文数值与证据边界；**打包约定、内核入口、以及在 vLLM 与 SGLang 里如何加载同一份 AWQ 权重**见 [AWQ 的实现核对](../implementation/awq-implementation.md)。
+本页讲机制与论文结果；TinyChat 打包和内核、AutoAWQ 格式 checkpoint 在 vLLM 与 SGLang 中的加载与重排见 [AWQ 的实现核对](../implementation/awq-implementation.md)。两种 checkpoint 的布局不同。
 
 ## 1. 研究对象与动机
 
@@ -167,6 +167,8 @@ $$
 
 **当前代码细节：**C0 `auto_scale.py:109` 实际枚举 $\alpha\in\{0,0.05,\ldots,0.95\}$，不包含 1；候选缩放先设 $10^{-4}$ 下限，再除以 $\sqrt{\max(s)\min(s)}$。它把候选权重缩放、模拟量化并除回缩放值，运行参考模块，比较输出 MSE，然后恢复原始参数。每一候选都必须从相同参考状态出发。
 
+这一步归一化只调整公共倍率：令 $c=\sqrt{s_{\max}s_{\min}}$，则 $\widetilde s=s/c$ 保持所有通道比例，且 $\widetilde s_{\max}\widetilde s_{\min}=1$。若量化器在重算网格后满足 $Q(A/c)=Q(A)/c$，则 $Q(WD/c)(D/c)^{-1}=Q(WD)D^{-1}$，公共倍率不改变恢复后的权重。C0 量化器的固定范围下限 $10^{-5}$ 和浮点舍入可能破坏这一关系；通道下限 $10^{-4}$ 则在归一化前就可能改变比例。上述性质为整理者推导（C0 `auto_scale.py`、`quantizer.py`）。
+
 检查模块可为单个线性层、attention 或 MLP，取决于模型适配。因而不能把所有搜索都写成逐权重 MSE，也不能把这一受限网格的最优候选称为全局最优缩放。对未出现或幅度很小的通道，代码的数值下限承担避免退化的作用，其具体行为属于该版本。
 
 ## 5. 裁剪、融合和可执行流程
@@ -182,7 +184,7 @@ $$
 
 当前实现将该组权重裁到对称阈值区间，再执行实际配置的量化器，用输入计算该组点积并比较误差。每个输出通道、每个分组分别选阈值。因为没有先把各组贡献相加再求平方，它忽略不同组误差之间的交叉项，是完整层输出误差的代理目标。
 
-默认 `n_grid=20,max_shrink=0.5` 实际尝试比例 $1.00,0.95,\ldots,0.55$ 共 10 个候选，不包含 0.50。代码按名称跳过 q/k/query/key/Wqkv 等层；输入 token 抽样、输出通道分批和分组整除也有形状约束。不能推断任意矩阵都可直接套用。这里未运行代码验证边界输入。
+默认 `n_grid=20,max_shrink=0.5` 实际尝试比例 $1.00,0.95,\ldots,0.55$ 共 10 个候选，不包含 0.50。代码按名称跳过 q/k/query/key/Wqkv 等层；输入 token 抽样、输出通道分批和分组整除也有形状约束。
 
 ### 5.2 等价缩放如何落到计算图
 
@@ -204,7 +206,7 @@ $$
 
 C0 `pre_quant.py:102`、quantizer.py:106。C0 在当前 block 的缩放／裁剪前就缓存下一 block 输入，因此不能把它写成自动用前面所有量化误差重新传播校准数据的流程。
 
-当前实际量化路径要求 zero-point 配置，`WQLinear` 只实现 4 bit，并有输入分组、输出通道和打包对齐约束。模块保存 `qweight`、`scales`、`scaled_zeros` 和可选 bias；`qweight` 的 int16 是打包容器，不代表每个原始权重仍占 16 bit。当前 forward 依据输入 token 数是否小于 8 分派到相应 GEMV／GEMM CUDA 入口。这些都是版本相关实现，不是 AWQ 数学定义。quantizer.py:125、qmodule.py:78。本次进一步核对该调用：新版 GEMV 只分派 g128，GEMM 主机分支也固定 `G=128`；模拟量化支持其他分组不能推导出此真实路径同样支持。新旧内核的布局区别见实现页。底层完整循环、布局解包数值及运行正确性尚未验证。
+当前实际量化路径要求 zero-point 配置，`WQLinear` 只实现 4 bit，并有输入分组、输出通道和打包对齐约束。模块保存 `qweight`、`scales`、`scaled_zeros` 和可选 bias；`qweight` 的 int16 是打包容器，不代表每个原始权重仍占 16 bit。forward 按展平 token 数是否小于 8 分派到 GEMV／GEMM CUDA 入口。quantizer.py:125、qmodule.py:78。新版 GEMV 只分派 g128，GEMM 主机分支也固定 `G=128`；模拟量化支持的其他分组不能直接用于此真实路径。新旧内核的布局与反量化机制见实现页。
 
 ### 5.4 校准数据不是一个默认数字
 
@@ -283,7 +285,7 @@ P0 表 9 的 INT2-g64 结果是 **AWQ+GPTQ** 组合：OPT-6.7B 的 GPTQ PPL=16.6
 
 本节的压缩权重、反量化与浮点计算属于 weight-only 执行路径。它与模拟量化、W8A8 整数矩阵乘及低精度浮点点积的区别见 [量化的执行路径](../implementation/quantized-matmul-scaling-execution.md#3.%20%E4%BD%8E%E6%AF%94%E7%89%B9%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84)；下面保留 TinyChat 特有的实现与测量条件。
 
-TinyChat 是 AWQ 配套的原生内核；同一份 AWQ 权重也可以交给为批处理设计的通用内核执行，例如 [Marlin](../implementation/marlin-batched-w4a16-gemm.md)，以及 vLLM 中单独列出的 awq_marlin 方法（见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)）。两者硬件与批量条件不同，加速比不能互换。
+TinyChat 是 AWQ 配套的原生内核；满足格式与配置约束的 AWQ checkpoint 也可经兼容加载、重排路径交给 [Marlin](../implementation/marlin-batched-w4a16-gemm.md) 执行，例如 vLLM 的 awq_marlin 方法（见 [部署框架与后端支持](../implementation/quantized-llm-deployment-backends.md)）。两者硬件与批量条件不同，加速比不能互换。
 
 ### 8.1 带宽限制与理想上限
 
@@ -315,11 +317,11 @@ P0 §5.4 报告 LLM 吞吐测试采用 batch=1、固定 4-token prompt、生成 
 
 表 10 的 VILA-7B 在 A100/4090/Orin 上，FP16 吞吐为 81.6/58.5/11.5，AWQ 为 155.3/168.1/35.6 tokens/s；VILA-13B 的 Orin 为 6.1→17.5。不能把面向 LLM 的 4-token prompt 协议擅自当作 VLM 的完整图像输入协议，论文未充分交代的细节保持未报告。
 
-这些是 P0 中的历史测量和支持范围，不代表上述框架当前版本的能力或排序。当前项目没有验证任何速度数字。
+这些是 P0 中的历史测量和支持范围，不代表上述框架当前版本的能力或排序。
 
 ## 9. 原文问题、完整性与后续验证
 
-本轮没有用其他材料悄悄修补作者未说明的条件。以下问题必须随方法保留：
+引用原文结果时需保留以下材料差异与实验条件：
 
 | 问题 | 证据与影响 |
 |---|---|
@@ -331,9 +333,7 @@ P0 §5.4 报告 LLM 吞吐测试采用 batch=1、固定 4-token prompt、生成 
 | “无损”“不会过拟合”过强 | 表 7 存在分数变化；图 8 仅验证特定数据和模型。没有统计等价或普遍泛化保证 |
 | 论文与代码版本不绑定 | C0 的默认数据、网格端点和裁剪细节已经定位，但未证明该 commit 对应 P0 全部实验，不能反填论文设置 |
 
-本页的事实、推导和执行状态应分别理解：等价变换是精确算术下的代数关系；误差缩小包含统计近似；质量与速度为作者报告；代码流程是 C0 的静态阅读；本项目没有模型复现、CUDA 验证或性能测量。
-
-若后续进入复现，先确定目标模型／权重版本、位宽与 group、校准与独立评测协议、实际后端及硬件。再分别验证未量化变换等价性、模拟与实际量化数值、模型质量和端到端性能。原文未报告的实验条件不能用默认值假装补齐。
+复现时固定模型／权重版本、位宽与 group、校准及独立评测协议、后端与硬件，分别检查变换等价性、量化数值、质量和端到端性能。原文缺失的设置需作为待确定条件。
 
 ## 来源身份
 

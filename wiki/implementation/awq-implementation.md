@@ -131,7 +131,7 @@ flowchart LR
 
 必须按导出名区分两套路径：`WQLinear.forward` 调用带 `_new` 的入口，对应 `quantization_new/`；`quantization/` 下旧内核的 int32 qweight、打包 qzeros 和 g64/g128 分派，不能作为当前模块的输入契约。新版 GEMV 仅接受 g128、M=1–7；新版 GEMM 的已读主机分支也固定 `G=128`。因此 Python 量化器能配置其他 group size，并不证明这套实际内核支持它们。具体布局与反量化机制见 [权重量化反量化内核的契约](weight-only-dequant-kernels.md)。
 
-这与 [执行路径](quantized-matmul-scaling-execution.md) 的分类对应：AWQ 属于「打包权重 + 运行中反量化 + 浮点矩阵乘」，而 GEMV/GEMM 的分派正是对「解码受带宽限制、预填充受算力限制」这一差异的响应。
+这与 [执行路径](quantized-matmul-scaling-execution.md) 的分类对应：AWQ 属于「打包权重 + 运行中反量化 + 浮点矩阵乘」。分派依据 token 数 M：较小 M 时减少权重读取更重要，较大 M 时权重复用增加。它不直接判断 prefill/decode；例如 8 条序列各解码 1 token 时 M=8，也走 GEMM。实际瓶颈还取决于矩阵形状、内核和硬件。
 
 ## 5. 跨引擎：vLLM
 

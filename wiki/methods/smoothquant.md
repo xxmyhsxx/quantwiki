@@ -21,7 +21,7 @@ sources:
 paper_version: arXiv:2211.10438v7
 code_commit: c61476d728e42ae0d8a35e7e78494edcac3237b5
 verification: 全文含附录研读与定向代码核对；未运行模型实验
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # SmoothQuant：迁移激活量化难度的 W8A8 方法
@@ -127,8 +127,6 @@ C `opt.py:15`的真实路径调用 torch-int 的 INT8 线性层、BMM 和归一�
 
 真实 OPT attention 将 INT8 K/V 投影输出拼接为 cache，QK BMM 产生浮点结果，Softmax 后将概率乘 127 舍入为 INT8，再做 PV BMM。C `opt.py:122`、`opt.py:188`。这是该路径的代码证据，不能推出全部后端或后来模型也采用相同 KV 格式。Llama-like fake quant 默认 `quantize_bmm_input=False`，PPL 入口则显式设为 True，并以 BF16 加载；默认演示和评测入口不可混用。C `fake_quant.py:183`、`ppl_eval.py:65`。
 
-本轮仅确认这些接口和数据流，未审查完整 CUDA/CUTLASS/FT 内核，也未将 T 的当前 commit 认定为 P 的实验环境。
-
 ## 6. 模型质量与消融证据
 
 ### 6.1 OPT/BLOOM/GLM 与任务口径
@@ -226,10 +224,9 @@ P 表 10 的 MT-NLG 530B 从 16 张 A100 80GB FP16 改为 8 张 INT8。长度 12
 - **KV cache 有条件。** 附录指出长上下文/大 batch 中 KV 占比会变大；本页给出真实 OPT 路径的 INT8 cache 证据，仍不能把所有激活量化自动等同于 KV cache 量化。
 - **W4A4 组合是未来设想。** 附录提出结合 GPTQ 改善权重量化，未在本篇实现或验证；不能写为 SmoothQuant 已完成的能力。
 - **证据范围。** 基线、训练数据污染处理和支持的模型均按 P 的当时条件解释。LLM.int8() 与 ZeroQuant 已完成全文研读（见 [LLM.int8()](llm-int8.md)、[ZeroQuant](zeroquant.md)），但 P 所使用的仍是其当时实现与配置，本页不据此断言两者之间的精度排序；Outlier Suppression 等其余基线仍未全文研读，也未独立核验其实现。
-- **代码与实验不同版本。** C 的 fake quant、真实 OPT 和 PPL 入口并不共享完全相同的格式/路径；T 的部分量化工具有不同的 clamp/零范围处理。当前接口可读不等于数值行为已验证。
-- **尚未复现。** 未下载模型或校准数据，未运行 CUDA、FT、模型质量或性能测试；全部论文附录已读不表示代码仓库全部已审查。
+- **代码路径与实验身份。** C 的 fake quant、真实 OPT 和 PPL 入口并不共享完全相同的格式/路径；T 的部分量化工具有不同的 clamp/零范围处理。所读 commit 未与 P 的实验环境绑定。
 
-三者的统一问题比较见[AWQ、GPTQ 与 SmoothQuant：对象、机制与证据比较](awq-gptq-smoothquant-comparison.md)。本轮不据这些历史结果预设后续研究的选题或实验结论。
+三者的统一问题比较见[AWQ、GPTQ 与 SmoothQuant：对象、机制与证据比较](awq-gptq-smoothquant-comparison.md)。
 
 MBQ v2 的 W4A8 实验沿用两侧量化与通道缩放思路，但用模态加权重构选择尺度。其表 4 中，单纯将 SmoothQuant 校准数据换为 COCO 并未自动提高 LLaVA-OneVision-7B 的结果。这提示需要检查校准目标、mask、归一化和实现设置，而不能仅据某组基线退化推断 SmoothQuant 对所有视觉语言模型无效；具体数据与条件见 [MBQ 的消融与实现](mbq.md)。
 
