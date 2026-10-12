@@ -13,7 +13,9 @@ sources:
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/papers/2026-10-03/wush-kv/paper.pdf
   - raw/papers/2026-10-03/wush-kv/source/main.tex
-updated: 2026-10-07
+  - raw/papers/2026-09-21/calibquant/paper.pdf
+  - raw/papers/2026-09-21/calibquant/source/main_iccv.tex
+updated: 2026-10-12
 ---
 
 # Attention 量化误差传播：从 KV 重构到输出与生成
@@ -70,6 +72,12 @@ $$\|\widehat p-p\|_2\le\tfrac12\|\widehat z-z\|_2.$$
 $$e^{-2\eta}\le\widehat p_j/p_j\le e^{2\eta}.$$
 
 要保持原最大 logit 的位置，原第一名与其他项的最小间隔超过 $2\eta$ 是充分条件；间隔小的样本仍容易换序。具体排序问题见 [排序稳定性](quantization-ranking-stability.md)。无偏和小平均 MSE 均不自动给出这个逐项最大误差保证。
+
+### 3.1 共同偏移只在同一归一化域内消去
+
+[CalibQuant](../methods/calibquant.md)在量化视觉logits后作仿射校准 $g(z)=az+c$。若整行有效keys都使用同一c，它被softmax消去；若只处理视觉子集，c相对文字仍会改变模态权重。更一般地，子集r有局部归一化质量 $Z_r=\sum_{j\in r}\exp(az_j)$，全局质量为 $\exp(c_r)Z_r/\sum_s\exp(c_s)Z_s$，不能因为子集内部概率未变而说全局Attention不变。
+
+同理，若该子集的V恢复为 $\widehat V_r=Z_V\operatorname{diag}(s)+\mathbf1\alpha^\mathsf T$，其输出偏置是 $\alpha\sum_{j\in r}p_j$，不是无条件加一次α。纯视觉公式、混合模态归一化和分段Attention的合并域要分别登记；这是代数条件，不表示已经核验CalibQuant作者实现。（v2式6–8及整理者推导。）
 
 ## 4. V 误差有抵消，也有叠加
 
@@ -156,3 +164,5 @@ WUSH-KV 主方法使用更便宜的 $H_K=2\sum_g Q_gQ_g^\top$、$H_V=2\sum_gW_{O
 - TurboQuant，arXiv:2504.19874v1（`https://arxiv.org/abs/2504.19874v1`）：MSE 与无偏内积的目标区分；本页不引用其有问题的有限维球面下界。
 - KIVI，arXiv:2402.02750v2（`https://arxiv.org/abs/2402.02750v2`）：§3 的 K/V 误差传播与粒度分析。可见性加权、Jacobian 界的展开、抵消与无偏反例为整理者推导。
 - WUSH-KV，arXiv:2609.38121v1（`https://arxiv.org/abs/2609.38121v1`）：§4.2、附录 C 的 GQA 局部重构 Hessian、共享头交叉项与便宜代理的区别；§8 改用简化下标展开。
+
+CalibQuant: 1-Bit KV Cache Quantization for Multimodal LLMs，`arXiv:2502.14882v2`，来源 `https://arxiv.org/abs/2502.14882v2`；式6–8及本页子集归一化推导。
