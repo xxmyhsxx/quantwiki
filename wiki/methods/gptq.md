@@ -20,7 +20,7 @@ sources:
 paper_version: arXiv:2210.17323v2
 code_commit: 2d65066eeb06a5c9ff5184d8cebdf33662c67faf
 verification: 全文含附录研读与定向代码核对；未运行模型实验
-updated: 2026-09-15
+updated: 2026-10-12
 ---
 
 # GPTQ：基于二阶补偿的权重量化
@@ -109,6 +109,8 @@ $$
 H_\lambda=H+\lambda I,\qquad H_\lambda^{-1}=R^{\mathsf T}R.
 $$
 
+按共同顺序消去前 $j$ 列后，剩余自由坐标 $F_j=\{j,\ldots,d-1\}$ 的逆矩阵 $A^{(j)}=(H_{\lambda,F_jF_j})^{-1}$ 满足 $A^{(j)}_{jj}=R_{jj}^2$、$A^{(j)}_{j,j:d}=R_{jj}R_{j,j:d}$。因此第3节补偿式中的比值恰为 $R_{j,j:d}/R_{jj}$；完整消元推导见[机制页 §4](../theory/layer-reconstruction-second-order-compensation.md#4.%20%E4%BB%8E%E9%80%86%20Hessian%20%E5%88%B0%20Cholesky%20%E6%9B%B4%E6%96%B0)。
+
 算法 1 把 `H^{-1}` 变量覆盖成了这个三角因子，容易误读。本页用 $R$ 单独表示它。对列块 $[i,k)$，其中 $k=\min(i+B,d)$，执行：
 
 1. 对每个 $j=i,\ldots,k-1$，计算 $Q_{:,j}=\operatorname{quant}(W_{:,j})$。
@@ -116,7 +118,7 @@ $$
 3. 块内更新 $W_{:,j:k}\leftarrow W_{:,j:k}-E_{:,j-i}R_{j,j:k}$。
 4. 块结束后更新 $W_{:,k:d}\leftarrow W_{:,k:d}-ER_{i:k,k:d}$。
 
-当前列的更新使其恰落在 $Q$，后续列保留补偿。分母是 $R_{jj}$；若计算局部损失则涉及 $R_{jj}^2$。把原逆 Hessian 的对角元素直接替代这里的 $R_{jj}$ 会改变算法。P 算法 1；C `gptq.py:98`。
+当前列更新后等于 $Q$，其余列得到补偿；单行的局部增量损失为 $(w_j-Q(w_j))^2/(2R_{jj}^2)$。P 算法 1；C `gptq.py:98`。
 
 ## 5. 校准与官方实现流程
 

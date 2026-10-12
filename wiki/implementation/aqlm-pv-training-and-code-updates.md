@@ -18,14 +18,14 @@ sources:
   - raw/repositories/2026-09-21/aqlm/source/src/datautils.py
   - raw/repositories/2026-09-21/aqlm/source/src/memory_efficient_loss.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
 # AQLM 的 PV 微调：梯度、选码目标与权重写回
 
 本页核读 **Vahe1994/AQLM `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`** 的根目录 `finetune.py` 到 PV 优化器、L2 选码及权重写回。它说明 [PV-Tuning](../methods/pv-tuning.md) 如何使用一份恢复权重梯度，同时训练连续表示参数并构造离散选码目标。源码 README 已记录 PV 分支合并；本快照与论文 arXiv:2405.14852v2 分别保留身份，不视为论文每张表的精确运行版本。
 
-范围以已加载 AQLM 权重后的单码本/两码本 PV 主链为中心。读取了数据分块、KL、优化器和保存接口作为必要依赖；未执行安装、导入/JIT、训练、FSDP通信或性能测量。原始激活感知校准、条件转换与所选 CUDA 2×8 前向读取另由[校准与推理实现页](aqlm-calibration-export-and-inference.md)承接；全部加载适配器、其他后端与分布式组合仍未完整核读。
+范围是已加载 AQLM 权重后的单码本/两码本 PV 主链，以及数据分块、KL、优化器和保存接口。本页依据静态代码与教学算例，未运行模型、分布式通信或性能测试。原始激活感知校准、条件转换与所选 CUDA 2×8 前向读取另由[校准与推理实现页](aqlm-calibration-export-and-inference.md)承接；全部加载适配器、其他后端与分布式组合仍未完整核读。
 
 ## 1. 真正进入 PV 的条件与三份状态
 
@@ -119,13 +119,13 @@ $$
 
 整理者算例：三个互不重叠组的变化范数依次为0.03、0.04、0.10，前缀范数为0.03、0.05、约0.1118；阈值0.08时，前两个已满足限制，代码仍保留第三个，使结果超过阈值。因此越界不只限于“至少让第一个组变化”的情形。若阈值超过所有前缀，切片自然保留全部；等于某前缀时则保留到该前缀。
 
-这解释了本快照与论文附录 K 回滚描述的差别。本页记录静态行为和独立算例，不修改上游，也不把它扩写为所有模型一定不稳定。要限制**整步**权重变化，还须核对连续参数与选码两部分，见[公共训练页的分阶段变化](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.2%20%E5%87%8F%E5%B0%91%E6%9B%B4%E6%96%B0%E5%9D%90%E6%A0%87%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E5%85%81%E8%AE%B8%E6%9B%B4%E5%A4%A7%E6%AD%A5%E9%95%BF)。
+本快照保留跨阈值的组；论文附录 K 则在末块中回滚至满足约束，但允许至少一个权重变化。要限制**整步**权重变化，还须核对连续参数与选码两部分，见[公共训练页的分阶段变化](../fundamentals/quantization/post-training-and-quantization-aware-training.md#3.2%20%E5%87%8F%E5%B0%91%E6%9B%B4%E6%96%B0%E5%9D%90%E6%A0%87%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%AF%E8%83%BD%E5%85%81%E8%AE%B8%E6%9B%B4%E5%A4%A7%E6%AD%A5%E9%95%BF)。
 
 ## 6. FSDP、缓冲与保存接口
 
 FSDP 分片学生的稠密参数；量化表示则由 `split_quantized_weights_between_ranks` 按估计表示大小做贪心分配，把一整张 `QuantizedWeight` 交给一个owner，其余rank持占位对象。两种分配粒度不同。优化器按一致名字顺序收集梯度片段到owner，在那里更新表示，再将新解码矩阵按原分片大小发送回各rank。（`pv_utils.py`；`pv_optimizer.py:_aggregate_tensors_by_name/_update_dequantized_weights`。）
 
-有STE缓冲时，owner持完整目标与聚合梯度。`delta_decay=1` 的多rank分支则不同：只有owner把自己的反量化参数片段加入该类优化器组，非STE分支没有把聚合梯度装成完整可优化目标，而后再聚合参数片段。静态读取不足以声称它与完整矩阵的单rank更新等价。本页不把单rank直接更新的解释自动扩写成全部多rank组合已验证。
+有STE缓冲时，owner持完整目标与聚合梯度。`delta_decay=1` 的多rank分支则不同：只有owner把自己的反量化参数片段加入该类优化器组，非STE分支没有把聚合梯度装成完整可优化目标，而后再聚合参数片段。静态读取不足以声称它与完整矩阵的单rank更新等价。
 
 训练快照保存学生的rank-local state、优化器状态和metadata；优化器额外保存量化对象与STE缓冲。`save_pv_model` 则按名字导出量化对象，rank0另存未量化参数，并排除对应的稠密恢复权重。这两类产物分别服务继续训练与后续格式转换，不是同一个部署包；[条件转换接口](aqlm-calibration-export-and-inference.md#4.%20%E4%BF%9D%E5%AD%98%E6%A0%BC%E5%BC%8F%E3%80%81PV%20%E8%BD%AC%E6%8D%A2%E4%B8%8E%E5%AF%BC%E5%87%BA%E6%9D%A1%E4%BB%B6)说明 legacy 入口的分支与元数据要求，未验证跨world size恢复或转换后推理。
 
@@ -144,9 +144,9 @@ $$
 
 普通分支把序列位置展平成batch再做 `batchmean`；分块分支对各位置KL求均值。这里没有用next-token硬标签做shift，也没有在损失处额外按mask筛位置；模型接收attention mask不等于损失mask。定长完整块与带padding的外部预分词数据应分别判断。评测PPL另在 `evaluate_perplexity` 里对logits/标签移位，以真实后继token的交叉熵计算。
 
-`loss_tokens_per_chunk` 路径分块构造logits，但 `memory_efficient_loss.py:maybe_checkpoint` 实际在 `checkpoint_enabled=True` 时直接计算、False时调用checkpoint，与参数名相反。根入口传 `checkpoint_last_chunk=False`，通常造成前面块直接计算、最后块checkpoint；本轮没有按函数说明宣称其达到预期重计算或显存节省。
+`loss_tokens_per_chunk` 路径分块构造logits，但 `memory_efficient_loss.py:maybe_checkpoint` 实际在 `checkpoint_enabled=True` 时直接计算、False时调用checkpoint，与参数名相反。根入口传 `checkpoint_last_chunk=False`，通常造成前面块直接计算、最后块checkpoint。
 
-入口的 `batch_size` 是所有rank合计的**序列数**，累积步数为 `batch_size / (world_size * microbatch_size)`。batch128、序列8192时才对应名义上的 $2^{20}$ token；序列4096时为 $2^{19}$。实际读取和累计数量还受数据尾部、采样及循环条件影响，不能将这个算式当作已运行token总量。
+入口的 `batch_size` 是所有rank合计的**序列数**，累积步数为 `batch_size / (world_size * microbatch_size)`。batch128、序列8192时才对应名义上的 $2^{20}$ token；序列4096时为 $2^{19}$。实际训练token量还取决于数据尾部、采样及循环条件。
 
 ## 8. 默认值、README 示例与论文分别登记
 
@@ -159,7 +159,7 @@ $$
 
 README 示例显式开启三类参数训练、LAMB和debias；三个训练开关默认均未开启，默认参数并不是可以直接重现论文的完整配方。`code_selection_temperature` 虽被CLI解析，`create_pv_optimizer` 没将它转交构造器，实际仍用默认0；不能因存在参数说明就认为该入口启用了随机组选择。
 
-源码还保留与执行协议有关的边界：训练循环 `batch_index <= microbatches_since_epoch_start` 在初始计数0时跳过首批；PPL分块条件使用严格的 `start + seqlen < total_length`，整除时也排除末个完整块。保存接口没有承诺未完成累积梯度与随机状态的逐位恢复。这里列出已读位置所支持的事实，不进行完整训练器故障审计，也不把来源中的模型质量数据改写成本地验证结果。
+源码还保留与执行协议有关的边界：训练循环 `batch_index <= microbatches_since_epoch_start` 在初始计数0时跳过首批；PPL分块条件使用严格的 `start + seqlen < total_length`，整除时也排除末个完整块。保存接口没有承诺未完成累积梯度与随机状态的逐位恢复。
 
 ## 来源身份与后续阅读
 

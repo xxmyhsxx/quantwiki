@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-12 · 抽查问题修复与内容复核
+
+- 在[重构机制页](theory/layer-reconstruction-second-order-compensation.md)将二维算例前移到标量补偿之后，补齐自由坐标消元到 Cholesky 尾块的推导；[GPTQ](methods/gptq.md)接入这一桥接，说明更新与损失分母的区别。
+- [均匀量化](fundamentals/quantization/uniform-quantization-and-groups.md)与[AQLM PV 实现](implementation/aqlm-pv-training-and-code-updates.md)集中范围说明，删去重复过程表述，保留分布/饱和、存储/计算、更新顺序与阈值例外等条件；[公共评测页](implementation/model-quality-evaluation.md)保留分箱与面积解释，HELM 原式差异由[协议页](implementation/helm-evaluation-protocol.md)集中承接。
+- 回读修改段落与关联目标，复核 GPTQ v2 算法1/固定实现、PV v2 附录K及 AQLM 选码/分块损失代码。32组正定矩阵、176步消元/补偿和120组即时/延迟更新比较通过，并复算二维例子、ECE与同网格面积关系。本轮为已有知识修复，无新增 ingest。
+
 ## 2026-10-12 · harness ingest 与P1收尾评审
 
 - 研读Summer-Summer固定62617a8c的MMLU-Pro配置/十四学科/prompt工具和共用请求、过滤、结果、聚合与缓存路径。新增实现页，公共质量页补执行协议；MMLU-Pro论文页接入代码差异，计划/SELF/READING同步第1–9批闭合与第10批建议。

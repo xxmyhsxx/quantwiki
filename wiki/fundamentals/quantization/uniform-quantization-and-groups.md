@@ -14,14 +14,14 @@ sources:
   - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/quantizer.py
   - raw/papers/2026-09-21/gptq/paper.pdf
   - raw/papers/2026-09-21/smoothquant/paper.pdf
-updated: 2026-09-14
+updated: 2026-10-12
 ---
 
 # 均匀量化与分组
 
 均匀量化用等间距的有限数值表示原来的实数或浮点数。位宽控制可用编码数量，量化步长控制相邻数值间隔，zero-point 决定整数编码与实数零的对应关系。理解这三者后，才能区分数值误差、模型质量和实际低比特存储。
 
-本页依据量化白皮书 v1 §2–4，以及 Jacob 等整数推理论文 arXiv v1 §2–3 展开。AWQ 代码仅作为一个具体应用，不代表所有量化器的默认实现。
+本页依据量化白皮书 v1 §2–4，以及 Jacob 等整数推理论文 arXiv v1 §2–3 展开，并以固定 AWQ 代码说明具体实现。
 
 ## 1. 量化编码与反量化
 
@@ -38,7 +38,7 @@ $q$ 是整数编码，$\widehat x$ 是反量化后的近似实数。若 $z$ 在�
 
 整数均匀网格不是低比特表示的唯一形式。浮点格式（FP8 的 E4M3 与 E5M2）与块内共享尺度的 Microscaling 格式另行定义可表示点与元数据，见 [FP8 与 Microscaling 数值格式](../numeric-formats/fp8-and-mx-data-formats.md)；把量化结果落到文件时，块结构、二级尺度与重要性矩阵的组织方式见 [GGUF 块量化存储格式](../../implementation/gguf-block-quantization-formats.md)。两者都属于“位宽标签之外”的格式信息，比较方法或复现结果前必须先对齐。
 
-**教学例子：**取 $b=3$、整数范围 $[0,7]$、$\Delta=0.5$、$z=3$，可表示实数范围为 $[-1.5,2]$。$x=0.7$ 编码为 $q=4$，反量化为 0.5；$x=2.4$ 饱和到 $q=7$，反量化为 2。前一个主要体现舍入误差，后一个体现超范围裁剪。此例不表示 AWQ 模型实验。
+**教学例子：**取 $b=3$、整数范围 $[0,7]$、$\Delta=0.5$、$z=3$，可表示实数范围为 $[-1.5,2]$。$x=0.7$ 编码为 $q=4$，反量化为 0.5；$x=2.4$ 饱和到 $q=7$，反量化为 2。前一个主要体现舍入误差，后一个体现超范围裁剪。
 
 ## 2. 对称、非对称与误差
 
@@ -78,7 +78,7 @@ $$
 b_{\mathrm{effective}}=b+\frac{m}{g}.
 $$
 
-例如仅作示意，取 $b=4,g=128,m=32$，平均为 4.25 bit/weight，FP16 到此格式的理想比值为 $16/4.25\approx3.76$。这不是 AWQ checkpoint 的实测压缩率：实际还包含对齐、未量化参数、激活、KV cache 与后端格式。
+教学例子：取 $b=4,g=128,m=32$，平均为 4.25 bit/weight，FP16 到此格式的理想比值为 $16/4.25\approx3.76$。实际权重文件还须计入对齐、未量化参数及后端格式；推理总内存另含激活和 KV cache。
 
 ## 4. W4A16 与模拟量化
 
@@ -86,7 +86,7 @@ W4A16 表示相应权重采用 4-bit 表示、激活保持 16-bit；它不意味
 
 模拟量化常把浮点权重映射到网格后，仍以浮点张量保存 $\widehat W$。它可以帮助评估低比特取值带来的质量变化，却没有自动减少物理存储，也没有证明后端实际运行了高效内核。实际压缩还需要编码打包、保存元数据以及读取这些数据的运算实现；不同路径的区别和代码实例见 [量化的实际执行路径](../../implementation/quantized-matmul-scaling-execution.md#3.%20%E4%BD%8E%E6%AF%94%E7%89%B9%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84)。
 
-PTQ 是从训练好的模型出发做量化；它可以使用校准数据、搜索甚至局部优化，并不等于完全无数据或不调整参数。QAT 则在训练前向中考虑量化影响并训练模型。范式、可调整变量与代理梯度的区别见 [PTQ、QAT 与代理梯度](post-training-and-quantization-aware-training.md)。AWQ 属于前者，使用校准输入进行统计和候选比较，不执行权重梯度训练。这里仅说明术语与 AWQ 的关系，不评价两类方法在所有模型上的优劣。AWQ v6 §2、§3.2。
+PTQ 是从训练好的模型出发做量化；它可以使用校准数据、搜索甚至局部优化，并不等于完全无数据或不调整参数。QAT 则在训练前向中考虑量化影响并训练模型。范式、可调整变量与代理梯度的区别见 [PTQ、QAT 与代理梯度](post-training-and-quantization-aware-training.md)。AWQ 属于前者，使用校准输入进行统计和候选比较，不执行权重梯度训练。AWQ v6 §2、§3.2。
 
 ## 5. 应用到 AWQ 时必须区分的两种公式
 
@@ -115,7 +115,7 @@ GPTQ 的算法列块 $B$ 用于批量补偿，量化 group size $g$ 用于共享
 
 Double quantization 再压缩第一层尺度，而非把权重位宽再次减半。例如每 64 个权重配一个 FP32 尺度，额外占 $32/64=0.5$ bit/weight；将尺度存为 8 bit、每 256 个尺度再配一个 FP32 二级尺度，示意开销为 $8/64+32/(64\cdot256)\approx0.127$ bit/weight。实际格式还可能有其他元数据。（QLoRA v1 §3）
 
-[Q-VLM](../../methods/q-vlm.md) 的公开路径使用 NF4 权重与浮点计算，说明“4-bit 存储”“4-bit 网格”和“原生整数乘法”必须分别确认；QLoRA 原文也明确使用低比特存储、通常 BF16 计算。本节来自其 §2–3 的局部研读，不代表完整 QLoRA 方法或微调实验已经 ingest。
+[Q-VLM](../../methods/q-vlm.md) 的公开路径使用 NF4 权重与浮点计算，说明“4-bit 存储”“4-bit 网格”和“原生整数乘法”必须分别确认；QLoRA 原文也明确使用低比特存储、通常 BF16 计算。
 
 ## 来源身份
 
@@ -123,7 +123,7 @@ Double quantization 再压缩第一层尺度，而非把权重位宽再次减半
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | — |
+| QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | §2–3 局部研读 |
 | Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
 | A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
 | AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration（`https://arxiv.org/abs/2306.00978v6`） | `arXiv:2306.00978v6` | — |
