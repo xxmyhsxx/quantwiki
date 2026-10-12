@@ -7,7 +7,9 @@ __pycache__/
 *.pyc
 .venv/
 venv/
-raw/
+# Keep source archives local; version only their storage rules.
+raw/*
+!raw/README.md
 # IDE
 .vscode/
 .idea/

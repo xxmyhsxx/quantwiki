@@ -474,6 +474,16 @@ def check_raw_links(root):
             issue(Path(error.filename), 'raw_unreadable', str(error))
 
         for directory, dirs, names in os.walk(raw, followlinks=False, onerror=walk_error):
+            directory_parts = Path(directory).relative_to(raw).parts
+            entry_root = (len(directory_parts) == 3 and
+                          directory_parts[0] in {'papers', 'articles'})
+            if (len(directory_parts) == 4 and directory_parts[0] in {'papers', 'articles'}
+                    and directory_parts[-1] == 'assets' and 'pdf-pages' in dirs
+                    and any((Path(directory).parent / p).is_file()
+                            for p in ('paper.pdf', 'lecture.pdf'))):
+                counts['raw_generated_copies'] += 1
+                issue(Path(directory) / 'pdf-pages', 'raw_generated_copy',
+                      'PDF page renders duplicate the original; retain the source PDF')
             # Git objects are original provenance, not expanded reading pages.
             for name in dirs:
                 path = Path(directory) / name
@@ -484,6 +494,21 @@ def check_raw_links(root):
             dirs[:] = sorted(d for d in dirs if d != '.git' and not (Path(directory) / d).is_symlink())
             for name in sorted(names):
                 path = Path(directory) / name
+                generated = {'formulas.md', 'formulas.md.txt', 'figures.md', 'figures.md.txt',
+                             'formula-context.tex'}
+                if entry_root and (name in generated or (
+                        directory_parts[0] == 'papers' and name in {
+                            'paper.md', 'paper.md.txt', 'paper-readable.pdf'}
+                        and (Path(directory) / 'paper.pdf').is_file()) or (
+                        directory_parts[0] == 'articles' and name in {'article.md', 'article.md.txt'}
+                        and (Path(directory) / 'lecture.pdf').is_file())) or (
+                        len(directory_parts) == 4 and directory_parts[0] == 'articles'
+                        and directory_parts[-1] == 'source'
+                        and name in {'article-math-reference.md', 'article-math-reference.md.txt'}
+                        and (Path(directory).parent / 'article.md.txt').is_file()):
+                    counts['raw_generated_copies'] += 1
+                    issue(path, 'raw_generated_copy',
+                          'generated reader duplicates source material; keep explanations in Wiki/research')
                 if name.lower().endswith(('.md.symlink.txt', '.markdown.symlink.txt')):
                     counts['raw_sealed_symlink_files'] += 1
                     continue
@@ -520,7 +545,7 @@ def check_raw_links(root):
                 files=files, skipped=LINK_LIMITS + [
                     'Sealed .md.txt/.markdown.txt bytes and original Git object directories are not read.',
                     'File hashes, original source completeness and application graph state are not verified.',
-                ], scope='raw storage extensions and no clickable references in retained Markdown records.',
+                ], scope='raw storage extensions, known generated copies and no clicks in retained Markdown records.',
                 semantic_review='Not performed: no source fidelity or scientific review.')
 
 

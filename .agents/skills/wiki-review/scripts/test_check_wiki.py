@@ -223,6 +223,33 @@ class LinkLintTests(unittest.TestCase):
         self.assertEqual(result['counts']['raw_sealed_text_files'], 2)
         self.assertEqual(result['counts']['raw_clickable_references'], 0)
 
+    def test_raw_rejects_generated_readers_and_page_sets_even_when_sealed(self):
+        (self.root / 'raw/source.md').unlink()
+        self.write('raw/papers/2026-10-12/paper/paper.pdf', 'original PDF')
+        for name in ('paper.md.txt', 'formulas.md.txt', 'figures.md.txt',
+                     'formula-context.tex', 'paper-readable.pdf'):
+            self.write('raw/papers/2026-10-12/paper/' + name, 'derived')
+        self.write('raw/papers/2026-10-12/paper/assets/pdf-pages/page-001.png', 'render')
+        self.write('raw/articles/2026-10-12/article/formulas.md.txt', 'derived')
+        self.write('raw/articles/2026-10-12/article/lecture.pdf', 'original PDF')
+        self.write('raw/articles/2026-10-12/article/article.md.txt', 'derived reader')
+        self.write('raw/articles/2026-10-12/article/assets/pdf-pages/page-001.png', 'render')
+        self.write('raw/articles/2026-10-12/article/source/article-math-reference.md.txt', 'copy')
+        result = check_raw_links(self.root)
+        self.assertEqual(self.codes(result), ['raw_generated_copy'] * 10, result)
+        self.assertEqual(result['counts']['raw_generated_copies'], 10)
+        self.assertEqual(self.cli('--raw-links-only').returncode, 1)
+
+    def test_raw_preserves_upstream_names_article_body_and_original_images(self):
+        (self.root / 'raw/source.md').unlink()
+        self.write('raw/papers/2026-10-12/paper/source/figures.md.txt', 'upstream')
+        self.write('raw/papers/2026-10-12/paper/source/formula-context.tex', 'upstream')
+        self.write('raw/repositories/2026-10-12/repo/source/formulas.md.txt', 'upstream')
+        self.write('raw/articles/2026-10-12/article/article.md.txt', 'source body')
+        self.write('raw/articles/2026-10-12/article/assets/figures/image.png', 'source image')
+        self.write('raw/articles/2026-10-12/article/source/docs/article-math-reference.md.txt', 'upstream')
+        self.assertEqual(check_raw_links(self.root)['status'], 'passed')
+
     def test_raw_records_reject_local_external_image_and_wikilinks(self):
         (self.root / 'raw/source.md').unlink()
         self.write('raw/LOG.md', '[file](README.md)\nhttps://example.org\n'

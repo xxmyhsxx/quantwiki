@@ -8,7 +8,6 @@ tags:
 sources:
   - raw/articles/2026-09-21/flashinfer-append-paged-kv-cache/article.md.txt
   - raw/articles/2026-09-21/flashinfer-kv-cache-layout/article.md.txt
-  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/formulas.md.txt
   - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-efc4f5e9d414.png
   - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-93515341110b.png
   - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-76c22bd22ebb.png
@@ -79,4 +78,4 @@ MLA缓存存latent `ckv`与位置分量`kpe`，可共用[pages,P,Dckv+Dkpe]再�
 
 ## 来源身份
 
-三份FlashInfer 0.6.14官方文档，正文`snapshot-2026-07-02`：`https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html`、`https://docs.flashinfer.ai/tutorials/kv_layout.html`、`https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html`。本次读完整保存正文/例子、布局的数学重录与4张2026-09-21补采图；未取得历史HTML、匹配0.6.14源码/现行网页，未核三接口之外的完整wrapper/分段打包协议或运行FlashInfer/CUDA/SM100。
+三份FlashInfer 0.6.14官方文档，正文`snapshot-2026-07-02`：`https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html`、`https://docs.flashinfer.ai/tutorials/kv_layout.html`、`https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html`。本次读完整保存正文/例子、布局正文的两处数学表达与4张2026-09-21补采图；未取得历史HTML、匹配0.6.14源码/现行网页，未核三接口之外的完整wrapper/分段打包协议或运行FlashInfer/CUDA/SM100。
