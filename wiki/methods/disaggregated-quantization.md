@@ -77,8 +77,6 @@ prefill按层顺序消费权重，一层输出计算完后该层权重可被下�
 
 ## 6. 固定代码核对：支持哪些结论
 
-本次只沿对应入口和关键函数核对，未审查整仓库。
-
 | 位置 | 静态可确认行为 | 边界 |
 | --- | --- | --- |
 | `qad/quantizers/dual.py` 的 `prefill_mask_from_labels`、`quant_phase` | `labels == -100`构造prefill mask；上下文恢复旧mask | mask需覆盖backward，梯度checkpoint重算否则会走错路径 |

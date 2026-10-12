@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 26 批
+
+- 核读 vLLM 执行/Attention、Atom、DQ、Ideogram 与 QServe 六页；回查缓存 shape/stride、进度与在途计数、分段归约、阶段 mask/backward、Atom 配方及 QServe 表3和延迟分项。具体机制与相邻实现页一致。
+- QServe 通道重要性从均值改为 max-abs，统一行 token 权重的缩放方向；QK/SV 两次降幅合计0.06 ms。五任务差值改为百分点，70B表中76.57→76.40与正文0.40%的差异保留；区分 Atom 最终INT8保护与FP16消融。压缩重复优劣、未运行及未审全仓声明，保留保护范围、原件差异和实验协议条件。
+- 无 ingest 或模型运行；累计完成 159 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 25 批
 
 - 核读 Atom/QServe 实现、部署支持面、内存调度、服务指标、SGLang 两条执行链与张量并行八页；回查分页量化参数、Radix 锁计数、TP 的 KV 复制与 bias、TPOT/goodput 聚合以及 PagedAttention 的实验解释。执行步骤与接口深度足够。
