@@ -88,7 +88,7 @@ $$\vec o=\mathrm{softmax}\left(\frac{\vec q\,\mathbf X_K^{\mathsf T}}{\sqrt d}\r
 | 逐 token（按行） | 参数不跨 token 共享；一个 head 内可以整体共享，也可以沿通道进一步分组 | 天然兼容，可直接按 token 追加 | KIVI 用于值；SAW-INT4 用于键与值的统一布局 |
 | 逐通道（按列） | 同一通道沿 token 轴共享，可限制在一个 token 组内 | 在线组统计需尾部缓冲；离线固定尺度可直接追加 | KIVI 按 G=32 分组；KVQuant 离线逐通道校准 |
 | 沿任一轴分组 | 组内共享，组大小 $g$ | 取决于分组轴 | [QuaRot](../methods/quarot.md) 对 KV 用 group 128 非对称量化 |
-| 逐 head | 每个 KV head 一组参数 | 兼容，但尺度需随 head 动态估计与存放 | [QServe](../methods/qserve.md) 的 KV4 用逐 head 动态量化 |
+| 逐 head | 一个 head 内的通道共享参数；token／时间范围另定 | 按 token/head 估计时可直接追加，需保存各自元数据 | [QServe](../methods/qserve.md) 的 KV4 用逐 head 动态量化 |
 
 粒度之外还有两个常被混入同一标签的维度：**位宽**（每元素多少位）与**元数据组织**（尺度、零点存在哪里、是否随页存放）。QServe 把每个 head 的 fp16 尺度与零点紧跟在页内量化 KV 之后，以支持运行时更新；这说明「KV4」不只是位宽，还包含一套页内布局约定。
 

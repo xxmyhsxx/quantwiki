@@ -219,7 +219,7 @@ $$
 
 已经建立的是：上游 fake-quant/尺度 → OmniServe nibble 与元数据重排 → SGLang QoQ 参数消费 → 动态激活量化 → 两种 W4A8 GEMM。它回答为什么需要特定产物、两种零点为何不同、计算为什么能使用 INT8 Tensor Core。
 
-仍需实际部署验证的是：上游量化器是否保证保护范围、converter 与目标配置/参数名是否完全匹配、TP 是否正确、目标维度是否安全、输出误差以及 prefill/decode 性能。**SGLang 注册 qoq 不证明它实现了论文完整 W4A8KV4 系统**；其配置只为 LinearBase 返回方法，未在此实现 KV4/SmoothAttention。vLLM 此快照也没有内置 qoq 名称；其他 W4A8 方案不能通过改名字直接消费本布局。
+仍需实际部署验证的是：上游量化器是否保证保护范围、converter 与目标配置/参数名是否匹配、TP 是否正确、目标维度是否安全、输出误差以及 prefill/decode 性能。
 
 ### CPU 教学核对
 

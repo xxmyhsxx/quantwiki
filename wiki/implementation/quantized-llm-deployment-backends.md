@@ -20,7 +20,7 @@ sources:
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/gptq.py
   - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_gptq.py
   - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors.py
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # 量化模型的部署框架与后端支持
@@ -33,7 +33,7 @@ updated: 2026-09-22
 
 ## 1. 部署链路的环节
 
-量化模型上线至少要经过四段，任何一段不匹配都会退回未量化路径或直接报错：
+部署链路包含四段，需逐段核对参数与接口：
 
 1. **量化与校准**：确定位宽、粒度、对称性与尺度来源，产出量化权重与元数据；
 2. **导出格式**：把权重、尺度、零点、分组信息与全部元数据序列化成某个具体格式；
@@ -49,7 +49,7 @@ updated: 2026-09-22
 | llama.cpp | GGUF，含 k-quant／i-quant 与 MXFP4／NVFP4 块 | 由块结构与层间混合决定 | 单文件加载，按张量类型分派 |
 | SGLang | 框架注册的量化配置，如 GPTQ、W8A8、QoQ | 位宽、分组、对称性及设备约束按具体配置 | 方法配置 → 参数加载/重排 → 内核 |
 | vLLM | 框架内定义的多种量化配置 | 由方法名决定，含 W4A16、W8A8、FP8、MXFP4 等 | 方法名或自动探测 |
-| TensorRT-LLM | 量化 toolkit 产出 checkpoint，再编译为引擎 | qformat 指定，含 FP8、INT8 SQ、INT4 AWQ、W4A8 | 量化后需 `trtllm-build` 编译 |
+| TensorRT-LLM | 所选文档的 checkpoint → 引擎流程 | qformat 指定，含 FP8、INT8 SQ、INT4 AWQ、W4A8 | 此流程经 `trtllm-build` 编译 |
 | MLC-LLM | 编译产物，量化模式写在编译配置里 | 权重 q3f16／q4f16／q4f16_awq，W/A 为 FP8 | 先编译再运行，可插入校准步骤 |
 
 这张表本身就是一条结论：**量化方法的部署成本取决于框架把它表达为什么**。llama.cpp 把量化固定在文件里，vLLM 把它表达为一个可探测的方法，TensorRT-LLM 把它当作编译期配置，MLC-LLM 把它当作编译选项并支持独立的校准运行。
@@ -82,7 +82,7 @@ online（含 fp8_per_tensor、fp8_per_block 等在线量化简写）
 | [SmoothQuant/W8A8](smoothquant-implementation.md)，smoothquant + torch-int | compressed-tensors 的 INT8 W8A8 scheme；静态 tensor 或动态 token 激活 | w8a8_int8 Dense 使用动态逐 token 激活、逐输出通道权重 | 两者都不是在 loader 中重跑 SmoothQuant；官方 OPT/torch-int 导出与服务格式不直接等价 |
 | [QServe/QoQ](qserve-implementation.md)，OmniServe | 该快照内置注册表没有 qoq 项 | qoq → QoQLinearMethod → 两种 W4A8 GEMM，g=-1/128、FP16、SM80+ | 文件必须已经按内核布局重排；这里只实现 Linear 消费，不等于论文整套 KV4 系统 |
 
-AWQ 的官方代码、格式转换与内核链已在[既有实现页](awq-implementation.md)展开。上表三个对象是本批新增深度的范围，不是框架全部算法名单；内置注册表没有某个论文名，也不能据此否定其可经其他表示或插件接入，必须另核对转换与加载证据。
+AWQ 的官方代码、格式转换与内核链已在[既有实现页](awq-implementation.md)展开。内置注册表没有某个论文名，也不能据此否定其可经其他表示或插件接入，需另核对转换与加载证据。
 
 其中 vLLM 的 GPTQ 分派修正了“两个配置名就是两种固定内核”的简化：最终后端还受能力检查、逐层设置、设备和显式后端选项影响。SGLang 原生 GPTQ 甚至可能随 token 数切换到先重建 FP16 权重再用 cuBLAS，故性能记录需要保存实际执行路径。
 
@@ -121,7 +121,7 @@ MLC-LLM 的量化模式写成短代码（快照 `6474f7db` 的文档）。权重
 
 ## 6. llama.cpp：格式即部署
 
-llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_M` 等）直接决定块结构与元数据，运行时的后端（CPU、CUDA、Metal、Vulkan）按张量类型分派。量化工具提供逐张量覆盖与重要性矩阵输入，细节见 [GGUF 块量化存储格式](gguf-block-quantization-formats.md)。它的特点是把「选择哪个格式、哪些层降精度」交给使用者在导出时决定，而不是运行时的配置项。
+llama.cpp 在导出时按 `Q4_K_M`、`IQ1_M` 等策略选择各张量的量化类型；GGUF 保存实际类型、块数据与元数据，运行时后端（CPU、CUDA、Metal、Vulkan）按张量类型分派。量化工具提供逐张量覆盖与重要性矩阵输入，细节见 [GGUF 块量化存储格式](gguf-block-quantization-formats.md)。它把「选择哪个格式、哪些层降精度」交给使用者在导出时决定。
 
 与本页其他框架相比，这条路径的部署资产是文件本身，跨语言与跨设备的可移植性来自格式的标准化程度。
 
@@ -149,10 +149,7 @@ llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_
 
 ## 9. 局限与未验证
 
-- 本页读取各框架的量化清单/配置，并对表 3.1 所列路径继续核对实现；未构建或运行框架。注册条目、消费格式和可用内核分别说明，不代表所有硬件/形状都可用。
-- 各框架的版本迭代较快，格式清单与默认配置随版本变化；引用时应固定快照或版本号。
-- vLLM/SGLang 的 AWQ、GPTQ、INT8 W8A8 与 QoQ 按对应实现页保留核验范围；未穷尽其余方法，也未核对 TensorRT-LLM 插件、MLC-LLM 后端代码生成或验证跨框架格式互转。
-- 未收集各框架在统一硬件与场景下的对照性能数据，本页不给出性能排序。
+已核对的算法与格式路径见对应实现页；其余方法、TensorRT-LLM 插件、MLC-LLM 后端代码生成和跨框架格式互转尚未核验。各框架缺少统一场景的对照性能数据，不能据支持面排序。
 
 ## 来源身份
 
@@ -165,4 +162,4 @@ llama.cpp 的量化完全体现在 GGUF 文件里：格式名（`Q4_K_M`、`IQ1_
 | mlc-ai/mlc-llm（`https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008`） | `6474f7dbfa9bf18fdfd3ef468b227c0706eb9008` | — |
 | ggml-org/llama.cpp（`https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b`） | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |
 | mit-han-lab/omniserve（`https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8`） | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | — |
-| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | 注册项与本批算法/格式路径 |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | 注册项与所选算法/格式路径 |

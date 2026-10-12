@@ -6,7 +6,7 @@
 
 “已完成”表示本批页面职责与核心解释已核读、发现的问题已处理；来源核验是针对核心主张与疑点的定向核对，不表示所有上游代码或论文证明均重新审计。第 1 批沿用上一轮六页抽查，第 2 批沿用已完成的重构推导复核，第 3 批沿用已完成的 GPTQ 方法复核；相关正文在本轮开始时未变化。
 
-当前完成 24 批、145 个知识页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
+当前完成 25 批、153 个知识页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
 
 后续批次最多八页；若一批包含独立计算链或问题较多，再拆分。没有问题的页面无需为凑修改而改写。新出现的跨页问题可回修已审页，并记录影响。
 
@@ -269,7 +269,7 @@
 
 ## 第 24 批 · GPU 基础与 Kernel 3
 
-状态：已完成；3 页。提交：随本批清单更新。
+状态：已完成；3 页。提交：`1fd21f5`。
 
 - [tensor-core-quantized-gemm](../../wiki/implementation/tensor-core-quantized-gemm.md)
 - [w8a8-quantization-gemm-kernels](../../wiki/implementation/w8a8-quantization-gemm-kernels.md)
@@ -277,7 +277,7 @@
 
 ## 第 25 批 · 部署、内存与批处理 1
 
-状态：待审；8 页。
+状态：已完成；8 页。提交：随本批清单更新。
 
 - [atom-mixed-gemm-and-paged-kv](../../wiki/implementation/atom-mixed-gemm-and-paged-kv.md)
 - [qserve-implementation](../../wiki/implementation/qserve-implementation.md)
