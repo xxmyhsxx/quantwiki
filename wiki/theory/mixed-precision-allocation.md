@@ -7,6 +7,8 @@ tags:
   - memory
   - deployment
 sources:
+  - raw/papers/2026-09-26/casa-cross-layer-sensitivity/paper.pdf
+  - raw/papers/2026-09-22/hawq-v2/paper.pdf
   - raw/papers/2026-09-21/coopq/paper.pdf
   - raw/papers/2026-09-21/channel-wise-mixed-precision/paper.pdf
   - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
@@ -23,12 +25,12 @@ sources:
   - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
   - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
   - raw/papers/2026-10-07/stagq/paper.pdf
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # 混合精度分配：选择变量、预算与部署口径
 
-混合精度分配决定不同层、模块或张量用什么量化配置。它与固定配置下的误差加权不同：[QIG](../methods/qig.md) 改变哪些 token 的误差更受重视，[LUQ](../methods/luq.md) 则决定哪些层使用更低的权重精度。本页以 LUQ 的层间二选一为具体依据，展开预算与搜索的共通问题，不把它概括为所有混合精度算法。
+混合精度分配决定不同层、模块或张量用什么量化配置。[QIG](../methods/qig.md) 在固定配置下改变哪些 token 的误差更受重视，[LUQ](../methods/luq.md) 则决定哪些层使用更低的权重精度。本页结合层间、通道和因子分配，解释选择变量、敏感性代理、预算及搜索条件，并连接实际部署成本。
 
 ## 1. 先明确选择的是什么
 
@@ -152,6 +154,8 @@ $$C=\begin{pmatrix}1&-1\\-1&1\end{pmatrix}.$$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| CASA（`https://arxiv.org/abs/2609.25916v1`） | `arXiv:2609.25916v1` | 对角候选代价、跨层上界与局部接受条件；§4–5、Algorithm 1 |
+| HAWQ-V2（`https://arxiv.org/abs/1911.03852v1`） | `arXiv:1911.03852v1` | 平均 Hessian trace、有序分组与 Pareto 选择；§2–3、附录 A–C |
 | CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs（`https://arxiv.org/abs/2509.15455v2`） | `arXiv:2509.15455v2` | SPQE、协方差代理与二进制求解；第10节有限游戏及Shapley代数为整理者展开 |
 | Channel-Wise Mixed-Precision Quantization for Large Language Models（`https://arxiv.org/abs/2410.13056v4`） | `arXiv:2410.13056v4` | 算法1的分位分配；第9节有限预算、严格比较及计数例为整理者展开 |
 | StagQ（`https://arxiv.org/abs/2610.05977v1`） | `arXiv:2610.05977v1` | 前缀可行集合、共享元数据、全精度保护与 logical/physical rate；§2–4、附录 E/G/A |
