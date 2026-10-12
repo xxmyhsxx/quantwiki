@@ -75,7 +75,7 @@ $$e^{-2\eta}\le\widehat p_j/p_j\le e^{2\eta}.$$
 
 [CalibQuant](../methods/calibquant.md)在量化视觉logits后作仿射校准 $g(z)=az+c$。若整行有效keys都使用同一c，它被softmax消去；若只处理视觉子集，c相对文字仍会改变模态权重。更一般地，子集r有局部归一化质量 $Z_r=\sum_{j\in r}\exp(az_j)$，全局质量为 $\exp(c_r)Z_r/\sum_s\exp(c_s)Z_s$，不能因为子集内部概率未变而说全局Attention不变。
 
-同理，若该子集的V恢复为 $\widehat V_r=Z_V\operatorname{diag}(s)+\mathbf1\alpha^\mathsf T$，其输出偏置是 $\alpha\sum_{j\in r}p_j$，不是无条件加一次α。纯视觉公式、混合模态归一化和分段Attention的合并域要分别登记；这是代数条件，不表示已经核验CalibQuant作者实现。（v2式6–8及整理者推导。）
+同理，若该子集的V恢复为 $\widehat V_r=Z_V\operatorname{diag}(s)+\mathbf1\alpha^\mathsf T$，其输出偏置是 $\alpha\sum_{j\in r}p_j$，不是无条件加一次α。纯视觉公式、混合模态归一化和分段Attention的合并域要分别登记。（v2式6–8及整理者推导。）
 
 ## 4. V 误差有抵消，也有叠加
 

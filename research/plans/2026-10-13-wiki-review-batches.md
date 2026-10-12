@@ -6,7 +6,7 @@
 
 “已完成”表示本批页面职责与核心解释已核读、发现的问题已处理；来源核验是针对核心主张与疑点的定向核对，不表示所有上游代码或论文证明均重新审计。第 1 批沿用上一轮六页抽查，第 2 批沿用已完成的重构推导复核，第 3 批沿用已完成的 GPTQ 方法复核；相关正文在本轮开始时未变化。
 
-当前完成 3 批、19 个知识页。Q-VLM、FlatQuant、LUQ 本轮只提前同步来源日期，整页正文仍列为待审。原有 `wiki/research/mbq-vlmq-comparison.md` 改动保留；审到该页时区分本轮修复与已有改动。
+当前完成 4 批、25 个知识页。Q-VLM、FlatQuant、LUQ 本轮只提前同步来源日期，整页正文仍列为待审。原有 `wiki/research/mbq-vlmq-comparison.md` 改动保留；审到该页时区分本轮修复与已有改动。
 
 后续批次最多八页；若一批包含独立计算链或问题较多，再拆分。没有问题的页面无需为凑修改而改写。新出现的跨页问题可回修已审页，并记录影响。
 
@@ -36,7 +36,7 @@
 
 ## 第 03 批 · 经典方法与实现衔接
 
-状态：已完成；5 页。提交：`随本清单提交`。
+状态：已完成；5 页。提交：`c9f4c3c`。
 
 - [gptq](../../wiki/methods/gptq.md)
 - [llm-int8](../../wiki/methods/llm-int8.md)
@@ -46,7 +46,7 @@
 
 ## 第 04 批 · 模型基础与注意力误差
 
-状态：待审；6 页。
+状态：已完成；6 页。提交：随本批清单更新。
 
 - [mixture-of-experts-and-routing](../../wiki/fundamentals/model/mixture-of-experts-and-routing.md)
 - [multi-head-latent-attention](../../wiki/fundamentals/model/multi-head-latent-attention.md)

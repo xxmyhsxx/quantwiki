@@ -19,7 +19,7 @@ sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
   - raw/papers/2026-09-21/vlmq/paper.pdf
   - raw/repositories/2026-09-21/mbq/source/qmllm/models/qwen2_vl/qwen2_vl.py
-updated: 2026-10-08
+updated: 2026-10-13
 ---
 
 # 视觉语言模型中的 token 与量化对象
@@ -51,9 +51,9 @@ $$
 | 连接器 | 视觉信息如何进入语言隐藏空间，误差如何传入骨干 | MQuant 算法 1 将其纳入量化，但未提供独立连接器收益消融 |
 | 语言骨干权重 | 一套共享权重应怎样兼顾不同 token 的输出误差 | [MBQ](../../methods/mbq.md) 与 [VLMQ](../../methods/vlmq.md) 的主要研究对象 |
 | 语言骨干激活 | 动态范围、离群值、粒度和运行时量化 | MBQ 有 W4A8，VLMQ 主实验是 weight-only，MQuant 使用分模态静态网格；不能混为同一设置 |
-| KV cache | 随序列缓存的键值状态，误差和显存随长度变化 | 两篇没有给出专门 KV cache 算法，不能把权重量化成果当作 KV 量化成果 |
+| KV cache | 随序列缓存的键值状态，误差和显存随长度变化 | MBQ 与 VLMQ 未提出专门 KV cache 算法，不能把权重量化成果当作 KV 量化成果 |
 
-KV cache 作为量化对象的键值差异、粒度选择、流式约束与系统限制见 [KV cache 量化的对象与粒度](../../theory/kv-cache-quantization-objects-and-granularity.md)；该页不区分模态，视觉 token 与文本 token 共用同一套缓存结构。
+缓存的键值差异、粒度选择、流式约束与格式见 [KV cache 量化的对象与粒度](../../theory/kv-cache-quantization-objects-and-granularity.md)。缓存的逻辑组织不决定精度策略；该页也比较 AKVQ-VL 按模态／层模式保护不同位置的方式，具体对象见本页第 8 节。
 
 W3A16 描述权重与激活位宽，不完整描述视觉编码器、连接器、KV cache 和未量化算子。[均匀量化与分组](../quantization/uniform-quantization-and-groups.md) 定义的 scale、zero-point 与 group 仍需在每种对象上明确指定。
 

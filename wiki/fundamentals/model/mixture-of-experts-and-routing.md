@@ -118,7 +118,7 @@ DeepSeek-V2 的效率思路同时作用于两种成本：DeepSeekMoE 减少单 t
 
 报告还包含 8.1T token 预训练、长上下文扩展、SFT 与基于 GRPO 的对齐。这里以 §2.2、§3.1.2/3.1.3 的架构和必要训练条件为主要依据，研读训练、推理效率与对齐说明以辨别整体贡献；未将对齐算法展开为本页的另一条主题，也未逐项审查全部任务表或归因每项质量变化。服务中的 FP8 参数与平均 6-bit 缓存是作者报告，完整格式、专家算子与路由路径不由该报告给出；本次未核读这些实现代码。
 
-本页完成的是模型结构和量化对象的解释。[MoE 路由与量化专家执行](../../implementation/moe-routing-and-quantized-expert-execution.md)沿固定 SGLang 版本连接 top-k、token–专家配对、块尺度、两次专家 GEMM 与共享输出。该页选定的有偏 sigmoid 路由是实现类支持的另一配置，不能替换上面的 V2 论文公式；源码核读也不表示已运行或测量这些路径。
+本页完成的是模型结构和量化对象的解释。[MoE 路由与量化专家执行](../../implementation/moe-routing-and-quantized-expert-execution.md)沿固定 SGLang 版本连接 top-k、token–专家配对、块尺度、两次专家 GEMM 与共享输出。该页选定的有偏 sigmoid 路由是实现类支持的另一配置，不能替换上面的 V2 论文公式。
 
 ## 来源身份
 
