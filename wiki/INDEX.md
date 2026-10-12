@@ -147,6 +147,7 @@ sources: []
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
 | [PV-Tuning：连续参数与离散选码](methods/pv-tuning.md) | 精确P/V、代理下降、稀疏Adam与实际变化限制、数据/质量/运行条件。 |
 | [LC-QAT：仿射网格与代理训练](methods/lc-qat.md) | 受约束向量表示、输入侧重排、DGE/坐标接口与数据效率边界。 |
+| [FluxBin：行列二值分解、显著列残差与输入查表](methods/fluxbin.md) | 行列/组尺度怎样连接固定符号优化、混合预算和LUT执行，质量与测量条件如何区分。 |
 | [SharQ：动态稀疏 FP4 主干与量化残差](methods/sharq.md) | 为什么残差要在主干量化后构造，共同权重界、pair结构和质量/执行代价如何连接。 |
 | [Ideogram 4.0 的 INT8/GGUF PTQ：层保护与生成评测协议](methods/ideogram-int8-gguf.md) | 双分支预算、保护消融与JSON输入怎样影响质量/保真度/OCR的判断。 |
 | [FlexQ：INT6 分组量化与二值 Tensor Core 执行](methods/flexq.md) | 6-bit配方怎样结合位平面、signed位权和group恢复，质量/速度证据各有哪些条件。 |

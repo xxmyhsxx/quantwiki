@@ -1,0 +1,114 @@
+---
+title: FluxBin：行列二值分解、显著列残差与输入查表
+type: method
+tags:
+  - weight-quantization
+  - second-order
+  - data-format
+  - kernels
+sources:
+  - raw/papers/2026-09-21/fluxbin/paper.pdf
+  - raw/papers/2026-09-21/fluxbin/source/sections/4_methodology.tex
+  - raw/papers/2026-09-21/fluxbin/source/sections/5_experiment.tex
+  - raw/papers/2026-09-21/fluxbin/source/sections/appendix.tex
+  - raw/papers/2026-09-21/fluxbin/source/algorithm/PTQ.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/llama2_task.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/llama3_1_task.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/qwen3_task.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/ablation.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/memory.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/GPU_profile.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/mu_profile.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/ablation_nsample.tex
+  - raw/papers/2026-09-21/fluxbin/source/tables/kernel_latency.tex
+updated: 2026-10-12
+---
+
+# FluxBin：行列二值分解、显著列残差与输入查表
+
+FluxBin用少量带行/列尺度的±1矩阵之和近似权重，再对每组少数显著列的**残差**增加二值基底。推理时将当前输入和列尺度的所有短符号组合预先求和，权重符号作为LUT地址；行尺度在局部归约时恢复。它将可被查表消费的表示、局部精度分配和执行组织共同设计，而不是把一个W2标签直接送进INT2乘法。（[FluxBin v1](https://arxiv.org/abs/2608.15602v1)，§3、图1–3、附录A–C。）
+
+本页研读固定24页PDF的核心方法、优化证明、伪代码、主表/必要实验与成本附录，核代表图及表1–9/12的相关结果；不逐点重建全部曲线或审计参考文献。现有材料只有论文，没有核作者实现、打包/加载接口或运行模型/GPU。免训练仍有校准、交替优化和二阶反馈成本。
+
+## 1. 每个基底同时适配行与列
+
+设 $W\in\mathbb R^{M\times N}$，M为输出行、N为输入列。一个基底的近似为 $(\alpha_r^{(k)}\alpha_c^{(k)\top})\odot B^{(k)}$，其中 $B^{(k)}\in\{-1,+1\}^{M\times N}$。行尺度刻画输出通道范围，列尺度共享给所有输出行，捕捉输入列的幅值差异；最终求和K_b个基底。与普通逐行二值化相比，列尺度增加了表示自由度，同时允许在构表时摊销列乘法。
+
+实际配置还沿N以g分组：**每个输出行、每个组、每个基底各有一个行尺度**，不是每整行一个尺度。令G(j)为列j所属组，则 $\widehat W_{ij}=\sum_k\alpha_{r,i,G(j)}^{(k)}\alpha_{c,j}^{(k)}B_{ij}^{(k)}$。正文简写行向量的式3/11需结合§4配置说明和附录C.2存储式理解；跨组归约前需应用该组行尺度，见[分组恢复](../implementation/quantized-matmul-scaling-execution.md#15-归约维分组为什么要在累加途中恢复尺度)。
+
+对单个基底，固定B及列尺度后，行尺度由标量最小二乘得到。令 $z_j=\alpha_{c,j}B_{ij}$，无正则且 $\sum_jz_j^2>0$ 时，最佳行尺度为 $\sum_jz_jW_{ij}/\sum_jz_j^2$；固定行尺度时列更新同理。论文式5/附录A.1在分母加入ε以稳定数值，但ε>0通常不再是原无正则损失的精确最小值。例如W=2、z=1、ε=1给出尺度1，原损失仍可在尺度2达到0；加入ε尺度平方惩罚后才是相应岭回归解。（教学限定，不是作者运行缺陷。）
+
+对K_b≥2，式6枚举每个坐标全部 $2^{K_b}$ 个符号组合，选最接近W_ij者。在**固定所有尺度、无跨元素约束的Frobenius损失**下，每坐标最优组合也给出整体最优符号赋值；它不保证尺度/符号联合非凸问题的全局最优，更不是带完整Hessian交叉项的量化最优。
+
+算法3先用贪心残差初始化，再交替更新尺度与联合符号。其多基底尺度更新只引用单基底式5，没有明确是否扣除其他基底；对总重构目标做第k项条件更新，应拟合 $W-\sum_{l\ne k}\widehat W^{(l)}$，而非每项都拟合同一个完整W。这是整理者澄清所需条件，实际更新须待实现核查，不能据伪代码判定作者程序采用了错误目标。带mask的残差路径只在选定列域使用±1载荷，域外为零。
+
+## 2. 显著列得到额外残差基底
+
+校准输入采用作者列样本记法 $X\in\mathbb R^{N\times L}$，构造 $H=2XX^\top$。论文式7的列分数为
+
+$$S_j=\frac{\sum_iW_{ij}^2}{([H^{-1}]_{jj})^2}.$$
+
+它用权重幅值及逆Hessian对角作代理，分母有平方；不能替换成实际候选量化扰动ΔW的OBQ损失。每g列固定挑s个最高S_j，得到 $N_{sal}=Ns/g$ 个列。top-s只对这个可加分数和、固定名额最优，不证明对实际输出误差或整模型质量最优。
+
+先拟合覆盖全部列的global base，得到 $\widehat W_b$；再对 $R_b=W-\widehat W_b$ 的选中列拟合K_s个基底，并加回对应列。选中位置仍保留global base，因此残差载荷需要叠加计费。这不同于把这些列完全移出主体，或将原始浮点值原样覆盖。
+
+算法1/2按列组执行分解与误差反馈：校准/H逆 → 当前组显著列选择 → global分解 → 选中列残差分解 → 合并 → 向剩余列传播组误差。Hessian反馈思想由[GPTQ](gptq.md)承接；原伪代码未给完整反馈式、阻尼、排列及退化H处理，本页不补成已核的实现。256条C4校准是作者默认选择，表7的7B PTQ时间为25.53分钟；不存在反向微调不等于没有离线优化。
+
+配置 `2b-s8-g128` 指K_b=K_s=2、每128列选8列；`b`为bases，**并非所有参数都恰好2bit**。s16则选16列，纯 `2b-g128` 不含显著残差分支。
+
+## 3. LUT怎样消费符号和两侧尺度
+
+对当前输入x的一段μ列及第k基底，先用列尺度相乘，构建 $2^\mu$ 个短符号和；$b_n(p)$ 是地址p的第n个0/1位：
+
+$$T_k[p]=\sum_{n=0}^{\mu-1}x_n\alpha_{c,n}^{(k)}(2b_n(p)-1),\qquad 0\le p<2^\mu.$$
+
+一个输出行对应的μ个权重符号组成地址p，查表得到这段的点积，乘该组行尺度，再与其他段/组/基底相加。μ=8时每表256项；每个输入token、基底都需构表，列尺度不同的基底不能默认共用同一表。主循环省去逐权重浮点乘法，构表、行尺度恢复及浮点归约仍然存在。共享知识及分组算例见[二值图案查表](../theory/codebook-quantization-and-bit-budget.md#62-二值图案查表怎样摊销输入点积)。
+
+VCM把选中的二值残差列离线映射成 $M\times N_{sal}$ 的连续矩阵，保存原列索引；当前输入和残差列尺度按该索引gather，再沿同类dense LUT路径消费。它移除了残差权重的稀疏位置表示，不代表输入gather免费或所有访问必然合并。论文描述Uint32符号打包/位操作与分块共享内存，尚未核字节顺序、尾部、同步或CUDA源码。
+
+按附录C.1的抽象计数，构表项数为 $(2^\mu/\mu)(K_bN+K_sN_{sal})$，读取项数为 $(M/\mu)(K_bN+K_sN_{sal})$。忽略构表等成本且K_s=K_b、ρ=s/g时，读取项数相对MN的比例为 $K_b(1+\rho)/\mu$；其倒数 $\mu/[K_b(1+\rho)]$ 才是理想读取项数减少倍数。μ=8、K_b=2时，s8/s16约3.76/3.56，而纯global才是4。操作数量不是GPU速度，实际tile内重复构表、gather、行恢复与归约还需计费。
+
+附录E.2的每block共享内存包含LUT及每基底部分和：$S_{LUT}=4B_tK_b(K_t/\mu)2^\mu$，$S_{acc}=4B_tK_bM_t$（字节；4为float字节数）。$B_t$ 是每block处理的token数，$M_t/K_t$ 是输出行/输入列tile尺寸。默认M_t=128、K_t=64、K_b=2、μ=8时为17KiB×B_t，μ=4则3KiB×B_t；表9列BS1/4/8对应17/68/136KB。固定B_t可保持每block预算，但增大B_t会线性增长，不能把数量比与batch无关改写成所有batch下共享内存无约束。
+
+## 4. 完整平均位宽与峰值显存分开计账
+
+按附录C.2的理想紧凑载荷、FP16尺度及16bit列索引，假设g整除N，ρ=s/g，平均位宽为
+
+$$b_{ideal}=K_b+K_s\rho+\frac{16(K_b+K_s)}g
++\frac{16K_b+16K_s\rho+16\rho}{M}.$$
+
+前两项为全列/残差符号载荷，第三项为两分支每组行尺度，最后为列尺度和索引。K_b=K_s=2、g=128时约2.63/2.75bit（s8/16）；纯global约2.25bit，并非完整格式的2bit或8倍压缩。作者将尺度和索引合称FP16，但索引的计账只需要16位宽，不能据此认定它以浮点数存储；实际dtype/对齐/未量化参数仍待实现。
+
+表3是输入/输出各512时的**峰值GPU allocated memory**：Qwen3-32B的纯global为62720.77→12135.80MB，约5.17倍；7B s16为3475.21MB，70B纯global为20251.61MB、s16为26393.13MB，FP16为OOM。它们来自A100 80GB，不证明已在消费级GPU验证，也不能把纯global的20.2GB与s16质量当成同一配置。
+
+7B s8/s16峰值差仅0.91MB是原表结果，不能推出新增载荷接近零；按上述公式，s8→s16仍增加 $0.125+3/M$ bit/被量化权重。原文归因于固定buffer分配，缺作者运行/分配记录时无法从峰值表独立验证该解释。不同模型峰值差也并非全小于1MB。
+
+## 5. 质量、吞吐和能耗各支持什么
+
+表1 Llama-2的Avg是PIQA、ARC-e/c、BoolQ、HellaSwag、WinoGrande六项均分，WikiText PPL另列；基线的FT/Dist标记与不同2.01–3.125平均位宽也须保留。
+
+| 配置 | 六项均分 | Wiki PPL | 速度tok/s |
+| --- | ---: | ---: | ---: |
+| Llama-2-7B FP16 | 67.07 | 5.47 | 42.94 |
+| 7B FluxBin s8/g128 | 58.09 | 8.76 | 254.39 |
+| 7B FluxBin s16/g128 | 59.15 | 8.20 | 250.87 |
+| 7B QuIP#，2.02bit、FT/Dist | 59.41 | 8.22 | 131.97 |
+| 7B AQLM，2.02bit、FT/Dist | 58.64 | 6.59 | 98.50 |
+
+5.92倍为s8的254.39/42.94，不能接在s16的59.15质量后当作同一方案结果。70B s8为70.95均分/4.90PPL/60.67tok/s，约为QuIP#18.64tok/s的3.25倍；s16为70.67/4.84/60.60，质量终点也非全部随s增大改善。精度接近所列基线不等于接近FP16全部质量。
+
+表4 Llama-3.1包含五项、MMLU为5-shot：70B s16均分67.81，AQLM50.27，差**17.54个百分点**；FP16为78.97。8B-Instruct s16为52.95，低于GPTQ55.90。表5 Qwen3-8B s16为65.22，比SLiM46.92高18.30个百分点，但低于FP1671.14/GPTQ67.27；不能写成所有模型/基线质量最优。
+
+吞吐测试在单张A100 80GB上，用定制HF generate、CUDA graphs捕获prefill/decode及static KV；表1速度输入/输出各512，该表没有明确batch条件，图4另列batch曲线和128/128的decode-only。它衡量该固定执行协议，不覆盖冷加载、动态图、请求调度或完整服务吞吐。表12独立GEMV的4096×4096纯/s8/s16为41/47/49μs，对照AQLM79/QuIP#112；5120×13824的s8为166、纯为167，不能概括为增加残差必然更慢或所有shape零成本。
+
+能耗协议另为128/128、batch1，nvidia-smi每100ms采样，排除初始10秒warmup，按 $E=\sum_tP_t\Delta t$ 计steady decode。表8的13B纯global579.23J对FP165908.03J为10.20倍（原文10.19）；s16为644.74J，对应约9.16倍。不能拼接表1速度与表8能耗，也不能称为含加载/预热的完整请求能耗。表8的99.8%以上GPU busy fraction不等于SM occupancy或算术单元饱和，低memory utilization也不能独立证明HBM无停顿或唯一瓶颈。
+
+表2关闭列尺度使7B s16 PPL8.20→8.96，随机显著列为26.02，去残差为13.71；关闭VCM速度250.87→205.68（约−18.0%）、峰值3475.21→4640.37MB（+33.5%）。这些支持所测组件/配置的作用，不证明任何输入/模型上都必要或全局Pareto最优。表7的256→512样本PPL8.63→8.54、均分58.77→58.57，1024均分58.07；作者归因为校准过拟合，单组趋势不能独立确认因果。表1同名s8为8.76/58.09，与表7默认256行保留差异，缺完整协议不能合并。
+
+表9的μ8并非每batch能耗最低：BS1为451.18J，高于μ4的397.15J，BS4/8则更低。默认μ8是作者取舍，不是普遍最优。附录E.3的Effective TFLOPS按 $2M(N+N_{sal})/t$ 计等效稠密工作量，包含残差分支但不是实际浮点指令数；不能与Tensor Core物理TFLOPS混用。真实质量、完整格式和kernel行为仍需独立实现/运行证据。
+
+## 来源身份
+
+| 来源 | 固定身份 | 本页范围 |
+| --- | --- | --- |
+| [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1) | arXiv:2608.15602v1；PDF SHA-256 41dcc982ffb36354581fd3e01e6ce2dab62c1ec547d6256c7533f12596e70f0b | §3–4、图1–5、附录A–E、算法1–3和代表表格；未核作者实现或运行模型/GPU |

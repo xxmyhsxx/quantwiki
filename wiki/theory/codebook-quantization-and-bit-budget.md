@@ -24,7 +24,9 @@ sources:
   - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/papers/2026-09-21/spqr/source.eprint
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
-updated: 2026-10-11
+  - raw/papers/2026-09-21/fluxbin/source/sections/4_methodology.tex
+  - raw/papers/2026-09-21/fluxbin/source/sections/appendix.tex
+updated: 2026-10-12
 ---
 
 # 码本量化：标量、向量、加性表示与位宽预算
@@ -133,6 +135,20 @@ $$y_i=s_i\sum_{j,k}T_{j,k,z_{ijk}}.$$
 
 在固定每权重索引成本 $b$ 下，$k=2^{bd}$。若还要求中心表摊销 $h$ 固定，需 $l=kdb_c/h$：提高维度或中心精度不只增加搜索与解码成本，也增加共用一张表的权重数量。是否损失局部适配能力，要和实际重构误差一起考察。评价执行收益则需保持引擎、设备与负载条件：同一引擎内换格式的比较，和换引擎再换格式的比较，回答的是不同问题。
 
+### 6.2 二值图案查表怎样摊销输入点积
+
+一组±1权重可以用整段符号模式作为地址，查到当前输入的部分点积。令 $W\in\mathbb R^{M\times N}$，输入 $x\in\mathbb R^N$，第k基底解码为 $a_{i,G(j)}^{(k)}c_j^{(k)}B_{ij}^{(k)}$；G(j)是列组，a为每行/组尺度，c为共享给所有输出行的列尺度。令 $b_n(p)$ 为地址p的第n个0/1位，对每组内μ列小段h，用该段输入和c构建
+
+$$T_{k,h}[p]=\sum_{n=0}^{\mu-1}x_{h,n}c_{h,n}^{(k)}(2b_n(p)-1),\quad 0\le p<2^\mu.$$
+
+输出行i的符号段组成地址 $p_{i,k,h}$，于是 $y_i=\sum_{k,h}a_{i,G(h)}^{(k)}T_{k,h}[p_{i,k,h}]$。这里小段不跨组，行尺度需在跨组相加前恢复；只有各组尺度相同等条件下才可全部后置。教学例：两个段查到1/1、组尺度为1/2，输出为3；若两个部分和改成2/0，未加权总和仍是2，正确输出却为2。因此只保留总和再乘一个共同尺度通常丢失信息。（[FluxBin v1](https://arxiv.org/abs/2608.15602v1)，式3/11/14–15、§4及附录C.2；分组记法为整理者展开。）
+
+它与前面的向量码本输入查表都将点积摊销给多输出行，但地址含义不同：这里每一位对应一个±1符号，列尺度随基底改变；FlexQ的AND-popcount则沿归约维计算整数位平面内积，不构建这张浮点部分和表。每个token和每个不同列尺度基底需重新构表；μ8有256项，主循环省乘法不代表构表、行恢复或整个kernel没有浮点乘法。
+
+若K_b个global基底覆盖N列，K_s个额外残差基底覆盖 $N_{sal}=\rho N$ 列，理想构表/读取项数分别为 $(2^\mu/\mu)(K_bN+K_sN_{sal})$ 与 $(M/\mu)(K_bN+K_sN_{sal})$。忽略构表、映射和归约后，读取项数相对MN的比例为 $(K_b+K_s\rho)/\mu$，其倒数 $\mu/(K_b+K_s\rho)$ 为理想读取项数减少倍数；这是抽象操作计数，不是硬件速度保证。残差覆盖重叠位置，载荷及尺度都应相加，不能只计主体位宽。
+
+将选中权重列映射成连续矩阵可改善残差消费，但当前输入仍需原列索引gather；LUT占用也随每block的token数、基底数和 $2^\mu$ 增长。表示自由度、元数据、构表摊销和共享内存预算需要共同判断。具体行列优化、混合预算及作者测量条件见[FluxBin](../methods/fluxbin.md)；归约尺度原则见[分组恢复](../implementation/quantized-matmul-scaling-execution.md#15-归约维分组为什么要在累加途中恢复尺度)。
+
 ## 7. 状态路径可以隐式表示长向量
 
 [QTIP](../methods/qtip.md) 将码字限制为 trellis 图上的合法路径，避免显式保存任意高维码本。$(L,k,V)$ 结构有 $2^L$ 个状态、每步输出 V 个数；长度 T 的序列主体为 kT 位，开放路径另需 $L-kV$ 初始位。tail-biting 用首尾重叠省去这部分，但要求闭环搜索；论文的两遍 Viterbi 是近似闭环选择。
@@ -216,6 +232,8 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 固定每组相同位宽时，$\sum a_\ell$ 决定预测失真。对固定坐标方差乘积，混合坐标使各组体积接近可减少 AM–GM 间隙，但一个具体离散分组未必能完全均衡。设计时应依次核对：来源分布和目标、近似适用区间、整数索引预算、元数据、编码/解码成本，最后才是任务效果。
 
 ## 来源身份
+
+- [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1)，arXiv:2608.15602v1；式3/11/14–15、附录C.1–C.2，第6.2节的分组尺度与操作计数为教学展开。
 
 - [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，`arXiv:2606.10531v1`；仿射网格表示与输入侧重排。
 

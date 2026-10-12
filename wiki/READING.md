@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **114 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **115 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1)<br>arXiv:2608.15602v1 | §3–4、附录A–E与算法1–3、代表图表；核行列/组尺度、固定尺度符号最优与ε条件、显著残差、LUT/VCM、完整预算及质量/性能协议 | [FluxBin](methods/fluxbin.md)；[二值图案查表](theory/codebook-quantization-and-bit-budget.md#62-二值图案查表怎样摊销输入点积) | 未核作者实现、打包/加载/反馈细节或运行模型/GPU；未逐点重建曲线/审计全部参考；保留表间配置/统计与峰值/理论计账差异 | [2026-10-12](LOG.md#2026-10-12--fluxbin-ingest-与独立评审) |
 | [SharQ: Bridging Activation Sparsity and FP4 Quantization for LLM Inference](https://arxiv.org/abs/2606.26587v1)<br>arXiv:2606.26587v1 | 正文方法/理论/实验、表1–5、图2–4及必要格式附录；核4:8 pair、主干量化后残差、共同权重界、均分恢复/性能条件与原文差异 | [SharQ](methods/sharq.md)；[共同权重残差](implementation/quantized-matmul-scaling-execution.md#17-稀疏主干与量化残差怎样共用权重) | 未重建全部曲线或审计全部引用；原文E2M1 NaN及图/正文数字分开；未运行模型/GPU或复现质量/性能 | [2026-10-12](LOG.md#2026-10-12--sharq-论文代码-ingest-与独立评审) |
 | [Ideogram 4.0 INT8/GGUF PTQ研究](https://arxiv.org/abs/2606.12280v2)<br>arXiv:2606.12280v2 | 正文方法/协议、表1–5和代表图；回查PDF1–9及源文件，核双DiT分支、保护/JSON消融边界、配对CI与GGUF预算 | [Ideogram INT8/GGUF](methods/ideogram-int8-gguf.md)；[生成质量与协议](implementation/model-quality-evaluation.md#12-生成质量保真度和提示协议怎样分开评测) | PDF/公开标题差异已记录；GGUF一般说法与既有llama.cpp固定版本分开；未取得作者实现/权重，未运行生成/GPU或原始bootstrap，未审计全部引用 | [2026-10-12](LOG.md#2026-10-12--ideogram-int8gguf-ingest-与独立评审) |
 | [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2)<br>arXiv:2508.04405v2 | 正文方法/实验、式1–6、表1–6、代表布局与性能图；核signed位权、group恢复、免校准与down A8配方 | [FlexQ](methods/flexq.md)；[位分解执行](implementation/quantized-matmul-scaling-execution.md#16-多位整数怎样用二值点积执行) | 原式6缺位权与代码分开说明；未逐点重建全部曲线，未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
@@ -236,11 +237,11 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下115个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下114个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；下一项第6批FluxBin，再接QuIP/QuIP#/SpQR所选实现和其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；下一项QuIP、QuIP#、SpQR所选实现，再接其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（46条）
+### 论文（45条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -254,7 +255,6 @@ updated: 2026-10-12
 | [FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness](https://arxiv.org/abs/2205.14135v2) | `arXiv:2205.14135v2` |
 | [FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning](https://arxiv.org/abs/2307.08691v1) | `arXiv:2307.08691v1` |
 | [FlashInfer-Bench: Building the Virtuous Cycle for AI-driven LLM Systems](https://arxiv.org/abs/2601.00227v1) | `arXiv:2601.00227v1` |
-| [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1) | `arXiv:2608.15602v1` |
 | [Formal Algorithms for Transformers](https://arxiv.org/abs/2207.09238v1) | `arXiv:2207.09238v1` |
 | [GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245v3) | `arXiv:2305.13245v3` |
 | [Holistic Evaluation of Language Models](https://arxiv.org/abs/2211.09110v2) | `arXiv:2211.09110v2` |
