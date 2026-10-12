@@ -16,6 +16,7 @@ sources:
   - raw/papers/2026-10-07/pivot-q/paper.pdf
   - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md.txt
   - raw/papers/2026-09-21/int8-gg/paper.pdf
+  - raw/papers/2026-09-21/helm/paper.pdf
 updated: 2026-10-12
 ---
 
@@ -35,6 +36,12 @@ $$\mathrm{NLL}=-\sum_{t\in\mathcal I}\log p_\theta(x_t\mid x_{<t}),\qquad
 padding、只提供上下文的重叠 token、被忽略的 prompt labels 不计入 $\mathcal I$。因果 LM 常在内部把 logits 与 labels 错开一位；用 loss 乘有效 token 数还原 NLL 时，必须按**错位后的有效 labels**计数，不能盲乘输入序列长度。
 
 合并多个样本时先累加 NLL 和有效 token 数，再取指数。教学例：两段分别有 2 个、8 个计分 token，平均 NLL 分别为 1、3，合并平均 NLL 为 2.6；不能直接平均两段 PPL，亦不能不加权平均两个 loss。
+
+### 1.1 按字节计分仍须固定文本和上下文
+
+[HELM](helm-evaluation-protocol.md)在所选语言建模场景采用bits-per-byte（BPB），以统一不同tokenizer的长度单位。整理者定义：同一被计分文字区域有B个原始字节、自然对数NLL时，$\mathrm{BPB}=\mathrm{NLL}/(B\ln2)$；例如8字节区域的NLL=8ln4，BPB=2。合并时先加总NLL和相应字节数，不能平均各文档BPB。
+
+B须对应真正参与计分的文字区域，不能把只供上下文的prefix字节混入分母；字符数也不等于UTF-8字节数。仍须对齐原始文本/编码、预处理、特殊token、文档边界和上下文。统一分母不保证模型概率或任务质量可比；具体token到字节的计数须由实现核对。（HELM v2 §5.1.1/C.1及整理者计数定义。）
 
 ## 2. 上下文窗口会改变比较口径
 
@@ -67,6 +74,12 @@ ECE 检查同一箱内“声称的概率”与“实际正确率”的差异，�
 
 自回归模型的 token 概率、整句联合概率和答案正确概率不是同一个对象。可靠性论文的 MaxProb 用生成 token 的概率乘积，具有长度效应；不能把这个乘积无条件当作已校准的正确概率。外部 Selector 则学习另一种置信度。具体设置见 [量化与可靠性](../theory/quantization-reliability-and-selective-prediction.md)。
 
+### 4.1 等量分箱与有符号误差不能混用
+
+HELM v2的默认ECE用10个等样本量箱，图17只画两个；等量不是等宽概率区间，排序、余数、并列和空箱须声明。类别top probability来自该任务的类别概率向量，不能直接用生成整句概率替代。
+
+每箱必须先取绝对差再按样本数加权。教学例：两个各10例的箱，平均置信度.9/.6、准确率.7/.8，有符号差相消为0，ECE却为.2。HELM总体式3和图17有绝对值，有限式12漏写；[协议页](helm-evaluation-protocol.md#4.%20%E7%BD%AE%E4%BF%A1%E5%BA%A6%E6%A6%82%E7%8E%87%E5%92%8C%E5%8F%AF%E9%9D%A0%E6%8E%92%E5%BA%8F%E5%88%86%E5%88%AB%E6%A0%B8%E5%AF%B9)保留这一原件差异，没有将其推断为作者实现错误。
+
 ## 5. 风险—覆盖率与代价
 
 阈值 $\tau$ 下接受集合为 $A_\tau=\{i:c_i\ge\tau\}$。二值错误损失 $\ell_i=1-y_i$ 时：
@@ -83,6 +96,12 @@ R(\tau)=\frac{\sum_{i\in A_\tau}\ell_i}{|A_\tau|}.$$
 $$\Phi_c(\tau)=\frac{n_{\mathrm{accepted,correct}}-c\,n_{\mathrm{accepted,wrong}}}{n}.$$
 
 例如 100 个样本，接受 80 个，其中 76 对、4 错，则覆盖率 80%、风险 5%；$c=10$ 时效用 0.36。VQA 的官方软分与 Effective Reliability 实现应按原协议核对，不能直接用这套二值例子复算论文表格。阈值应在独立验证集选择后固定到测试集；在测试答案上选最优阈值得到的是事后曲线分析，不能冒充部署表现。
+
+### 5.1 准确率面积和风险面积要使用同一排序网格
+
+以降序置信度排序、二值正确性y_i为教学条件，前r例准确率 $a_r=r^{-1}\sum_{i=1}^r y_i$，r=1,…,n。HELM有限式15为 $\mathrm{SCAA}=n^{-1}\sum_r a_r$，越大越好；若AURC也在同一r/n网格用同样矩形权重，二值风险1−a_r使AURC=1−SCAA。非二值损失、不同积分/端点或排序规则不能沿用此式。
+
+正面积沿coverage从0到1累积。HELM总体式6–7却按阈值t从0到∞积分a(t)dc(t)，而coverage非增，字面方向与正面积不一致；按阈值表达正面积需要负号或反向端点。置信度原子/并列也可能令恰好10%的阈值不存在；前⌊.1n⌋排序截取、部署阈值及同分处理是不同协议。没有接受样本时不能把数学约定的准确率1当作实际可靠性。
 
 ## 6. 将不同层次的判断串起来
 
@@ -195,3 +214,5 @@ CI含零与质量等价按[第8节](#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E
 - PIVOT-Q（`https://arxiv.org/abs/2610.05745v1`），arXiv:2610.05745v1，§6/表2及附录 E；固定实验协议（`https://github.com/ruanruan-andy/PIVOT-Q/blob/74d6e1f8994a03eb45aae5c316a743abda2cba15/docs/experiment_protocol.md`）：传导式适配、训练/评测 seed 和最终 checkpoint。
 
 - Ideogram INT8/GGUF研究（`https://arxiv.org/abs/2606.12280v2`），arXiv:2606.12280v2；§3–7、表1–4，生成质量/参考保真度/OCR、共享JSON输入、配对统计与消融协议边界。
+
+- Holistic Evaluation of Language Models，`arXiv:2211.09110v2`；BPB、C.2与式3/6–7/12–15，固定提示/计分及分箱和面积边界，具体身份与阅读范围见HELM页。

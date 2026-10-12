@@ -235,6 +235,7 @@ sources: []
 | [DeepEP 通信设备执行](implementation/deepep-moe-communication-execution.md) | normal/HT 的 rank/组去重、LL 的专家复制、FP8 消息/scale/handle、BF16 回传与 FP32 gate 归约怎样执行。 |
 | [DeepGEMM 专家设备执行](implementation/deepgemm-moe-expert-execution.md) | SGLang 匹配版本的 contiguous/masked 行选择、TMA scale、分组 WGMMA、padding 与 BF16 输出怎样配合。 |
 | [TTS 量化敏感性与评测](implementation/tts-quantization-evaluation.md) | 组件消融、统计等价、模拟与真实低比特图及系统成本。 |
+| [HELM：场景、提示协议与多指标评测](implementation/helm-evaluation-protocol.md) | 同任务为何还须对齐shot、打分、分箱、可靠排序与运行时间口径。 |
 | [模型质量评测](implementation/model-quality-evaluation.md) | PPL 的有效计数、任务协议与风险—覆盖率怎样定义和比较。 |
 | [推理服务评测](implementation/serving-performance-evaluation.md) | 负载、TTFT、TPOT、吞吐与 SLO 下的 goodput 如何共同解释量化收益。 |
 | [张量并行与量化](implementation/tensor-parallel-quantization.md) | 列/行分片、GQA 复制、collective 与 group/scale/zero 如何配合。 |
