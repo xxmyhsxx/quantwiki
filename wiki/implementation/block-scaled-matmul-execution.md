@@ -125,8 +125,6 @@ accumulator 先创建为 `[BLOCK_M,BLOCK_N]` FP32，每轮点积加入该状态�
 
 同时，固定 `core.py:dot_scaled` 文档说明了无原生 microscaling 硬件时的实验性软件模拟：通常先上转 BF16 后做 dot，部分后端另有规则。这是语言接口的另一种 lowering，不代表本教程的 descriptor/原生路径已经在 A100 可用，更不表示获得原生低精度算力。A100 上学习本页的编码、K 尺度与布局关系后，应结合实际环境选择解码/转换及普通 FP16/BF16 GEMM，或已有[Marlin W4A16](marlin-batched-w4a16-gemm.md)路径；不同存储格式须先核对转换，不能直接互换。
 
-本页完成固定源码的数值、维度、scale 索引与调用链核对。它补足“格式到执行”的解释，不提供模型精度、GPU 正确性或性能结果。
-
 ## 来源身份
 
 - Triton 官方 Block Scaled Matrix Multiplication 教程（`https://triton-lang.org/main/getting-started/tutorials/10-block-scaled-matmul.html`），2026-07-02T02:41:08+08:00 快照，`block-scaled-matrix-multiplication-triton-documentation-snapshot-2026-07-02`；使用格式、scale 布局与执行解释，未沿用性能图作本地结果。

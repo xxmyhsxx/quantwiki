@@ -136,4 +136,4 @@ JIT 编译缓存回答“这个版本的二进制能否复用”；autotune 缓�
 ## 来源身份
 
 - Triton 官方仓库（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`），完整 commit `81a46fa0c04526e5df55a018ecfab72ff922f592`。核读 `python/tutorials/01-vector-add.py`、`docs/python-api/triton-semantics.rst`、`docs/programming-guide/chapter-3/debugging.rst`、`python/triton/language/core.py/semantic.py` 与 `python/triton/runtime/jit.py` 的正文所列接口和关键路径。
-- 语言规则与接口均按该固定版本，不把它自动视为 vLLM/SGLang 或未来环境的依赖版本。本页为文档与源码分析、教学代码整理，没有实际编译结果或 GPU 性能证据。
+- 语言规则与接口均按该固定版本，vLLM/SGLang 或其他环境的实际依赖版本须另行核对。

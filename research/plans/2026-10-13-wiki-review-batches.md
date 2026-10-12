@@ -6,7 +6,7 @@
 
 “已完成”表示本批页面职责与核心解释已核读、发现的问题已处理；来源核验是针对核心主张与疑点的定向核对，不表示所有上游代码或论文证明均重新审计。第 1 批沿用上一轮六页抽查，第 2 批沿用已完成的重构推导复核，第 3 批沿用已完成的 GPTQ 方法复核；相关正文在本轮开始时未变化。
 
-当前完成 21 批、126 个知识页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
+当前完成 22 批、134 个知识页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
 
 后续批次最多八页；若一批包含独立计算链或问题较多，再拆分。没有问题的页面无需为凑修改而改写。新出现的跨页问题可回修已审页，并记录影响。
 
@@ -235,7 +235,7 @@
 
 ## 第 21 批 · KV cache 与长上下文 2
 
-状态：已完成；3 页。提交：随本批清单更新。
+状态：已完成；3 页。提交：`6b584b8`。
 
 - [vidkv](../../wiki/methods/vidkv.md)
 - [wush-kv](../../wiki/methods/wush-kv.md)
@@ -243,7 +243,7 @@
 
 ## 第 22 批 · GPU 基础与 Kernel 1
 
-状态：待审；8 页。
+状态：已完成；8 页。提交：随本批清单更新。
 
 - [arithmetic-intensity-and-roofline](../../wiki/fundamentals/hardware/arithmetic-intensity-and-roofline.md)
 - [gpu-execution-and-memory-hierarchy](../../wiki/fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)

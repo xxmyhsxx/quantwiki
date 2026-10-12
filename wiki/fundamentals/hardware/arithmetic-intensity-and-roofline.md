@@ -85,11 +85,9 @@ $$I\approx\frac{2b}{w/8}=\frac{16b}{w},\qquad \text{受内存限制当且仅当}
 
 块内复用怎样改变流量见 [分块矩阵乘与融合](../operators/gpu-kernel-computation-patterns.md)；异步执行、缓存策略和有效带宽怎样测量见 [算子正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md)。
 
-## 7. 局限与未验证
+## 7. 从单算子到真实数据流
 
-- 本页的定义与算子算例来自讲义原文，数值为其给出的 H100 规格；本轮没有在本地运行任何基准或 profiler。
-- 临界批量的公式是本页的换算，只在「权重读取主导、忽略激活与输出流量、忽略元数据」的前提下成立；前缀元数据会改变每字节可承载的权重数，见 [FP8 与 Microscaling 数值格式](../numeric-formats/fp8-and-mx-data-formats.md) 与 [GGUF 与块量化存储格式](../../implementation/gguf-block-quantization-formats.md) 的位宽口径。
-- 讲义是教学材料，其算子代数强度按「单独执行该算子」计算；真实模型中的算子会融合执行，融合后的算术强度需按融合后的数据流重新计算。
+本页未运行基准或 profiler。讲义的算例按单独算子计账；真实模型融合后的算术强度需按实际数据流重新计算。块尺度、零点等元数据也会改变每字节可承载的元素数，格式预算见 [FP8 与 Microscaling](../numeric-formats/fp8-and-mx-data-formats.md)与 [GGUF 块格式](../../implementation/gguf-block-quantization-formats.md)。
 
 使用实测 DRAM/L2 字节、硬件计数器与时间线检验这些上界时，见 [GPU 算子性能分析](../../implementation/gpu-kernel-performance-analysis.md)。算法最少字节与 profiler 实际流量需要分开，远低于上界也可能由启动、工作不足或依赖等待造成。
 

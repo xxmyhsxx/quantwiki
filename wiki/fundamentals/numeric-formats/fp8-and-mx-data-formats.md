@@ -16,7 +16,7 @@ updated: 2026-10-06
 
 整数网格不是低精度表示的唯一形式。浮点格式用指数补充动态范围，块内共享尺度（Microscaling）进一步把有限位宽分配到一组元素上。哪些数值可表示、缩放放在哪一层、元数据占多少空间，直接决定量化器能否复用以及后端能否真正加速。
 
-本页依据 FP8 Formats for Deep Learning（arXiv:2209.05433，下称 F，全文研读；抽取文本缺表格，已回查作者 TeX 源码核对）与 Microscaling Data Formats（arXiv:2310.10537，下称 M，格式定义、值语义、转换算法与计算流局部研读），并定向核对 llama.cpp 固定快照 b820cc8e 的块结构定义。OCP FP8 与 Microscaling 规范原件未获取，涉及规范细节处只按论文转述，不冒充规范原文。仿射整数网格、分组与元数据的基本定义见 [均匀量化与分组](../quantization/uniform-quantization-and-groups.md)。
+本页依据 FP8 Formats for Deep Learning（arXiv:2209.05433，下称 F，全文研读；抽取文本缺表格，已回查作者 TeX 源码核对）与 Microscaling Data Formats（arXiv:2310.10537，下称 M，格式定义、值语义、转换算法与计算流局部研读），并定向核对 llama.cpp 固定快照 b820cc8e 的块结构定义，未运行模型或硬件测试。OCP FP8 与 Microscaling 规范原件未获取，涉及规范细节处按论文转述。仿射整数网格、分组与元数据的基本定义见 [均匀量化与分组](../quantization/uniform-quantization-and-groups.md)。
 
 指数偏置、正常数/非正规数、ULP 与累加舍入的共通基础见 [浮点表示与累加](floating-point-and-accumulation.md)。先区分动态范围和有效数字精度，再理解本页 FP8 与块尺度的取舍。
 
@@ -70,7 +70,7 @@ F 的实验统一使用**模拟 FP8**：把张量裁剪到 FP8 可表示值（�
 | ResNet18 | 70.58 | 70.12 | DeiT small | 80.08 | 80.02 |
 | ResNet34 | 73.84 | 73.72 | — | — | — |
 
-BELU：GNMT 24.83 → 24.65、Transformer Base 26.87 → 26.83、Transformer Large 28.43 → 28.35。
+BLEU：GNMT 24.83 → 24.65、Transformer Base 26.87 → 26.83、Transformer Large 28.43 → 28.35。
 
 语言模型困惑度（越低越好）：
 
@@ -160,13 +160,6 @@ typedef struct {
 | 硬件路径 | INT8/INT4 张量核心与整数累加 | 依赖支持 FP8/FP4 的硬件 |
 
 浮点格式的优势是动态范围，以及与训练共用类型；代价是有效尾数位更少、需要硬件支持。把 FP8 的结论直接搬到 INT4 不成立，把 MX 块尺度当作分组仿射量化也不成立：前者位宽不同，后者的尺度是 2 的幂且只调指数。
-
-## 7. 局限与未验证
-
-- **模拟与硬件分离。** F 的训练与推理结果来自模拟 FP8，算术在宽精度完成；真实 FP8 张量核心的数值行为、吞吐与累加精度没有在本轮材料中验证。
-- **规范原件缺失。** OCP FP8 与 Microscaling 规范未获取，特殊值、舍入模式与转换语义以两篇论文为准；论文明确允许实现定义，实际后端行为需另查。
-- **表格核验范围。** F 的全部表格已回查作者 TeX 源码；M 的推理与训练结果表未逐项核对，本页只记录作者的定性结论。
-- **未运行。** 本轮没有运行模型、量化工具或硬件性能测试，也没有验证 llama.cpp 中 MXFP4/NVFP4 的读写路径是否完整可用。
 
 ## 来源身份
 
