@@ -42,7 +42,7 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_mma.h
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_dtypes.cuh
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/generate_kernels.py
-updated: 2026-10-07
+updated: 2026-10-13
 ---
 
 # 权重量化反量化内核的契约：AWQ 与 marlin 两种实现
@@ -147,7 +147,7 @@ def _jit_gptq_marlin_module(dtype: torch.dtype) -> Module:
     )
 ```
 
-四点契约含义：**按 dtype 生成模板参数**（`make_cpp_args`），因此每种数据类型对应一次编译；`load_jit` 显式声明源文件与包装函数名；`@cache_once` 保证同一 dtype 只编译一次；`@debug_kernel_api` 是运行时的可观测入口。Python 侧还定义 `_MAX_THREAD_N = 256` 并注明与设备端 `device::marlin::` 一致——**主机与设备共享同一个线程上限常量**，两侧不一致会导致模板不匹配。
+四点契约含义：**按 dtype 生成模板参数**（`make_cpp_args`），因此每种数据类型对应一次编译；`load_jit` 显式声明源文件与包装函数名；`@cache_once` 缓存同一 dtype 的模块；`@debug_kernel_api` 是运行时的可观测入口。Python 侧 `_MAX_THREAD_N = 256` 对应设备端 `max_thread_n`，表示每个CTA的N方向tile宽度上限，用于分配 FP32归约工作区；线程数由 `num_threads` 等另行决定。两侧的tile上限需一致，才能覆盖设备使用的工作区。
 
 ### 普通 AWQ 的 JIT 反量化与 Marlin 不同
 
@@ -193,15 +193,6 @@ _GET_IF(W_TYPE, THREAD_M_BLOCKS, THREAD_N_BLOCKS, THREAD_K_BLOCKS,
 这张表的用途不是排名，而是提醒：**「同一个量化格式」在不同引擎下意味着不同的内核契约**，跨引擎复用时至少要重新核对布局、模板命中条件与融合算子是否一起移植。
 
 反量化产生的寄存器片段怎样进入 Tensor Core、共享内存如何提供 A 片段，以及 AWQ Triton 的 split-K 和编译检查，继续见 [Tensor Core 与量化 GEMM](tensor-core-quantized-gemm.md)。
-
-## 9. 可复用的实现要点
-
-1. 先写清张量契约（形状、打包因子、元数据对齐），再谈指令优化；
-2. 反量化的常量与「是否映射到对称区间」绑定，抄指令序列时必须一起抄语义；
-3. 元数据宽度对齐是易错点（AWQ 源码里的 TODO 就是证据）；
-4. 分清「权重打包」与「内核要求布局」两件事，中间往往需要一次 repack；
-5. 模板内核要把「配置 → 实例」的匹配条件写进文档，因为不匹配是硬失败而非降级；
-6. 量化内核的收益与相邻融合算子强相关，移植时要连同归一化/激活/量化融合一起评估。
 
 ## 10. GPTQ → 现代 Marlin：repack 后怎样参与计算
 
@@ -357,11 +348,9 @@ CTA 内先在 shared 树形合并 FP32部分和；需要跨 CTA 时，采用 第
 
 ## 12. 验证状态与待验证
 
-- 上游核对为 code-read：未编译、未运行 GPU、未测性能；新增 CPU 教学算例只检验布局和数值顺序，不构成上游输出验证。
-- 已核对 AWQ 新版 GEMV 的主要加载、解包、乘加和归约路径，以及 GEMM 主机配置、搬运/MMA 与部分合并代码；尚未逐行验证全部同步、边界和运行时错误处理。
-- SGLang 已读普通 AWQ JIT 反量化，以及现代 Marlin 对称 W4 GPTQ 的 repack、反量化、尺度选择、主流水和两层归约。未逐一展开 AWQ 零点、W8、FP4/FP8 全部模板，也未覆盖全部线程配置的同步与越界正确性。
-- 已定向读取 vLLM Triton AWQ 的反量化索引、GEMM K 循环和 split-K 包装；没有执行或证明它与 SGLang/CUDA 版本逐位等价。
-- 已核固定 vLLM Dense 非对称 `kU4/G128/A16/no-act-order/SM80+` 的加载、零点布局/组边界/shared/寄存器恢复、共同基底抵消、尺度/MMA、归约/bias 与输出裁剪；明确 K=128 单组、SM75 和 atomic 的条件差异。教学 word 只做独立位序核对，未执行上游脚本或生成 selector，未全面覆盖浮点零点、W8/A8、FP4/FP8、MoE、任意线程/tail 组合或其他 backend。
+正文指定版本与分支的核对属于静态源码分析；CPU教学算例检验布局和数值顺序，未编译、运行或测量上游GPU内核。具体加载、分派与设备链见对应小节。
+
+AWQ 的全部同步/尾块/错误处理、SGLang非对称AWQ Marlin，以及浮点零点、W8/A8、FP4/FP8、MoE和其他线程/后端组合尚未全面核对；不能由已读的对称GPTQ或vLLM Dense非对称AWQ路径代替。
 
 ## 来源身份
 
