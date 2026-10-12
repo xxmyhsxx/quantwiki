@@ -18,7 +18,9 @@ sources:
   - raw/papers/2026-10-03/decision-flips/source/main.tex
   - raw/papers/2026-10-07/pivot-q/paper.pdf
   - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md
-updated: 2026-10-08
+  - raw/papers/2026-09-21/int8-gg/paper.pdf
+  - raw/papers/2026-09-21/int8-gg/source/paper.tex
+updated: 2026-10-12
 ---
 
 # 模型质量评测：PPL、任务协议与选择性预测
@@ -170,6 +172,18 @@ $$
 
 对于配对搜索，seed 是完整搜索结果的统计单位。同一轨迹中抽出的多个转移可用于比较局部后继，但存在共享历史；不能把48个转移当成48次独立搜索。是否独立、是否反馈与按何种维度汇总，需要分别报告。
 
+## 12. 生成质量、保真度和提示协议怎样分开评测
+
+生成模型的量化评测至少有三个不同问题：图像是否满足提示/偏好、是否接近参考模型在同输入下的图像、某项专门能力是否保留。CLIP或学习偏好分数、PSNR/SSIM/LPIPS、OCR文字正确率分别提供证据；高参考保真度不保证最高质量，高整体评分也可能遗漏错误文字。（[Ideogram INT8/GGUF v2](https://arxiv.org/abs/2606.12280v2)，§4–7、表1–4；[方法与条件](../methods/ideogram-int8-gguf.md)。）
+
+评测输入应包含实际消费的提示，而不止原始prompt ID。对每条输入保存最终caption、模板/schema、扩写方式、seed、步数、分辨率和采样预设，各量化版本共享同一组输入元组。扩写不仅改变JSON语法，也可能增加内容；若每个版本各自扩写，同一原始问题不再保证相同条件。论文的expander是按公开规格重建，不能称为原厂生产API。
+
+以固定prompt的单图评分 $m_i$ 为例，令 $f_q$、$f_r$ 分别为量化/参考生成模型，N为配对prompt数。相同输入元组 $u_i$ 下，配对差为 $d_i=m_i(f_q(u_i))-m_i(f_r(u_i))$，平均差为 $N^{-1}\sum_i d_i$。LPIPS则消费两幅图：比较两个量化版本时，分别计算各版本图像对同一FP8参考图的LPIPS，再对两个标量相减。按配对prompt行一起重采样，保留同输入关联；若每条prompt仅一个固定seed，所得区间估计固定seed下prompt抽样变化，不能升级成跨seed稳定性。子集指标另报分母：该论文整体评分为300条，机器可检查文字只63条，不能将63条OCR正确率当作全部300条文字正确率。
+
+参考身份也需固定。该案例以已保存FP8权重反量化为BF16的输出作为参考，没有原始BF16 checkpoint；BF16计算精度不改变参考权重已经经过FP8压缩的事实。保真度结果因此支持接近该FP8参考，不能证明原始训练模型完全保留。
+
+CI含零与质量等价按[第8节](#8-无显著差异不等于满足质量等价)区分；未设置等价界限、未校正多重比较、缺少逐图CI时保留限制。最终配方的质量表也不能替代消融归因：Ideogram的层保护消融在raw提示下完成，JSON协议只评测完整配方，因此保护贡献比例不能直接移植到JSON协议。
+
 ## 来源身份
 
 - [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)，v1；§6.1–6.2、附录 A.1/D.1/D.2，指标聚合、搜索预算及信息反馈边界。
@@ -183,3 +197,5 @@ $$
 - [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
 - [How Divergence Becomes Decision Flips in Compressed Language Models](https://arxiv.org/abs/2610.00694v1)，arXiv:2610.00694v1；§3–8 的同前缀输出保真、指标聚合和推测解码评测。
 - [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)，arXiv:2610.05745v1，§6/表2及附录 E；[固定实验协议](https://github.com/ruanruan-andy/PIVOT-Q/blob/74d6e1f8994a03eb45aae5c316a743abda2cba15/docs/experiment_protocol.md)：传导式适配、训练/评测 seed 和最终 checkpoint。
+
+- [Ideogram INT8/GGUF研究](https://arxiv.org/abs/2606.12280v2)，arXiv:2606.12280v2；§3–7、表1–4，生成质量/参考保真度/OCR、共享JSON输入、配对统计与消融协议边界。

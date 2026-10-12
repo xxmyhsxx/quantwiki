@@ -147,6 +147,7 @@ sources: []
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
 | [PV-Tuning：连续参数与离散选码](methods/pv-tuning.md) | 精确P/V、代理下降、稀疏Adam与实际变化限制、数据/质量/运行条件。 |
 | [LC-QAT：仿射网格与代理训练](methods/lc-qat.md) | 受约束向量表示、输入侧重排、DGE/坐标接口与数据效率边界。 |
+| [Ideogram 4.0 的 INT8/GGUF PTQ：层保护与生成评测协议](methods/ideogram-int8-gguf.md) | 双分支预算、保护消融与JSON输入怎样影响质量/保真度/OCR的判断。 |
 | [FlexQ：INT6 分组量化与二值 Tensor Core 执行](methods/flexq.md) | 6-bit配方怎样结合位平面、signed位权和group恢复，质量/速度证据各有哪些条件。 |
 | [Atom：离群通道重排、分组整数 GEMM 与服务成本](methods/atom.md) | 固定128通道保护、group恢复与KV压缩怎样连接，质量/服务测量条件各是什么。 |
 | [ResQ：高精度子空间、组内旋转与混合精度执行](methods/resq.md) | 保护信号子空间怎样连接两路GEMM，PCA能量结论与原文最优性证明怎样区分。 |

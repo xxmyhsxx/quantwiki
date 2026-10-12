@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **110 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **112 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [Ideogram 4.0 INT8/GGUF PTQ研究](https://arxiv.org/abs/2606.12280v2)<br>arXiv:2606.12280v2 | 正文方法/协议、表1–5和代表图；回查PDF1–9及源文件，核双DiT分支、保护/JSON消融边界、配对CI与GGUF预算 | [Ideogram INT8/GGUF](methods/ideogram-int8-gguf.md)；[生成质量与协议](implementation/model-quality-evaluation.md#12-生成质量保真度和提示协议怎样分开评测) | PDF/公开标题差异已记录；GGUF一般说法与既有llama.cpp固定版本分开；未取得作者实现/权重，未运行生成/GPU或原始bootstrap，未审计全部引用 | [2026-10-12](LOG.md#2026-10-12--ideogram-int8gguf-ingest-与独立评审) |
 | [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2)<br>arXiv:2508.04405v2 | 正文方法/实验、式1–6、表1–6、代表布局与性能图；核signed位权、group恢复、免校准与down A8配方 | [FlexQ](methods/flexq.md)；[位分解执行](implementation/quantized-matmul-scaling-execution.md#16-多位整数怎样用二值点积执行) | 原式6缺位权与代码分开说明；未逐点重建全部曲线，未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
 | [Atom: Low-bit Quantization for Efficient and Accurate LLM Serving](https://arxiv.org/abs/2310.19102v3)<br>arXiv:2310.19102v3 | 正文设计/分析、表1–4、代表性能图及必要补充；回查PDF方法、主表/消融/服务条件，核固定重排、group恢复与质量/性能协议 | [Atom](methods/atom.md)；[分组归约](implementation/quantized-matmul-scaling-execution.md#15-归约维分组为什么要在累加途中恢复尺度) | 未逐点重建全部性能曲线；正文FP16恢复/代码FP32累加分别记录，FP4为模拟；未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--atom-论文代码-ingest-与独立评审) |
 | [ResQ: Mixed-Precision Quantization of Large Language Models with Low-Rank Residuals](https://arxiv.org/abs/2412.14363v2)<br>arXiv:2412.14363v2 | 正文、必要附录A–C、表1–6/关键图；核拼接/正交平方和、未中心化PCA、证明缺口、四处投影和质量/硬件条件，回查PDF关键页 | [ResQ](methods/resq.md)；[子空间能量代理](theory/orthogonal-rotation-and-hadamard-quantization.md#10-先选高精度子空间再在组内旋转) | 不将定理4.2作为已证实际量化最优；附表未逐格重算，未运行模型/GPU或复现CUTLASS性能 | [2026-10-12](LOG.md#2026-10-12--resq-论文代码-ingest-与独立评审) |
@@ -112,6 +113,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b)<br>b820cc8e6f94843d32f92c8ebd7db837dae2bd8b | 本轮定向读取ggml-common.h的Q4_K/Q8_0结构、ggml-quants.c参考编码/恢复、ggml.c类型表及实际量化入口；为Ideogram的一般GGUF说法提供固定版本对照 | [GGUF格式](implementation/gguf-block-quantization-formats.md)；[Ideogram格式边界](methods/ideogram-int8-gguf.md#6-gguf格式与作者编码器贡献需区分) | 既有部署页使用范围仍未全面补核；未贯通Ideogram导出/加载，未核论文6月工具历史、整仓后端或编译/模型/GPU | [2026-10-12](LOG.md#2026-10-12--ideogram-int8gguf-ingest-与独立评审) |
 | [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0)<br>a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选Llama W6/group128/down A8浮点模拟、engine signed W6A6/W6A8与M1/4/8位平面、BMMA/FP16尺度恢复、默认检查与FasterTransformer wrapper/FFN调用 | [FlexQ实现](implementation/flexq-bitplanes-and-group-restoration.md)；[FlexQ](methods/flexq.md) | 未导入/安装/编译/运行；全仓、全部shape/硬件/同步、完整导出/加载与融合链未核；绝对误差门限6.5504与性能计时分开 | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
 | [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6)<br>7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选Llama校准/重排/GPTQ/浮点模拟，native 7B INT4/INT8 GEMM与FP16尺度恢复、输出非对称KV编码、paged writer/RoPE decode及默认效率脚本 | [Atom实现](implementation/atom-mixed-gemm-and-paged-kv.md)；[Atom](methods/atom.md) | 未导入/安装/编译/运行；未核全部vendor/同步/边界形状及其他模型格式；随机权重/预填充随机KV/一层缓存共享，未闭合真实权重导出与同网格质量部署 | [2026-10-12](LOG.md#2026-10-12--atom-论文代码-ingest-与独立评审) |
 | [utkarsh-dmx/project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a)<br>cb87d0d059455858daaa66f7410da4afebee978a | 所选Llama/full_shared/pretraining_tp=1、基底统计→融合/列重排→GPTQ与A/V模拟→post-RoPE QK与eager浮点缓存；核示例W16差异及K分组限制 | [ResQ实现](implementation/resq-basis-and-fake-quantization.md)；[ResQ](methods/resq.md) | 未导入/安装/运行；其他模型、训练/attention后端未全面核；43文件快照未包含论文CUTLASS部署kernel，无packed权重/KV实测 | [2026-10-12](LOG.md#2026-10-12--resq-论文代码-ingest-与独立评审) |
@@ -218,7 +220,6 @@ updated: 2026-10-12
 | [alibaba/EfficientAI](https://github.com/alibaba/EfficientAI/tree/3d32ae427eec57166ea67f3018cd4568be84496f)<br>3d32ae427eec57166ea67f3018cd4568be84496f | [MASQuant：分模态平滑与共享权重补偿](methods/masquant.md) |
 | [ruikangliu/FlatQuant](https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1)<br>9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1 | [FlatQuant：结构化可学习变换与低比特执行](methods/flatquant.md)；[OmniQuant、AffineQuant 与 FlatQuant：可学习变换路线比较](research/omniquant-affinequant-flatquant-comparison.md) |
 | [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6)<br>876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6 | [KIVI：键按通道、值按 token 的 2 bit KV cache 量化](methods/kivi.md)；[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) |
-| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b)<br>b820cc8e6f94843d32f92c8ebd7db837dae2bd8b | [GGUF 与块量化存储格式](implementation/gguf-block-quantization-formats.md)；[量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) |
 | [IST-DASLab/marlin](https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90)<br>1f25790bdd49fba53106164a24666dade68d7c90 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md)；[Tensor Core 与量化 GEMM：从 Tile 到寄存器和编译产物](implementation/tensor-core-quantized-gemm.md) |
 | [thu-nics/MBQ](https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1)<br>a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1 | [MBQ：模态平衡的视觉语言模型量化](methods/mbq.md)；[视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) |
 | [mlc-ai/mlc-llm](https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008)<br>6474f7dbfa9bf18fdfd3ef468b227c0706eb9008 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) |
@@ -233,11 +234,11 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下118个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下117个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；下一项Ideogram INT8/GGUF，再接SharQ与其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；下一项SharQ论文与所选实现，再接续其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（48条）
+### 论文（47条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -255,7 +256,6 @@ updated: 2026-10-12
 | [Formal Algorithms for Transformers](https://arxiv.org/abs/2207.09238v1) | `arXiv:2207.09238v1` |
 | [GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245v3) | `arXiv:2305.13245v3` |
 | [Holistic Evaluation of Language Models](https://arxiv.org/abs/2211.09110v2) | `arXiv:2211.09110v2` |
-| [Holding the FP8 Quality Ceiling at 8-Bit Weights and Activations: INT8 and GGUF Post-Training Quantization of Ideogram 4.0 for Consumer GPUs](https://arxiv.org/abs/2606.12280v2) | `arXiv:2606.12280v2` |
 | [KernelBench: Can LLMs Write Efficient GPU Kernels?](https://arxiv.org/abs/2502.10517v1) | `arXiv:2502.10517v1` |
 | [KernelBenchX: A Comprehensive Benchmark for Evaluating LLM-Generated GPU Kernels](https://arxiv.org/abs/2605.04956v2) | `arXiv:2605.04956v2` |
 | [The Llama 3 Herd of Models](https://arxiv.org/abs/2407.21783v3) | `arXiv:2407.21783v3` |
