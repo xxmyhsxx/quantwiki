@@ -21,7 +21,7 @@ updated: 2026-10-12
 
 # ResQ：高精度子空间、组内旋转与混合精度执行
 
-ResQ 先选出承载较大激活能量的低秩子空间，将其系数保留为8 bit，其余系数量化为4 bit；然后在两个子空间内部各自旋转，以改善量化分布。它保护的是投影后的信号分量，并保留完整输入维度，不是先量化再用低秩矩阵补偿误差，也不是删掉低能量维度。依据为 [ResQ v2](https://arxiv.org/abs/2412.14363v2) 正文、必要证明和实现附录；原文最优性证明存在下述代数问题，经验结果与证明有效性分别判断。
+ResQ 先选出承载较大激活能量的低秩子空间，将其系数保留为8 bit，其余系数量化为4 bit；然后在两个子空间内部各自旋转，以改善量化分布。它保护的是投影后的信号分量，并保留完整输入维度，不是先量化再用低秩矩阵补偿误差，也不是删掉低能量维度。依据为 ResQ v2（`https://arxiv.org/abs/2412.14363v2`） 正文、必要证明和实现附录；原文最优性证明存在下述代数问题，经验结果与证明有效性分别判断。
 
 与 [CMPQ](cmpq.md) 的原输入通道保护不同，ResQ 先改变坐标再分配组内精度；与 [SpinQuant](spinquant.md) 的任务损失训练不同，它通过校准统计量选择基底。公共推导见[高精度子空间与能量代理](../theory/orthogonal-rotation-and-hadamard-quantization.md#10-先选高精度子空间再在组内旋转)，固定代码的实际配置和执行边界见[实现页](../implementation/resq-basis-and-fake-quantization.md)。
 
@@ -91,5 +91,5 @@ $$\|X-\widehat X\|_F^2=\|E_l\|_F^2+\|E_h\|_F^2.$$
 
 | 来源 | 固定身份 | 实际使用范围 |
 | --- | --- | --- |
-| [ResQ: Mixed-Precision Quantization of Large Language Models with Low-Rank Residuals](https://arxiv.org/abs/2412.14363v2) | arXiv:2412.14363v2；PDF SHA-256 `e34e498a2868534e5dde3be2d699e1906ca91699fade45cdbc71a2f61b8d85c2` | 正文机制、表1–6/图5–6、必要附录A–C；附表未逐格重算 |
-| [utkarsh-dmx/project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a) | `cb87d0d059455858daaa66f7410da4afebee978a` | 本页只用所选未中心化Gram；完整静态范围见实现页 |
+| ResQ: Mixed-Precision Quantization of Large Language Models with Low-Rank Residuals（`https://arxiv.org/abs/2412.14363v2`） | arXiv:2412.14363v2；PDF SHA-256 `e34e498a2868534e5dde3be2d699e1906ca91699fade45cdbc71a2f61b8d85c2` | 正文机制、表1–6/图5–6、必要附录A–C；附表未逐格重算 |
+| utkarsh-dmx/project-resq（`https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a`） | `cb87d0d059455858daaa66f7410da4afebee978a` | 本页只用所选未中心化Gram；完整静态范围见实现页 |

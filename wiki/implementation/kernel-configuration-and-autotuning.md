@@ -121,6 +121,6 @@ triton.Config(
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
-| [tensormux/kernel-skills](https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7) | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
-| [Triton](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文所列教程与 runtime 文件；仅代码核对。 |
-| [CUDA Programming Guide：Writing SIMT Kernels](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html) | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | 寄存器、shared memory 与 word/bank 关系。 |
+| tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
+| Triton（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文所列教程与 runtime 文件；仅代码核对。 |
+| CUDA Programming Guide：Writing SIMT Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html`） | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | 寄存器、shared memory 与 word/bank 关系。 |

@@ -97,4 +97,4 @@ $$\Pi\Pi^T=U_VPP^TU_V^T=U_VU_V^T.$$
 
 ## 来源身份
 
-- [The Alignment Illusion in Multimodal Large Language Models](https://arxiv.org/abs/2609.30210v1)，arXiv:2609.30210v1；2026-09-26 归档。PA-gap 退化反例和全基投影等价式为整理者分析。
+- The Alignment Illusion in Multimodal Large Language Models（`https://arxiv.org/abs/2609.30210v1`），arXiv:2609.30210v1；2026-09-26 归档。PA-gap 退化反例和全基投影等价式为整理者分析。

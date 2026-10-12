@@ -183,5 +183,5 @@ INT2 的“16.45”来自表 3 的一个任务：Qwen2.5-VL-7B 在 MME-RealWorld
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
-| [GPTAQ: Efficient Finetuning-Free Quantization for Asymmetric Calibration](https://arxiv.org/abs/2504.02692v3) | `arXiv:2504.02692v3` | — |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
+| GPTAQ: Efficient Finetuning-Free Quantization for Asymmetric Calibration（`https://arxiv.org/abs/2504.02692v3`） | `arXiv:2504.02692v3` | — |

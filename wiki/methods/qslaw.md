@@ -97,5 +97,5 @@ $$q(a)=\operatorname{clip}\!\left(\operatorname{round}\!\left(\frac{W}{\Delta a}
 
 ## 来源身份
 
-- [Advancing Multimodal Large Language Models with Quantization-Aware Scale Learning for Efficient Adaptation](https://arxiv.org/abs/2408.03735v1)，arXiv:2408.03735v1；正文方法/实验、表1–4和图1–6；公式与数据差异按原版保留。
-- [xjjxmu/QSLAW](https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802)，264dfb081c210a8bab6a3fb5707d827ade7b6802；本页只用于uniform尺度作用及所选脚本阶段对照，完整登记范围见实现页。
+- Advancing Multimodal Large Language Models with Quantization-Aware Scale Learning for Efficient Adaptation（`https://arxiv.org/abs/2408.03735v1`），arXiv:2408.03735v1；正文方法/实验、表1–4和图1–6；公式与数据差异按原版保留。
+- xjjxmu/QSLAW（`https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802`），264dfb081c210a8bab6a3fb5707d827ade7b6802；本页只用于uniform尺度作用及所选脚本阶段对照，完整登记范围见实现页。

@@ -340,8 +340,8 @@ $$B_{\mathrm{dispatch}}^{\mathrm{logical}}=
 
 ## 来源身份与定位
 
-- [SGLang 固定源码](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)，完整 commit `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；下表 S 编号的路径相对该快照。
-- [vLLM 固定源码](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)，完整 commit `568afb3a13806beb53bb2e6bd518269357b237c0`；下表 VEP 编号的路径相对该快照。两个框架版本分别核读，不声明在同一运行环境完成集成。
+- SGLang 固定源码（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），完整 commit `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；下表 S 编号的路径相对该快照。
+- vLLM 固定源码（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），完整 commit `568afb3a13806beb53bb2e6bd518269357b237c0`；下表 VEP 编号的路径相对该快照。两个框架版本分别核读，不声明在同一运行环境完成集成。
 
 | 引用 | 固定快照内文件 | 核读位置与本页作用 |
 | --- | --- | --- |

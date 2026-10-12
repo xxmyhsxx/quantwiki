@@ -252,21 +252,21 @@ SAW-INT4 的所选 decode 在读取前把当前 K/V 直接写INT4，没有HP残�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [OSCAR 官方实现](https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437) | `41ebcdba3db5f0ce1339c3727caea80df575d437` | INT2通道布局、FP32元数据/所选GQA decode BF16读取、保护窗口及更新次序 |
-| [WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms](https://arxiv.org/abs/2609.38121v1) | `arXiv:2609.38121v1` | 一般可逆 K/V 变换、双窗口与量化器/实现的证据区别 |
-| [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5) | `arXiv:2405.04434v5` | §2.1.3、Appendix C；MLA 缓存对象与显式 K/V 的范围区别 |
-| [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/abs/2402.02750v2) | `arXiv:2402.02750v2` | — |
-| [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | SAW所选INT4记录、GQA与prefill恢复、当前chunk与临时缓冲边界 |
-| [jy-yuan/KIVI](https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6) | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |
+| OSCAR 官方实现（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437` | INT2通道布局、FP32元数据/所选GQA decode BF16读取、保护窗口及更新次序 |
+| WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms（`https://arxiv.org/abs/2609.38121v1`） | `arXiv:2609.38121v1` | 一般可逆 K/V 变换、双窗口与量化器/实现的证据区别 |
+| DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model（`https://arxiv.org/abs/2405.04434v5`） | `arXiv:2405.04434v5` | §2.1.3、Appendix C；MLA 缓存对象与显式 K/V 的范围区别 |
+| KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache（`https://arxiv.org/abs/2402.02750v2`） | `arXiv:2402.02750v2` | — |
+| SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（`https://arxiv.org/abs/2604.19157v1`） | `arXiv:2604.19157v1` | — |
+| jindajia/sglang-fork（`https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84`） | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | SAW所选INT4记录、GQA与prefill恢复、当前chunk与临时缓冲边界 |
+| jy-yuan/KIVI（`https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6`） | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | K/V 窗口的模型侧更新 |
 
-- [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；训练中适应逐 token KV 量化。
+- LLM-QAT: Data-Free Quantization Aware Training for Large Language Models（`https://arxiv.org/abs/2305.17888v1`），arXiv:2305.17888v1；训练中适应逐 token KV 量化。
 
-- [KVQuant](https://arxiv.org/abs/2401.18079v6)，arXiv:2401.18079v6；离线逐通道尺度、pre-RoPE、码本与稀疏预算。
-- [QJL](https://arxiv.org/abs/2406.03482v2)，arXiv:2406.03482v2；Key 符号投影、范数与分数估计。
-- [TurboQuant](https://arxiv.org/abs/2504.19874v1)，v1；MSE 与内积估计。
-- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；查询度量、向量码本和 chunked prefill。
-- [AKVQ-VL](https://arxiv.org/abs/2501.15021v1)，v1；模态/层模式与保护预算。
-- [Kitty](https://arxiv.org/abs/2511.18643v1)，v1；通道提精度与双位面布局；代码细节见方法页登记。
+- KVQuant（`https://arxiv.org/abs/2401.18079v6`），arXiv:2401.18079v6；离线逐通道尺度、pre-RoPE、码本与稀疏预算。
+- QJL（`https://arxiv.org/abs/2406.03482v2`），arXiv:2406.03482v2；Key 符号投影、范数与分数估计。
+- TurboQuant（`https://arxiv.org/abs/2504.19874v1`），v1；MSE 与内积估计。
+- NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1；查询度量、向量码本和 chunked prefill。
+- AKVQ-VL（`https://arxiv.org/abs/2501.15021v1`），v1；模态/层模式与保护预算。
+- Kitty（`https://arxiv.org/abs/2511.18643v1`），v1；通道提精度与双位面布局；代码细节见方法页登记。
 
-- [Kitty 官方实现](https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1)，固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
+- Kitty 官方实现（`https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1`），固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。

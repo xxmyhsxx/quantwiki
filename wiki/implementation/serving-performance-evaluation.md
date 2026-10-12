@@ -78,5 +78,5 @@ vLLM `calculate_metrics` 对配置中的条件取交集，再用 `good_completed
 
 ## 来源身份
 
-- [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)，`568afb3a13806beb53bb2e6bd518269357b237c0`；`vllm/benchmarks/serve.py:calculate_metrics`、请求生成与 benchmark 参数。
-- [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)，`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/benchmark/serving.py` 的请求生成、时延与吞吐汇总。本页具体单 token 与 goodput 分支以 vLLM 所列实现为准，不声称两库所有指标处理相同。
+- vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），`568afb3a13806beb53bb2e6bd518269357b237c0`；`vllm/benchmarks/serve.py:calculate_metrics`、请求生成与 benchmark 参数。
+- SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/benchmark/serving.py` 的请求生成、时延与吞吐汇总。本页具体单 token 与 goodput 分支以 vLLM 所列实现为准，不声称两库所有指标处理相同。

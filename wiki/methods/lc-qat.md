@@ -125,4 +125,4 @@ t=\frac{2^b-1}{2},\quad a=\sqrt{\frac6{m+n}}.$$
 
 ## 来源身份
 
-- [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，`arXiv:2606.10531v1`。式3–4定义码本与初始化，式5–8给出硬前向，式9–12给出代理与预处理；表1–5及附录 A.1–A.6给出数据、消融与速度条件。
+- LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization（`https://arxiv.org/abs/2606.10531v1`），`arXiv:2606.10531v1`。式3–4定义码本与初始化，式5–8给出硬前向，式9–12给出代理与预处理；表1–5及附录 A.1–A.6给出数据、消融与速度条件。

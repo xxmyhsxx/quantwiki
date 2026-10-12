@@ -114,4 +114,4 @@ prefill 包含剪枝/选择开销，下降约 51.0%；这是数据集汇总时�
 
 ## 来源身份
 
-- [From Token Importance to Conditional Removability: Rethinking Visual Token Pruning in Multimodal Large Language Models](https://arxiv.org/abs/2609.26484v1)，arXiv:2609.26484v1；正文 §III–VI、附录 A/C/D/E。局部恒等式条件、负恢复收益反例与阶段执行边界为整理者分析；未复现实验。
+- From Token Importance to Conditional Removability: Rethinking Visual Token Pruning in Multimodal Large Language Models（`https://arxiv.org/abs/2609.26484v1`），arXiv:2609.26484v1；正文 §III–VI、附录 A/C/D/E。局部恒等式条件、负恢复收益反例与阶段执行边界为整理者分析；未复现实验。

@@ -116,4 +116,4 @@ A6000的30.3%和4090的37.6%属于各自条件，不能转移为任意设备的�
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [SPHQuant: Efficient extreme low bit weight quantization for Vision-Language Models](https://arxiv.org/abs/2609.24875v1) | arXiv:2609.24875v1 | §3–4、附录 §6–11、表1–12；半径投影/网格及同预算/内存表回查页图 |
+| SPHQuant: Efficient extreme low bit weight quantization for Vision-Language Models（`https://arxiv.org/abs/2609.24875v1`） | arXiv:2609.24875v1 | §3–4、附录 §6–11、表1–12；半径投影/网格及同预算/内存表回查页图 |

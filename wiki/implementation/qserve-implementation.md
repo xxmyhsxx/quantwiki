@@ -231,6 +231,6 @@ $$
 
 | 来源 | 版本 | 说明 |
 | --- | --- | --- |
-| [mit-han-lab/omniserve](https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8) | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | producer、打包和元数据 |
-| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | loader、激活量化与 GEMM |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | 注册表边界 |
+| mit-han-lab/omniserve（`https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8`） | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | producer、打包和元数据 |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | loader、激活量化与 GEMM |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 注册表边界 |

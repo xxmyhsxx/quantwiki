@@ -88,4 +88,4 @@ opt_eval是关闭cache的固定不重叠窗口PPL：截到完整seq块、每块�
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [Cornell-RelaxML/QuIP](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184) | ac92cfc7a22f6100009e2caf53bb72257d3f3184 | 所选OPT、Balance/LDLQ/LDLQ_RG与lazy、预处理/网格及默认浮点保存/加载；其余分支与运行未核 |
+| Cornell-RelaxML/QuIP（`https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184`） | ac92cfc7a22f6100009e2caf53bb72257d3f3184 | 所选OPT、Balance/LDLQ/LDLQ_RG与lazy、预处理/网格及默认浮点保存/加载；其余分支与运行未核 |

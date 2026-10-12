@@ -136,4 +136,4 @@ out_cache_loc: [20,21,30]
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | 普通 Scheduler/PrefillAdder、批次转换、RadixCache、请求与 KV pool、overlap 结果转交；符号位置见各节。 |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | 普通 Scheduler/PrefillAdder、批次转换、RadixCache、请求与 KV pool、overlap 结果转交；符号位置见各节。 |

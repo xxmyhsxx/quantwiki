@@ -182,4 +182,4 @@ x 是全精度网络产生的层输入，$\hat x$ 是前面各层已经量化后
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [Up or Down? Adaptive Rounding for Post-Training Quantization](https://arxiv.org/abs/2004.10568v2) | `arXiv:2004.10568v2` | — |
+| Up or Down? Adaptive Rounding for Post-Training Quantization（`https://arxiv.org/abs/2004.10568v2`） | `arXiv:2004.10568v2` | — |

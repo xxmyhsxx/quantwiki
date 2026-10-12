@@ -148,10 +148,10 @@ $$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization](https://arxiv.org/abs/2502.00425v2) | `arXiv:2502.00425v2` | — |
-| [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |
-| [SliceGPT: Compress Large Language Models by Deleting Rows and Columns](https://arxiv.org/abs/2401.15024v2) | `arXiv:2401.15024v2` | — |
-| [StiphyJay/MQuant](https://github.com/StiphyJay/MQuant/tree/7b3e8196e6930b5ce16ec3f058e46687b5d59a6d) | `7b3e8196e6930b5ce16ec3f058e46687b5d59a6d` | — |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
+| SliceGPT: Compress Large Language Models by Deleting Rows and Columns（`https://arxiv.org/abs/2401.15024v2`） | `arXiv:2401.15024v2` | — |
+| StiphyJay/MQuant（`https://github.com/StiphyJay/MQuant/tree/7b3e8196e6930b5ce16ec3f058e46687b5d59a6d`） | `7b3e8196e6930b5ce16ec3f058e46687b5d59a6d` | — |
 
 ## 教学计算材料
 

@@ -161,5 +161,5 @@ $$ \mathbf O=(\mathbf Q_{\mathbf X}\mathbf Q_{\mathbf W})\odot(\mathbf s_{\mathb
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving](https://arxiv.org/abs/2405.04532v3) | `arXiv:2405.04532v3` | — |
-| [mit-han-lab/omniserve](https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8) | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | — |
+| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | — |
+| mit-han-lab/omniserve（`https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8`） | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | — |

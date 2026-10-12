@@ -171,9 +171,9 @@ TTFT 是首 token 延迟，TTIT 是后续 token 间隔。低比特导出和真�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | 与正交加尺度及 KL-Top 的对照 |
-| [facebookresearch/SpinQuant](https://github.com/facebookresearch/SpinQuant/tree/8f47aa3f00e8662caf1a484153920a07e5281c3a) | `8f47aa3f00e8662caf1a484153920a07e5281c3a` | — |
-| [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
-| [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [Efficient Riemannian Optimization on the Stiefel Manifold via the Cayley Transform](https://arxiv.org/abs/2002.01113v1) | `arXiv:2002.01113v1` | — |
+| OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting（`https://arxiv.org/abs/2501.13987v1`） | `arXiv:2501.13987v1` | 与正交加尺度及 KL-Top 的对照 |
+| facebookresearch/SpinQuant（`https://github.com/facebookresearch/SpinQuant/tree/8f47aa3f00e8662caf1a484153920a07e5281c3a`） | `8f47aa3f00e8662caf1a484153920a07e5281c3a` | — |
+| SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| Efficient Riemannian Optimization on the Stiefel Manifold via the Cayley Transform（`https://arxiv.org/abs/2002.01113v1`） | `arXiv:2002.01113v1` | — |

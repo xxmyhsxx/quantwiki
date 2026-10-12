@@ -87,4 +87,4 @@ BLOOM每块两个LayerNorm约有 $4h$ 参数，四个线性层约 $12h^2+9h$；�
 
 ## 来源身份
 
-- [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)，`arXiv:2309.02784v2`；§3、算法1、式1–3，§4表1–9及附录表10–11。矩匹配与种子混合的算例是整理者推导。
+- Norm Tweaking: High-performance Low-bit Quantization of Large Language Models（`https://arxiv.org/abs/2309.02784v2`），`arXiv:2309.02784v2`；§3、算法1、式1–3，§4表1–9及附录表10–11。矩匹配与种子混合的算例是整理者推导。

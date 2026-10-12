@@ -280,7 +280,7 @@ vLLM 将两组工作空间交给专家模块，当前 gated SiLU shapes 为 `wor
 
 ## 来源身份
 
-第 1–7 节的 SGLang 源码来自 [sgl-project/sglang 固定 commit](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)，`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`。本地归档身份为 `sgl-project-sglang-2f730e29`；目录日与历史获取日分别登记，目录日期不表示该 commit 的发布日。数字索引对应本页实际核读文件：
+第 1–7 节的 SGLang 源码来自 sgl-project/sglang 固定 commit（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`。本地归档身份为 `sgl-project-sglang-2f730e29`；目录日与历史获取日分别登记，目录日期不表示该 commit 的发布日。数字索引对应本页实际核读文件：
 
 | 引用 | 固定源码文件 | 核读位置与责任 |
 | --- | --- | --- |
@@ -305,7 +305,7 @@ vLLM 将两组工作空间交给专家模块，当前 gated SiLU shapes 为 `wor
 | [19] | `python/sglang/srt/layers/quantization/mxfp4_flashinfer_trtllm_moe.py` | 仅核读 `maybe_fuse_routed_scale_and_shared_add` 的普通共享相加职责 |
 
 
-vLLM 对照来自 [vllm-project/vllm 固定 commit](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)，`568afb3a13806beb53bb2e6bd518269357b237c0`，本地归档身份为 `vllm-project-vllm-568afb3a`。该条目的历史获取日与统一归档日同样分别登记；以下 V 编号只对应第 8 节实际核读的文件与位置。
+vLLM 对照来自 vllm-project/vllm 固定 commit（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），`568afb3a13806beb53bb2e6bd518269357b237c0`，本地归档身份为 `vllm-project-vllm-568afb3a`。该条目的历史获取日与统一归档日同样分别登记；以下 V 编号只对应第 8 节实际核读的文件与位置。
 
 | 引用 | 固定源码文件 | 核读位置与责任 |
 | --- | --- | --- |

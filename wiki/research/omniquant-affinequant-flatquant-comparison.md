@@ -94,11 +94,11 @@ OmniQuant 主要学习可融合的通道尺度；AffineQuant 在 W4A4 的 Norm �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |
-| [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
-| [OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models](https://arxiv.org/abs/2308.13137v3) | `arXiv:2308.13137v3` | — |
-| [AffineQuant: Affine Transformation Quantization for Large Language Models](https://arxiv.org/abs/2403.12544v1) | `arXiv:2403.12544v1` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [OpenGVLab/OmniQuant](https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/omniquant.py) | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
-| [bytedance/AffineQuant](https://github.com/bytedance/AffineQuant/tree/0f3ba9392bb0037f30750c4b2dbdd38469a2d7da) | `0f3ba9392bb0037f30750c4b2dbdd38469a2d7da` | — |
-| [ruikangliu/FlatQuant](https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1) | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
+| SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
+| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
+| AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/omniquant.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| bytedance/AffineQuant（`https://github.com/bytedance/AffineQuant/tree/0f3ba9392bb0037f30750c4b2dbdd38469a2d7da`） | `0f3ba9392bb0037f30750c4b2dbdd38469a2d7da` | — |
+| ruikangliu/FlatQuant（`https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1`） | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |

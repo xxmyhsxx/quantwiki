@@ -127,4 +127,4 @@ ConQuR 沿用残差与注意力中的计算等价结构。下表对应图 1、�
 
 | 来源 | 固定版本 | 本页用途 |
 | --- | --- | --- |
-| [ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs](https://arxiv.org/abs/2605.10793v2) | arXiv:2605.10793v2 | §3、算法 1、附录 A–B：目标、OPU 与图等价；§4、表 1–2、图 2–4、附录 C：协议、质量与校准成本 |
+| ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs（`https://arxiv.org/abs/2605.10793v2`） | arXiv:2605.10793v2 | §3、算法 1、附录 A–B：目标、OPU 与图等价；§4、表 1–2、图 2–4、附录 C：协议、质量与校准成本 |

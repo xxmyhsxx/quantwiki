@@ -144,4 +144,4 @@ $$
 
 ## 来源身份
 
-- [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)，arXiv:2402.15319v2；正文、算法1–2及必要附录 A–I；关键 PDF 公式与表1–7、13–19。未逐格重算全部任务附表，未取得匹配作者实现或运行质量/性能；规范推导和预算复算为整理者展开。
+- GPTVQ: The Blessing of Dimensionality for LLM Quantization（`https://arxiv.org/abs/2402.15319v2`），arXiv:2402.15319v2；正文、算法1–2及必要附录 A–I；关键 PDF 公式与表1–7、13–19。未逐格重算全部任务附表，未取得匹配作者实现或运行质量/性能；规范推导和预算复算为整理者展开。

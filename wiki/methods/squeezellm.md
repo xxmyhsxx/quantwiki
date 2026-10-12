@@ -94,6 +94,6 @@ v4 对 LLaMA 等基础模型用 C4 训练集的 100 个随机样本估计敏感�
 
 ## 来源身份
 
-[SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4)，arXiv:2306.07629v4。使用 Memory Wall、Methodology、Evaluations，以及评测配置、敏感性消融和稀疏负载不均衡附录。
+SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`），arXiv:2306.07629v4。使用 Memory Wall、Methodology、Evaluations，以及评测配置、敏感性消融和稀疏负载不均衡附录。
 
-固定代码：[SqueezeAILab/SqueezeLLM](https://github.com/SqueezeAILab/SqueezeLLM/tree/a5fd71f353bf569feb7b55737c1c1493e78e8f31)，commit `a5fd71f353bf569feb7b55737c1c1493e78e8f31`；仅使用正文列明的提取、聚类与打包片段。
+固定代码：SqueezeAILab/SqueezeLLM（`https://github.com/SqueezeAILab/SqueezeLLM/tree/a5fd71f353bf569feb7b55737c1c1493e78e8f31`），commit `a5fd71f353bf569feb7b55737c1c1493e78e8f31`；仅使用正文列明的提取、聚类与打包片段。

@@ -160,16 +160,16 @@ $$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
-| [MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2603.04800v1) | `arXiv:2603.04800v1` | — |
-| [Q-VLM: Post-training Quantization for Large Vision-Language Models](https://arxiv.org/abs/2410.08119v3) | `arXiv:2410.08119v3` | — |
-| [MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization](https://arxiv.org/abs/2502.00425v2) | `arXiv:2502.00425v2` | — |
-| [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
-| [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
-| [thu-nics/MBQ](https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1) | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
+| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |
+| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`） | `arXiv:2603.04800v1` | — |
+| Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
+| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`） | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
 
-- [CoRePrune](https://arxiv.org/abs/2609.26484v1)，v1；删除集合与深度条件。
-- [Layer-Aware Position Embeddings](https://arxiv.org/abs/2609.23715v1)，v1；剪枝后的位置策略。
-- [QAPruner](https://arxiv.org/abs/2604.02816v1)，v1；§3–4，剪枝与数值敏感度评分。
-- [AKVQ-VL](https://arxiv.org/abs/2501.15021v1)，v1；§III、图 2、表 I，按模式保护 KV。
-- [SAPrune](https://arxiv.org/abs/2610.05273v1)，v1；§2.2–3.2、附录 A.2，attention 标量与分阶段 token 成本。
+- CoRePrune（`https://arxiv.org/abs/2609.26484v1`），v1；删除集合与深度条件。
+- Layer-Aware Position Embeddings（`https://arxiv.org/abs/2609.23715v1`），v1；剪枝后的位置策略。
+- QAPruner（`https://arxiv.org/abs/2604.02816v1`），v1；§3–4，剪枝与数值敏感度评分。
+- AKVQ-VL（`https://arxiv.org/abs/2501.15021v1`），v1；§III、图 2、表 I，按模式保护 KV。
+- SAPrune（`https://arxiv.org/abs/2610.05273v1`），v1；§2.2–3.2、附录 A.2，attention 标量与分阶段 token 成本。

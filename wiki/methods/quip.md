@@ -95,6 +95,6 @@ QuIP v2 的 OPT-30B 消融使用 C4 的 128 段、每段 2048 token 校准；逐
 
 ## 来源身份
 
-[QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2)，arXiv:2307.13304v2。使用正文、算法与相关理论/实验补充材料；公式依据归档 TeX 核对，本文统一了三角分解和损失尺度的记法。
+QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`），arXiv:2307.13304v2。使用正文、算法与相关理论/实验补充材料；公式依据归档 TeX 核对，本文统一了三角分解和损失尺度的记法。
 
-[固定QuIP实现](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184)，ac92cfc7a22f6100009e2caf53bb72257d3f3184；本轮核所选OPT/Balance校准、预处理、逆序LDLQ与默认浮点保存/加载，其余分支与运行未核。
+固定QuIP实现（`https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184`），ac92cfc7a22f6100009e2caf53bb72257d3f3184；本轮核所选OPT/Balance校准、预处理、逆序LDLQ与默认浮点保存/加载，其余分支与运行未核。

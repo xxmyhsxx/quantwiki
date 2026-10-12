@@ -88,7 +88,7 @@ AQLM 使用残差 K-means 初始化，随后交替更新索引和码本。原文
 
 一个16bit逻辑索引表达8D E8P码字，不决定它在GPU上的位置。固定QuIP# E8P12把相邻两输出行与相邻两向量块的四个逻辑码，重排进一个int64：低32位放四个模式字节，高32位将四组符号的第j位交错到4j+i。两者仍共64bit，但无法通过连续读取四个uint16直接恢复正确行/列。
 
-逻辑码的低8位b还将符号与四分之一平移耦合：由八位XOR得到p，实际符号为b XOR p，仅p=1时翻转最低位；p同时决定±1/4平移，模式底表已有自身的奇偶修正。论文的“8位模式、7位符号、1位平移”是自由度分解，不保证物理格式把三者分别存成连续字段。解码必须核符号/平移、分量排列及tile地址。（[固定QuIP#](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，latticee8_padded12.py的get_full_grid/maybe_pack_idxs及quiptools_e8p_gemv.cu。）
+逻辑码的低8位b还将符号与四分之一平移耦合：由八位XOR得到p，实际符号为b XOR p，仅p=1时翻转最低位；p同时决定±1/4平移，模式底表已有自身的奇偶修正。论文的“8位模式、7位符号、1位平移”是自由度分解，不保证物理格式把三者分别存成连续字段。解码必须核符号/平移、分量排列及tile地址。（固定QuIP#（`https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98`），latticee8_padded12.py的get_full_grid/maybe_pack_idxs及quiptools_e8p_gemv.cu。）
 
 对于m×n权重，所选格式为m×(n/32)个int64，kernel view为[m/16,n/64,8,4]；主体预算 $64m(n/32)=2mn$。16×64教学tile只占256字节，展开FP16需2048字节；它既不是每码都花64bit，也不是完整模型压缩比已证明8倍。
 
@@ -137,7 +137,7 @@ $$
 
 设普通主体在保护位置解码为d、目标保护值为w。若保存绝对值w，恢复应覆盖该位置；若计算时主体与稀疏分支相加，应保存残差r=w−d。保护mask、非零值和残差不是同一对象；没有零点约束时，量化输入0也不表示主体解码为0。
 
-例如采用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,7)$、$d=s(q-z)$，s=0.5、z=1.25的3bit网格将0编码为1，再恢复为d=−0.125。目标w=3时，直接相加得到2.875；残差3.125才恢复3。固定SpQR的旧浮点加载覆盖保存的绝对保护值，所选优化接口直接传这些值去相加，没有减去d；该静态条件与论文原先的调整稀疏分支说明需要分别记录。（[固定SpQR](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e)，spqr_engine.py、modelutils.py、convert_legacy_model_format.py及spqr_cuda.cpp。）
+例如采用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,7)$、$d=s(q-z)$，s=0.5、z=1.25的3bit网格将0编码为1，再恢复为d=−0.125。目标w=3时，直接相加得到2.875；残差3.125才恢复3。固定SpQR的旧浮点加载覆盖保存的绝对保护值，所选优化接口直接传这些值去相加，没有减去d；该静态条件与论文原先的调整稀疏分支说明需要分别记录。（固定SpQR（`https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e`），spqr_engine.py、modelutils.py、convert_legacy_model_format.py及spqr_cuda.cpp。）
 
 预算同样需要跟随物理字段。此实现把16个3bit权重与两个3bit一级码、8bit二级片段、2bit空位放入每行一个64bit字；二级字节在两相邻行重复，16×16 tile实际128字节、4 bpw，论文理想逻辑格式为116字节、3.625 bpw。两个预算都包括主体及元数据，但对齐/重复不同，不能混用。
 
@@ -169,7 +169,7 @@ $$y_i=s_i\sum_{j,k}T_{j,k,z_{ijk}}.$$
 
 $$T_{k,h}[p]=\sum_{n=0}^{\mu-1}x_{h,n}c_{h,n}^{(k)}(2b_n(p)-1),\quad 0\le p<2^\mu.$$
 
-输出行i的符号段组成地址 $p_{i,k,h}$，于是 $y_i=\sum_{k,h}a_{i,G(h)}^{(k)}T_{k,h}[p_{i,k,h}]$。这里小段不跨组，行尺度需在跨组相加前恢复；只有各组尺度相同等条件下才可全部后置。教学例：两个段查到1/1、组尺度为1/2，输出为3；若两个部分和改成2/0，未加权总和仍是2，正确输出却为2。因此只保留总和再乘一个共同尺度通常丢失信息。（[FluxBin v1](https://arxiv.org/abs/2608.15602v1)，式3/11/14–15、§4及附录C.2；分组记法为整理者展开。）
+输出行i的符号段组成地址 $p_{i,k,h}$，于是 $y_i=\sum_{k,h}a_{i,G(h)}^{(k)}T_{k,h}[p_{i,k,h}]$。这里小段不跨组，行尺度需在跨组相加前恢复；只有各组尺度相同等条件下才可全部后置。教学例：两个段查到1/1、组尺度为1/2，输出为3；若两个部分和改成2/0，未加权总和仍是2，正确输出却为2。因此只保留总和再乘一个共同尺度通常丢失信息。（FluxBin v1（`https://arxiv.org/abs/2608.15602v1`），式3/11/14–15、§4及附录C.2；分组记法为整理者展开。）
 
 它与前面的向量码本输入查表都将点积摊销给多输出行，但地址含义不同：这里每一位对应一个±1符号，列尺度随基底改变；FlexQ的AND-popcount则沿归约维计算整数位平面内积，不构建这张浮点部分和表。每个token和每个不同列尺度基底需重新构表；μ8有256项，主循环省乘法不代表构表、行恢复或整个kernel没有浮点乘法。
 
@@ -261,30 +261,30 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 
 ## 来源身份
 
-- [固定SpQR实现](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e)，543d10e56f921e5eeb10d5f0aaaccd30b6662d0e；§5.2核绝对保护/相加及64bit物理格式，算例和预算为教学展开。
+- 固定SpQR实现（`https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e`），543d10e56f921e5eeb10d5f0aaaccd30b6662d0e；§5.2核绝对保护/相加及64bit物理格式，算例和预算为教学展开。
 
-- [固定QuIP#实现](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，1d8f873e9a2a8b86b12bb1064c312c5689b77d98；§4.2核逻辑符号/平移与物理载荷、所选单行/多行消费，位预算为教学展开。
+- 固定QuIP#实现（`https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98`），1d8f873e9a2a8b86b12bb1064c312c5689b77d98；§4.2核逻辑符号/平移与物理载荷、所选单行/多行消费，位预算为教学展开。
 
-- [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1)，arXiv:2608.15602v1；式3/11/14–15、附录C.1–C.2，第6.2节的分组尺度与操作计数为教学展开。
+- FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy（`https://arxiv.org/abs/2608.15602v1`），arXiv:2608.15602v1；式3/11/14–15、附录C.1–C.2，第6.2节的分组尺度与操作计数为教学展开。
 
-- [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，`arXiv:2606.10531v1`；仿射网格表示与输入侧重排。
+- LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization（`https://arxiv.org/abs/2606.10531v1`），`arXiv:2606.10531v1`；仿射网格表示与输入侧重排。
 
-- [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)，arXiv:2402.15319v2；§2.3–5.3、附录 B/C；第6.1节的参数关系与字节/尺度算例为整理者计账，不替代实际打包。
+- GPTVQ: The Blessing of Dimensionality for LLM Quantization（`https://arxiv.org/abs/2402.15319v2`），arXiv:2402.15319v2；§2.3–5.3、附录 B/C；第6.1节的参数关系与字节/尺度算例为整理者计账，不替代实际打包。
 
-- [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2)，arXiv:2409.17066v2；§3.2.2、附录 C.1–C.2；本页§5.1按覆盖范围、索引和实际码本张数展开理想预算，不代表已核物理布局。
+- VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2409.17066v2`），arXiv:2409.17066v2；§3.2.2、附录 C.1–C.2；本页§5.1按覆盖范围、索引和实际码本张数展开理想预算，不代表已核物理布局。
 
-- [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)，v1；§3、附录 C/F。第7.1节的两组算例为整理者构造。
+- XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization（`https://arxiv.org/abs/2610.00432v1`），v1；§3、附录 C/F。第7.1节的两组算例为整理者构造。
 
-- [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2)，arXiv:2402.04396v2；BlockLDLQ、E8P 与高位宽残差编码。
-- [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4)，arXiv:2401.06118v4；§3、位宽核算与推理章节。
-- [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4)，arXiv:2306.07629v4；非均匀量化与逐行 LUT。
-- [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1)，arXiv:2306.03078v1；两级元数据与例外存储。
-- [SqueezeAILab/SqueezeLLM](https://github.com/SqueezeAILab/SqueezeLLM/tree/a5fd71f353bf569feb7b55737c1c1493e78e8f31)，commit `a5fd71f353bf569feb7b55737c1c1493e78e8f31`；`quant.py` 中 LUT、稀疏值和索引的 dtype。
+- QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`），arXiv:2402.04396v2；BlockLDLQ、E8P 与高位宽残差编码。
+- Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`），arXiv:2401.06118v4；§3、位宽核算与推理章节。
+- SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`），arXiv:2306.07629v4；非均匀量化与逐行 LUT。
+- SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`），arXiv:2306.03078v1；两级元数据与例外存储。
+- SqueezeAILab/SqueezeLLM（`https://github.com/SqueezeAILab/SqueezeLLM/tree/a5fd71f353bf569feb7b55737c1c1493e78e8f31`），commit `a5fd71f353bf569feb7b55737c1c1493e78e8f31`；`quant.py` 中 LUT、稀疏值和索引的 dtype。
 
-- [QTIP](https://arxiv.org/abs/2406.11235v4)，arXiv:2406.11235v4；§2.3–3.2，路径编码与尾咬合位预算。
+- QTIP（`https://arxiv.org/abs/2406.11235v4`），arXiv:2406.11235v4；§2.3–3.2，路径编码与尾咬合位预算。
 
-- [SPHQuant](https://arxiv.org/abs/2609.24875v1)，arXiv:2609.24875v1；§3与附录§7，球面分解与实际位预算。
-- [TurboQuant](https://arxiv.org/abs/2504.19874v1)，v1；§3–4，分布码本、残差分数估计与位宽边界。
-- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；§3–4、附录 B/G/H，查询度量、分组与实际码本成本。
+- SPHQuant（`https://arxiv.org/abs/2609.24875v1`），arXiv:2609.24875v1；§3与附录§7，球面分解与实际位预算。
+- TurboQuant（`https://arxiv.org/abs/2504.19874v1`），v1；§3–4，分布码本、残差分数估计与位宽边界。
+- NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1；§3–4、附录 B/G/H，查询度量、分组与实际码本成本。
 
 - §10–12 依据 TurboQuant v1 §2–3 的 Lloyd–Max/高分辨率讨论与 NOVA-KV v1 附录 G 的 Gaussian 分组模型展开；条件均值、标量信息下界、中心密度及非负预算例子为整理者推导。不采用 TurboQuant 的球面 Shannon 下界，不把连续代理当成有限码本可达性证明。

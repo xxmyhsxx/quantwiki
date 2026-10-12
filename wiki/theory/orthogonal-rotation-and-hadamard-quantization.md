@@ -140,7 +140,7 @@ $$\operatorname{tr}(E_rHE_r^\top)=\operatorname{tr}(E_tH_tE_t^\top),
 
 用处理残差E_t配原统计H一般不满足该关系。输出U的正交性和A的可逆性都是前提；阻尼/归一化及FP16恢复也需另记，不把代数恒等式称为逐bit实现证明。
 
-固定QuIP的OPT/Balance路径先postproc还原稠密浮点权重，再保存普通state_dict；而error_compute的局部残差仍在处理坐标。这说明需要沿实际对象/保存/消费路径核对，不能从有quantizer或pack函数推出已交付压缩接口。（[固定QuIP](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184)，method.py的preproc/postproc/error_compute、bal.py的fasterquant、opt.py的save/load；[所选实现](../implementation/quip-ldlq-and-coordinate-restoration.md)。）
+固定QuIP的OPT/Balance路径先postproc还原稠密浮点权重，再保存普通state_dict；而error_compute的局部残差仍在处理坐标。这说明需要沿实际对象/保存/消费路径核对，不能从有quantizer或pack函数推出已交付压缩接口。（固定QuIP（`https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184`），method.py的preproc/postproc/error_compute、bal.py的fasterquant、opt.py的save/load；[所选实现](../implementation/quip-ldlq-and-coordinate-restoration.md)。）
 
 ## 5. 旋转也可能制造新的权重离群值
 
@@ -238,21 +238,21 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [ResQ](https://arxiv.org/abs/2412.14363v2) | arXiv:2412.14363v2 | 高精度子空间、平方能量代理与原证明边界 |
-| [project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a) | `cb87d0d059455858daaa66f7410da4afebee978a` | 所选未中心化Gram与共享基底 |
-| [CentriQ](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | adaLN 均值、中心化投影、rank-1 回注及 padding/精度边界 |
-| [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | K-only块旋转与服务条件；本页采用既有方法页研读 |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取及prefill逆旋转的预缩放与舍入顺序 |
-| [ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs](https://arxiv.org/abs/2605.10793v2) | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
-| [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
-| [固定QuIP实现](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184) | `ac92cfc7a22f6100009e2caf53bb72257d3f3184` | 所选预处理/postproc、误差统计与默认浮点保存；§4.1等式为教学展开 |
-| [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
-| [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |
-| [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |
-| [SliceGPT: Compress Large Language Models by Deleting Rows and Columns](https://arxiv.org/abs/2401.15024v2) | `arXiv:2401.15024v2` | — |
-| [MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization](https://arxiv.org/abs/2502.00425v2) | `arXiv:2502.00425v2` | — |
+| ResQ（`https://arxiv.org/abs/2412.14363v2`） | arXiv:2412.14363v2 | 高精度子空间、平方能量代理与原证明边界 |
+| project-resq（`https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a`） | `cb87d0d059455858daaa66f7410da4afebee978a` | 所选未中心化Gram与共享基底 |
+| CentriQ（`https://arxiv.org/abs/2610.06260v1`） | arXiv:2610.06260v1 | adaLN 均值、中心化投影、rank-1 回注及 padding/精度边界 |
+| SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（`https://arxiv.org/abs/2604.19157v1`） | `arXiv:2604.19157v1` | K-only块旋转与服务条件；本页采用既有方法页研读 |
+| jindajia/sglang-fork（`https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84`） | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取及prefill逆旋转的预缩放与舍入顺序 |
+| ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs（`https://arxiv.org/abs/2605.10793v2`） | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
+| OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting（`https://arxiv.org/abs/2501.13987v1`） | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
+| 固定QuIP实现（`https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184`） | `ac92cfc7a22f6100009e2caf53bb72257d3f3184` | 所选预处理/postproc、误差统计与默认浮点保存；§4.1等式为教学展开 |
+| QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`） | `arXiv:2307.13304v2` | 量化机制与适用条件 |
+| QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`） | `arXiv:2402.04396v2` | 量化机制与适用条件 |
+| SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
+| SliceGPT: Compress Large Language Models by Deleting Rows and Columns（`https://arxiv.org/abs/2401.15024v2`） | `arXiv:2401.15024v2` | — |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
 
 ## 教学计算材料
 
@@ -260,5 +260,5 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 
 - [algebra-check.json](../assets/orthogonal-rotation-and-hadamard-quantization/checks/algebra-check.json)
 - [verify_algebra.py](../assets/orthogonal-rotation-and-hadamard-quantization/checks/verify_algebra.py)
-- [TurboQuant](https://arxiv.org/abs/2504.19874v1)，v1；引理 1、算法 1，Haar 球面边缘与标量码本。
-- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；§3、附录 F，查询加权变换及其满秩条件。
+- TurboQuant（`https://arxiv.org/abs/2504.19874v1`），v1；引理 1、算法 1，Haar 球面边缘与标量码本。
+- NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1；§3、附录 F，查询加权变换及其满秩条件。

@@ -154,18 +154,18 @@ $$C=\begin{pmatrix}1&-1\\-1&1\end{pmatrix}.$$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs](https://arxiv.org/abs/2509.15455v2) | `arXiv:2509.15455v2` | SPQE、协方差代理与二进制求解；第10节有限游戏及Shapley代数为整理者展开 |
-| [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4) | `arXiv:2410.13056v4` | 算法1的分位分配；第9节有限预算、严格比较及计数例为整理者展开 |
-| [StagQ](https://arxiv.org/abs/2610.05977v1) | `arXiv:2610.05977v1` | 前缀可行集合、共享元数据、全精度保护与 logical/physical rate；§2–4、附录 E/G/A |
-| [Differentiable Bit-Widths](https://arxiv.org/abs/2610.06026v1)；[MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a) | `arXiv:2610.06026v1`；`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a` | 成对分量的 rank/bit；`block_ap.py` 矩阵份额、`fake_dbw.py` 整数投影与 `real_dbw.py` 浮点恢复；细节见 DBW 方法页 |
-| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 前缀混合精度的名义标签与实际预算 |
-| [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
-| [BiLLM: Pushing the Limit of Post-Training Quantization for LLMs](https://arxiv.org/abs/2402.04291v2) | `arXiv:2402.04291v2` | — |
-| [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1) | `arXiv:2306.03078v1` | 细粒度例外预算 |
-| [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4) | `arXiv:2306.07629v4` | 敏感值与尾部保留 |
+| CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs（`https://arxiv.org/abs/2509.15455v2`） | `arXiv:2509.15455v2` | SPQE、协方差代理与二进制求解；第10节有限游戏及Shapley代数为整理者展开 |
+| Channel-Wise Mixed-Precision Quantization for Large Language Models（`https://arxiv.org/abs/2410.13056v4`） | `arXiv:2410.13056v4` | 算法1的分位分配；第9节有限预算、严格比较及计数例为整理者展开 |
+| StagQ（`https://arxiv.org/abs/2610.05977v1`） | `arXiv:2610.05977v1` | 前缀可行集合、共享元数据、全精度保护与 logical/physical rate；§2–4、附录 E/G/A |
+| Differentiable Bit-Widths（`https://arxiv.org/abs/2610.06026v1`）；MMAI-Laboratory/DBW（`https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`） | `arXiv:2610.06026v1`；`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a` | 成对分量的 rank/bit；`block_ap.py` 矩阵份额、`fake_dbw.py` 整数投影与 `real_dbw.py` 浮点恢复；细节见 DBW 方法页 |
+| LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | 前缀混合精度的名义标签与实际预算 |
+| LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |
+| BiLLM: Pushing the Limit of Post-Training Quantization for LLMs（`https://arxiv.org/abs/2402.04291v2`） | `arXiv:2402.04291v2` | — |
+| SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`） | `arXiv:2306.03078v1` | 细粒度例外预算 |
+| SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`） | `arXiv:2306.07629v4` | 敏感值与尾部保留 |
 
-- [The Undetected Damage of Quantization on Retrieval and How to Fix It](https://arxiv.org/abs/2609.24322v1)，arXiv:2609.24322v1；排序稳定性、间隔分配与校准保证。
-- [RAMP](https://arxiv.org/abs/2609.28262v1)，arXiv:2609.28262v1；CPU 混合精度、敏感度聚类与图切分成本。
-- [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
+- The Undetected Damage of Quantization on Retrieval and How to Fix It（`https://arxiv.org/abs/2609.24322v1`），arXiv:2609.24322v1；排序稳定性、间隔分配与校准保证。
+- RAMP（`https://arxiv.org/abs/2609.28262v1`），arXiv:2609.28262v1；CPU 混合精度、敏感度聚类与图切分成本。
+- FoldQuantVLA（`https://arxiv.org/abs/2609.24433v1`），arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
 
-- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
+- Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures（`https://arxiv.org/abs/2609.28974v1`），v1；组件消融、质量判据与真实执行对照。

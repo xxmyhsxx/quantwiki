@@ -98,4 +98,4 @@ MXFP4 的块尺度还可搜索；论文的 E8M0-W 消融改善了误差，但未
 
 ## 来源身份
 
-- [PRQuant: Permutation Residual Quantization for Low-Overhead Inference](https://arxiv.org/abs/2609.22106v1)，arXiv:2609.22106v1；使用正文、算法和适用层附录，公式回查原始页图。采用归档身份，不从 PDF 水印推断不同版本。
+- PRQuant: Permutation Residual Quantization for Low-Overhead Inference（`https://arxiv.org/abs/2609.22106v1`），arXiv:2609.22106v1；使用正文、算法和适用层附录，公式回查原始页图。采用归档身份，不从 PDF 水印推断不同版本。

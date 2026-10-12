@@ -163,6 +163,6 @@ $$U_*=P_m^{-1}U_r,\qquad V_*=\Sigma_rG_*V_r^\mathsf T,$$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [EMVision-NK/SplitQ](https://github.com/EMVision-NK/SplitQ/tree/7480f129bb5150287bb65864228d6e675e5040aa) | `7480f129bb5150287bb65864228d6e675e5040aa` | 本地快照已移除 |
+| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| EMVision-NK/SplitQ（`https://github.com/EMVision-NK/SplitQ/tree/7480f129bb5150287bb65864228d6e675e5040aa`） | `7480f129bb5150287bb65864228d6e675e5040aa` | 本地快照已移除 |

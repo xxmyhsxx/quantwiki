@@ -18,7 +18,7 @@ updated: 2026-10-12
 
 # FlexQ：INT6 分组量化与二值 Tensor Core 执行
 
-FlexQ选择6-bit权重和以6 bit为主的激活，用group128控制局部范围，在所测Llama的down_proj输入保留8 bit。系统将多位整数拆成位平面，用二值Tensor Core执行位对乘积，再按位权和组尺度恢复浮点输出。它没有把INT6改名成硬件原生格式，而是重新组织已有二值指令的计算和访存。（[FlexQ v2](https://arxiv.org/abs/2508.04405v2)，§4、图5–9。）
+FlexQ选择6-bit权重和以6 bit为主的激活，用group128控制局部范围，在所测Llama的down_proj输入保留8 bit。系统将多位整数拆成位平面，用二值Tensor Core执行位对乘积，再按位权和组尺度恢复浮点输出。它没有把INT6改名成硬件原生格式，而是重新组织已有二值指令的计算和访存。（FlexQ v2（`https://arxiv.org/abs/2508.04405v2`），§4、图5–9。）
 
 本页依据固定17页PDF及正文源文件，核方法、式1–6、表1–6与代表性能图；代码分析见[所选实现](../implementation/flexq-bitplanes-and-group-restoration.md)。没有运行作者模型、编译或GPU。与 [Atom](atom.md) 保护少量原通道并采用INT4/INT8混合不同，FlexQ统一使用6-bit线性层权重，通过激活精度和位平面布局处理质量与执行成本。
 
@@ -83,4 +83,4 @@ M很小时，将位维度放进MMA的行空间并做warp内位权归约，减少
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2) | arXiv:2508.04405v2；PDF SHA-256 b0dc825fbc7f6e9552c3d26780949932a6d0c397858a518da1e23e323d45ca38 | 正文方法/实验、式1–6、表1–6、代表设计与性能图；未逐点重建所有曲线，未运行模型或GPU |
+| FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design（`https://arxiv.org/abs/2508.04405v2`） | arXiv:2508.04405v2；PDF SHA-256 b0dc825fbc7f6e9552c3d26780949932a6d0c397858a518da1e23e323d45ca38 | 正文方法/实验、式1–6、表1–6、代表设计与性能图；未逐点重建所有曲线，未运行模型或GPU |

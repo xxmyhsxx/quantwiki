@@ -123,4 +123,4 @@ DeepSeek-V2 的效率思路同时作用于两种成本：DeepSeekMoE 减少单 t
 
 ## 来源身份
 
-- [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5)，`arXiv:2405.04434v5`，2024-06-19 修订；采用已归档的同版本 PDF 与 TeX 源包。路由公式和训练条件定位见正文；容量记账、误差展开和校准联系是本页整理者分析。本页没有用 DeepSeek-V3 的路由规则替代 V2。
+- DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model（`https://arxiv.org/abs/2405.04434v5`），`arXiv:2405.04434v5`，2024-06-19 修订；采用已归档的同版本 PDF 与 TeX 源包。路由公式和训练条件定位见正文；容量记账、误差展开和校准联系是本页整理者分析。本页没有用 DeepSeek-V3 的路由规则替代 V2。

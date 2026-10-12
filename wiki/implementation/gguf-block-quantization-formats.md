@@ -201,4 +201,4 @@ imatrix 的定位是「校准统计改善量化拟合」，与 GPTQ 的二阶补
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b) | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |
+| ggml-org/llama.cpp（`https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b`） | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |

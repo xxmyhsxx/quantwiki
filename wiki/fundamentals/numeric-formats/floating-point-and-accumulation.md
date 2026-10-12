@@ -69,6 +69,6 @@ Marlin 所选 `mma` 明确使用 `f32.f16.f16.f32`：FP16 乘法输入、FP32 �
 
 ## 来源身份
 
-- [Floating Point and IEEE 754](https://docs.nvidia.com/cuda/floating-point/index.html)，页面版本 v13.4，2026-09-22 获取；本地保存 Floating Point、Dot Product 与 Rounding Modes 正文，快照标识 `floating-point-20260922-16c2d89a`。
-- [Stanford CS336 lectures](https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91)，`8b59b50730766695c2ffedd1a79c50cd09b9eb91`，`lecture_02.py:tensors_memory` 与 fp16/bf16/fp32 位域图。
-- [Marlin](https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90)，`1f25790bdd49fba53106164a24666dade68d7c90`，`marlin_cuda_kernel.cu:dequant` 与 `mma`。
+- Floating Point and IEEE 754（`https://docs.nvidia.com/cuda/floating-point/index.html`），页面版本 v13.4，2026-09-22 获取；本地保存 Floating Point、Dot Product 与 Rounding Modes 正文，快照标识 `floating-point-20260922-16c2d89a`。
+- Stanford CS336 lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`），`8b59b50730766695c2ffedd1a79c50cd09b9eb91`，`lecture_02.py:tensors_memory` 与 fp16/bf16/fp32 位域图。
+- Marlin（`https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90`），`1f25790bdd49fba53106164a24666dade68d7c90`，`marlin_cuda_kernel.cu:dequant` 与 `mma`。

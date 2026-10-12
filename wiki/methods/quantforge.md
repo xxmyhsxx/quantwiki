@@ -259,4 +259,4 @@ HiRes 将 [GPTQ](gptq.md) 的固定输入重构接到新的坐标及 pre-A4 曲�
 
 | 来源 | 固定版本 | 本页范围 |
 | --- | --- | --- |
-| [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1) | arXiv:2609.34680v1，2026-09-28提交 | 正文、附录 A/B 算法及 C/D 的协议、关键消融、成本与搜索比较；TeX 与关键 PDF 公式/表格核对。未逐格重算全部附表，未取得匹配作者源码，未运行模型或搜索。 |
+| QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization（`https://arxiv.org/abs/2609.34680v1`） | arXiv:2609.34680v1，2026-09-28提交 | 正文、附录 A/B 算法及 C/D 的协议、关键消融、成本与搜索比较；TeX 与关键 PDF 公式/表格核对。未逐格重算全部附表，未取得匹配作者源码，未运行模型或搜索。 |

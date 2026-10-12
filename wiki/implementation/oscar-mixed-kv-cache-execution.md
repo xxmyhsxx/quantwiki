@@ -195,4 +195,4 @@ WUSH-KV仍需匹配其作者实现，核对每KV head一般可逆T、Query的逆
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| [OSCAR: Offline Spectral Covariance-Aware Rotation for 2-bit KV Cache Quantization — 官方代码](https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437) | `41ebcdba3db5f0ce1339c3727caea80df575d437`，提交日期2026-06-28，归档日期2026-10-08 | README、离线旋转/评测配置及vendored SGLang中的固定writer/window/Attention；使用文件与位置见正文及frontmatter。未以整仓归档替代整仓研读，也未据其作者测速报告本地性能 |
+| OSCAR: Offline Spectral Covariance-Aware Rotation for 2-bit KV Cache Quantization — 官方代码（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437`，提交日期2026-06-28，归档日期2026-10-08 | README、离线旋转/评测配置及vendored SGLang中的固定writer/window/Attention；使用文件与位置见正文及frontmatter。未以整仓归档替代整仓研读，也未据其作者测速报告本地性能 |

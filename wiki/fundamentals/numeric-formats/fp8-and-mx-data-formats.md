@@ -174,6 +174,6 @@ typedef struct {
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [FP8 Formats for Deep Learning](https://arxiv.org/abs/2209.05433v2) | `arXiv:2209.05433v2` | — |
-| [Microscaling Data Formats for Deep Learning](https://arxiv.org/abs/2310.10537v3) | `arXiv:2310.10537v3` | — |
-| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b) | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |
+| FP8 Formats for Deep Learning（`https://arxiv.org/abs/2209.05433v2`） | `arXiv:2209.05433v2` | — |
+| Microscaling Data Formats for Deep Learning（`https://arxiv.org/abs/2310.10537v3`） | `arXiv:2310.10537v3` | — |
+| ggml-org/llama.cpp（`https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b`） | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |

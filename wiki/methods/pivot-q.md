@@ -198,5 +198,5 @@ PIVOT-Q 的作者代码补充了具身策略的实现实例，不能填补 OnPTQ
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| [Beyond In-Distribution Preservation: Recovering Generalization in Quantized VLAs via Vulnerability-Oriented Tuning](https://arxiv.org/abs/2610.05745v1) | arXiv:2610.05745v1 | 正文与附录 A–F；式1–7、表1–3、补充诊断/协议；关键公式与主表回查 PDF |
-| [ruanruan-andy/PIVOT-Q](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15) | `74d6e1f8994a03eb45aae5c316a743abda2cba15` | README/实验协议；主 GR00T+QuantVLA launcher→selector→train，vendored QuantVLA 评分、采样、加载与 fake-quant linear；其余模型详细后端未完成核读 |
+| Beyond In-Distribution Preservation: Recovering Generalization in Quantized VLAs via Vulnerability-Oriented Tuning（`https://arxiv.org/abs/2610.05745v1`） | arXiv:2610.05745v1 | 正文与附录 A–F；式1–7、表1–3、补充诊断/协议；关键公式与主表回查 PDF |
+| ruanruan-andy/PIVOT-Q（`https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15`） | `74d6e1f8994a03eb45aae5c316a743abda2cba15` | README/实验协议；主 GR00T+QuantVLA launcher→selector→train，vendored QuantVLA 评分、采样、加载与 fake-quant linear；其余模型详细后端未完成核读 |

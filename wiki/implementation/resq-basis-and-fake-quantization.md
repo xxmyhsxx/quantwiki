@@ -25,7 +25,7 @@ updated: 2026-10-12
 
 # ResQ 实现：未中心化基底、权重融合与浮点模拟量化
 
-固定 [project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a) 提供基底生成、旋转融合、浮点模拟量化和模型评测。这里核读 Llama、`rotate_mode=resq`、`rotation_granularity=full_shared`、高精度比例0.125、低精度附加比例0、非训练旋转、`config.pretraining_tp=1` 的主链，并追踪按头K量化及选定eager attention缓存调用；不代表全部模型、attention后端、TP切片或训练分支已核验。没有导入、安装或执行上游。
+固定 project-resq（`https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a`） 提供基底生成、旋转融合、浮点模拟量化和模型评测。这里核读 Llama、`rotate_mode=resq`、`rotation_granularity=full_shared`、高精度比例0.125、低精度附加比例0、非训练旋转、`config.pretraining_tp=1` 的主链，并追踪按头K量化及选定eager attention缓存调用；不代表全部模型、attention后端、TP切片或训练分支已核验。没有导入、安装或执行上游。
 
 [方法页](../methods/resq.md)解释子空间混合精度与原文证明问题。本页回答：统计量来自什么前向，所选基底怎样进入权重，量化后的对象怎样保存和被消费，以及论文性能实现是否在快照中。
 
@@ -81,5 +81,5 @@ down权重预先变换，wrapper在线执行完整Hadamard后再量化；由于�
 
 | 来源 | 固定身份 | 核读范围 |
 | --- | --- | --- |
-| [utkarsh-dmx/project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a) | `cb87d0d059455858daaa66f7410da4afebee978a`；ZIP SHA-256 `df2d405a31be96692ca58b9bd55476f2988b8a7e83aa9f482a07713dadb39e6f` | 本页列出的基底、融合、配置、量化器、所选GPTQ/eager缓存调用；不含全仓训练、全部模型与后端 |
-| [ResQ](https://arxiv.org/abs/2412.14363v2) | arXiv:2412.14363v2 | §4–5与附录C；分开论文配置、代码示例、浮点模拟和实际部署 |
+| utkarsh-dmx/project-resq（`https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a`） | `cb87d0d059455858daaa66f7410da4afebee978a`；ZIP SHA-256 `df2d405a31be96692ca58b9bd55476f2988b8a7e83aa9f482a07713dadb39e6f` | 本页列出的基底、融合、配置、量化器、所选GPTQ/eager缓存调用；不含全仓训练、全部模型与后端 |
+| ResQ（`https://arxiv.org/abs/2412.14363v2`） | arXiv:2412.14363v2 | §4–5与附录C；分开论文配置、代码示例、浮点模拟和实际部署 |

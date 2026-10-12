@@ -100,5 +100,5 @@ SGLang JIT 还有可选 `expert_ids` 过滤：当 `expert_ids[token_id//expert_s
 
 | 来源 | 固定版本 | 核对范围 |
 | --- | --- | --- |
-| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Llama MLP、SiluAndMul 与 SwigluStepAndMul 包装、CUDA 门控与向量分派、Triton 二维网格。 |
-| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | Llama MLP、CUDA 平台导入、JIT activation 包装、展平向量工作映射与过滤写入。 |
+| vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | Llama MLP、SiluAndMul 与 SwigluStepAndMul 包装、CUDA 门控与向量分派、Triton 二维网格。 |
+| SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | Llama MLP、CUDA 平台导入、JIT activation 包装、展平向量工作映射与过滤写入。 |

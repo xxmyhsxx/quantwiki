@@ -102,8 +102,8 @@ $$|\mathcal L(W+E)-\mathcal L(W)|\le\sum_i s_i+\frac\Lambda2\|E\|^2.$$
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [LLM-MQ](https://neurips2023-enlsp.github.io/papers/paper_4.pdf) | SHA-256 `9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0` | §2.2式1–5；方向、条件余项界及有限候选反例为整理者核对与展开 |
-| [RGSQ: Riemannian Geometry-Sensitive Quantization for Large Vision-Language Models](https://arxiv.org/abs/2609.25492v1) | arXiv:2609.25492v1 | §III–IV 的统计与目标；因子顺序、阻尼展开和约束搬运为本文核对与推导 |
-| [Beyond Scalar Sensitivity](https://arxiv.org/abs/2609.25916v1) | arXiv:2609.25916v1 | Theorem 3.1，标量最坏乘性失真及其量词 |
-| [HAWQ-V2](https://arxiv.org/abs/1911.03852v1) | arXiv:1911.03852v1 | §2.1，平均trace的方向假设 |
-| [Predicting Quantization Price](https://arxiv.org/abs/2609.28270v1) | arXiv:2609.28270v1 | §3、附录B.1/D.2，因子分离与实际评分 |
+| LLM-MQ（`https://neurips2023-enlsp.github.io/papers/paper_4.pdf`） | SHA-256 `9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0` | §2.2式1–5；方向、条件余项界及有限候选反例为整理者核对与展开 |
+| RGSQ: Riemannian Geometry-Sensitive Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2609.25492v1`） | arXiv:2609.25492v1 | §III–IV 的统计与目标；因子顺序、阻尼展开和约束搬运为本文核对与推导 |
+| Beyond Scalar Sensitivity（`https://arxiv.org/abs/2609.25916v1`） | arXiv:2609.25916v1 | Theorem 3.1，标量最坏乘性失真及其量词 |
+| HAWQ-V2（`https://arxiv.org/abs/1911.03852v1`） | arXiv:1911.03852v1 | §2.1，平均trace的方向假设 |
+| Predicting Quantization Price（`https://arxiv.org/abs/2609.28270v1`） | arXiv:2609.28270v1 | §3、附录B.1/D.2，因子分离与实际评分 |

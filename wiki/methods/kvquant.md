@@ -92,4 +92,4 @@ prefill 的任务设置先用浮点 K/V 完成当前 prompt 的 attention，再�
 
 ## 来源身份
 
-- [KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization](https://arxiv.org/abs/2401.18079v6)，arXiv:2401.18079v6；2026-09-22 归档。方法、长上下文结果与预算/实现/限制附录分别承接。
+- KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization（`https://arxiv.org/abs/2401.18079v6`），arXiv:2401.18079v6；2026-09-22 归档。方法、长上下文结果与预算/实现/限制附录分别承接。

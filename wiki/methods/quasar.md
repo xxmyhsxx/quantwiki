@@ -109,4 +109,4 @@ LUT主体预算为 $(512\cdot3+8\cdot8)/512=3.125$ bit/weight，未计其他元�
 
 ## 来源身份
 
-- [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)，`arXiv:2608.13966v1`；§3–4、算法1、§5定理1/推论1及附录A证明，§6和必要附录B–D的格式、数据、消融与诊断。
+- QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction（`https://arxiv.org/abs/2608.13966v1`），`arXiv:2608.13966v1`；§3–4、算法1、§5定理1/推论1及附录A证明，§6和必要附录B–D的格式、数据、消融与诊断。

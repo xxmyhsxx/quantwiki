@@ -174,7 +174,7 @@ $$
 
 ## 12. 生成质量、保真度和提示协议怎样分开评测
 
-生成模型的量化评测至少有三个不同问题：图像是否满足提示/偏好、是否接近参考模型在同输入下的图像、某项专门能力是否保留。CLIP或学习偏好分数、PSNR/SSIM/LPIPS、OCR文字正确率分别提供证据；高参考保真度不保证最高质量，高整体评分也可能遗漏错误文字。（[Ideogram INT8/GGUF v2](https://arxiv.org/abs/2606.12280v2)，§4–7、表1–4；[方法与条件](../methods/ideogram-int8-gguf.md)。）
+生成模型的量化评测至少有三个不同问题：图像是否满足提示/偏好、是否接近参考模型在同输入下的图像、某项专门能力是否保留。CLIP或学习偏好分数、PSNR/SSIM/LPIPS、OCR文字正确率分别提供证据；高参考保真度不保证最高质量，高整体评分也可能遗漏错误文字。（Ideogram INT8/GGUF v2（`https://arxiv.org/abs/2606.12280v2`），§4–7、表1–4；[方法与条件](../methods/ideogram-int8-gguf.md)。）
 
 评测输入应包含实际消费的提示，而不止原始prompt ID。对每条输入保存最终caption、模板/schema、扩写方式、seed、步数、分辨率和采样预设，各量化版本共享同一组输入元组。扩写不仅改变JSON语法，也可能增加内容；若每个版本各自扩写，同一原始问题不再保证相同条件。论文的expander是按公开规格重建，不能称为原厂生产API。
 
@@ -186,16 +186,16 @@ CI含零与质量等价按[第8节](#8-无显著差异不等于满足质量等�
 
 ## 来源身份
 
-- [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)，v1；§6.1–6.2、附录 A.1/D.1/D.2，指标聚合、搜索预算及信息反馈边界。
+- QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization（`https://arxiv.org/abs/2609.34680v1`），v1；§6.1–6.2、附录 A.1/D.1/D.2，指标聚合、搜索预算及信息反馈边界。
 
-- [Perplexity of fixed-length models](https://huggingface.co/docs/transformers/en/perplexity)，Transformers main，2026-09-22 获取，`perplexity-20260922-03be86a2`；定义、固定窗口与滑动窗口示例。
-- [Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs](https://arxiv.org/abs/2602.13289v1)，arXiv:2602.13289v1；使用 §3 的置信度、评测指标和 held-out 阈值设置，二值公式与算例为整理者解释。
+- Perplexity of fixed-length models（`https://huggingface.co/docs/transformers/en/perplexity`），Transformers main，2026-09-22 获取，`perplexity-20260922-03be86a2`；定义、固定窗口与滑动窗口示例。
+- Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs（`https://arxiv.org/abs/2602.13289v1`），arXiv:2602.13289v1；使用 §3 的置信度、评测指标和 held-out 阈值设置，二值公式与算例为整理者解释。
 
-- [The Undetected Damage of Quantization on Retrieval and How to Fix It](https://arxiv.org/abs/2609.24322v1)，arXiv:2609.24322v1；排序稳定性、间隔分配与校准保证。
-- [The Alignment Illusion in Multimodal Large Language Models](https://arxiv.org/abs/2609.30210v1)，arXiv:2609.30210v1；主角度诊断与视觉干预。
+- The Undetected Damage of Quantization on Retrieval and How to Fix It（`https://arxiv.org/abs/2609.24322v1`），arXiv:2609.24322v1；排序稳定性、间隔分配与校准保证。
+- The Alignment Illusion in Multimodal Large Language Models（`https://arxiv.org/abs/2609.30210v1`），arXiv:2609.30210v1；主角度诊断与视觉干预。
 
-- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
-- [How Divergence Becomes Decision Flips in Compressed Language Models](https://arxiv.org/abs/2610.00694v1)，arXiv:2610.00694v1；§3–8 的同前缀输出保真、指标聚合和推测解码评测。
-- [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)，arXiv:2610.05745v1，§6/表2及附录 E；[固定实验协议](https://github.com/ruanruan-andy/PIVOT-Q/blob/74d6e1f8994a03eb45aae5c316a743abda2cba15/docs/experiment_protocol.md)：传导式适配、训练/评测 seed 和最终 checkpoint。
+- Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures（`https://arxiv.org/abs/2609.28974v1`），v1；组件消融、质量判据与真实执行对照。
+- How Divergence Becomes Decision Flips in Compressed Language Models（`https://arxiv.org/abs/2610.00694v1`），arXiv:2610.00694v1；§3–8 的同前缀输出保真、指标聚合和推测解码评测。
+- PIVOT-Q（`https://arxiv.org/abs/2610.05745v1`），arXiv:2610.05745v1，§6/表2及附录 E；固定实验协议（`https://github.com/ruanruan-andy/PIVOT-Q/blob/74d6e1f8994a03eb45aae5c316a743abda2cba15/docs/experiment_protocol.md`）：传导式适配、训练/评测 seed 和最终 checkpoint。
 
-- [Ideogram INT8/GGUF研究](https://arxiv.org/abs/2606.12280v2)，arXiv:2606.12280v2；§3–7、表1–4，生成质量/参考保真度/OCR、共享JSON输入、配对统计与消融协议边界。
+- Ideogram INT8/GGUF研究（`https://arxiv.org/abs/2606.12280v2`），arXiv:2606.12280v2；§3–7、表1–4，生成质量/参考保真度/OCR、共享JSON输入、配对统计与消融协议边界。

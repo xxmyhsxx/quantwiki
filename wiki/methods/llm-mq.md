@@ -14,7 +14,7 @@ updated: 2026-10-12
 
 # LLM-MQ：候选梯度评分、稀疏保护与混合位宽 GEMV
 
-LLM-MQ 将每层2/3/4-bit候选的实际权重扰动投影到损失梯度，用绝对一阶变化作代价，在权重内存上限内选择配置；另外保留0.5% FP16离群值，并融合反量化与CUDA Core GEMV。它把候选质量、存储和执行相连，三个部分不能分别当作无条件保证。依据为[2023 Workshop PDF](https://neurips2023-enlsp.github.io/papers/paper_4.pdf)的固定SHA-256快照，全文5页；文件未包含正文提及的其他模型附录，没有核作者实现或运行模型/GPU。
+LLM-MQ 将每层2/3/4-bit候选的实际权重扰动投影到损失梯度，用绝对一阶变化作代价，在权重内存上限内选择配置；另外保留0.5% FP16离群值，并融合反量化与CUDA Core GEMV。它把候选质量、存储和执行相连，三个部分不能分别当作无条件保证。依据为2023 Workshop PDF（`https://neurips2023-enlsp.github.io/papers/paper_4.pdf`）的固定SHA-256快照，全文5页；文件未包含正文提及的其他模型附录，没有核作者实现或运行模型/GPU。
 
 与[CMPQ](cmpq.md)的输入通道范数不同，LLM-MQ按每层每位宽的扰动评分；与[CoopQ](coopq.md)不同，它不沿联合低精度状态反复测NLL或建立协方差交互代理。共通预算与选择问题见[混合精度分配](../theory/mixed-precision-allocation.md)，一阶评分的数学边界见[候选扰动评分](../theory/curvature-weighted-quantization-error.md#7-候选量化扰动的一阶评分)。
 
@@ -78,4 +78,4 @@ $$\min_c\sum_i\sum_b c_{i,b}s_{i,b},\qquad
 
 ## 来源身份
 
-[LLM-MQ: Mixed-Precision Quantization for Efficient LLM Deployment](https://neurips2023-enlsp.github.io/papers/paper_4.pdf)，NeurIPS 2023 ENLSP Workshop，PDF未标修订号；固定快照SHA-256为 `9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0`。研读全部5页，机制和式1–5见页2–3，表1与速度条件见页4；页5是参考文献。方向核对、余项/计费例和表内算术为整理者展开；作者实现、其他模型附录、打包接口、梯度/求解及模型/GPU复现未核。
+LLM-MQ: Mixed-Precision Quantization for Efficient LLM Deployment（`https://neurips2023-enlsp.github.io/papers/paper_4.pdf`），NeurIPS 2023 ENLSP Workshop，PDF未标修订号；固定快照SHA-256为 `9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0`。研读全部5页，机制和式1–5见页2–3，表1与速度条件见页4；页5是参考文献。方向核对、余项/计费例和表内算术为整理者展开；作者实现、其他模型附录、打包接口、梯度/求解及模型/GPU复现未核。

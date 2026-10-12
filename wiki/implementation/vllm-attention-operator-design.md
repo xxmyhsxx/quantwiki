@@ -157,4 +157,4 @@ MLA 的跨 rank 分片沿同一分母恢复原则，但通信轴和状态 dtype 
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Llama 层组织、Attention 接口与元数据、FlashAttention 接入、Triton 普通分页/在线 softmax/分段路径、CUDA Graph 文档和分派。 |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | Llama 层组织、Attention 接口与元数据、FlashAttention 接入、Triton 普通分页/在线 softmax/分段路径、CUDA Graph 文档和分派。 |

@@ -371,36 +371,36 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 
 - SmoothQuant+ v1，来源 `https://arxiv.org/abs/2312.03788v1`，arXiv:2312.03788v1；§5.3与§8引用HumanEval输入校准/配方选择及代理loss与任务分数差异。
 
-- [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)，`arXiv:2309.02784v2`；§3校准生成、表1/8；§5.2混合公式与概率例为整理者展开。
+- Norm Tweaking: High-performance Low-bit Quantization of Large Language Models（`https://arxiv.org/abs/2309.02784v2`），`arXiv:2309.02784v2`；§3校准生成、表1/8；§5.2混合公式与概率例为整理者展开。
 
-- [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)，`arXiv:2608.13966v1`；编码候选与固定码加权恢复的区别。
+- QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction（`https://arxiv.org/abs/2608.13966v1`），`arXiv:2608.13966v1`；编码候选与固定码加权恢复的区别。
 
-- [Scale Sensitivity in Low-Bit Post-Training Quantization: Curvature of the Quantization Error Landscape](https://arxiv.org/abs/2609.37416v1)，arXiv:2609.37416v1；§3–5、定理 1、命题 1、定义 1、表 1–2/5，以及附录 A.4/A.5.2/B.1/B.4。第 10 节采用作者条件和报告，矩阵改写及变量关系为整理者展开。
+- Scale Sensitivity in Low-Bit Post-Training Quantization: Curvature of the Quantization Error Landscape（`https://arxiv.org/abs/2609.37416v1`），arXiv:2609.37416v1；§3–5、定理 1、命题 1、定义 1、表 1–2/5，以及附录 A.4/A.5.2/B.1/B.4。第 10 节采用作者条件和报告，矩阵改写及变量关系为整理者展开。
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [CentriQ](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | 免校准与在线分位数、分布假设和开发集的区别 |
-| [PIVOT-Q](https://arxiv.org/abs/2610.05745v1)；[作者实现](https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15) | arXiv:2610.05745v1；`74d6e1f8994a03eb45aae5c316a743abda2cba15` | 学生环境状态、段内选择、锚点来源与恢复预算；代码限定 GR00T+QuantVLA 主路径 |
-| [Calibrate the Decisions That Change the Future](https://arxiv.org/abs/2609.36828v1) | `arXiv:2609.36828v1` | 当前量化前缀、静态 anchor、风险选择与轨迹刷新 |
-| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 二阶矩、校准规模与 padding 假设 |
-| [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
-| [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
-| [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
-| [MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2603.04800v1) | `arXiv:2603.04800v1` | — |
-| [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |
-| [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models](https://arxiv.org/abs/2308.13137v3) | `arXiv:2308.13137v3` | — |
-| [OpenGVLab/OmniQuant](https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/generate_act_scale_shift.py) | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
-| [MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization](https://arxiv.org/abs/2502.00425v2) | `arXiv:2502.00425v2` | — |
-| [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
-| [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
-| [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
-| [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
+| CentriQ（`https://arxiv.org/abs/2610.06260v1`） | arXiv:2610.06260v1 | 免校准与在线分位数、分布假设和开发集的区别 |
+| PIVOT-Q（`https://arxiv.org/abs/2610.05745v1`）；作者实现（`https://github.com/ruanruan-andy/PIVOT-Q/tree/74d6e1f8994a03eb45aae5c316a743abda2cba15`） | arXiv:2610.05745v1；`74d6e1f8994a03eb45aae5c316a743abda2cba15` | 学生环境状态、段内选择、锚点来源与恢复预算；代码限定 GR00T+QuantVLA 主路径 |
+| Calibrate the Decisions That Change the Future（`https://arxiv.org/abs/2609.36828v1`） | `arXiv:2609.36828v1` | 当前量化前缀、静态 anchor、风险选择与轨迹刷新 |
+| QERA: an Analytical Framework for Quantization Error Reconstruction（`https://arxiv.org/abs/2410.06040v2`） | `arXiv:2410.06040v2` | 二阶矩、校准规模与 padding 假设 |
+| LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |
+| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` | — |
+| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |
+| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`） | `arXiv:2603.04800v1` | — |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
+| SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/generate_act_scale_shift.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
+| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
 
-- [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据与蒸馏目标。
+- LLM-QAT: Data-Free Quantization Aware Training for Large Language Models（`https://arxiv.org/abs/2305.17888v1`），arXiv:2305.17888v1；生成数据与蒸馏目标。
 
-- [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；文档与token采样分布、分实验预处理条件。
-- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV文本分块与map批次尾部。
+- PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression（`https://arxiv.org/abs/2405.14852v2`），arXiv:2405.14852v2；文档与token采样分布、分实验预处理条件。
+- Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV文本分块与map批次尾部。

@@ -161,8 +161,8 @@ vLLM `scaled_mm_c2x.cuh` 还明确选用 INT8 的 `OpMultiplyAddSaturate`、`Thr
 
 | 来源 | 固定版本与核对范围 |
 | --- | --- |
-| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | 动态 INT8 量化、Dense CUTLASS host/device wrapper、自定义 epilogue |
-| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | CUDA INT8 量化、CUTLASS 2 wrapper 与 epilogue |
-| [CUTLASS](https://github.com/NVIDIA/cutlass/tree/57e3cfb47a2d9e0d46eb6335c3dc411498efa198) | SGLang 指定依赖；仅定向读 DefaultGemm、DefaultMma、MmaMultistage，2026-09-22 获取 |
-| [Triton](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | NVIDIA libdevice round 符号映射；不代表已核对运行环境安装版本 |
-| [NVIDIA libdevice __nv_roundf](https://docs.nvidia.com/cuda/archive/12.9.1/libdevice-users-guide/__nv_roundf.html) | CUDA 12.9.1 的函数定义，2026-09-22 定向摘录 |
+| SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | 动态 INT8 量化、Dense CUTLASS host/device wrapper、自定义 epilogue |
+| vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | CUDA INT8 量化、CUTLASS 2 wrapper 与 epilogue |
+| CUTLASS（`https://github.com/NVIDIA/cutlass/tree/57e3cfb47a2d9e0d46eb6335c3dc411498efa198`） | SGLang 指定依赖；仅定向读 DefaultGemm、DefaultMma、MmaMultistage，2026-09-22 获取 |
+| Triton（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | NVIDIA libdevice round 符号映射；不代表已核对运行环境安装版本 |
+| NVIDIA libdevice __nv_roundf（`https://docs.nvidia.com/cuda/archive/12.9.1/libdevice-users-guide/__nv_roundf.html`） | CUDA 12.9.1 的函数定义，2026-09-22 定向摘录 |

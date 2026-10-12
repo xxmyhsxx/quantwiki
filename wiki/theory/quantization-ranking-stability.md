@@ -204,7 +204,7 @@ greedy 推测解码需要 draft 与 target 一致；采样版在同一状态下�
 
 ## 来源身份
 
-- [The Undetected Damage of Quantization on Retrieval and How to Fix It](https://arxiv.org/abs/2609.24322v1)，arXiv:2609.24322v1；2026-09-23 归档。作者报告、排序推导与本页纠正分别标注。
+- The Undetected Damage of Quantization on Retrieval and How to Fix It（`https://arxiv.org/abs/2609.24322v1`），arXiv:2609.24322v1；2026-09-23 归档。作者报告、排序推导与本页纠正分别标注。
 
-- [Global Ranks Survive, Selected Heads Shift](https://arxiv.org/abs/2609.23585v1)，v1；全局排序、top-k 集合及校准图谱的区别。
-- [How Divergence Becomes Decision Flips in Compressed Language Models](https://arxiv.org/abs/2610.00694v1)，arXiv:2610.00694v1；§3–8、附录 A 的定义、分解、概率间隔界、噪声条件与评测范围。§8 的离散分布与 Jensen 数值例子是整理者教学推导，没有模型实验。
+- Global Ranks Survive, Selected Heads Shift（`https://arxiv.org/abs/2609.23585v1`），v1；全局排序、top-k 集合及校准图谱的区别。
+- How Divergence Becomes Decision Flips in Compressed Language Models（`https://arxiv.org/abs/2610.00694v1`），arXiv:2610.00694v1；§3–8、附录 A 的定义、分解、概率间隔界、噪声条件与评测范围。§8 的离散分布与 Jensen 数值例子是整理者教学推导，没有模型实验。

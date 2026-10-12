@@ -83,4 +83,4 @@ $$a_i=\|X_{:,i}\|_2=\sqrt{\sum_{t=1}^nX_{ti}^2}.$$
 
 ## 来源身份
 
-- [Channel-Wise Mixed-Precision Quantization for Large Language Models](https://arxiv.org/abs/2410.13056v4)，`arXiv:2410.13056v4`；§3算法1、§4质量/消融、§5–6存储与部署，附录A的保护/量化/样本、B.3分配依据、C比较、D限制。通道矩阵改写、计数反例与预算核算为整理者展开。
+- Channel-Wise Mixed-Precision Quantization for Large Language Models（`https://arxiv.org/abs/2410.13056v4`），`arXiv:2410.13056v4`；§3算法1、§4质量/消融、§5–6存储与部署，附录A的保护/量化/样本、B.3分配依据、C比较、D限制。通道矩阵改写、计数反例与预算核算为整理者展开。

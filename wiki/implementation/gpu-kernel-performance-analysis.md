@@ -233,8 +233,8 @@ ncu --nvtx --nvtx-include 'perf_target/' --set basic \
 
 | 来源 | 版本/快照与使用范围 |
 | --- | --- |
-| [Nsight Compute Profiling Guide](https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html) 与 [CLI](https://docs.nvidia.com/nsight-compute/NsightComputeCli/index.html) | snapshot-2026-09-22；sections、计数器语义、NVTX 过滤、replay/cache/clock 和测量开销 |
-| [Nsight Systems User Guide](https://docs.nvidia.com/nsight-systems/UserGuide/) | snapshot-2026-09-22；CUDA/NVTX 时间线、CLI 与统计报告 |
-| [PyTorch Profiler](https://docs.pytorch.org/docs/2.14/profiler.html)、[CUDA Event](https://docs.pytorch.org/docs/2.14/generated/torch.cuda.Event.html)、[RMSNorm](https://docs.pytorch.org/docs/2.14/generated/torch.nn.functional.rms_norm.html) | URL 版本 2.14，snapshot-2026-09-22；API 语义，不代表本机安装或运行该版本 |
-| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | RMSNorm 加载/归约/写回设计，仅源码证据 |
-| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | fused-add RMSNorm 与动态 W8A8 wrapper/设备接口；不代表已测性能 |
+| Nsight Compute Profiling Guide（`https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html`） 与 CLI（`https://docs.nvidia.com/nsight-compute/NsightComputeCli/index.html`） | snapshot-2026-09-22；sections、计数器语义、NVTX 过滤、replay/cache/clock 和测量开销 |
+| Nsight Systems User Guide（`https://docs.nvidia.com/nsight-systems/UserGuide/`） | snapshot-2026-09-22；CUDA/NVTX 时间线、CLI 与统计报告 |
+| PyTorch Profiler（`https://docs.pytorch.org/docs/2.14/profiler.html`）、CUDA Event（`https://docs.pytorch.org/docs/2.14/generated/torch.cuda.Event.html`）、RMSNorm（`https://docs.pytorch.org/docs/2.14/generated/torch.nn.functional.rms_norm.html`） | URL 版本 2.14，snapshot-2026-09-22；API 语义，不代表本机安装或运行该版本 |
+| vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | RMSNorm 加载/归约/写回设计，仅源码证据 |
+| SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | fused-add RMSNorm 与动态 W8A8 wrapper/设备接口；不代表已测性能 |

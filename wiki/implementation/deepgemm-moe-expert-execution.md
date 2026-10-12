@@ -56,9 +56,9 @@ updated: 2026-10-07
 
 | 来源 | 固定身份与依据 |
 | --- | --- |
-| SGLang | [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)，commit `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`。pyproject、Docker/CI pin、wrapper、MoE runner、scale/activation helper。 |
-| SGLang 定制 DeepGEMM | [sgl-project/DeepGEMM](https://github.com/sgl-project/DeepGEMM/tree/b4296edce3cd07e3b6392c8eb390cee9c41a6b70)，官方 `v0.1.3` 标签解析至 commit `b4296edce3cd07e3b6392c8eb390cee9c41a6b70`。定制 Python、TVM-FFI host/API、JIT 配置及 SM90 设备源码。 |
-| 发布包对应 | [PyPI 0.1.3](https://pypi.org/project/sgl-deep-gemm/0.1.3/) 与 [cu129 x86_64 wheel](https://github.com/sgl-project/whl/releases/download/v0.1.3/sgl_deep_gemm-0.1.3+cu129-py3-none-manylinux2014_x86_64.whl)。2026-10-07 下载哈希与官方元数据一致；每包 869 个 Python/JIT/CUTLASS 源文件及 VERSION 与固定父树/子模块逐字节相符，预编译 `_C.so` 未做可复现构建证明。 |
+| SGLang | sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），commit `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`。pyproject、Docker/CI pin、wrapper、MoE runner、scale/activation helper。 |
+| SGLang 定制 DeepGEMM | sgl-project/DeepGEMM（`https://github.com/sgl-project/DeepGEMM/tree/b4296edce3cd07e3b6392c8eb390cee9c41a6b70`），官方 `v0.1.3` 标签解析至 commit `b4296edce3cd07e3b6392c8eb390cee9c41a6b70`。定制 Python、TVM-FFI host/API、JIT 配置及 SM90 设备源码。 |
+| 发布包对应 | PyPI 0.1.3（`https://pypi.org/project/sgl-deep-gemm/0.1.3/`） 与 cu129 x86_64 wheel（`https://github.com/sgl-project/whl/releases/download/v0.1.3/sgl_deep_gemm-0.1.3+cu129-py3-none-manylinux2014_x86_64.whl`）。2026-10-07 下载哈希与官方元数据一致；每包 869 个 Python/JIT/CUTLASS 源文件及 VERSION 与固定父树/子模块逐字节相符，预编译 `_C.so` 未做可复现构建证明。 |
 
 SGLang `python/pyproject.toml` 固定 `sgl-deep-gemm==0.1.3`；Docker/CI 的 CUDA 12 配方取 cu129 wheel，CUDA 13 使用 PyPI 包。release workflow 虽默认 checkout `dev`，但允许覆盖 ref，不能用当前 dev 代替发布身份。whl 仓库 release 自身还包含其他项目资产，其 tag commit 也不是 DeepGEMM 源码 commit。这里是默认配方与固定包源码的静态对应，没有确认任何实际部署使用它。
 

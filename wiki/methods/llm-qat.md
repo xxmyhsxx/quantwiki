@@ -106,4 +106,4 @@ W4A4 更困难。表 6 中 7B 的 W4A4KV16，单独 LLM-QAT 平均分 37.6，结
 
 ## 来源身份
 
-[LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1。使用 §2–3、§5 与附录 A；关键图表按 PDF 核对，未核验官方代码或复现训练/硬件性能。
+LLM-QAT: Data-Free Quantization Aware Training for Large Language Models（`https://arxiv.org/abs/2305.17888v1`），arXiv:2305.17888v1。使用 §2–3、§5 与附录 A；关键图表按 PDF 核对，未核验官方代码或复现训练/硬件性能。

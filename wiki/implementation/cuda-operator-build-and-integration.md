@@ -150,7 +150,7 @@ torch.testing.assert_close(compiled(x), x + 1, rtol=0, atol=0)
 
 ## 来源身份
 
-- [PyTorch `torch.utils.cpp_extension`](https://docs.pytorch.org/docs/2.14/cpp_extension.html)，2.14 文档，获取于 2026-10-04T04:17:43+08:00；来源标识 `pytorch-cpp-cuda-operators-snapshot-2026-10-04`。核对编译、目标架构与 `load` 模式。
-- [Custom C++ and CUDA Operators](https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html)，2026-10-04T04:17:49+08:00 快照，页面显示 Tutorials 2.14.0+cu130；同上来源标识。核对普通 ATen/稳定 ABI、schema、CUDA dispatch、FakeTensor、autograd 与 opcheck。
-- [Hugging Face kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc)，`5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`；`kernel-builder/src/init/templates/kernel_cuda/kernel.cu` 与 `torch-ext/torch_binding.cpp`。借鉴包装和注册关系，本页没有使用其完整构建系统。
-- [CUDA Programming Guide — Writing SIMT Kernels](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html)，2026-07-02T02:31:16+08:00 快照，`2-3-writing-simt-kernels-cuda-programming-guide-snapshot-2026-07-02`；线程索引、同步与 grid 跨步遍历。示例代码为整理者组合，不冒充上游逐字实现。
+- PyTorch `torch.utils.cpp_extension`（`https://docs.pytorch.org/docs/2.14/cpp_extension.html`），2.14 文档，获取于 2026-10-04T04:17:43+08:00；来源标识 `pytorch-cpp-cuda-operators-snapshot-2026-10-04`。核对编译、目标架构与 `load` 模式。
+- Custom C++ and CUDA Operators（`https://docs.pytorch.org/tutorials/advanced/cpp_custom_ops.html`），2026-10-04T04:17:49+08:00 快照，页面显示 Tutorials 2.14.0+cu130；同上来源标识。核对普通 ATen/稳定 ABI、schema、CUDA dispatch、FakeTensor、autograd 与 opcheck。
+- Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`），`5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`；`kernel-builder/src/init/templates/kernel_cuda/kernel.cu` 与 `torch-ext/torch_binding.cpp`。借鉴包装和注册关系，本页没有使用其完整构建系统。
+- CUDA Programming Guide — Writing SIMT Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html`），2026-07-02T02:31:16+08:00 快照，`2-3-writing-simt-kernels-cuda-programming-guide-snapshot-2026-07-02`；线程索引、同步与 grid 跨步遍历。示例代码为整理者组合，不冒充上游逐字实现。

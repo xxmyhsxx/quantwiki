@@ -125,6 +125,6 @@ DH（decode-heavy）是以解码为主的 GSM8K、MATH-500、MMLU-Pro 平均准�
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [Disaggregated Quantization: Specializing LLM Prefill and Decode](https://arxiv.org/abs/2609.26333v1) | arXiv:2609.26333v1 | §2–3/5、附录A/B/C、表1/5/7/10/11；表1回查页图 |
-| [官方QADD仓库](https://github.com/IST-DASLab/disaggregated-quantization/tree/4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba) | `4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba` | `dual.py`、`frozen_decode.py`与训练循环所列函数 |
-| [ODP llama.cpp fork](https://github.com/IST-DASLab/disaggregated-llama.cpp/tree/a0557fcf59e50a3bcd241e1a7de7b151d315720b) | `a0557fcf59e50a3bcd241e1a7de7b151d315720b` | ODP装入、借用、恢复、矩阵替换与context启用条件；未运行 |
+| Disaggregated Quantization: Specializing LLM Prefill and Decode（`https://arxiv.org/abs/2609.26333v1`） | arXiv:2609.26333v1 | §2–3/5、附录A/B/C、表1/5/7/10/11；表1回查页图 |
+| 官方QADD仓库（`https://github.com/IST-DASLab/disaggregated-quantization/tree/4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba`） | `4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba` | `dual.py`、`frozen_decode.py`与训练循环所列函数 |
+| ODP llama.cpp fork（`https://github.com/IST-DASLab/disaggregated-llama.cpp/tree/a0557fcf59e50a3bcd241e1a7de7b151d315720b`） | `a0557fcf59e50a3bcd241e1a7de7b151d315720b` | ODP装入、借用、恢复、矩阵替换与context启用条件；未运行 |

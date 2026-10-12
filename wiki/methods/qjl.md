@@ -104,4 +104,4 @@ v2 实验在单张 A100 80GB 上进行，模型质量包括 LongChat-7B-v1.5-32K
 
 ## 来源身份
 
-- [QJL: 1-Bit Quantized JL Transform for KV Cache Quantization with Zero Overhead](https://arxiv.org/abs/2406.03482v2)，arXiv:2406.03482v2；2026-09-22 归档。定义 3.1、引理 3.2/3.5、定理 3.6、算法 1、§4 与图 3；精确方差及 softmax 指数界为整理者展开，原文常数证明问题保留。
+- QJL: 1-Bit Quantized JL Transform for KV Cache Quantization with Zero Overhead（`https://arxiv.org/abs/2406.03482v2`），arXiv:2406.03482v2；2026-09-22 归档。定义 3.1、引理 3.2/3.5、定理 3.6、算法 1、§4 与图 3；精确方差及 softmax 指数界为整理者展开，原文常数证明问题保留。

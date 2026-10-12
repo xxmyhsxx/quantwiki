@@ -87,6 +87,6 @@ A100、batch 1、从头生成 100 token 的 LLaMA-7B 实验中，FP16、SpQR 配
 
 ## 来源身份
 
-[SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1)，arXiv:2306.03078v1。使用敏感性定义、算法、表示、实验与限制章节；敏感性公式按明确的损失归一化重新推导。
+SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`），arXiv:2306.03078v1。使用敏感性定义、算法、表示、实验与限制章节；敏感性公式按明确的损失归一化重新推导。
 
-[固定SpQR实现](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e)，543d10e56f921e5eeb10d5f0aaaccd30b6662d0e；本轮核所选Linear校准/保护、两级分组、旧恢复与3/16/16优化格式/CSR/PTCSR matvec，未核全部模型/配置或执行质量/性能。
+固定SpQR实现（`https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e`），543d10e56f921e5eeb10d5f0aaaccd30b6662d0e；本轮核所选Linear校准/保护、两级分组、旧恢复与3/16/16优化格式/CSR/PTCSR matvec，未核全部模型/配置或执行质量/性能。

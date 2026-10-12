@@ -123,10 +123,10 @@ Double quantization 再压缩第一层尺度，而非把权重位宽再次减半
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314v1) | `arXiv:2305.14314v1` | — |
-| [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
-| [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
-| [AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration](https://arxiv.org/abs/2306.00978v6) | `arXiv:2306.00978v6` | — |
-| [mit-han-lab/llm-awq](https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61) | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |
-| [GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323v2) | `arXiv:2210.17323v2` | — |
-| [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438v7) | `arXiv:2211.10438v7` | — |
+| QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | — |
+| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
+| AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration（`https://arxiv.org/abs/2306.00978v6`） | `arXiv:2306.00978v6` | — |
+| mit-han-lab/llm-awq（`https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61`） | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |
+| GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers（`https://arxiv.org/abs/2210.17323v2`） | `arXiv:2210.17323v2` | — |
+| SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` | — |

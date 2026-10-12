@@ -99,11 +99,11 @@ SVD 只初始化因子；训练和量化后的方向不必保持相互正交，�
 
 ## 来源身份
 
-- [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2)，arXiv:2307.13304v2；坐标处理、谱界及有限网格边界。
-- [Differentiable Bit-Widths: Co-optimizing Pruning and Quantization via SVD for Ultra-Efficient LLM Compression](https://arxiv.org/abs/2610.06026v1)，`arXiv:2610.06026v1`；主体因子宽度、成对位宽与两阶段执行。
-- [MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a)，`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`；`real_dbw.py::get_uv/forward` 的因子恢复与方向归一化。
-- [StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs](https://arxiv.org/abs/2610.05977v1)，`arXiv:2610.05977v1`；共享 pair 的前缀主体、两阶段 guard 与固定 side record。
-- [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2)，arXiv:2402.04396v2；RHT、E8P 与微调。
-- [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4)，arXiv:2401.06118v4；联合索引、码本优化和存储。
-- [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1)，arXiv:2306.03078v1；小组元数据、动态敏感性与例外。
-- [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4)，arXiv:2306.07629v4；任务敏感性与主体/例外分工。
+- QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`），arXiv:2307.13304v2；坐标处理、谱界及有限网格边界。
+- Differentiable Bit-Widths: Co-optimizing Pruning and Quantization via SVD for Ultra-Efficient LLM Compression（`https://arxiv.org/abs/2610.06026v1`），`arXiv:2610.06026v1`；主体因子宽度、成对位宽与两阶段执行。
+- MMAI-Laboratory/DBW（`https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`），`a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`；`real_dbw.py::get_uv/forward` 的因子恢复与方向归一化。
+- StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs（`https://arxiv.org/abs/2610.05977v1`），`arXiv:2610.05977v1`；共享 pair 的前缀主体、两阶段 guard 与固定 side record。
+- QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`），arXiv:2402.04396v2；RHT、E8P 与微调。
+- Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`），arXiv:2401.06118v4；联合索引、码本优化和存储。
+- SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`），arXiv:2306.03078v1；小组元数据、动态敏感性与例外。
+- SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`），arXiv:2306.07629v4；任务敏感性与主体/例外分工。

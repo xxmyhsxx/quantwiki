@@ -213,12 +213,12 @@ SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
-| [Triton 官方教程与工具](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
-| [Hugging Face kernels](https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc) | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
-| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | batch-invariant RMSNorm 在有无 residual 时的路径选择。 |
-| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 门控过滤的未写语义，以及残差 norm 的舍入和归约边界。未运行 GPU 实现。 |
-| [Compute Sanitizer](https://docs.nvidia.com/compute-sanitizer/ComputeSanitizer/index.html) | snapshot-2026-09-22 | 子工具范围、lineinfo 与错误退出码；未运行工具。 |
-| [PyTorch Benchmark](https://docs.pytorch.org/docs/2.14/benchmark_utils.html) 与 [CUDA Event](https://docs.pytorch.org/docs/2.14/generated/torch.cuda.Event.html) | URL 版本 2.14，snapshot-2026-09-22 | 预热、同步、重复样本及事件计时 API。 |
-| [Nsight Compute Profiling Guide](https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html) | snapshot-2026-09-22 | profiler 开销与独立计时边界。 |
-| [CUTLASS Profiler](https://docs.nvidia.com/cutlass/latest/media/docs/cpp/profiler.html) | 存量 snapshot-2026-07-02 | 实例库的测试/基准入口与编译范围；未运行。 |
-| [PyTorch Profiler](https://docs.pytorch.org/docs/2.14/profiler.html) 与 [Nsight Systems](https://docs.nvidia.com/nsight-systems/UserGuide/) | snapshot-2026-09-22；PyTorch URL 版本 2.14 | 算子关联与 CUDA 时间线的工具分工。 |
+| Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
+| Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`） | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
+| vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | batch-invariant RMSNorm 在有无 residual 时的路径选择。 |
+| SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 门控过滤的未写语义，以及残差 norm 的舍入和归约边界。未运行 GPU 实现。 |
+| Compute Sanitizer（`https://docs.nvidia.com/compute-sanitizer/ComputeSanitizer/index.html`） | snapshot-2026-09-22 | 子工具范围、lineinfo 与错误退出码；未运行工具。 |
+| PyTorch Benchmark（`https://docs.pytorch.org/docs/2.14/benchmark_utils.html`） 与 CUDA Event（`https://docs.pytorch.org/docs/2.14/generated/torch.cuda.Event.html`） | URL 版本 2.14，snapshot-2026-09-22 | 预热、同步、重复样本及事件计时 API。 |
+| Nsight Compute Profiling Guide（`https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html`） | snapshot-2026-09-22 | profiler 开销与独立计时边界。 |
+| CUTLASS Profiler（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/profiler.html`） | 存量 snapshot-2026-07-02 | 实例库的测试/基准入口与编译范围；未运行。 |
+| PyTorch Profiler（`https://docs.pytorch.org/docs/2.14/profiler.html`） 与 Nsight Systems（`https://docs.nvidia.com/nsight-systems/UserGuide/`） | snapshot-2026-09-22；PyTorch URL 版本 2.14 | 算子关联与 CUDA 时间线的工具分工。 |

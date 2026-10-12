@@ -87,6 +87,6 @@ v4 的 Llama-2 主实验使用 RedPajama、长度 4096，AQLM 校准约 8M token
 
 ## 来源身份
 
-[Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4)，arXiv:2401.06118v4。使用 §3–4，以及配置、微调、位宽核算、消融与生成速度附录。本文按完整公式计入所有 $M$ 个码本和索引。
+Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`），arXiv:2401.06118v4。使用 §3–4，以及配置、微调、位宽核算、消融与生成速度附录。本文按完整公式计入所有 $M$ 个码本和索引。
 
-[Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV 与原始校准／所选转换推理的实际源码范围由两个实现页分别登记。
+Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV 与原始校准／所选转换推理的实际源码范围由两个实现页分别登记。

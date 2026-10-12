@@ -21,7 +21,7 @@ updated: 2026-10-12
 
 # Atom：离群通道重排、分组整数 GEMM 与服务成本
 
-Atom 将少量原始输入离群通道放在连续尾部，用INT8处理；其余权重和激活采用分组INT4，同时将重排、动态量化、分组恢复和KV读取融合进算子。它连接低位表示与大batch服务，而不是仅压缩权重后调用浮点GEMM。依据为 [Atom v3](https://arxiv.org/abs/2310.19102v3) 正文、表1–4及性能图；固定作者代码的模拟/整数/基准三条路径见[实现页](../implementation/atom-mixed-gemm-and-paged-kv.md)。没有运行作者模型或GPU。
+Atom 将少量原始输入离群通道放在连续尾部，用INT8处理；其余权重和激活采用分组INT4，同时将重排、动态量化、分组恢复和KV读取融合进算子。它连接低位表示与大batch服务，而不是仅压缩权重后调用浮点GEMM。依据为 Atom v3（`https://arxiv.org/abs/2310.19102v3`） 正文、表1–4及性能图；固定作者代码的模拟/整数/基准三条路径见[实现页](../implementation/atom-mixed-gemm-and-paged-kv.md)。没有运行作者模型或GPU。
 
 与 [ResQ](resq.md) 保护PCA投影方向不同，Atom按原通道校准能量选择高精度尾部；与 [LLM-MQ](llm-mq.md) 的低位weight-only GEMV不同，它面向权重复用后的整数GEMM及低位KV读取。大batch是否进入计算瓶颈需按实际算子判断，基础趋势见[矩阵乘法的token数与瓶颈](../implementation/quantized-matmul-scaling-execution.md#4-为什么-token-数改变瓶颈)。
 
@@ -85,4 +85,4 @@ $$\frac{(4096-128)4+128\cdot8}{4096}+\frac{16}{128}=4.25\text{ bit}.$$
 
 | 来源 | 固定身份 | 本页使用范围 |
 | --- | --- | --- |
-| [Atom: Low-bit Quantization for Efficient and Accurate LLM Serving](https://arxiv.org/abs/2310.19102v3) | arXiv:2310.19102v3；PDF SHA-256 `d33aaa47a1e86f346c27ce4e53aaec412e41c656f5473c657f38740b3945700d` | 正文设计/分析、表1–4与图6–11；必要补充范围，未逐点重建全部性能曲线 |
+| Atom: Low-bit Quantization for Efficient and Accurate LLM Serving（`https://arxiv.org/abs/2310.19102v3`） | arXiv:2310.19102v3；PDF SHA-256 `d33aaa47a1e86f346c27ce4e53aaec412e41c656f5473c657f38740b3945700d` | 正文设计/分析、表1–4与图6–11；必要补充范围，未逐点重建全部性能曲线 |

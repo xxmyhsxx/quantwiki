@@ -261,6 +261,6 @@ $$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
-| [togethercomputer/saw-int4](https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0) | `e51bfa7291d52cd14b86e4c6ded6c002d0444ff0` | — |
-| [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | fast-rotation 子模块；第4节所选 writer/GQA decode/prefill flatten 设备与 FA3 调用边界 |
+| SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（`https://arxiv.org/abs/2604.19157v1`） | `arXiv:2604.19157v1` | — |
+| togethercomputer/saw-int4（`https://github.com/togethercomputer/saw-int4/tree/e51bfa7291d52cd14b86e4c6ded6c002d0444ff0`） | `e51bfa7291d52cd14b86e4c6ded6c002d0444ff0` | — |
+| jindajia/sglang-fork（`https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84`） | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | fast-rotation 子模块；第4节所选 writer/GQA decode/prefill flatten 设备与 FA3 调用边界 |

@@ -164,7 +164,7 @@ README 示例显式开启三类参数训练、LAMB和debias；三个训练开关
 
 ## 来源身份与后续阅读
 
-- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；本页各节列出文件与函数，仓库根入口和 `src/finetune.py` 的原始逐块微调不是同一条流程。
-- [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；理论、论文配置和作者报告由[方法页](../methods/pv-tuning.md)承接。
+- Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；本页各节列出文件与函数，仓库根入口和 `src/finetune.py` 的原始逐块微调不是同一条流程。
+- PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression（`https://arxiv.org/abs/2405.14852v2`），arXiv:2405.14852v2；理论、论文配置和作者报告由[方法页](../methods/pv-tuning.md)承接。
 - [AQLM](../methods/aqlm.md)：加性表示、原始激活感知联合编码及质量/推理证据。
 - [校准采样分布](../theory/calibration-and-range-selection.md#51-同一语料不等于同一采样分布)：分词、map批次与尾部规则怎样改变实际数据覆盖。

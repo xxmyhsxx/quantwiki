@@ -96,4 +96,4 @@ $$S_i=\alpha S_i^P+(1-\alpha)S_i^Q,\qquad S=\operatorname{TopK}_i S_i.$$
 
 ## 来源身份
 
-- [QAPruner: Quantization-Aware Vision Token Pruning for Multimodal Large Language Models](https://arxiv.org/abs/2604.02816v1)，arXiv:2604.02816v1；§3、图 2、§4、表 1–2。图表和关键公式回查 PDF 页图；范围/网格反例及条件区分为整理者分析，未复现实验。
+- QAPruner: Quantization-Aware Vision Token Pruning for Multimodal Large Language Models（`https://arxiv.org/abs/2604.02816v1`），arXiv:2604.02816v1；§3、图 2、§4、表 1–2。图表和关键公式回查 PDF 页图；范围/网格反例及条件区分为整理者分析，未复现实验。

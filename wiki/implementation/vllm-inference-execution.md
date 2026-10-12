@@ -147,4 +147,4 @@ SGLang 对同类问题的组织见 [Radix 缓存、批次与重叠执行](sglang
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | 架构文档、V1 EngineCore/调度、KV 管理及 GPU 输入准备；具体文件和符号见各节。 |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 架构文档、V1 EngineCore/调度、KV 管理及 GPU 输入准备；具体文件和符号见各节。 |

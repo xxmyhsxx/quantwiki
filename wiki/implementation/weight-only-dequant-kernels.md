@@ -369,6 +369,6 @@ CTA 内先在 shared 树形合并 FP32部分和；需要跨 CTA 时，采用 第
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [mit-han-lab/llm-awq](https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61) | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |
-| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton AWQ；所选 Dense AWQ Marlin 的加载、零点设备消费与输出 |
+| mit-han-lab/llm-awq（`https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61`） | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton AWQ；所选 Dense AWQ Marlin 的加载、零点设备消费与输出 |

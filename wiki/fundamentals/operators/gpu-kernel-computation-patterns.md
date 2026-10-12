@@ -115,7 +115,7 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
-| [Triton 官方教程与工具](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592) | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
-| [NVIDIA CUDA Samples](https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc) | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | `matrixMul.cu:MatrixMulCUDA` 的共享内存分块和同步。 |
-| [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton RMSNorm 的固定分段与两遍读取。 |
-| [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 残差 norm 的两级归约与线程参与。未运行 GPU 实现。 |
+| Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
+| NVIDIA CUDA Samples（`https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc`） | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | `matrixMul.cu:MatrixMulCUDA` 的共享内存分块和同步。 |
+| vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton RMSNorm 的固定分段与两遍读取。 |
+| SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 残差 norm 的两级归约与线程参与。未运行 GPU 实现。 |

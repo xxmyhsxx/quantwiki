@@ -132,9 +132,9 @@ prefill 也要固定整段或 chunked 协议、chunk 大小及写入时机。错
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
-| [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
+| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
 
-- [Kitty 官方实现](https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1)，固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
+- Kitty 官方实现（`https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1`），固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
 
-- [NOVA-KV](https://arxiv.org/abs/2608.04074v1)，v1；系统路径、码本读取与 chunked prefill 条件。
+- NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1；系统路径、码本读取与 chunked prefill 条件。

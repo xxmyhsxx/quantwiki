@@ -162,4 +162,4 @@ $$
 
 | 来源 | 固定版本 | 本页范围 |
 | --- | --- | --- |
-| [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1) | arXiv:2610.00432v1 | 正文、附录 A–F、生成器 listing、关键 PDF 公式/表格/图；没有匹配完整作者实现，未复现模型、硬件或性能。 |
+| XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization（`https://arxiv.org/abs/2610.00432v1`） | arXiv:2610.00432v1 | 正文、附录 A–F、生成器 listing、关键 PDF 公式/表格/图；没有匹配完整作者实现，未复现模型、硬件或性能。 |

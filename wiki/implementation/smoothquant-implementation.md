@@ -164,8 +164,8 @@ TensorRT-LLM 的 `int8_sq` 是另一套显式平滑量化工具链，保留在 [
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438v7) | `arXiv:2211.10438v7` | 表 2 与表 7 的权重粒度 |
-| [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
-| [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
-| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | compressed-tensors W8A8 与 CUTLASS 包装 |
+| SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` | 表 2 与表 7 的权重粒度 |
+| mit-han-lab/smoothquant.git（`https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5`） | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
+| Guangxuan-Xiao/torch-int（`https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856`） | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | — |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | compressed-tensors W8A8 与 CUTLASS 包装 |

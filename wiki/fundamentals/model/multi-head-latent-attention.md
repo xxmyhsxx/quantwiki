@@ -140,4 +140,4 @@ MLA 的核心主张是以少量历史表示支持多头注意力。Appendix D.1�
 
 ## 来源身份
 
-- [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434v5)，`arXiv:2405.04434v5`，2024-06-19 修订；采用已归档的同版本 PDF 与 TeX 源包，正文定位见各节。矩阵吸收的展开、容量记账和缓存量化误差是本页整理者推导。
+- DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model（`https://arxiv.org/abs/2405.04434v5`），`arXiv:2405.04434v5`，2024-06-19 修订；采用已归档的同版本 PDF 与 TeX 源包，正文定位见各节。矩阵吸收的展开、容量记账和缓存量化误差是本页整理者推导。

@@ -112,5 +112,5 @@ $$\frac{32\cdot3+96\cdot2}{128}=2.25.$$
 
 ## 来源身份
 
-- [TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate](https://arxiv.org/abs/2504.19874v1)，arXiv:2504.19874v1；算法 1–2、引理 1–4、定理 1–3、§4、表 1–2。本文采用固定 v1，未将后续版本或第三方实现混入证据。
+- TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate（`https://arxiv.org/abs/2504.19874v1`），arXiv:2504.19874v1；算法 1–2、引理 1–4、定理 1–3、§4、表 1–2。本文采用固定 v1，未将后续版本或第三方实现混入证据。
 - 球面下界反例、精确 1-bit 收缩系数、位宽算术与公式适用性分析为整理者推导；[反例复算](../assets/turboquant/verify_bounds.py)仅验证数学实例，不是模型复现。

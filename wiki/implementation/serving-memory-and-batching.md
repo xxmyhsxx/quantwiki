@@ -106,7 +106,7 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180v1) | `arXiv:2309.06180v1` | — |
-| [QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving](https://arxiv.org/abs/2405.04532v3) | `arXiv:2405.04532v3` | 分页量化元数据布局 |
-| [SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving](https://arxiv.org/abs/2604.19157v1) | `arXiv:2604.19157v1` | — |
-| [Disaggregated Quantization](https://arxiv.org/abs/2609.26333v1) | `arXiv:2609.26333v1` | §2.5与§5，阶段权重驻留与多轮cache边界 |
+| Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`） | `arXiv:2309.06180v1` | — |
+| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | 分页量化元数据布局 |
+| SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（`https://arxiv.org/abs/2604.19157v1`） | `arXiv:2604.19157v1` | — |
+| Disaggregated Quantization（`https://arxiv.org/abs/2609.26333v1`） | `arXiv:2609.26333v1` | §2.5与§5，阶段权重驻留与多轮cache边界 |

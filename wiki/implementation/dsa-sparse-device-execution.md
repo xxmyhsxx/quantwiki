@@ -207,6 +207,6 @@ Decode 空 split 的内部状态为 O=0、log2 LSE=$-\infty$；所有 split 无�
 
 | 来源 | 固定版本 | 实际使用范围 |
 | --- | --- | --- |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | 默认依赖 pin、真实 wrapper/caller、Q scale/weight、cache writer/gather、top-k 与 indices 转换 |
-| [vllm-project/FlashMLA](https://github.com/vllm-project/FlashMLA/tree/a8f794d1251cbfd88a5011445dd5582289c727e4) | `a8f794d1251cbfd88a5011445dd5582289c727e4` | Python/注册/API、SM90 sparse prefill、V32/H128 packed decode、scheduler/combine、测试量化构造 |
-| [deepseek-ai/DeepGEMM](https://github.com/deepseek-ai/DeepGEMM/tree/a6b593d2826719dcf4892609af7b84ee23aaf32a) | `a6b593d2826719dcf4892609af7b84ee23aaf32a` | Python/注册/API、JIT、SM90 FP8 非 paged/paged MQA logits、页平面地址、scheduler 与 clean 条件 |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 默认依赖 pin、真实 wrapper/caller、Q scale/weight、cache writer/gather、top-k 与 indices 转换 |
+| vllm-project/FlashMLA（`https://github.com/vllm-project/FlashMLA/tree/a8f794d1251cbfd88a5011445dd5582289c727e4`） | `a8f794d1251cbfd88a5011445dd5582289c727e4` | Python/注册/API、SM90 sparse prefill、V32/H128 packed decode、scheduler/combine、测试量化构造 |
+| deepseek-ai/DeepGEMM（`https://github.com/deepseek-ai/DeepGEMM/tree/a6b593d2826719dcf4892609af7b84ee23aaf32a`） | `a6b593d2826719dcf4892609af7b84ee23aaf32a` | Python/注册/API、JIT、SM90 FP8 非 paged/paged MQA logits、页平面地址、scheduler 与 clean 条件 |

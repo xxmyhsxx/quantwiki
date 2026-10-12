@@ -115,9 +115,9 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [stanford-cs336/lectures](https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91) | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |
-| [MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models](https://arxiv.org/abs/2408.11743v1) | `arXiv:2408.11743v1` | — |
-| [QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving](https://arxiv.org/abs/2405.04532v3) | `arXiv:2405.04532v3` | — |
-| [CUDA Programming Guide：Writing SIMT Kernels](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html) | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | §2.3.2–2.3.4 的线程、存储与访存解释 |
-| [NVIDIA CUDA Samples](https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc) | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | 矩阵乘屏障与转置 padding；未运行 |
-| [tensormux/kernel-skills](https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7) | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | shared-memory tiling 的解释需求；bank 判断以官方文档与地址推导为依据 |
+| stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |
+| MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`） | `arXiv:2408.11743v1` | — |
+| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | — |
+| CUDA Programming Guide：Writing SIMT Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html`） | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | §2.3.2–2.3.4 的线程、存储与访存解释 |
+| NVIDIA CUDA Samples（`https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc`） | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | 矩阵乘屏障与转置 padding；未运行 |
+| tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | shared-memory tiling 的解释需求；bank 判断以官方文档与地址推导为依据 |

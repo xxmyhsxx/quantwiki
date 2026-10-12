@@ -154,7 +154,7 @@ OSTQuant 对这条路径的贡献是正交和尺度的共同选择、权重感�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | 本页直接来源；公式、表格差异按此版本保留 |
+| OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting（`https://arxiv.org/abs/2501.13987v1`） | `arXiv:2501.13987v1` | 本页直接来源；公式、表格差异按此版本保留 |
 
 ## 教学计算材料
 

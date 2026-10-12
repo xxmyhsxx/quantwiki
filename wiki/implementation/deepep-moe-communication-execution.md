@@ -218,7 +218,7 @@ Buffer destroy 在同步和 barrier 后关闭 IPC、释放 NVSHMEM/工作存储�
 
 ## 来源身份与定位
 
-DeepEP 完整来源为 [S：9af0e0d](https://github.com/deepseek-ai/DeepEP/tree/9af0e0d0e74f3577af1979c9b9e1ac2cad0104ee) 与 [V：73b6ea4](https://github.com/deepseek-ai/DeepEP/tree/73b6ea4a439ba03a695563f9fd242c8e4b02b37c)。两个固定父仓库均保留上游归档与官方递归 Git tree，逐 blob 核对字节、类型与执行位；来源副本未应用框架配方补丁。下表路径相对各固定 DeepEP 快照。
+DeepEP 完整来源为 S：9af0e0d（`https://github.com/deepseek-ai/DeepEP/tree/9af0e0d0e74f3577af1979c9b9e1ac2cad0104ee`） 与 V：73b6ea4（`https://github.com/deepseek-ai/DeepEP/tree/73b6ea4a439ba03a695563f9fd242c8e4b02b37c`）。两个固定父仓库均保留上游归档与官方递归 Git tree，逐 blob 核对字节、类型与执行位；来源副本未应用框架配方补丁。下表路径相对各固定 DeepEP 快照。
 
 | 文件 / 函数 | 核读职责 |
 | --- | --- |

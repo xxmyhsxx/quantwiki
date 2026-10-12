@@ -107,4 +107,4 @@ RetinaNet 的 4 MP 激活比 A4 提高 0.3 mAP，但激活压缩率从 8.00 降�
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [HAWQ-V2: Hessian Aware trace-Weighted Quantization of Neural Networks](https://arxiv.org/abs/1911.03852v1) | arXiv:1911.03852v1 | §2–3、Lemma 1、式 2.6–2.11、表 1–4、附录 A–C；关键公式及平均 trace 横线回查页图 |
+| HAWQ-V2: Hessian Aware trace-Weighted Quantization of Neural Networks（`https://arxiv.org/abs/1911.03852v1`） | arXiv:1911.03852v1 | §2–3、Lemma 1、式 2.6–2.11、表 1–4、附录 A–C；关键公式及平均 trace 横线回查页图 |

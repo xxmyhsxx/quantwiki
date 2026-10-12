@@ -133,5 +133,5 @@ N1.6 权重存储由浮点 TRT 3802 MB 降为 W4A4 1011 MB，但完整 engine �
 
 ## 来源身份
 
-- [FoldQuantVLA: Native Low-Bit Quantization of Vision-Language-Action Models via Consistent Folding](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；正文、公式、实验协议与限制。
-- [cair-vinuni/FoldQuantVLA](https://github.com/cair-vinuni/FoldQuantVLA/tree/4e76b60b4232a33a640e31639ce2a329ae0bebb3)，commit `4e76b60b4232a33a640e31639ce2a329ae0bebb3`，2026-09-28 快照；上述五类路径的定向静态阅读，未执行模型或 GPU。
+- FoldQuantVLA: Native Low-Bit Quantization of Vision-Language-Action Models via Consistent Folding（`https://arxiv.org/abs/2609.24433v1`），arXiv:2609.24433v1；正文、公式、实验协议与限制。
+- cair-vinuni/FoldQuantVLA（`https://github.com/cair-vinuni/FoldQuantVLA/tree/4e76b60b4232a33a640e31639ce2a329ae0bebb3`），commit `4e76b60b4232a33a640e31639ce2a329ae0bebb3`，2026-09-28 快照；上述五类路径的定向静态阅读，未执行模型或 GPU。

@@ -94,4 +94,4 @@ SmoothQuant 对照在本实验中被用于 K/V 缩放、$\alpha=0.5$；不应等
 
 ## 来源身份
 
-- [AKVQ-VL，arXiv:2501.15021v1](https://arxiv.org/abs/2501.15021v1)：§III 与图 2–7 支撑机制；§IV、表 II–IV、图 8–9 支撑结果。预算公式和 WHT 反例是整理者推导；检测实现细节保留为未确认。
+- AKVQ-VL，arXiv:2501.15021v1（`https://arxiv.org/abs/2501.15021v1`）：§III 与图 2–7 支撑机制；§IV、表 II–IV、图 8–9 支撑结果。预算公式和 WHT 反例是整理者推导；检测实现细节保留为未确认。

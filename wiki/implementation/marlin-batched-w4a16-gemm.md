@@ -139,5 +139,5 @@ Sparse-MARLIN 在 4 bit 权重之上叠加 NVIDIA Ampere 的结构化 2:4 稀疏
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models](https://arxiv.org/abs/2408.11743v1) | `arXiv:2408.11743v1` | — |
-| [IST-DASLab/marlin](https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90) | `1f25790bdd49fba53106164a24666dade68d7c90` | — |
+| MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`） | `arXiv:2408.11743v1` | — |
+| IST-DASLab/marlin（`https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90`） | `1f25790bdd49fba53106164a24666dade68d7c90` | — |

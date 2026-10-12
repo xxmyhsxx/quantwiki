@@ -108,5 +108,5 @@ LLaVA-1.5-7B，原 576 个视觉 token，CDPruner 保留 128 个，论文表 1�
 
 ## 来源身份
 
-- [Layer-Aware Position Embeddings for Visual Token Pruning in Multimodal Large Language Models](https://arxiv.org/abs/2609.23715v1)，正文 §3–4、表 1–3、附录 A/B、表 4。
-- [LayerPos 官方代码固定版本](https://github.com/YahongWang1/LayerPos/tree/d6a5bccfad1c6a8b548fd4cd699678c8b7571c2e)，静态核对位置策略脚本、单层结果汇总和 LLaVA forward；未运行模型。RoPE 反例、坐标示例及证据边界为整理者分析。
+- Layer-Aware Position Embeddings for Visual Token Pruning in Multimodal Large Language Models（`https://arxiv.org/abs/2609.23715v1`），正文 §3–4、表 1–3、附录 A/B、表 4。
+- LayerPos 官方代码固定版本（`https://github.com/YahongWang1/LayerPos/tree/d6a5bccfad1c6a8b548fd4cd699678c8b7571c2e`），静态核对位置策略脚本、单层结果汇总和 LLaVA forward；未运行模型。RoPE 反例、坐标示例及证据边界为整理者分析。

@@ -509,36 +509,36 @@ $$L_{\rm moment}=\frac1C\sum_c\left(|\mu_F^c-\mu_Q^c|+|v_F^c-v_Q^c|\right),\qqua
 
 ## 来源身份
 
-- [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)，`arXiv:2309.02784v2`；算法1、式2；第14节统计定义与反例为整理者教学展开。
+- Norm Tweaking: High-performance Low-bit Quantization of Large Language Models（`https://arxiv.org/abs/2309.02784v2`），`arXiv:2309.02784v2`；算法1、式2；第14节统计定义与反例为整理者教学展开。
 
-- [GPTVQ: The Blessing of Dimensionality for LLM Quantization](https://arxiv.org/abs/2402.15319v2)，arXiv:2402.15319v2；§4式4–6、附录 A式7；本页§3.3的条件解、向量反例和固定索引凸性为整理者展开。
+- GPTVQ: The Blessing of Dimensionality for LLM Quantization（`https://arxiv.org/abs/2402.15319v2`），arXiv:2402.15319v2；§4式4–6、附录 A式7；本页§3.3的条件解、向量反例和固定索引凸性为整理者展开。
 
-- [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2)，arXiv:2409.17066v2；§3.1–3.2.1、算法1；本页§3.1–3.2的规范矩阵推导、加权均值和算例为整理者展开。
+- VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2409.17066v2`），arXiv:2409.17066v2；§3.1–3.2.1、算法1；本页§3.1–3.2的规范矩阵推导、加权均值和算例为整理者展开。
 
-- [XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization](https://arxiv.org/abs/2610.00432v1)，v1；§4、附录 D/E。第13节的路径评分算例和最优子结构说明为整理者展开。
+- XOR-Trellis: Ultra-Low-Complexity Dequantization and Curvature-Aware Hadamard-Free LLM Quantization（`https://arxiv.org/abs/2610.00432v1`），v1；§4、附录 D/E。第13节的路径评分算例和最优子结构说明为整理者展开。
 
-- [QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization](https://arxiv.org/abs/2609.34680v1)，v1；§5.2/式8、算法1、附录 B.3/C.5。第12节的合法码数值例和跨块交叉项为整理者展开。
+- QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization（`https://arxiv.org/abs/2609.34680v1`），v1；§5.2/式8、算法1、附录 B.3/C.5。第12节的合法码数值例和跨块交叉项为整理者展开。
 
-- [The Devil Is in the Reconstruction Loss Scale: Rethinking Optimization in LLM Quantization](https://arxiv.org/abs/2610.00983v1)，arXiv:2610.00983v1；§2–3、式 (2)–(8)、§4 表 1–5 与附录 A/D/E/F。第 11 节的链式法则、分组梯度与最小点关系为整理者展开，作者实验与本地验证分开。
+- The Devil Is in the Reconstruction Loss Scale: Rethinking Optimization in LLM Quantization（`https://arxiv.org/abs/2610.00983v1`），arXiv:2610.00983v1；§2–3、式 (2)–(8)、§4 表 1–5 与附录 A/D/E/F。第 11 节的链式法则、分组梯度与最小点关系为整理者展开，作者实验与本地验证分开。
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3) | `arXiv:2407.11062v3` | 局部重构与整网尺度训练 |
-| [OpenGVLab/EfficientQAT](https://github.com/OpenGVLab/EfficientQAT/tree/39175493b2d14617d342a0a7956875e6ac16221b) | `39175493b2d14617d342a0a7956875e6ac16221b` | `block_ap.py` 的输入、目标与 MSE；2026-09-22 获取 |
-| [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
-| [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |
-| [Extreme Compression of Large Language Models via Additive Quantization](https://arxiv.org/abs/2401.06118v4) | `arXiv:2401.06118v4` | 量化机制与适用条件 |
-| [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2) | `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` | `AQEngine.add_batch` 与 `init_aq_engines_parallel` 的均值累积和合并 |
-| [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1) | `arXiv:2306.03078v1` | 量化机制与适用条件 |
-| [SqueezeLLM: Dense-and-Sparse Quantization](https://arxiv.org/abs/2306.07629v4) | `arXiv:2306.07629v4` | 量化机制与适用条件 |
-| [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [ruikangliu/FlatQuant](https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1) | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
-| [OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models](https://arxiv.org/abs/2308.13137v3) | `arXiv:2308.13137v3` | — |
-| [Q-VLM: Post-training Quantization for Large Vision-Language Models](https://arxiv.org/abs/2410.08119v3) | `arXiv:2410.08119v3` | — |
-| [GPTAQ: Efficient Finetuning-Free Quantization for Asymmetric Calibration](https://arxiv.org/abs/2504.02692v3) | `arXiv:2504.02692v3` | — |
-| [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
-| [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
-| [GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323v2) | `arXiv:2210.17323v2` | — |
+| EfficientQAT: Efficient Quantization-Aware Training for Large Language Models（`https://arxiv.org/abs/2407.11062v3`） | `arXiv:2407.11062v3` | 局部重构与整网尺度训练 |
+| OpenGVLab/EfficientQAT（`https://github.com/OpenGVLab/EfficientQAT/tree/39175493b2d14617d342a0a7956875e6ac16221b`） | `39175493b2d14617d342a0a7956875e6ac16221b` | `block_ap.py` 的输入、目标与 MSE；2026-09-22 获取 |
+| QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`） | `arXiv:2307.13304v2` | 量化机制与适用条件 |
+| QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`） | `arXiv:2402.04396v2` | 量化机制与适用条件 |
+| Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`） | `arXiv:2401.06118v4` | 量化机制与适用条件 |
+| Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`） | `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` | `AQEngine.add_batch` 与 `init_aq_engines_parallel` 的均值累积和合并 |
+| SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`） | `arXiv:2306.03078v1` | 量化机制与适用条件 |
+| SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`） | `arXiv:2306.07629v4` | 量化机制与适用条件 |
+| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| ruikangliu/FlatQuant（`https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1`） | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
+| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
+| Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |
+| GPTAQ: Efficient Finetuning-Free Quantization for Asymmetric Calibration（`https://arxiv.org/abs/2504.02692v3`） | `arXiv:2504.02692v3` | — |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
+| GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers（`https://arxiv.org/abs/2210.17323v2`） | `arXiv:2210.17323v2` | — |

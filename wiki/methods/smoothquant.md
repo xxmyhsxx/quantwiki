@@ -239,7 +239,7 @@ MBQ v2 的 W4A8 实验沿用两侧量化与通道缩放思路，但用模态加�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
-| [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438v7) | `arXiv:2211.10438v7` | — |
-| [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
-| [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
+| SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` | — |
+| mit-han-lab/smoothquant.git（`https://github.com/mit-han-lab/smoothquant/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5`） | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
+| Guangxuan-Xiao/torch-int（`https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856`） | `65266db1eadba5ca78941b789803929e6e6c6856` | — |

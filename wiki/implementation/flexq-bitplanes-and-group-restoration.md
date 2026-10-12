@@ -87,5 +87,5 @@ test_kernel.h对FP16结果的通过门限是绝对误差 $0.0001\times65504=6.55
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选Llama模拟、engine signed位平面/BMMA/恢复、默认测试与框架wrapper；未核全仓、完整导出/加载及全部融合分支 |
-| [FlexQ](https://arxiv.org/abs/2508.04405v2) | arXiv:2508.04405v2 | 位展开、group与runtime设计；式6缺位权与代码temp_mul分别说明 |
+| FlyFoxPlayer/FlexQ（`https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0`） | a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选Llama模拟、engine signed位平面/BMMA/恢复、默认测试与框架wrapper；未核全仓、完整导出/加载及全部融合分支 |
+| FlexQ（`https://arxiv.org/abs/2508.04405v2`） | arXiv:2508.04405v2 | 位展开、group与runtime设计；式6缺位权与代码temp_mul分别说明 |

@@ -208,7 +208,7 @@ $$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
 
 第三种硬前向在码不变时真实导数为0，−w/a²来自STE链式法则，不能用有限差分把两者认成一致。整理者例w=1.2、Δ=0.5、z=2，a在1附近的小范围内给d=1，硬函数不变；STE在a=1给−1.2。a=2则给d=0.5，而不是把原恢复值再乘2。它也没有成对的输入补偿，不是自动保持WX的等价通道变换。
 
-学习目标决定这些自由度是否有用；参数数目减少并不免除整网反向或浮点基座成本。若导出只写恢复浮点值到Linear，质量模拟与低位驻留/执行仍是两个验证目标。（[QSLAW v1](https://arxiv.org/abs/2408.03735v1)式7–8；固定代码quantizer.py、utils.py、replace.py；计算图导数和算例为整理者展开。）
+学习目标决定这些自由度是否有用；参数数目减少并不免除整网反向或浮点基座成本。若导出只写恢复浮点值到Linear，质量模拟与低位驻留/执行仍是两个验证目标。（QSLAW v1（`https://arxiv.org/abs/2408.03735v1`）式7–8；固定代码quantizer.py、utils.py、replace.py；计算图导数和算例为整理者展开。）
 
 ## 4. 初始化与训练过程为什么仍然重要
 
@@ -240,25 +240,25 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 
 ## 来源身份
 
-- [QSLAW v1](https://arxiv.org/abs/2408.03735v1)及[所选实现](https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802)；§3.5比较尺度位置/整数码更新与STE，导数和算例为整理者展开。
+- QSLAW v1（`https://arxiv.org/abs/2408.03735v1`）及所选实现（`https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802`）；§3.5比较尺度位置/整数码更新与STE，导数和算例为整理者展开。
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 权重分解初始化与固定基座的适配器训练 |
-| [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
-| [OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models](https://arxiv.org/abs/2308.13137v3) | `arXiv:2308.13137v3` | — |
-| [OpenGVLab/OmniQuant](https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/quantizer.py) | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
-| [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314v1) | `arXiv:2305.14314v1` | — |
-| [Q-VLM: Post-training Quantization for Large Vision-Language Models](https://arxiv.org/abs/2410.08119v3) | `arXiv:2410.08119v3` | — |
-| [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
-| [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
+| LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | 权重分解初始化与固定基座的适配器训练 |
+| SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
+| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/quantizer.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | — |
+| Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
+| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
 
-- [Learned Step Size Quantization](https://arxiv.org/abs/1902.08153v3)，arXiv:1902.08153v3；步长代理与梯度缩放。
-- [LLM-QAT: Data-Free Quantization Aware Training for Large Language Models](https://arxiv.org/abs/2305.17888v1)，arXiv:2305.17888v1；生成数据、教师输出与联合量化。
-- [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。
-- [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，arXiv:2405.14852v2；代理选码、子空间与精确理论/工程更新的条件。
-- [LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization](https://arxiv.org/abs/2606.10531v1)，arXiv:2606.10531v1；代理梯度、潜变量坐标与数据预算边界。
-- [QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction](https://arxiv.org/abs/2608.13966v1)，arXiv:2608.13966v1；恒等STE梯度差、重构误差与SGD/PL条件界。
-- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV连续更新与选码变化的不同基准。
+- Learned Step Size Quantization（`https://arxiv.org/abs/1902.08153v3`），arXiv:1902.08153v3；步长代理与梯度缩放。
+- LLM-QAT: Data-Free Quantization Aware Training for Large Language Models（`https://arxiv.org/abs/2305.17888v1`），arXiv:2305.17888v1；生成数据、教师输出与联合量化。
+- EfficientQAT: Efficient Quantization-Aware Training for Large Language Models（`https://arxiv.org/abs/2407.11062v3`），arXiv:2407.11062v3；分阶段变量、目标与尺度参数化。
+- PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression（`https://arxiv.org/abs/2405.14852v2`），arXiv:2405.14852v2；代理选码、子空间与精确理论/工程更新的条件。
+- LC-QAT: Data-Efficient 2-Bit QAT for LLMs via Linear-Constrained Vector Quantization（`https://arxiv.org/abs/2606.10531v1`），arXiv:2606.10531v1；代理梯度、潜变量坐标与数据预算边界。
+- QUASAR: Lowering the Loss Floor of Quantization-Aware Training with Loss-Aware Reconstruction（`https://arxiv.org/abs/2608.13966v1`），arXiv:2608.13966v1；恒等STE梯度差、重构误差与SGD/PL条件界。
+- Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；PV连续更新与选码变化的不同基准。

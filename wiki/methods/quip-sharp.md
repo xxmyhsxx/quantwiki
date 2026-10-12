@@ -96,6 +96,6 @@ v2 的 Llama-2 实验用 RedPajama 6144 段、原生长度 4096 估计 Hessian�
 
 ## 来源身份
 
-[QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2)，arXiv:2402.04396v2。使用方法、实验、微调算法与实现细节附录；未将全部附录证明或官方 kernel 复现计入本次范围。
+QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`），arXiv:2402.04396v2。使用方法、实验、微调算法与实现细节附录；未将全部附录证明或官方 kernel 复现计入本次范围。
 
-[固定QuIP#实现](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，1d8f873e9a2a8b86b12bb1064c312c5689b77d98；本轮核所选Llama/E8P12/rank0/had的统计、编码/微调、保存/加载与单行CUDA、多行恢复，其余分支与运行未核。
+固定QuIP#实现（`https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98`），1d8f873e9a2a8b86b12bb1064c312c5689b77d98；本轮核所选Llama/E8P12/rank0/had的统计、编码/微调、保存/加载与单行CUDA、多行恢复，其余分支与运行未核。

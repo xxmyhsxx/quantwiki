@@ -132,4 +132,4 @@ $$\rho=\tfrac12\sigma^2\omega\operatorname{tr}H
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [Predicting Quantization Price for Selecting PTQ Configurations Before Deployment](https://arxiv.org/abs/2609.28270v1) | arXiv:2609.28270v1 | §2–4、Theorem 3.1/3.3、表 1–3、附录 B/C/D；B.1 与 D.2 的关键实现说明回查页图 |
+| Predicting Quantization Price for Selecting PTQ Configurations Before Deployment（`https://arxiv.org/abs/2609.28270v1`） | arXiv:2609.28270v1 | §2–4、Theorem 3.1/3.3、表 1–3、附录 B/C/D；B.1 与 D.2 的关键实现说明回查页图 |

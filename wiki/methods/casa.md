@@ -120,4 +120,4 @@ Llama-3-8B 浮点参考为 5.49 / 65.0，低位下改善不等于恢复浮点质
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [Beyond Scalar Sensitivity: Activation-Aware Mixed-Precision LLM Quantization with Cross-Layer Refinement](https://arxiv.org/abs/2609.25916v1) | arXiv:2609.25916v1 | Theorem 3.1、§4–5、表 2–3、Algorithm 1、附录 C–D/G；公式、主结果及算法回查页图 |
+| Beyond Scalar Sensitivity: Activation-Aware Mixed-Precision LLM Quantization with Cross-Layer Refinement（`https://arxiv.org/abs/2609.25916v1`） | arXiv:2609.25916v1 | Theorem 3.1、§4–5、表 2–3、Algorithm 1、附录 C–D/G；公式、主结果及算法回查页图 |

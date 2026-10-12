@@ -124,8 +124,8 @@ print(k.n_regs, k.n_spills, k.metadata.shared)
 
 ## 来源身份
 
-- [NVIDIA PTX ISA，CUDA 11.8 归档](https://docs.nvidia.com/cuda/archive/11.8.0/parallel-thread-execution/index.html)，2026-09-22 获取，`ptx-mma-layout-20260922-fc515705`；Matrix Fragments for mma.m16n8k16 with floating point type、Warp-level matrix load instruction: ldmatrix，使用正文坐标与寄存器规则。
-- [Marlin](https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90)，`1f25790bdd49fba53106164a24666dade68d7c90`；`marlin_cuda_kernel.cu` 的 `mma`、`ldsm4`、`dequant` 与主循环数据搬运。
-- [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)，`568afb3a13806beb53bb2e6bd518269357b237c0`；`layers/quantization/awq_triton.py` 的 GEMM 与包装。
-- [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)，`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/srt/layers/quantization/awq/awq_triton.py` 的对应路径。
-- [Triton](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592)，`81a46fa0c04526e5df55a018ecfab72ff922f592`；`python/triton/compiler/compiler.py` 与 `third_party/nvidia/backend/compiler.py`。用于解释检查接口，未验证与所选框架环境的版本兼容性。
+- NVIDIA PTX ISA，CUDA 11.8 归档（`https://docs.nvidia.com/cuda/archive/11.8.0/parallel-thread-execution/index.html`），2026-09-22 获取，`ptx-mma-layout-20260922-fc515705`；Matrix Fragments for mma.m16n8k16 with floating point type、Warp-level matrix load instruction: ldmatrix，使用正文坐标与寄存器规则。
+- Marlin（`https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90`），`1f25790bdd49fba53106164a24666dade68d7c90`；`marlin_cuda_kernel.cu` 的 `mma`、`ldsm4`、`dequant` 与主循环数据搬运。
+- vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），`568afb3a13806beb53bb2e6bd518269357b237c0`；`layers/quantization/awq_triton.py` 的 GEMM 与包装。
+- SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/srt/layers/quantization/awq/awq_triton.py` 的对应路径。
+- Triton（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`），`81a46fa0c04526e5df55a018ecfab72ff922f592`；`python/triton/compiler/compiler.py` 与 `third_party/nvidia/backend/compiler.py`。用于解释检查接口，未验证与所选框架环境的版本兼容性。

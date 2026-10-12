@@ -131,4 +131,4 @@ $$\mathcal L_{\mathrm{LKD},k}=\mathrm{MSE}\left(L_k\cdots L_1(\mathbf X)-\wideha
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [ZeroQuant: Efficient and Affordable Post-Training Quantization for Large-Scale Transformers](https://arxiv.org/abs/2206.01861v1) | `arXiv:2206.01861v1` | — |
+| ZeroQuant: Efficient and Affordable Post-Training Quantization for Large-Scale Transformers（`https://arxiv.org/abs/2206.01861v1`） | `arXiv:2206.01861v1` | — |

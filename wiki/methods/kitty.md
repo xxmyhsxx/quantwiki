@@ -132,5 +132,5 @@ Kitty 最值得复用的是混合码宽的可执行表示，以及诊断敏感�
 
 ## 来源身份
 
-- [Kitty，arXiv:2511.18643v1](https://arxiv.org/abs/2511.18643v1)：§3 诊断与在线代理，§4 图 3/算法 1/流水线，§5 表 2–4 与图 4–5。
-- [Summer-Summer/Kitty 固定 commit dfd2c07b](https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1)：上述登记文件中的 `KittyCache`、`KVCache_Layer`、`quantize_pack_k/v`、`qk_kernel/sv_kernel`、Qwen3 attention、`KittyKVCache`、`fake_quant_groupwise_lastdim` 与 benchmark 分支。存储公式及静态差异是整理者按此版本核对，不代表上游后续版本或本地运行结果。
+- Kitty，arXiv:2511.18643v1（`https://arxiv.org/abs/2511.18643v1`）：§3 诊断与在线代理，§4 图 3/算法 1/流水线，§5 表 2–4 与图 4–5。
+- Summer-Summer/Kitty 固定 commit dfd2c07b（`https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1`）：上述登记文件中的 `KittyCache`、`KVCache_Layer`、`quantize_pack_k/v`、`qk_kernel/sv_kernel`、Qwen3 attention、`KittyKVCache`、`fake_quant_groupwise_lastdim` 与 benchmark 分支。存储公式及静态差异是整理者按此版本核对，不代表上游后续版本或本地运行结果。

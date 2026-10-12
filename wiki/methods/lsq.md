@@ -114,4 +114,4 @@ LSQ 提供的是量化器学习的机制实例。迁移到 LLM 时，还必须�
 
 ## 来源身份
 
-[Learned Step Size Quantization](https://arxiv.org/abs/1902.08153v3)，arXiv:1902.08153v3，ICLR 2020。使用正文 §2–3、表 1–4、附录 A/B；保留论文实验条件，未执行模型或部署复现。
+Learned Step Size Quantization（`https://arxiv.org/abs/1902.08153v3`），arXiv:1902.08153v3，ICLR 2020。使用正文 §2–3、表 1–4、附录 A/B；保留论文实验条件，未执行模型或部署复现。

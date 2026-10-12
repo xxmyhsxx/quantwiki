@@ -129,5 +129,5 @@ accumulator 先创建为 `[BLOCK_M,BLOCK_N]` FP32，每轮点积加入该状态�
 
 ## 来源身份
 
-- [Triton 官方 Block Scaled Matrix Multiplication 教程](https://triton-lang.org/main/getting-started/tutorials/10-block-scaled-matmul.html)，2026-07-02T02:41:08+08:00 快照，`block-scaled-matrix-multiplication-triton-documentation-snapshot-2026-07-02`；使用格式、scale 布局与执行解释，未沿用性能图作本地结果。
-- [Triton 固定源码](https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592)，`81a46fa0c04526e5df55a018ecfab72ff922f592`；`python/tutorials/10-block-scaled-matmul.py` 的 NVIDIA 初始化、descriptor、设备循环、包装与参考比较；`python/triton/tools/mxfp.py` 的编码/解码/打包；`tools/tensor_descriptor.py` 的接口约束；`language/core.py/semantic.py` 的 `dot_scaled` 定义与形状检查。AMD 与底层后端具体指令分派未完整核读。
+- Triton 官方 Block Scaled Matrix Multiplication 教程（`https://triton-lang.org/main/getting-started/tutorials/10-block-scaled-matmul.html`），2026-07-02T02:41:08+08:00 快照，`block-scaled-matrix-multiplication-triton-documentation-snapshot-2026-07-02`；使用格式、scale 布局与执行解释，未沿用性能图作本地结果。
+- Triton 固定源码（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`），`81a46fa0c04526e5df55a018ecfab72ff922f592`；`python/tutorials/10-block-scaled-matmul.py` 的 NVIDIA 初始化、descriptor、设备循环、包装与参考比较；`python/triton/tools/mxfp.py` 的编码/解码/打包；`tools/tensor_descriptor.py` 的接口约束；`language/core.py/semantic.py` 的 `dot_scaled` 定义与形状检查。AMD 与底层后端具体指令分派未完整核读。

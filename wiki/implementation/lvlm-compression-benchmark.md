@@ -144,4 +144,4 @@ updated: 2026-09-22
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [LVLM-Compress-Bench: Benchmarking the Broader Impact of Large Vision-Language Model Compression](https://arxiv.org/abs/2503.04982v1) | `arXiv:2503.04982v1` | — |
+| LVLM-Compress-Bench: Benchmarking the Broader Impact of Large Vision-Language Model Compression（`https://arxiv.org/abs/2503.04982v1`） | `arXiv:2503.04982v1` | — |

@@ -131,4 +131,4 @@ extend 的 piecewise 分支在 `RadixAttention` 中通过注册的 custom op 暴
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | Llama/RadixAttention、backend 接口、Triton metadata/extend/decode、MHA KV 写入和普通 decode 图准备；具体符号见各节。 |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | Llama/RadixAttention、backend 接口、Triton metadata/extend/decode、MHA KV 写入和普通 decode 图准备；具体符号见各节。 |

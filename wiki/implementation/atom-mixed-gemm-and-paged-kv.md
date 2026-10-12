@@ -95,5 +95,5 @@ bench_textgen.py以固定随机种子生成lognormal输入长度、随机输出�
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6；保存的shallow source tree | 所选Llama校准/GPTQ/模拟；e2e原生GEMM、K/V输出量化、分页writer/reader与默认效率脚本 |
-| [Atom](https://arxiv.org/abs/2310.19102v3) | arXiv:2310.19102v3 | §2/4及图8的格式与恢复描述、服务测量协议；逐bit与代码一致性分别核对 |
+| efeslab/Atom（`https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6`） | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6；保存的shallow source tree | 所选Llama校准/GPTQ/模拟；e2e原生GEMM、K/V输出量化、分页writer/reader与默认效率脚本 |
+| Atom（`https://arxiv.org/abs/2310.19102v3`） | arXiv:2310.19102v3 | §2/4及图8的格式与恢复描述、服务测量协议；逐bit与代码一致性分别核对 |

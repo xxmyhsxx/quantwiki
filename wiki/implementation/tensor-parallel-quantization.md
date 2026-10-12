@@ -79,5 +79,5 @@ SGLang `RowParallelLinear.forward` 可通过 `skip_all_reduce` 或 `reduce_resul
 
 ## 来源身份
 
-- [vLLM](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)，`568afb3a13806beb53bb2e6bd518269357b237c0`；`layers/linear.py` 的三类并行线性层、`models/llama.py`、`layers/quantization/auto_awq.py:AutoAWQMarlinLinearMethod.create_weights`。
-- [SGLang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc)，`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/srt/layers/linear.py`、`models/llama.py` 与 `layers/quantization/awq/schemes/awq_linear.py`。
+- vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），`568afb3a13806beb53bb2e6bd518269357b237c0`；`layers/linear.py` 的三类并行线性层、`models/llama.py`、`layers/quantization/auto_awq.py:AutoAWQMarlinLinearMethod.create_weights`。
+- SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/srt/layers/linear.py`、`models/llama.py` 与 `layers/quantization/awq/schemes/awq_linear.py`。

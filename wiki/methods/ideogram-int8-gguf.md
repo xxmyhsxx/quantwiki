@@ -18,7 +18,7 @@ updated: 2026-10-12
 
 # Ideogram 4.0 的 INT8/GGUF PTQ：层保护与生成评测协议
 
-这项研究在RTX3090上比较Ideogram 4.0的FP8、NF4、混合保护INT8 W8A8和GGUF Q4_K。方法复用SmoothQuant、动态激活网格和少量BF16层保护；更有用的知识增量是解释：提示格式、整体图像评分、文字正确率和相对参考模型的保真度，分别改变我们怎样判断量化质量。（[论文 v2](https://arxiv.org/abs/2606.12280v2)，§3–7、表1–5。）
+这项研究在RTX3090上比较Ideogram 4.0的FP8、NF4、混合保护INT8 W8A8和GGUF Q4_K。方法复用SmoothQuant、动态激活网格和少量BF16层保护；更有用的知识增量是解释：提示格式、整体图像评分、文字正确率和相对参考模型的保真度，分别改变我们怎样判断量化质量。（论文 v2（`https://arxiv.org/abs/2606.12280v2`），§3–7、表1–5。）
 
 本页核固定11页PDF的正文、方法、五张主表和代表图，并回查源文件；GGUF格式及两项一般性说法另与既有llama.cpp固定快照核对。没有取得作者量化/评测代码或权重，也没有生成图像、编译或运行GPU。公开记录标题与PDF首页标题不同，具体身份见页末。
 
@@ -93,5 +93,5 @@ Q8_0和Q4_K是weight-only存储格式，名义码宽不包括全部元数据。[
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [Ideogram INT8/GGUF研究](https://arxiv.org/abs/2606.12280v2) | arXiv:2606.12280v2；PDF SHA-256 0c1c983163eb2d97fcb650ff13fedbc1aed95ad67caab4c977e4f8559037a549 | PDF首页题为Quantizing a Dual-Branch Flow-Matching Diffusion Transformer for Consumer GPUs: INT8 and GGUF Post-Training Quantization of Ideogram 4.0；归档公开记录题为Holding the FP8 Quality Ceiling at 8-Bit Weights and Activations；核正文、表1–5、图1及限制，未独立审计全部引用或获得作者实现 |
-| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b) | b820cc8e6f94843d32f92c8ebd7db837dae2bd8b | Q4_K/Q8_0结构、参考编码/恢复和类型/量化入口；用于核格式的一般性说法，不是Ideogram作者代码 |
+| Ideogram INT8/GGUF研究（`https://arxiv.org/abs/2606.12280v2`） | arXiv:2606.12280v2；PDF SHA-256 0c1c983163eb2d97fcb650ff13fedbc1aed95ad67caab4c977e4f8559037a549 | PDF首页题为Quantizing a Dual-Branch Flow-Matching Diffusion Transformer for Consumer GPUs: INT8 and GGUF Post-Training Quantization of Ideogram 4.0；归档公开记录题为Holding the FP8 Quality Ceiling at 8-Bit Weights and Activations；核正文、表1–5、图1及限制，未独立审计全部引用或获得作者实现 |
+| ggml-org/llama.cpp（`https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b`） | b820cc8e6f94843d32f92c8ebd7db837dae2bd8b | Q4_K/Q8_0结构、参考编码/恢复和类型/量化入口；用于核格式的一般性说法，不是Ideogram作者代码 |

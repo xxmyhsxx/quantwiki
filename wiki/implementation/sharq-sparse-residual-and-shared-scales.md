@@ -89,6 +89,6 @@ run_exp.py再调用外部vLLM bench latency/throughput，默认batch8、input102
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11) | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 所选NVFP4/Llama调用、准备/共享权重、GEMM host及导出/默认计时；不代表整仓或完整服务已核 |
-| [匹配 CUTLASS](https://github.com/NVIDIA/cutlass/tree/baea077e425056e2d1d22d2bf5ed928908878790) | baea077e425056e2d1d22d2bf5ed928908878790 | E2M1特殊值/必要转换；未核全部设备主循环 |
-| [SharQ](https://arxiv.org/abs/2606.26587v1) | arXiv:2606.26587v1 | 图2的两路表示与融合；论文报告与当前调用分别记录 |
+| actypedef/SharQ（`https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11`） | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 所选NVFP4/Llama调用、准备/共享权重、GEMM host及导出/默认计时；不代表整仓或完整服务已核 |
+| 匹配 CUTLASS（`https://github.com/NVIDIA/cutlass/tree/baea077e425056e2d1d22d2bf5ed928908878790`） | baea077e425056e2d1d22d2bf5ed928908878790 | E2M1特殊值/必要转换；未核全部设备主循环 |
+| SharQ（`https://arxiv.org/abs/2606.26587v1`） | arXiv:2606.26587v1 | 图2的两路表示与融合；论文报告与当前调用分别记录 |

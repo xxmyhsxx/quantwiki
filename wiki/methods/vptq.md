@@ -19,7 +19,7 @@ updated: 2026-10-08
 
 VPTQ 把同一输入列内的多个输出权重组成一个向量，用索引选择可学习码本中的中心，再把当前列的误差反馈到后续列。这个方向让当前向量的候选共用一个二阶系数，因此选码可用欧氏最近距离；列间输入相关性仍通过反馈起作用。它还用 Hessian 对角项加权初始化码本，并按配置加入残差码本、离群列码本与微调。
 
-本页依据 [arXiv:2409.17066v2](https://arxiv.org/abs/2409.17066v2) 正文、算法1–2及必要附录 A–D，回查关键 PDF 公式与表2–3、8–11。数值为作者报告，规范推导与教学算例另行标明。本地已收录材料中没有匹配的 VPTQ 作者仓库，本轮未核实际打包或运行模型/GPU。前置见[码本与位预算](../theory/codebook-quantization-and-bit-budget.md)、[层输出重构与二阶补偿](../theory/layer-reconstruction-second-order-compensation.md)。
+本页依据 arXiv:2409.17066v2（`https://arxiv.org/abs/2409.17066v2`） 正文、算法1–2及必要附录 A–D，回查关键 PDF 公式与表2–3、8–11。数值为作者报告，规范推导与教学算例另行标明。本地已收录材料中没有匹配的 VPTQ 作者仓库，本轮未核实际打包或运行模型/GPU。前置见[码本与位预算](../theory/codebook-quantization-and-bit-budget.md)、[层输出重构与二阶补偿](../theory/layer-reconstruction-second-order-compensation.md)。
 
 ## 1. 向量方向决定当前要比较的误差
 
@@ -132,4 +132,4 @@ $$
 
 ## 来源身份
 
-- [VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2409.17066v2)，arXiv:2409.17066v2；正文、算法1–2及必要附录 A–D；关键 PDF 公式和表2–3、8–11；条件二阶推导与位预算为整理者展开，完整实现与模型运行未核。
+- VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2409.17066v2`），arXiv:2409.17066v2；正文、算法1–2及必要附录 A–D；关键 PDF 公式和表2–3、8–11；条件二阶推导与位预算为整理者展开，完整实现与模型运行未核。

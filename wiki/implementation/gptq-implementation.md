@@ -193,6 +193,6 @@ SGLang 分别注册 GPTQConfig 与 GPTQMarlinConfig。对尚未标为 Marlin 格
 
 | 来源 | 固定版本 | 说明 |
 | --- | --- | --- |
-| [IST-DASLab/gptq](https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf) | 完整 commit 同 §1 | 原始量化与 3-bit 执行 |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | 完整 commit 同 §1 | 配置、选择器与 Marlin |
-| [sgl-project/sglang](https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc) | 完整 commit 同 §1 | 原生、Marlin 与 repack |
+| IST-DASLab/gptq（`https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf`） | 完整 commit 同 §1 | 原始量化与 3-bit 执行 |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | 完整 commit 同 §1 | 配置、选择器与 Marlin |
+| sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | 完整 commit 同 §1 | 原生、Marlin 与 repack |

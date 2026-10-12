@@ -192,4 +192,4 @@ SAPrune 将“在何层删”与“在该层保留谁”拆开：前者用跨校
 
 | 来源 | 固定版本 | 本页使用范围 |
 | --- | --- | --- |
-| [When and What to Prune? Stage-Aware Visual Token Pruning for Efficient VLA](https://arxiv.org/abs/2610.05273v1) | arXiv:2610.05273v1，2026-10-04提交 | 正文机制、式3–24与算法1–2；实验及附录 A/B/C 的相关表格、校准与限制。PDF/TeX 交叉核对；未取得匹配作者实现，未运行模型、机器人或 GPU。 |
+| When and What to Prune? Stage-Aware Visual Token Pruning for Efficient VLA（`https://arxiv.org/abs/2610.05273v1`） | arXiv:2610.05273v1，2026-10-04提交 | 正文机制、式3–24与算法1–2；实验及附录 A/B/C 的相关表格、校准与限制。PDF/TeX 交叉核对；未取得匹配作者实现，未运行模型、机器人或 GPU。 |

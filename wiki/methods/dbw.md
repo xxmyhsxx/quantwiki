@@ -220,5 +220,5 @@ DBW 承接[低比特表示设计](../research/low-bit-representation-design.md)�
 
 | 来源 | 固定版本 | 本页使用范围 |
 | --- | --- | --- |
-| [Differentiable Bit-Widths: Co-optimizing Pruning and Quantization via SVD for Ultra-Efficient LLM Compression](https://arxiv.org/abs/2610.06026v1) | `arXiv:2610.06026v1` | §2–3 方法与实验；附录 A、C、D.3、E、F；算法 1、表 1–2、5、7–8、11–12、16–17、19；扩展模型与任务表未逐单元核验 |
-| [MMAI-Laboratory/DBW](https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a) | `a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`，2026-10-07 获取 | `decompose.py`；`fake_dbw.py`；`block_ap.py`；`quantize.py`；`real_dbw.py`；`triton_kernel/gemm.py`；`train_e2e_qp.py`、预训练标签分支与 LLaMA-2-7B 两阶段脚本。未安装依赖、编译 kernel、下载模型或运行训练/推理 |
+| Differentiable Bit-Widths: Co-optimizing Pruning and Quantization via SVD for Ultra-Efficient LLM Compression（`https://arxiv.org/abs/2610.06026v1`） | `arXiv:2610.06026v1` | §2–3 方法与实验；附录 A、C、D.3、E、F；算法 1、表 1–2、5、7–8、11–12、16–17、19；扩展模型与任务表未逐单元核验 |
+| MMAI-Laboratory/DBW（`https://github.com/MMAI-Laboratory/DBW/tree/a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`） | `a45f26e1d153ab6bc64dd27d056a3710a33f2e7a`，2026-10-07 获取 | `decompose.py`；`fake_dbw.py`；`block_ap.py`；`quantize.py`；`real_dbw.py`；`triton_kernel/gemm.py`；`train_e2e_qp.py`、预训练标签分支与 LLaMA-2-7B 两阶段脚本。未安装依赖、编译 kernel、下载模型或运行训练/推理 |

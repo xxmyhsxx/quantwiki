@@ -183,4 +183,4 @@ GenEval 使用553条 prompt、每条4张图。表5中 BF16 Overall 为0.667；Ce
 
 | 来源 | 版本 | 实际使用范围 |
 | --- | --- | --- |
-| [CentriQ: Calibration-Free Quantization of Diffusion Transformers via Exact Mean Centering](https://arxiv.org/abs/2610.06260v1) | arXiv:2610.06260v1 | 正文、附录 A–C、公式1–10、图1–3与表1–7；其他定性图不作统计证据。未核作者代码或运行模型 |
+| CentriQ: Calibration-Free Quantization of Diffusion Transformers via Exact Mean Centering（`https://arxiv.org/abs/2610.06260v1`） | arXiv:2610.06260v1 | 正文、附录 A–C、公式1–10、图1–3与表1–7；其他定性图不作统计证据。未核作者代码或运行模型 |

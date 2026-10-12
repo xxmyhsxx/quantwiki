@@ -26,7 +26,7 @@ updated: 2026-10-12
 
 # FluxBin：行列二值分解、显著列残差与输入查表
 
-FluxBin用少量带行/列尺度的±1矩阵之和近似权重，再对每组少数显著列的**残差**增加二值基底。推理时将当前输入和列尺度的所有短符号组合预先求和，权重符号作为LUT地址；行尺度在局部归约时恢复。它将可被查表消费的表示、局部精度分配和执行组织共同设计，而不是把一个W2标签直接送进INT2乘法。（[FluxBin v1](https://arxiv.org/abs/2608.15602v1)，§3、图1–3、附录A–C。）
+FluxBin用少量带行/列尺度的±1矩阵之和近似权重，再对每组少数显著列的**残差**增加二值基底。推理时将当前输入和列尺度的所有短符号组合预先求和，权重符号作为LUT地址；行尺度在局部归约时恢复。它将可被查表消费的表示、局部精度分配和执行组织共同设计，而不是把一个W2标签直接送进INT2乘法。（FluxBin v1（`https://arxiv.org/abs/2608.15602v1`），§3、图1–3、附录A–C。）
 
 本页研读固定24页PDF的核心方法、优化证明、伪代码、主表/必要实验与成本附录，核代表图及表1–9/12的相关结果；不逐点重建全部曲线或审计参考文献。现有材料只有论文，没有核作者实现、打包/加载接口或运行模型/GPU。免训练仍有校准、交替优化和二阶反馈成本。
 
@@ -111,4 +111,4 @@ $$b_{ideal}=K_b+K_s\rho+\frac{16(K_b+K_s)}g
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1) | arXiv:2608.15602v1；PDF SHA-256 41dcc982ffb36354581fd3e01e6ce2dab62c1ec547d6256c7533f12596e70f0b | §3–4、图1–5、附录A–E、算法1–3和代表表格；未核作者实现或运行模型/GPU |
+| FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy（`https://arxiv.org/abs/2608.15602v1`） | arXiv:2608.15602v1；PDF SHA-256 41dcc982ffb36354581fd3e01e6ce2dab62c1ec547d6256c7533f12596e70f0b | §3–4、图1–5、附录A–E、算法1–3和代表表格；未核作者实现或运行模型/GPU |

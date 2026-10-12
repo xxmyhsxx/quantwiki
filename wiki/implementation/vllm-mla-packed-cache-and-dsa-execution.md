@@ -221,5 +221,5 @@ Indexer 对 $d_I=128$ 的每 page 另需 $132P=8448$ 字节。只为解释有效
 
 | 来源 | 固定版本 | 实际使用范围 |
 | --- | --- | --- |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0) | `568afb3a13806beb53bb2e6bd518269357b237c0` | 上述模型、缓存、indexer、sparse backend、CUDA writer/恢复、CMake 和测试 reference；文件与函数就近定位 |
-| [vllm-project/FlashMLA](https://github.com/vllm-project/FlashMLA/tree/a8f794d1251cbfd88a5011445dd5582289c727e4) | `a8f794d1251cbfd88a5011445dd5582289c727e4` | 本页直接补核 Python 前缀说明与 prefill API head gate；SM90 设备主链见续页 |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 上述模型、缓存、indexer、sparse backend、CUDA writer/恢复、CMake 和测试 reference；文件与函数就近定位 |
+| vllm-project/FlashMLA（`https://github.com/vllm-project/FlashMLA/tree/a8f794d1251cbfd88a5011445dd5582289c727e4`） | `a8f794d1251cbfd88a5011445dd5582289c727e4` | 本页直接补核 Python 前缀说明与 prefill API head gate；SM90 设备主链见续页 |

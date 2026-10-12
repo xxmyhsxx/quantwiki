@@ -165,5 +165,5 @@ W2g64 为 2.28125 bit/weight；W2g128 为 2.140625。表 11 与该计算一致�
 
 ## 来源身份
 
-- [EfficientQAT: Efficient Quantization-Aware Training for Large Language Models](https://arxiv.org/abs/2407.11062v3)，arXiv:2407.11062v3；§3–4、表 1/4–7、附录 B–I。
-- [OpenGVLab/EfficientQAT 固定代码](https://github.com/OpenGVLab/EfficientQAT/tree/39175493b2d14617d342a0a7956875e6ac16221b)，commit `39175493b2d14617d342a0a7956875e6ac16221b`，2026-09-22 获取；本页所列训练、量化、标签与打包代码经过阅读，未执行模型或 GPU 内核。论文差异、代码观察、整理者推导与作者实测在正文分别标注。
+- EfficientQAT: Efficient Quantization-Aware Training for Large Language Models（`https://arxiv.org/abs/2407.11062v3`），arXiv:2407.11062v3；§3–4、表 1/4–7、附录 B–I。
+- OpenGVLab/EfficientQAT 固定代码（`https://github.com/OpenGVLab/EfficientQAT/tree/39175493b2d14617d342a0a7956875e6ac16221b`），commit `39175493b2d14617d342a0a7956875e6ac16221b`，2026-09-22 获取；本页所列训练、量化、标签与打包代码经过阅读，未执行模型或 GPU 内核。论文差异、代码观察、整理者推导与作者实测在正文分别标注。

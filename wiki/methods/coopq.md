@@ -14,7 +14,7 @@ updated: 2026-10-12
 
 # CoopQ：联合量化的边际贡献、交互代理与预算求解
 
-CoopQ 给 Transformer 层选择2或4 bit。它先沿随机顺序把层逐个从4降到2，观察当前其他层状态下的最终语言模型损失，再用平均边际量与协方差构建二次代理，在内存约束下求分配。主要增量是把联合量化状态纳入评分；它并未实际计算完整 Hessian，也没有证明代理最优等于模型质量最优。本文依据固定[论文 v2](https://arxiv.org/abs/2509.15455v2)，没有核作者实现或运行模型/GPU。
+CoopQ 给 Transformer 层选择2或4 bit。它先沿随机顺序把层逐个从4降到2，观察当前其他层状态下的最终语言模型损失，再用平均边际量与协方差构建二次代理，在内存约束下求分配。主要增量是把联合量化状态纳入评分；它并未实际计算完整 Hessian，也没有证明代理最优等于模型质量最优。本文依据固定论文 v2（`https://arxiv.org/abs/2509.15455v2`），没有核作者实现或运行模型/GPU。
 
 与[CMPQ](cmpq.md)按输入通道范数分配不同，CoopQ 的玩家是整层、评分来自模型 NLL，代价是重复整模型评价。[公共混合精度页](../theory/mixed-precision-allocation.md#10-联合量化的边际贡献与交互代理)解释边际量、协方差和真实交互为何不能等同。
 
@@ -84,4 +84,4 @@ $$B_{\rm total}(b)=B_{\rm low}+\frac{b-2}{2}(B_{\rm high}-B_{\rm low}).$$
 
 ## 来源身份
 
-[CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs](https://arxiv.org/abs/2509.15455v2)，固定 `arXiv:2509.15455v2`。SPQE式1–6、二次代理式7–10、分配/线性化式11–13、表1–3/图1–2、Discussion与预算式14及基线附录；教学反例、形状/符号衔接和二进制代数为整理者展开，不是作者实现核查。
+CoopQ: Cooperative Game Inspired Layerwise Mixed Precision Quantization for LLMs（`https://arxiv.org/abs/2509.15455v2`），固定 `arXiv:2509.15455v2`。SPQE式1–6、二次代理式7–10、分配/线性化式11–13、表1–3/图1–2、Discussion与预算式14及基线附录；教学反例、形状/符号衔接和二进制代数为整理者展开，不是作者实现核查。

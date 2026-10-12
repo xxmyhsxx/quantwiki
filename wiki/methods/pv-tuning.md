@@ -152,8 +152,8 @@ STE 的浮点潜变量可以跨多步积累更新，即使当次量化结果未�
 
 ## 来源身份与阅读联系
 
-- [PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression](https://arxiv.org/abs/2405.14852v2)，固定版本 arXiv:2405.14852v2；正文§3–4、算法1–3、附录A–P及表1–2/7–9。
-- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；实际目标、码本时序与选码变化限制。
+- PV-Tuning: Beyond Straight-Through Estimation for Extreme LLM Compression（`https://arxiv.org/abs/2405.14852v2`），固定版本 arXiv:2405.14852v2；正文§3–4、算法1–3、附录A–P及表1–2/7–9。
+- Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`；实际目标、码本时序与选码变化限制。
 - [PTQ、QAT 与代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)：固定编码的精确导数、代理下降与子空间条件。
 - [校准数据与范围选择](../theory/calibration-and-range-selection.md)：采样单位、预处理和目标分布。
 - [层输出重构与二阶补偿](../theory/layer-reconstruction-second-order-compensation.md)：局部重构度量与固定索引凸二次条件，不能直接推广到整网KL。

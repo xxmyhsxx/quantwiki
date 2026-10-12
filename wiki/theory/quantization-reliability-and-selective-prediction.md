@@ -130,4 +130,4 @@ MaxProb 置信度下，同分布（VQAv2）的对照（论文主表；Idefics3 �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs](https://arxiv.org/abs/2602.13289v1) | `arXiv:2602.13289v1` | — |
+| Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs（`https://arxiv.org/abs/2602.13289v1`） | `arXiv:2602.13289v1` | — |

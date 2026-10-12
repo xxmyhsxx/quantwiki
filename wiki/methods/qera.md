@@ -168,8 +168,8 @@ P 图 3 的样本量曲线是特定实验中的观察，不能证明增加数据
 
 | 来源 | 版本 | 本轮范围 |
 | --- | --- | --- |
-| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2`，2025-02-15 | 正文与必要附录；公式、主表／附录差异及成本页图核对，A.11 定性抽查；官方代码未读 |
-| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | §3、算法 1 的主体更新与残差替换关系；代码未读 |
+| QERA: an Analytical Framework for Quantization Error Reconstruction（`https://arxiv.org/abs/2410.06040v2`） | `arXiv:2410.06040v2`，2025-02-15 | 正文与必要附录；公式、主表／附录差异及成本页图核对，A.11 定性抽查；官方代码未读 |
+| LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | §3、算法 1 的主体更新与残差替换关系；代码未读 |
 
 ## 教学计算材料
 

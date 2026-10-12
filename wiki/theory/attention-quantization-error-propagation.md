@@ -151,8 +151,8 @@ WUSH-KV 主方法使用更便宜的 $H_K=2\sum_g Q_gQ_g^\top$、$H_V=2\sum_gW_{O
 
 ## 来源身份
 
-- [NOVA-KV，arXiv:2608.04074v1](https://arxiv.org/abs/2608.04074v1)：§3、附录 E/F 的 logit 加权、softmax 范数和输出交叉项。
-- [QJL，arXiv:2406.03482v2](https://arxiv.org/abs/2406.03482v2)：非对称内积随机估计；原文精确概率常数的限制见方法页。
-- [TurboQuant，arXiv:2504.19874v1](https://arxiv.org/abs/2504.19874v1)：MSE 与无偏内积的目标区分；本页不引用其有问题的有限维球面下界。
-- [KIVI，arXiv:2402.02750v2](https://arxiv.org/abs/2402.02750v2)：§3 的 K/V 误差传播与粒度分析。可见性加权、Jacobian 界的展开、抵消与无偏反例为整理者推导。
-- [WUSH-KV，arXiv:2609.38121v1](https://arxiv.org/abs/2609.38121v1)：§4.2、附录 C 的 GQA 局部重构 Hessian、共享头交叉项与便宜代理的区别；§8 改用简化下标展开。
+- NOVA-KV，arXiv:2608.04074v1（`https://arxiv.org/abs/2608.04074v1`）：§3、附录 E/F 的 logit 加权、softmax 范数和输出交叉项。
+- QJL，arXiv:2406.03482v2（`https://arxiv.org/abs/2406.03482v2`）：非对称内积随机估计；原文精确概率常数的限制见方法页。
+- TurboQuant，arXiv:2504.19874v1（`https://arxiv.org/abs/2504.19874v1`）：MSE 与无偏内积的目标区分；本页不引用其有问题的有限维球面下界。
+- KIVI，arXiv:2402.02750v2（`https://arxiv.org/abs/2402.02750v2`）：§3 的 K/V 误差传播与粒度分析。可见性加权、Jacobian 界的展开、抵消与无偏反例为整理者推导。
+- WUSH-KV，arXiv:2609.38121v1（`https://arxiv.org/abs/2609.38121v1`）：§4.2、附录 C 的 GQA 局部重构 Hessian、共享头交叉项与便宜代理的区别；§8 改用简化下标展开。

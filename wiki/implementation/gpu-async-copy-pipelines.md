@@ -101,6 +101,6 @@ $$t_{\rm pipeline}\approx t_m+t_c+(Q-1)\max(t_m,t_c).$$
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
-| [tensormux/kernel-skills](https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7) | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
-| [CUDA Programming Guide：Asynchronous Data Copies](https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/async-copies.html) | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | LDGSTS、预取及线程间共享的同步条件；章节号以本地快照为准。 |
-| [NVIDIA CUTLASS/CuTe](https://github.com/NVIDIA/cutlass/tree/e8ecfad75b44d1ad56264f5001d877e9e47fe080) | `e8ecfad75b44d1ad56264f5001d877e9e47fe080` | SM80 异步拷贝包装和 SGEMM 流水片段；未运行。 |
+| tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
+| CUDA Programming Guide：Asynchronous Data Copies（`https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/async-copies.html`） | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | LDGSTS、预取及线程间共享的同步条件；章节号以本地快照为准。 |
+| NVIDIA CUTLASS/CuTe（`https://github.com/NVIDIA/cutlass/tree/e8ecfad75b44d1ad56264f5001d877e9e47fe080`） | `e8ecfad75b44d1ad56264f5001d877e9e47fe080` | SM80 异步拷贝包装和 SGEMM 流水片段；未运行。 |

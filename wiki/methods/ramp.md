@@ -85,4 +85,4 @@ SuSy 是特定图像分类数据集；论文没有充分给出阈值选择与最
 
 ## 来源身份
 
-- [RAMP: Robust Adaptive Mixed-Precision Quantization for Edge CPU Vision Models](https://arxiv.org/abs/2609.28262v1)，arXiv:2609.28262v1；2026-09-26 归档。已读方法、算法、结果和限制；算法与主表回查 PDF 第 9 页。
+- RAMP: Robust Adaptive Mixed-Precision Quantization for Edge CPU Vision Models（`https://arxiv.org/abs/2609.28262v1`），arXiv:2609.28262v1；2026-09-26 归档。已读方法、算法、结果和限制；算法与主表回查 PDF 第 9 页。

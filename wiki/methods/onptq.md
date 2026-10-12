@@ -163,4 +163,4 @@ OnPTQ 额外成本在离线 dense/quantized 比较、两条短 greedy branch 与
 
 | 来源 | 固定版本 | 本页用途 |
 | --- | --- | --- |
-| [Calibrate the Decisions That Change the Future: On-Policy Post-Training Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2609.36828v1) | arXiv:2609.36828v1 | §3–5、算法 1、附录 B–D：闭环目标、理论、来源与评测协议；表 1–2、4–5：质量、消融及 prefill；Limitations：短程与模型范围 |
+| Calibrate the Decisions That Change the Future: On-Policy Post-Training Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2609.36828v1`） | arXiv:2609.36828v1 | §3–5、算法 1、附录 B–D：闭环目标、理论、来源与评测协议；表 1–2、4–5：质量、消融及 prefill；Limitations：短程与模型范围 |

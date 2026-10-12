@@ -131,6 +131,6 @@ HF 风格推理 `QuantizedLinear` 的尺度形状为输出组×1×1×1。本文�
 
 ## 来源身份与剩余范围
 
-- [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)，固定 commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`。本页各节给出实际文件与函数；此版本与 AQLM v4、PV-Tuning v2 的论文实验分别登记。
+- Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`），固定 commit `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`。本页各节给出实际文件与函数；此版本与 AQLM v4、PV-Tuning v2 的论文实验分别登记。
 - [AQLM 方法](../methods/aqlm.md)解释加性表示、激活相关联合编码和作者实验；[PV 实现](aqlm-pv-training-and-code-updates.md)解释后续整网梯度与 L2 选码。
 - 本次闭合原始校准、所选保存／转换接口与 CUDA 2×8 前向读取的静态解释。CPU／Numba、Triton、Turing 分支、其他 CUDA 格式、全部加载适配器和分布式组合仍保留实际未核范围；模型运行、编译与性能复现未开展。

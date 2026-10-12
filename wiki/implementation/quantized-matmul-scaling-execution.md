@@ -289,7 +289,7 @@ $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}.$$
 $$\langle a,b\rangle=\sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
 \operatorname{popcount}(a^{(r)}\land b^{(s)}).$$
 
-这里 $a^{(r)}$ 是沿K打包的第r个位平面。AND-popcount返回未加权位对内积，不直接得到多位乘积；XOR-popcount的Hamming距离又是另一操作。2-bit的−1与4-bit的−3按signed位权相乘为3，全取正位权却为39。符号位不能因量化器对称就省略。（本段为分配律教学推导；[FlexQ v2](https://arxiv.org/abs/2508.04405v2)，式1–5及所选实现temp_mul。）
+这里 $a^{(r)}$ 是沿K打包的第r个位平面。AND-popcount返回未加权位对内积，不直接得到多位乘积；XOR-popcount的Hamming距离又是另一操作。2-bit的−1与4-bit的−3按signed位权相乘为3，全取正位权却为39。符号位不能因量化器对称就省略。（本段为分配律教学推导；FlexQ v2（`https://arxiv.org/abs/2508.04405v2`），式1–5及所选实现temp_mul。）
 
 如果沿K有group尺度，完整输出仍需第15节的组恢复：每组位对内积乘以该组的两侧尺度，再与位权合并。尺度或位权缺失都无法恢复原整数量化乘积。不同求和次序在实数域可以交换；固定实现先用FP16相乘尺度、按组FP32累积每个位对，再做FP32位权归约并存FP16，不能由代数等价推出逐bit结果一致。
 
@@ -297,7 +297,7 @@ W6A6/W6A8有36/48个逻辑位对，不等于启动36/48个kernel，也不等于�
 
 ## 17. 稀疏主干与量化残差怎样共用权重
 
-令 $X\in\mathbb R^{T\times K}$，掩码主干为 $X_{sp}=M(X)\odot X$，其量化解码值为 $\widetilde X_{sp}$。残差应定义为 $R=X-\widetilde X_{sp}$，这样它同时包含掩码外值和保留值的量化误差。把R量化为 $\widetilde R$，有 $E_R=R-\widetilde R=X-(\widetilde X_{sp}+\widetilde R)$；只用 $X-X_{sp}$ 会漏掉主干量化误差。（[SharQ v1](https://arxiv.org/abs/2606.26587v1)，式7–13；以下为同一行token约定的教学展开。）
+令 $X\in\mathbb R^{T\times K}$，掩码主干为 $X_{sp}=M(X)\odot X$，其量化解码值为 $\widetilde X_{sp}$。残差应定义为 $R=X-\widetilde X_{sp}$，这样它同时包含掩码外值和保留值的量化误差。把R量化为 $\widetilde R$，有 $E_R=R-\widetilde R=X-(\widetilde X_{sp}+\widetilde R)$；只用 $X-X_{sp}$ 会漏掉主干量化误差。（SharQ v1（`https://arxiv.org/abs/2606.26587v1`），式7–13；以下为同一行token约定的教学展开。）
 
 若两路都解码成同一权重 $\bar W\in\mathbb R^{K\times D}$，实数域输出为 $\widehat Y=(\widetilde X_{sp}+\widetilde R)\bar W$。相对固定低精度算子的误差为 $E_R\bar W$，故 $\|E_R\bar W\|_F\le\|E_R\|_F\|\bar W\|_2$；F为Frobenius范数，矩阵2范数为最大奇异值。相对原浮点W则为
 
@@ -320,42 +320,42 @@ $$XW-\widehat Y=X(W-W_{dn})+E_RW_{dn}
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 冻结主体训练、单矩阵初始化计时与存储口径 |
-| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 离线分解与在线低秩运算的边界 |
-| [BiLLM: Pushing the Limit of Post-Training Quantization for LLMs](https://arxiv.org/abs/2402.04291v2) | `arXiv:2402.04291v2` | — |
-| [LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2509.23729v3) | `arXiv:2509.23729v3` | — |
-| [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
-| [Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models](https://arxiv.org/abs/2605.19929v1) | `arXiv:2605.19929v1` | — |
-| [MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2603.04800v1) | `arXiv:2603.04800v1` | — |
-| [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
-| [QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs](https://arxiv.org/abs/2404.00456v2) | `arXiv:2404.00456v2` | — |
-| [FlatQuant: Flatness Matters for LLM Quantization](https://arxiv.org/abs/2410.09426v4) | `arXiv:2410.09426v4` | — |
-| [OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models](https://arxiv.org/abs/2308.13137v3) | `arXiv:2308.13137v3` | — |
-| [OpenGVLab/OmniQuant](https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/int_llama_layer.py) | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
-| [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314v1) | `arXiv:2305.14314v1` | — |
-| [MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization](https://arxiv.org/abs/2502.00425v2) | `arXiv:2502.00425v2` | — |
-| [VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models](https://arxiv.org/abs/2508.03351v2) | `arXiv:2508.03351v2` | — |
-| [MBQ: Modality-Balanced Quantization for Large Vision-Language Models](https://arxiv.org/abs/2412.19509v2) | `arXiv:2412.19509v2` | — |
-| [A White Paper on Neural Network Quantization](https://arxiv.org/abs/2106.08295v1) | `arXiv:2106.08295v1` | — |
-| [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877v1) | `arXiv:1712.05877v1` | — |
-| [SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models](https://arxiv.org/abs/2211.10438v7) | `arXiv:2211.10438v7` | — |
-| [GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323v2) | `arXiv:2210.17323v2` | — |
-| [Microscaling Data Formats for Deep Learning](https://arxiv.org/abs/2310.10537v3) | `arXiv:2310.10537v3` | §4.1、图 2 的 MX 点积计算流；模拟结果不代表硬件执行 |
-| [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant.git/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
-| [IST-DASLab/gptq](https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf) | `2d65066eeb06a5c9ff5184d8cebdf33662c67faf` | — |
-| [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
-| [Atom](https://arxiv.org/abs/2310.19102v3) | arXiv:2310.19102v3 | §4.2、图8的group恢复/融合 |
-| [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选DenseLayerGEMM_i4的group恢复精度 |
-| [FlexQ](https://arxiv.org/abs/2508.04405v2) | arXiv:2508.04405v2 | 式1–6的位展开与group恢复，式6缺项分别说明 |
-| [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选signed AND-popcount、位权及FP16尺度/FP32归约 |
-| [SharQ](https://arxiv.org/abs/2606.26587v1) | arXiv:2606.26587v1 | 式7–13的主干后残差、固定权重界；共同/不同路径权重为教学展开 |
-| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11) | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 共享32→16尺度视图与BF16中间输出/epilogue接口 |
+| LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | 冻结主体训练、单矩阵初始化计时与存储口径 |
+| QERA: an Analytical Framework for Quantization Error Reconstruction（`https://arxiv.org/abs/2410.06040v2`） | `arXiv:2410.06040v2` | 离线分解与在线低秩运算的边界 |
+| BiLLM: Pushing the Limit of Post-Training Quantization for LLMs（`https://arxiv.org/abs/2402.04291v2`） | `arXiv:2402.04291v2` | — |
+| LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |
+| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` | — |
+| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |
+| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`） | `arXiv:2603.04800v1` | — |
+| SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
+| FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
+| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/int_llama_layer.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | — |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
+| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
+| SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` | — |
+| GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers（`https://arxiv.org/abs/2210.17323v2`） | `arXiv:2210.17323v2` | — |
+| Microscaling Data Formats for Deep Learning（`https://arxiv.org/abs/2310.10537v3`） | `arXiv:2310.10537v3` | §4.1、图 2 的 MX 点积计算流；模拟结果不代表硬件执行 |
+| mit-han-lab/smoothquant.git（`https://github.com/mit-han-lab/smoothquant.git/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5`） | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
+| IST-DASLab/gptq（`https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf`） | `2d65066eeb06a5c9ff5184d8cebdf33662c67faf` | — |
+| Guangxuan-Xiao/torch-int（`https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856`） | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
+| Atom（`https://arxiv.org/abs/2310.19102v3`） | arXiv:2310.19102v3 | §4.2、图8的group恢复/融合 |
+| efeslab/Atom（`https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6`） | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选DenseLayerGEMM_i4的group恢复精度 |
+| FlexQ（`https://arxiv.org/abs/2508.04405v2`） | arXiv:2508.04405v2 | 式1–6的位展开与group恢复，式6缺项分别说明 |
+| FlyFoxPlayer/FlexQ（`https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0`） | a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选signed AND-popcount、位权及FP16尺度/FP32归约 |
+| SharQ（`https://arxiv.org/abs/2606.26587v1`） | arXiv:2606.26587v1 | 式7–13的主干后残差、固定权重界；共同/不同路径权重为教学展开 |
+| actypedef/SharQ（`https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11`） | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 共享32→16尺度视图与BF16中间输出/epilogue接口 |
 
-- [PRQuant](https://arxiv.org/abs/2609.22106v1)，arXiv:2609.22106v1；置换、残差拼接与门控 FFN。
-- [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
-- [RAMP](https://arxiv.org/abs/2609.28262v1)，arXiv:2609.28262v1；CPU 混合精度、敏感度聚类与图切分成本。
+- PRQuant（`https://arxiv.org/abs/2609.22106v1`），arXiv:2609.22106v1；置换、残差拼接与门控 FFN。
+- FoldQuantVLA（`https://arxiv.org/abs/2609.24433v1`），arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
+- RAMP（`https://arxiv.org/abs/2609.28262v1`），arXiv:2609.28262v1；CPU 混合精度、敏感度聚类与图切分成本。
 
-- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，v1；组件消融、质量判据与真实执行对照。
+- Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures（`https://arxiv.org/abs/2609.28974v1`），v1；组件消融、质量判据与真实执行对照。
 ## 教学计算材料
 
 保留已有教学计算脚本及当时结果，供核对推导与反例；这些材料不代表模型复现或性能实验。

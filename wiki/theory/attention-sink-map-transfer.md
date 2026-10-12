@@ -92,4 +92,4 @@ Jetson Orin NX 8GB、Transformers 4.57.6 的 16 样本工作量：Qwen0.5B 为 2
 
 ## 来源身份
 
-- [Global Ranks Survive, Selected Heads Shift: BOS-Sink Topology under 4-bit Weight-Only Quantization](https://arxiv.org/abs/2609.23585v1)，arXiv:2609.23585v1；正文六页完整研读，指标回查 PDF 第 2 页；本地无作者代码、未复现实验。成员保留换算、归一化反例和因果均匀基线为整理者展开。
+- Global Ranks Survive, Selected Heads Shift: BOS-Sink Topology under 4-bit Weight-Only Quantization（`https://arxiv.org/abs/2609.23585v1`），arXiv:2609.23585v1；正文六页完整研读，指标回查 PDF 第 2 页；本地无作者代码、未复现实验。成员保留换算、归一化反例和因果均匀基线为整理者展开。

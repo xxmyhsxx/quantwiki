@@ -109,4 +109,4 @@ Llama-3-70B 的 layer0 V 投影量化与提示前缀引发异常是表 7 明示�
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [QTIP: Quantization with Trellises and Incoherence Processing](https://arxiv.org/abs/2406.11235v4) | arXiv:2406.11235v4 | §2–4、算法 1–5、表 1–11/17、附录 A.2–A.3；表 2–4 与位宽/速度条件回查页图 |
+| QTIP: Quantization with Trellises and Incoherence Processing（`https://arxiv.org/abs/2406.11235v4`） | arXiv:2406.11235v4 | §2–4、算法 1–5、表 1–11/17、附录 A.2–A.3；表 2–4 与位宽/速度条件回查页图 |

@@ -140,5 +140,5 @@ $$J(R)=\|S^{1/2}(WR-Q(WR))(R^\top A R)^{1/2}\|_F^2
 
 | 来源 | 固定版本 | 范围 |
 | --- | --- | --- |
-| [RGSQ: Riemannian Geometry-Sensitive Quantization for Large Vision-Language Models](https://arxiv.org/abs/2609.25492v1) | arXiv:2609.25492v1 | §III–V、算法 1–3、式 8–24、表 II–IX；PDF 页眉模板日期不作为版本依据 |
-| [RL-MIND/RGSQ](https://github.com/RL-MIND/RGSQ/tree/a69e2d59b544f8a673483d7a197ac27db72428b1) | a69e2d59b544f8a673483d7a197ac27db72428b1 | 上表所列函数，未运行模型或 GPU kernel |
+| RGSQ: Riemannian Geometry-Sensitive Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2609.25492v1`） | arXiv:2609.25492v1 | §III–V、算法 1–3、式 8–24、表 II–IX；PDF 页眉模板日期不作为版本依据 |
+| RL-MIND/RGSQ（`https://github.com/RL-MIND/RGSQ/tree/a69e2d59b544f8a673483d7a197ac27db72428b1`） | a69e2d59b544f8a673483d7a197ac27db72428b1 | 上表所列函数，未运行模型或 GPU kernel |

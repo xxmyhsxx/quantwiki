@@ -157,8 +157,8 @@ QERA 图 1 与附录图 6 又提供了“各层权重误差降低但整网输出
 
 | 来源 | 版本 | 范围 |
 | --- | --- | --- |
-| [LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models](https://arxiv.org/abs/2310.08659v4) | `arXiv:2310.08659v4` | 正文与附录 A–F；方法、主表、消融和成本页图；代码未读 |
-| [QERA: an Analytical Framework for Quantization Error Reconstruction](https://arxiv.org/abs/2410.06040v2) | `arXiv:2410.06040v2` | 固定主体的加权目标，以及权重误差与模型输出误差的对照；复用上一轮原文核验 |
+| LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | 正文与附录 A–F；方法、主表、消融和成本页图；代码未读 |
+| QERA: an Analytical Framework for Quantization Error Reconstruction（`https://arxiv.org/abs/2410.06040v2`） | `arXiv:2410.06040v2` | 固定主体的加权目标，以及权重误差与模型输出误差的对照；复用上一轮原文核验 |
 
 ## 教学计算材料
 

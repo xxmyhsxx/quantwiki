@@ -43,7 +43,7 @@ updated: 2026-10-07
 
 Dense W4A16 已解释一块低比特矩阵怎样恢复；MoE 还需要确定**当前 tile 属于哪个专家、输入来自哪个 token、输出写回哪个配对，以及 gate 在哪种精度下乘**。本页连接 AWQ 加载、Marlin 专家设备计算与 token 汇合；路由规则和模型侧 shared/rho 归属由[既有 MoE 执行页](moe-routing-and-quantized-expert-execution.md#8-vllm-对照同一-fp8-计算由-factory-与-modular-kernel-分工)承接。
 
-固定来源为 [vLLM commit 568afb3a13806beb53bb2e6bd518269357b237c0](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)。本文是静态源码核对，教学例子为独立索引与舍入计算，没有加载模型、编译或运行 GPU。
+固定来源为 vLLM commit 568afb3a13806beb53bb2e6bd518269357b237c0（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`）。本文是静态源码核对，教学例子为独立索引与舍入计算，没有加载模型、编译或运行 GPU。
 
 ## 1. 固定可连通的分支与接口
 
@@ -160,7 +160,7 @@ cache 互换避免输出归约与仍被消费的数据别名。专家结果已�
 
 ## 来源身份
 
-本页使用统一归档于 2026-09-21 的 vLLM 官方 v0.26.0 固定源码，source_id 为 `vllm-project-vllm-568afb3a`，resolved commit 为 [568afb3a13806beb53bb2e6bd518269357b237c0](https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0)。来源身份与实际读取范围分别说明；默认配置和静态接口没有作为部署状态证明。
+本页使用统一归档于 2026-09-21 的 vLLM 官方 v0.26.0 固定源码，source_id 为 `vllm-project-vllm-568afb3a`，resolved commit 为 568afb3a13806beb53bb2e6bd518269357b237c0（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`）。来源身份与实际读取范围分别说明；默认配置和静态接口没有作为部署状态证明。
 
 ### 核读定位与验证边界
 

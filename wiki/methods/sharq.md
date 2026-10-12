@@ -18,7 +18,7 @@ updated: 2026-10-12
 
 # SharQ：动态稀疏 FP4 主干与量化残差
 
-SharQ将当前激活分成符合硬件N:M约束的FP4稀疏主干和FP4稠密残差。残差相对**量化后的主干**构造，同时接收被掩码去掉的值和主干量化误差；两路共用一份FP4权重，通过不同尺度布局执行稀疏/稠密GEMM。它以第二路低精度计算换取质量恢复，并非单纯删掉一半激活。（[SharQ v1](https://arxiv.org/abs/2606.26587v1)，§3、式6–13、图1–2。）
+SharQ将当前激活分成符合硬件N:M约束的FP4稀疏主干和FP4稠密残差。残差相对**量化后的主干**构造，同时接收被掩码去掉的值和主干量化误差；两路共用一份FP4权重，通过不同尺度布局执行稀疏/稠密GEMM。它以第二路低精度计算换取质量恢复，并非单纯删掉一半激活。（SharQ v1（`https://arxiv.org/abs/2606.26587v1`），§3、式6–13、图1–2。）
 
 本页研读固定20页PDF的正文方法/理论/实验与必要格式附录，核表1–5及图2–4，未逐点重建全部曲线。所选固定代码的NVFP4/Llama、native准备与GEMM接口见[实现页](../implementation/sharq-sparse-residual-and-shared-scales.md)；没有编译、运行模型或GPU。免训练/校准不代表免在线归约、掩码选择或残差量化。
 
@@ -91,6 +91,6 @@ NVFP4使用E2M1四位载荷、UE4M3局部尺度和软件全局PTS。普通dense�
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| [SharQ: Bridging Activation Sparsity and FP4 Quantization for LLM Inference](https://arxiv.org/abs/2606.26587v1) | arXiv:2606.26587v1；PDF SHA-256 7c367ae4b19a55ea60e883837440562568fc3fb3ee4dc7df24b77e0d9ab8207c | 正文机制/条件界、表1–5、图2–4和必要格式附录；未重建所有曲线，未运行模型/GPU |
-| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11) | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | pair maxabs规则与所选准备；实现范围见实现页 |
-| [匹配 CUTLASS](https://github.com/NVIDIA/cutlass/tree/baea077e425056e2d1d22d2bf5ed928908878790) | baea077e425056e2d1d22d2bf5ed928908878790 | E2M1编码/特殊值语义；未核全部vendor或GPU |
+| SharQ: Bridging Activation Sparsity and FP4 Quantization for LLM Inference（`https://arxiv.org/abs/2606.26587v1`） | arXiv:2606.26587v1；PDF SHA-256 7c367ae4b19a55ea60e883837440562568fc3fb3ee4dc7df24b77e0d9ab8207c | 正文机制/条件界、表1–5、图2–4和必要格式附录；未重建所有曲线，未运行模型/GPU |
+| actypedef/SharQ（`https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11`） | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | pair maxabs规则与所选准备；实现范围见实现页 |
+| 匹配 CUTLASS（`https://github.com/NVIDIA/cutlass/tree/baea077e425056e2d1d22d2bf5ed928908878790`） | baea077e425056e2d1d22d2bf5ed928908878790 | E2M1编码/特殊值语义；未核全部vendor或GPU |

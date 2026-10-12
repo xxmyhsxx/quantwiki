@@ -132,4 +132,4 @@ StagQ 将多精度可读性、元数据和 decoder 放在同一约束下：共�
 
 ## 来源身份
 
-- [StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs](https://arxiv.org/abs/2610.05977v1)，`arXiv:2610.05977v1`，2026-10-05 首次提交；2026-10-07 取得固定 PDF [1] 和同版 TeX 源包 [2]。章节、式号、表号按该版本。正文代数展开和预算解释为整理者说明，表中性能与质量均为作者报告。
+- StagQ: Constraint-Driven Multi-Precision Weight Quantization for LLMs（`https://arxiv.org/abs/2610.05977v1`），`arXiv:2610.05977v1`，2026-10-05 首次提交；2026-10-07 取得固定 PDF [1] 和同版 TeX 源包 [2]。章节、式号、表号按该版本。正文代数展开和预算解释为整理者说明，表中性能与质量均为作者报告。

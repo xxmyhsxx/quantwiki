@@ -122,5 +122,5 @@ CPU 能耗统计为整次 20 句进程的全芯片超空闲能量，包含加载
 
 ## 来源身份
 
-- [Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures](https://arxiv.org/abs/2609.28974v1)，arXiv:2609.28974v1；§3–5、图 1–2、表 1–3。指标阈值、模型实验与系统数字均为作者报告。
-- [tts-ptq-map 官方代码固定版本](https://github.com/uxfacdev/tts-ptq-map/tree/ea6f62da57ac86c1fe8f81818d689228c62b5d66)，静态核对量化、组件校准、算子改写及配对 bootstrap 路径；没有本地模型复现。等价判据解释和跨平台证据边界为整理者分析。
+- Same Bit Width, Different Outcomes: Post-Training Quantization of Text-to-Speech Across Architectures（`https://arxiv.org/abs/2609.28974v1`），arXiv:2609.28974v1；§3–5、图 1–2、表 1–3。指标阈值、模型实验与系统数字均为作者报告。
+- tts-ptq-map 官方代码固定版本（`https://github.com/uxfacdev/tts-ptq-map/tree/ea6f62da57ac86c1fe8f81818d689228c62b5d66`），静态核对量化、组件校准、算子改写及配对 bootstrap 路径；没有本地模型复现。等价判据解释和跨平台证据边界为整理者分析。

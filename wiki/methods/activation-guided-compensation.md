@@ -153,4 +153,4 @@ L2-SmoothRot 在八个模型上取得表内最低 WT2/C4 PPL，但只在五个�
 
 | 来源 | 固定版本 | 本页使用范围 |
 | --- | --- | --- |
-| [Understanding LLM Quantization through Activation-Guided Compensation and Orthogonal Residuals](https://arxiv.org/abs/2609.21450v1) | arXiv:2609.21450v1 | §3–5、定理 1/2、命题 1、附录 A–C；原件页图核对关键公式及消融表 |
+| Understanding LLM Quantization through Activation-Guided Compensation and Orthogonal Residuals（`https://arxiv.org/abs/2609.21450v1`） | arXiv:2609.21450v1 | §3–5、定理 1/2、命题 1、附录 A–C；原件页图核对关键公式及消融表 |
