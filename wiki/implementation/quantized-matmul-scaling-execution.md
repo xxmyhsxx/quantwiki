@@ -40,6 +40,9 @@ sources:
   - raw/papers/2026-09-21/flexq/source/text/methodology.tex
   - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/flexq_bmma_kernel.h
   - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/bgemm.cuh
+  - raw/papers/2026-09-21/sharq/source/neurips_2026.tex
+  - raw/repositories/2026-09-21/sharq/source/kernels/src/shared_weight_nvfp4.cu
+  - raw/repositories/2026-09-21/sharq/source/kernels/src/bindings.cpp
 updated: 2026-10-12
 ---
 
@@ -292,6 +295,25 @@ $$\langle a,b\rangle=\sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
 
 W6A6/W6A8有36/48个逻辑位对，不等于启动36/48个kernel，也不等于原生INT6 MMA。位维度怎样填入8×8×128的二值指令、小batch padding、整字载荷、组尺度与warp归约共同决定成本。以6-bit载荷和每128元素一个FP16尺度为理想预算，仅为6.125 bit/元素；实际对齐、尺度复制、在线packing、FP16输出与workspace还需计费。设计与所选固定代码见[FlexQ](../methods/flexq.md)、[位平面执行](flexq-bitplanes-and-group-restoration.md)。
 
+## 17. 稀疏主干与量化残差怎样共用权重
+
+令 $X\in\mathbb R^{T\times K}$，掩码主干为 $X_{sp}=M(X)\odot X$，其量化解码值为 $\widetilde X_{sp}$。残差应定义为 $R=X-\widetilde X_{sp}$，这样它同时包含掩码外值和保留值的量化误差。把R量化为 $\widetilde R$，有 $E_R=R-\widetilde R=X-(\widetilde X_{sp}+\widetilde R)$；只用 $X-X_{sp}$ 会漏掉主干量化误差。（[SharQ v1](https://arxiv.org/abs/2606.26587v1)，式7–13；以下为同一行token约定的教学展开。）
+
+若两路都解码成同一权重 $\bar W\in\mathbb R^{K\times D}$，实数域输出为 $\widehat Y=(\widetilde X_{sp}+\widetilde R)\bar W$。相对固定低精度算子的误差为 $E_R\bar W$，故 $\|E_R\bar W\|_F\le\|E_R\|_F\|\bar W\|_2$；F为Frobenius范数，矩阵2范数为最大奇异值。相对原浮点W则为
+
+$$XW-\widehat Y=X(W-\bar W)+E_R\bar W.$$
+
+主干/残差构造只直接处理第二项，第一项不会因增加残差自动消失。该上界也不保证残差量化总比单路dense量化更好，仍需看实际范围、码本与模型结果。
+
+同一份四位载荷还不足以保证共同W；两路径的组尺度和全局尺度必须表示相同解码值。若稀疏权重为 $W_{sp}$、稠密权重为 $W_{dn}$，以 $W_{dn}$ 为共同参考可得
+
+$$XW-\widehat Y=X(W-W_{dn})+E_RW_{dn}
++\widetilde X_{sp}(W_{dn}-W_{sp}).$$
+
+最后一项解释了为什么某实现要复制32组尺度到两个16组，不能另拟合dense16组却沿用共同W证明。两次GEMM、输出BF16舍入与epilogue读取还会加入有限精度误差；实数恒等式不定义它们每一步的逐bit结果。
+
+稀疏主干减少该分支乘法，却仍需稠密残差GEMM、metadata、两组尺度、在线准备及全局归约。累加epilogue可省掉独立残差输出与额外加法，仍可能读写稀疏BF16中间输出；一个“融合”接口也可能调用多个kernel。具体表示、预算与所选调用见[SharQ](../methods/sharq.md)、[稀疏残差执行](sharq-sparse-residual-and-shared-scales.md)。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -326,6 +348,8 @@ W6A6/W6A8有36/48个逻辑位对，不等于启动36/48个kernel，也不等于�
 | [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选DenseLayerGEMM_i4的group恢复精度 |
 | [FlexQ](https://arxiv.org/abs/2508.04405v2) | arXiv:2508.04405v2 | 式1–6的位展开与group恢复，式6缺项分别说明 |
 | [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选signed AND-popcount、位权及FP16尺度/FP32归约 |
+| [SharQ](https://arxiv.org/abs/2606.26587v1) | arXiv:2606.26587v1 | 式7–13的主干后残差、固定权重界；共同/不同路径权重为教学展开 |
+| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11) | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 共享32→16尺度视图与BF16中间输出/epilogue接口 |
 
 - [PRQuant](https://arxiv.org/abs/2609.22106v1)，arXiv:2609.22106v1；置换、残差拼接与门控 FFN。
 - [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。

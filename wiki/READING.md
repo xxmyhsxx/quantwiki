@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **112 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **114 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [SharQ: Bridging Activation Sparsity and FP4 Quantization for LLM Inference](https://arxiv.org/abs/2606.26587v1)<br>arXiv:2606.26587v1 | 正文方法/理论/实验、表1–5、图2–4及必要格式附录；核4:8 pair、主干量化后残差、共同权重界、均分恢复/性能条件与原文差异 | [SharQ](methods/sharq.md)；[共同权重残差](implementation/quantized-matmul-scaling-execution.md#17-稀疏主干与量化残差怎样共用权重) | 未重建全部曲线或审计全部引用；原文E2M1 NaN及图/正文数字分开；未运行模型/GPU或复现质量/性能 | [2026-10-12](LOG.md#2026-10-12--sharq-论文代码-ingest-与独立评审) |
 | [Ideogram 4.0 INT8/GGUF PTQ研究](https://arxiv.org/abs/2606.12280v2)<br>arXiv:2606.12280v2 | 正文方法/协议、表1–5和代表图；回查PDF1–9及源文件，核双DiT分支、保护/JSON消融边界、配对CI与GGUF预算 | [Ideogram INT8/GGUF](methods/ideogram-int8-gguf.md)；[生成质量与协议](implementation/model-quality-evaluation.md#12-生成质量保真度和提示协议怎样分开评测) | PDF/公开标题差异已记录；GGUF一般说法与既有llama.cpp固定版本分开；未取得作者实现/权重，未运行生成/GPU或原始bootstrap，未审计全部引用 | [2026-10-12](LOG.md#2026-10-12--ideogram-int8gguf-ingest-与独立评审) |
 | [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2)<br>arXiv:2508.04405v2 | 正文方法/实验、式1–6、表1–6、代表布局与性能图；核signed位权、group恢复、免校准与down A8配方 | [FlexQ](methods/flexq.md)；[位分解执行](implementation/quantized-matmul-scaling-execution.md#16-多位整数怎样用二值点积执行) | 原式6缺位权与代码分开说明；未逐点重建全部曲线，未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
 | [Atom: Low-bit Quantization for Efficient and Accurate LLM Serving](https://arxiv.org/abs/2310.19102v3)<br>arXiv:2310.19102v3 | 正文设计/分析、表1–4、代表性能图及必要补充；回查PDF方法、主表/消融/服务条件，核固定重排、group恢复与质量/性能协议 | [Atom](methods/atom.md)；[分组归约](implementation/quantized-matmul-scaling-execution.md#15-归约维分组为什么要在累加途中恢复尺度) | 未逐点重建全部性能曲线；正文FP16恢复/代码FP32累加分别记录，FP4为模拟；未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--atom-论文代码-ingest-与独立评审) |
@@ -113,6 +114,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11)<br>3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 所选NVFP4/Llama与SHARQ_SIM、BF16准备/共享32→16权重尺度、GEMM host/epilogue及vLLM导出/默认计时；匹配CUTLASS必要类型/转换 | [SharQ实现](implementation/sharq-sparse-residual-and-shared-scales.md)；[SharQ](methods/sharq.md) | 未导入/安装/编译/运行；全vendor设备主循环/同步、全部shape/模型/专家/VLM/视频、HiF4/MXFP4 native与完整外部vLLM加载/服务未核；子模块pin依归档记录，本轮无独立Git对象/归档可重新比字节 | [2026-10-12](LOG.md#2026-10-12--sharq-论文代码-ingest-与独立评审) |
 | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b)<br>b820cc8e6f94843d32f92c8ebd7db837dae2bd8b | 本轮定向读取ggml-common.h的Q4_K/Q8_0结构、ggml-quants.c参考编码/恢复、ggml.c类型表及实际量化入口；为Ideogram的一般GGUF说法提供固定版本对照 | [GGUF格式](implementation/gguf-block-quantization-formats.md)；[Ideogram格式边界](methods/ideogram-int8-gguf.md#6-gguf格式与作者编码器贡献需区分) | 既有部署页使用范围仍未全面补核；未贯通Ideogram导出/加载，未核论文6月工具历史、整仓后端或编译/模型/GPU | [2026-10-12](LOG.md#2026-10-12--ideogram-int8gguf-ingest-与独立评审) |
 | [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0)<br>a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选Llama W6/group128/down A8浮点模拟、engine signed W6A6/W6A8与M1/4/8位平面、BMMA/FP16尺度恢复、默认检查与FasterTransformer wrapper/FFN调用 | [FlexQ实现](implementation/flexq-bitplanes-and-group-restoration.md)；[FlexQ](methods/flexq.md) | 未导入/安装/编译/运行；全仓、全部shape/硬件/同步、完整导出/加载与融合链未核；绝对误差门限6.5504与性能计时分开 | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
 | [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6)<br>7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选Llama校准/重排/GPTQ/浮点模拟，native 7B INT4/INT8 GEMM与FP16尺度恢复、输出非对称KV编码、paged writer/RoPE decode及默认效率脚本 | [Atom实现](implementation/atom-mixed-gemm-and-paged-kv.md)；[Atom](methods/atom.md) | 未导入/安装/编译/运行；未核全部vendor/同步/边界形状及其他模型格式；随机权重/预填充随机KV/一层缓存共享，未闭合真实权重导出与同网格质量部署 | [2026-10-12](LOG.md#2026-10-12--atom-论文代码-ingest-与独立评审) |
@@ -234,11 +236,11 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下117个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下115个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；下一项SharQ论文与所选实现，再接续其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；下一项第6批FluxBin，再接QuIP/QuIP#/SpQR所选实现和其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（47条）
+### 论文（46条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -274,7 +276,6 @@ updated: 2026-10-12
 | [RULER: What's the Real Context Size of Your Long-Context Language Models?](https://arxiv.org/abs/2404.06654v3) | `arXiv:2404.06654v3` |
 | [Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve](https://arxiv.org/abs/2403.02310v3) | `arXiv:2403.02310v3` |
 | [SGLang: Efficient Execution of Structured Language Model Programs](https://arxiv.org/abs/2312.07104v2) | `arXiv:2312.07104v2` |
-| [SharQ: Bridging Activation Sparsity and FP4 Quantization for LLM Inference](https://arxiv.org/abs/2606.26587v1) | `arXiv:2606.26587v1` |
 | [SmoothQuant+: Accurate and Efficient 4-bit Post-Training WeightQuantization for LLM](https://arxiv.org/abs/2312.03788v1) | `arXiv:2312.03788v1` |
 | [SpikeMLLM: Spike-based Multimodal Large Language Models via Modality-Specific Temporal Scales and Temporal Compression](https://arxiv.org/abs/2604.18610v1) | `arXiv:2604.18610v1` |
 | [TritonBench: Benchmarking Large Language Model Capabilities for Generating Triton Operators](https://arxiv.org/abs/2502.14752v1) | `arXiv:2502.14752v1` |
@@ -348,7 +349,7 @@ updated: 2026-10-12
 | [vla.simd model bundle](https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle) | `2026-09-28 page snapshot` |
 | [TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix](https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html) | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 
-### 代码条目（17条）
+### 代码条目（16条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -360,7 +361,6 @@ updated: 2026-10-12
 | [Cornell-RelaxML/quip-sharp](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98) | `1d8f873e9a2a8b86b12bb1064c312c5689b77d98` |
 | [QwenLM/Qwen2.5-Omni](https://github.com/QwenLM/Qwen2.5-Omni/tree/d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42) | `d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42` |
 | [QwenLM/Qwen3-VL](https://github.com/QwenLM/Qwen3-VL/tree/96588727e44c78b25ba03ea03b8e12f7e64fd0da) | `96588727e44c78b25ba03ea03b8e12f7e64fd0da` |
-| [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11) | `3cc584fe48e32e59c8b4e37323470dcdd606bb11` |
 | [Vahe1994/SpQR](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e) | `543d10e56f921e5eeb10d5f0aaaccd30b6662d0e` |
 | [Summer-Summer/transformers](https://github.com/Summer-Summer/transformers/tree/37f8b0b53512e6aae0cfd15746c133c101783178) | `37f8b0b53512e6aae0cfd15746c133c101783178` |
 | [gpu-mode/Triton-Puzzles](https://github.com/gpu-mode/Triton-Puzzles/tree/4d794abed02292081500ebf4b1e35cd5fc5fb019) | `4d794abed02292081500ebf4b1e35cd5fc5fb019` |
