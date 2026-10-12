@@ -6,7 +6,7 @@
 
 “已完成”表示本批页面职责与核心解释已核读、发现的问题已处理；来源核验是针对核心主张与疑点的定向核对，不表示所有上游代码或论文证明均重新审计。第 1 批沿用上一轮六页抽查，第 2 批沿用已完成的重构推导复核，第 3 批沿用已完成的 GPTQ 方法复核；相关正文在本轮开始时未变化。
 
-当前完成 29 批、174 个知识页；剩余 4 个导航、管理页。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
+已完成全部 30 批：174 个知识页与 4 个导航、管理页，共 178 页，无遗漏或重复。各批问题、理由与修复结果见 `wiki/LOG.md` 的 2026-10-13 条目。`wiki/research/mbq-vlmq-comparison.md` 已通读，原有表格排版改动保留在工作区，本轮未修改或暂存该页。
 
 后续批次最多八页；若一批包含独立计算链或问题较多，再拆分。没有问题的页面无需为凑修改而改写。新出现的跨页问题可回修已审页，并记录影响。
 
@@ -320,7 +320,7 @@
 
 ## 第 29 批 · 评测协议
 
-状态：已完成；6 页。提交：随本批清单更新。
+状态：已完成；6 页。提交：`272cf15`。
 
 - [helm-evaluation-protocol](../../wiki/implementation/helm-evaluation-protocol.md)
 - [lm-evaluation-harness-request-filter-and-aggregation](../../wiki/implementation/lm-evaluation-harness-request-filter-and-aggregation.md)
@@ -331,7 +331,7 @@
 
 ## 第 30 批 · 导航、来源研读记录与维护规范
 
-状态：待审；4 页。
+状态：已完成；4 页。提交：本批提交见 Git 历史。
 
 - [INDEX](../../wiki/INDEX.md)
 - [READING](../../wiki/READING.md)

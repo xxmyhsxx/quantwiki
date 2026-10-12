@@ -18,7 +18,7 @@ sources: []
 | --- | --- | --- |
 | 降低权重占用，激活保持高精度 | [AWQ/GPTQ 的不同重构目标](methods/awq-gptq-smoothquant-comparison.md)、[极低比特表示设计](research/low-bit-representation-design.md) | [权重反量化 kernel 契约](implementation/weight-only-dequant-kernels.md) |
 | 权重与激活联合量化 | [校准与网格](theory/calibration-and-range-selection.md)、[缩放](theory/diagonal-scaling-equivalent-transform.md)、[旋转](theory/orthogonal-rotation-and-hadamard-quantization.md)、[可学习变换](research/omniquant-affinequant-flatquant-comparison.md) | [尺度位置与矩阵乘执行](implementation/quantized-matmul-scaling-execution.md) |
-| 降低长上下文或多请求的缓存占用 | [KV 对象/粒度](theory/kv-cache-quantization-objects-and-granularity.md)、[误差传播](theory/attention-quantization-error-propagation.md)、[WUSH-KV 的双侧统计](methods/wush-kv.md) | [缓存生命周期](theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)、[服务内存与批处理](implementation/serving-memory-and-batching.md) |
+| 降低长上下文或多请求的缓存占用 | [KV 对象/粒度](theory/kv-cache-quantization-objects-and-granularity.md)、[误差传播](theory/attention-quantization-error-propagation.md)、[WUSH-KV 的双侧统计](methods/wush-kv.md) | [缓存生命周期](theory/kv-cache-quantization-objects-and-granularity.md#12.%20%E7%BC%93%E5%AD%98%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%BC%9A%E6%94%B9%E5%8F%98%E6%95%B0%E5%80%BC%E8%B7%AF%E5%BE%84)、[服务内存与批处理](implementation/serving-memory-and-batching.md) |
 | 在总预算内选择层或对象的精度 | [混合精度分配](theory/mixed-precision-allocation.md)、[曲率方向](theory/curvature-weighted-quantization-error.md)、[CASA 的配置交互](methods/casa.md) | [服务性能协议](implementation/serving-performance-evaluation.md) |
 | 保留多模态信息与生成行为 | [模态目标比较](research/mbq-vlmq-comparison.md)、[OnPTQ 的状态与后果](methods/onptq.md) | [正确性、分布与生成评测](implementation/model-quality-evaluation.md) |
 | 判断输出分布偏移与原模型不一致 | [间隔、KL/TV 与 token 翻转](theory/quantization-ranking-stability.md#8.%20%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%88%86%E5%B8%83%E8%B7%9D%E7%A6%BB%E6%80%8E%E6%A0%B7%E5%8F%98%E6%88%90%20token%20%E7%BF%BB%E8%BD%AC)、[可靠性与弃答](theory/quantization-reliability-and-selective-prediction.md) | [相同前缀与最终任务的协议](implementation/model-quality-evaluation.md#9.%20%E8%BE%93%E5%87%BA%E5%88%86%E5%B8%83%E4%B8%80%E8%87%B4%E6%80%A7%E8%A6%81%E5%9B%BA%E5%AE%9A%E5%89%8D%E7%BC%80%E5%92%8C%E6%8C%87%E6%A0%87%E5%8F%A3%E5%BE%84) |
@@ -53,7 +53,7 @@ sources: []
 - **贯通低精度浮点执行**：[FP8 与 Microscaling 格式](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) → [K 尺度与执行路径](implementation/quantized-matmul-scaling-execution.md) → [FP4/FP8 块缩放的编码、布局与调用](implementation/block-scaled-matmul-execution.md) → [Tensor Core 与编译诊断](implementation/tensor-core-quantized-gemm.md)。
 - **优化算子配置与流水**：[GPU 算子的计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md) → [Kernel 配置选择与自动调优](implementation/kernel-configuration-and-autotuning.md) → [异步拷贝与多级流水](implementation/gpu-async-copy-pipelines.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **建立算子测试与性能分析流程**：[正确性、Sanitizer 与计时](implementation/kernel-correctness-and-benchmarking.md) → [时间线、硬件指标与瓶颈定位](implementation/gpu-kernel-performance-analysis.md) → [配置选择与对照实验](implementation/kernel-configuration-and-autotuning.md)。
-- **贯通量化的公共知识**：[二阶统计与加权距离](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7.%20%E4%BA%8C%E9%98%B6%E7%BB%9F%E8%AE%A1%E5%A6%82%E4%BD%95%E5%AE%9A%E4%B9%89%E8%AF%AF%E5%B7%AE%E8%B7%9D%E7%A6%BB) → [Attention 误差传播](theory/attention-quantization-error-propagation.md) → [码本与率失真](theory/codebook-quantization-and-bit-budget.md#10.%20%E4%BB%8E%E5%A4%B1%E7%9C%9F%E7%9B%AE%E6%A0%87%E6%8E%A8%E5%AF%BC%E6%A0%87%E9%87%8F%E9%87%8F%E5%8C%96%E5%99%A8) → [缓存格式与生命周期](theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F) → [模拟到实际执行](implementation/quantization-error-diagnosis.md#7.%20%E4%BD%8E%E6%AF%94%E7%89%B9%20KV%20%E4%BB%8E%E6%A8%A1%E6%8B%9F%E5%88%B0%E7%9C%9F%E5%AE%9E%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AF%B9%E9%BD%90)。
+- **贯通量化的公共知识**：[二阶统计与加权距离](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#7.%20%E4%BA%8C%E9%98%B6%E7%BB%9F%E8%AE%A1%E5%A6%82%E4%BD%95%E5%AE%9A%E4%B9%89%E8%AF%AF%E5%B7%AE%E8%B7%9D%E7%A6%BB) → [Attention 误差传播](theory/attention-quantization-error-propagation.md) → [码本与率失真](theory/codebook-quantization-and-bit-budget.md#10.%20%E4%BB%8E%E5%A4%B1%E7%9C%9F%E7%9B%AE%E6%A0%87%E6%8E%A8%E5%AF%BC%E6%A0%87%E9%87%8F%E9%87%8F%E5%8C%96%E5%99%A8) → [缓存格式](theory/kv-cache-quantization-objects-and-granularity.md#11.%20%E4%BB%8E%E4%BD%8D%E5%AE%BD%E5%88%B0%E5%8F%AF%E6%89%A7%E8%A1%8C%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F) → [模拟到实际执行](implementation/quantization-error-diagnosis.md#7.%20%E4%BD%8E%E6%AF%94%E7%89%B9%20KV%20%E4%BB%8E%E6%A8%A1%E6%8B%9F%E5%88%B0%E7%9C%9F%E5%AE%9E%E6%89%A7%E8%A1%8C%E7%9A%84%E5%AF%B9%E9%BD%90)。
 - **理解 KV cache 与服务**：[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) → [KIVI](methods/kivi.md) → [KVQuant](methods/kvquant.md) / [QJL](methods/qjl.md) → [SAW-INT4](methods/saw-int4.md) → [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)。
 - **理解推理框架与算子设计**：[内存管理与批处理](implementation/serving-memory-and-batching.md) → [vLLM 的 token 调度与变长批次](implementation/vllm-inference-execution.md) → [vLLM Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) → [AWQ 实现](implementation/awq-implementation.md) → [正确性与性能测量](implementation/kernel-correctness-and-benchmarking.md)。
 - **理解 SGLang 的缓存与算子**：[Radix 缓存、批次与重叠执行](implementation/sglang-inference-execution.md) → [KV 索引、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) → [AWQ 的 SGLang 路径](implementation/awq-implementation.md#6.%20%E8%B7%A8%E5%BC%95%E6%93%8E%EF%BC%9ASGLang)。
@@ -176,8 +176,8 @@ sources: []
 | [AQLM：激活感知加性量化](methods/aqlm.md) | 多个学习码本、联合索引和块内微调怎样工作。 |
 | [SpQR：敏感权重与两级元数据](methods/spqr.md) | 动态例外选择、小组网格和稀疏修正怎样计账。 |
 | [SqueezeLLM：加权非均匀量化](methods/squeezellm.md) | 任务 Fisher、标量 LUT 与稠密稀疏分解如何配合。 |
-| [AdaRound：面向任务损失的自适应舍入](methods/adaround.md) | 权重量化的最后一步通常是最舍入：把每个浮点权重放到最近的网格点上。 |
-| [BRECQ：块级重构与二阶误差的粒度选择](methods/brecq.md) | 逐层重构把每层的输出误差压到最小，但在位宽继续下降时反而不再有效：单层看上去接近无损，整网输出却偏得很远。 |
+| [AdaRound：面向任务损失的自适应舍入](methods/adaround.md) | 固定网格下，怎样学习向上或向下舍入以减少激活重构误差。 |
+| [BRECQ：块级重构与二阶误差的粒度选择](methods/brecq.md) | 怎样用二阶代理与少样本实验比较重构粒度，并优化块级舍入。 |
 | [AffineQuant：可学习仿射变换与渐进掩码](methods/affinequant.md) | AffineQuant 把量化前的可学习逐通道缩放扩展为可逆矩阵，使一个通道可以与其他通道混合；与逆矩阵配对后，浮点线性计算不变，量化后的网格适配可能更好。 |
 | [AWQ、GPTQ 与 SmoothQuant：对象、机制与证据比较](methods/awq-gptq-smoothquant-comparison.md) | 这三种方法都利用少量校准数据改善模型量化，但量化对象、可调整变量与实现路线并不相同。 |
 | [AWQ：激活感知的权重量化](methods/awq.md) | AWQ 用校准激活判断哪些输入通道需要更多保护，再通过等价缩放与权重裁剪减轻低比特量化的损失。 |
@@ -194,7 +194,7 @@ sources: []
 | [QSLAW：多模态尺度学习与数据 warmup](methods/qslaw.md) | 分组尺度进入舍入的方式、训练数据阶段和适配质量/成本。 |
 | [Q-VLM：熵驱动的联合校准与视觉编码器优化](methods/q-vlm.md) | Q-VLM 关注“哪些层应放在一起校准”。 |
 | [QIG：以量化误差积分梯度指导 token 加权校准](methods/qig.md) | QIG 的问题是：图文 token 在共享语言层中不断交互，只按“视觉/文字”给一个平均重要性，可能掩盖模态内部的差别；直接照搬任务梯度或注意力，也未必测量了量化造成的误差。 |
-| [QServe：W4A8KV4 量化与系统协同](methods/qserve.md) | 权重量化在单用户场景常能带来接近理论上限的加速，但云侧服务需要同时处理多请求：计算强度上升，瓶颈从权重读取转向计算与反量化。 |
+| [QServe：W4A8KV4 量化与系统协同](methods/qserve.md) | 两级整数编码、离线重排与 KV4 怎样降低反量化和服务成本。 |
 | [QuaRot：固定旋转、全图等价与四位推理](methods/quarot.md) | QuaRot 先把模型改写到适合量化的坐标系，再量化权重、激活和 KV cache。 |
 | [SAW-INT4：面向真实服务约束的 4 bit KV cache 量化](methods/saw-int4.md) | 块旋转如何融入 INT4 写入、GQA decode 与 prefill 恢复；持久记录、舍入位置和临时缓冲如何区分。 |
 | [SmoothQuant+：全模型平滑搜索与 W4A16 部署](methods/smoothquant-plus.md) | 通道/MLP融合、HumanEval校准与代理搜索、单/双卡服务协议的边界。 |

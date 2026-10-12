@@ -1,5 +1,13 @@
 # Wiki 变动记录
 
+记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
+
+## 2026-10-13 · 全库分批审查：第 30 批
+
+- 核读 INDEX、READING、LOG 与 README。修正“缓存生命周期”入口误指格式章节，AdaRound/BRECQ/QServe 摘要改为具体解释职责；回修 BRECQ 页首的普遍失效断言，与粒度消融和近似条件保持一致。
+- READING 压缩重复的评测未核清单与九批进度，保留研读范围、来源差异及匹配实现缺口；LOG 说明移至页首，历史服务缺口标明当时范围并接入现有正文。SELF 与 ingest 计划同步暂停状态，既有来源记录不升级为完整研读。
+- 全部 30 批、174 个知识页及 4 个导航/管理页完成。批次清单与 INDEX 覆盖无遗漏或重复；134/58/95 条研读状态计数一致，全库结构、来源登记、链接/锚点与 raw 存储检查通过。未进行 ingest 或模型/GPU 运行；科学内容核查按各批核心主张与疑点定向开展。
+
 ## 2026-10-13 · 全库分批审查：第 29 批
 
 - 通读 HELM、LongBench v2、MMLU-Pro、RULER、harness 与公共模型质量页；回查等量分箱/ECE与SCAA、两次CoT/补偿计分、随机兜底、RULER阈值与权重，以及regex、字符串长度归一、响应缓存和学科聚合。核心定义与跨页分母一致，已有解释深度足够。
@@ -573,8 +581,6 @@
 - 验证：全库机械检查 129 个知识页、1,063 条来源（1,042 本地、21 固定外链）、2,416 条本地链接通过，无错误/警告/跳过；本轮四个知识页的 409 个数学表达式通过 KaTeX，SELF 的 49 条本地链接/锚点与八个成果文件的空白/换行检查通过。175 份基线中仅改七个既有文件、新增一个预定设备页，其余 168 份哈希一致，原有 15 个未提交文件保持原哈希；提交前另核对完整索引快照。
 - 本轮没有安装、JIT/编译、运行上游测试、GPU/model/服务或性能测量；SM100/FP4、MODEL1、其他 DSA/backend、多 query、DCP/PCP 与极端输入未全面展开。保留 raw、Skill、研究材料和原有工作区改动，提交与推送分开。
 
-记录实际发生的修改、原因、检查结果与遗留影响。同批变动合并记录；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
-
 ## 2026-10-07 · vLLM MLA packed 缓存与 DSA 源码 ingest 和 review
 
 - 新增 [vLLM MLA packed 缓存与 DSA](implementation/vllm-mla-packed-cache-and-dsa-execution.md)，接续普通 MLA 与 DCP 页，固定 vLLM commit `568afb3a13806beb53bb2e6bd518269357b237c0`。选择默认 registry 的通用 V3.2、SM90/BF16、单设备、page 64、实际创建 Indexer 的层，核 656-byte 主记录、四组 FP32 scale、BF16 RoPE、CUDA writer 与专用恢复，以及独立 indexer 的整页 key/scale、Q scale/weights、因果 top-k、请求内到物理/workspace 位置和所选 sparse prefill/decode 框架链。
@@ -993,9 +999,9 @@
 | 09-17 结构补充 | [GPU 的执行模型与存储层次](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)；硬件层次、roofline、分页与调度；未进行本地硬件测量。 |
 | 09-17 实现与 kernel | [权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md)；AWQ/GPTQ/SmoothQuant 路径与 SGLang JIT/Marlin、repack、线程和分派；仅代码阅读。 |
 
-### 仍需独立任务解决的内容问题
+### 当时记录的后续问题
 
 - 模型精度、跨引擎数值一致性、实际打包导出及 GPU 性能，尚无本地运行验证。
 - 方法页已注明的论文内部数字差异、公开代码与论文配置差异、未读分支和有限实验条件继续保留；资料或依赖文件补齐不等于相应代码已经研读。
-- 服务知识尚未完整覆盖 chunked prefill、前缀树共享和 prefill/decode 分离；旧记录中的待扩展项不是空目录或已完成页面。
+- 当时服务知识对 chunked prefill、前缀树共享和 prefill/decode 分离覆盖不足；后续已有 [vLLM 调度](implementation/vllm-inference-execution.md)、[SGLang 缓存](implementation/sglang-inference-execution.md)和[分阶段量化](methods/disaggregated-quantization.md)承接，具体范围见各页正文。
 - 研究线索与实验设想保留在项目研究说明，未因本次迁移升级为已验证结论。
