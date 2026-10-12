@@ -16,7 +16,14 @@ sources:
   - raw/repositories/2026-09-21/efficientai/source/masquant/quantize/svd_utils.py
   - raw/repositories/2026-09-21/efficientai/source/masquant/infer_mas.py
   - raw/repositories/2026-09-21/efficientai/source/masquant/custom_dataset.py
-updated: 2026-09-15
+  - raw/articles/2026-09-21/wechat-masquant/article.md
+  - raw/articles/2026-09-21/wechat-masquant/assets/image-12825ee64822.png
+  - raw/articles/2026-09-21/wechat-masquant/assets/image-92421c63436c.png
+  - raw/articles/2026-09-21/wechat-masquant/assets/image-24908d320bf0.png
+  - raw/articles/2026-09-21/wechat-masquant/assets/image-051fa5c5deca.png
+  - raw/articles/2026-09-21/wechat-masquant/assets/image-0c6873feb802.png
+  - raw/papers/2026-09-21/masquant/source/sec/4.Experiments.tex
+updated: 2026-10-12
 ---
 
 # MASQuant：分模态平滑与共享权重补偿
@@ -31,7 +38,7 @@ MASQuant 解决一个具体冲突：视觉、文字、音频希望使用不同�
 
 本页采用论文的右乘权重布局：$X^{(m)}\in\mathbb R^{T_m\times d}$，$W\in\mathbb R^{d\times o}$，$Y^{(m)}=X^{(m)}W$；$m$ 表示 token 所属模态。PyTorch Linear 的存储权重是这里的 $W^\mathsf T$，参见 [线性层与输入通道](../fundamentals/operators/linear-layer-input-channel.md)。
 
-[SmoothQuant](smoothquant.md) 使用激活与权重通道范围确定尺度。若混合所有 token 的最大值由某个模态主导，其他模态在不同通道上可能被不均匀地缩小，单个 token 内的有效动态范围反而更差。图 1、4 表明主导模态随层和通道变化，不能简化为“视觉永远比文字大”。该问题涉及通道之间的比例，不是单纯整体幅度大或小。（§4.1。）
+[SmoothQuant](smoothquant.md) 使用激活与权重通道范围确定尺度。若混合所有 token 的最大值由某个模态主导，其他模态在不同通道上可能被不均匀地缩小，单个 token 内的有效动态范围反而更差。图 1、4 表明主导模态随层和通道变化，不能简化为“视觉永远比文字大”。公众号配图图4中Query/Up多数平滑因子由文字决定，Attention输出则随层变化；其正文对视觉普遍主导的概括需回到这些层/通道条件。该问题涉及通道之间的比例，不是单纯整体幅度大或小。（§4.1。）
 
 对角恒等式本身没有失效：任意可逆对角 $S_m$ 都有
 
@@ -129,6 +136,7 @@ $$Y-\widehat Y=A(D-L)+(A-Q_a(A))B.$$
 
 - **图文收益并非全面领先**：表 1，Qwen2.5-VL 3B W4A8 平均分 MBQ 64.6、MASQuant 64.7；TextVQA 从 MBQ 的 73.4 降至 69.2，而 MMMU 从 41.2 升至 46.7。方法价值需要结合任务，不能只凭平均分说普遍改善。
 - **音频对错误平滑很敏感**：表 2，Qwen2.5-Omni 3B W4A8 的 LibriSpeech WER，FP16 3.9、SmoothQuant 77.4、MBQ 9.5、MASQuant 3.6；但 WenetSpeech MASQuant 8.7，弱于 MBQ 8.5，亦弱于 FP16 7.5。保留前述数据独立性缺口，不把单个大幅收益扩大到所有音频任务。
+- **模态划分与尺度优化要分别比较**：表3的Omni-3B W4A8，在Opt.未勾选时Uniform/MAS的LibriSpeech WER为77.4/3.8；两者均开启尺度优化时为6.0/3.6。同表VL-3B的TextVQA从51.3/54.7变为65.0/68.2。公众号快照也引用77.4→3.8，但它对应未优化行，不能当成所有学习配置或纯CMC消融。
 - **损失与最终任务有取舍**：表 4，模态权重 $(1,1)$ 的 PPL/平均准确率为 17.2/56.9，$(1,0.1)$ 为 33.7/58.1。等权更保语言困惑度，却不是该表准确率最高；表 5 增加 epoch 也没有让 PPL 与任务分同步单调改善。
 - **rank 是条件化的质量—代价选择**：图 5–6 支持特定层、模型的补偿能量集中与 SQNR 随 rank 改善，不证明固定小秩适用于所有分布。表 6 的 $d+2rd$ 等项是简化附加成本，不是全模型总量。
 
@@ -150,8 +158,9 @@ $$Y-\widehat Y=A(D-L)+(A-Q_a(A))B.$$
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models](https://arxiv.org/abs/2603.04800v1) | `arXiv:2603.04800v1` | — |
-| [alibaba/EfficientAI](https://github.com/alibaba/EfficientAI/tree/3d32ae427eec57166ea67f3018cd4568be84496f) | `3d32ae427eec57166ea67f3018cd4568be84496f` | — |
+| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models，来源 `https://arxiv.org/abs/2603.04800v1` | `arXiv:2603.04800v1` | — |
+| alibaba/EfficientAI，来源 `https://github.com/alibaba/EfficientAI/tree/3d32ae427eec57166ea67f3018cd4568be84496f` | `3d32ae427eec57166ea67f3018cd4568be84496f` | — |
+| (CVPR 2026) 从 SmoothQuant 到 MASQuant：多模态量化的新思路，来源 `https://mp.weixin.qq.com/s/CQhaOfG9b2PsxVO04pHe-Q?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831938&enterid=1782831938` | `snapshot-2026-06-30`；获取于`2026-06-30T23:20:28+08:00` | 解读正文及5张方法/结果配图；机制与结果回查固定论文，未据此扩展作者代码或运行结论 |
 
 ## 教学计算材料
 

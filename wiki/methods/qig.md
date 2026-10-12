@@ -18,7 +18,14 @@ sources:
   - raw/repositories/2026-09-21/qig/source/qmllm/quantization/qlinear.py
   - raw/repositories/2026-09-21/qig/source/qmllm/quantization/quant_funcs.py
   - raw/repositories/2026-09-21/qig/source/configs/llava_onevision/MBQ_search/7b_weight_activation.yaml
-updated: 2026-09-15
+  - raw/articles/2026-09-21/wechat-qig/article.md
+  - raw/articles/2026-09-21/wechat-qig/assets/image-4911556eccc4.png
+  - raw/articles/2026-09-21/wechat-qig/assets/image-f8c5cee88015.png
+  - raw/articles/2026-09-21/wechat-qig/assets/image-10f4ef4535a6.png
+  - raw/articles/2026-09-21/wechat-qig/assets/image-29370c576442.png
+  - raw/articles/2026-09-21/wechat-qig/assets/image-c41632afce59.png
+  - raw/papers/2026-09-21/qig/source/main.tex
+updated: 2026-10-12
 ---
 
 # QIG：以量化误差积分梯度指导 token 加权校准
@@ -131,6 +138,8 @@ $$J(\delta)=\sum_t\lambda_t(x_t^\mathsf T\delta)^2
 | OCR 校准，附录 C 表 A3 | Qwen2-VL-7B W4A8、128 个 InfoVQA 校准样本，DocVQA/ChartQA/OCRBench 平均 MBQ 77.45 → QIG 80.97 | 支持特定 OCR 校准与评测组合；不是部署后漂移或跨域再校准验证 |
 | 校准成本，表 6 | A800 80GB：8B 为 MBQ 0.55 h、QIG 0.58 h；26B 为 0.95 h、0.99 h | 在该实现/模型条件下总校准与搜索开销增量有限；不是推理时延 |
 
+表2六个模型/位宽组合的QIG−MBQ均分差为1.60、0.07、0.11、0.66、0.15、0.29个百分点，等权平均约0.48个百分点。论文与公众号的“约0.5%”可据这些表数澄清为配置平均的百分点增量；它没有按样本数加权，也不是每任务或每配置统一提高0.5%。公众号泛称量化输入基线最优时，还须保留§2的W/A与WO零基线区别，以及下文的目标消融限制。
+
 表 4 的目标消融需要保留解释限制：若其中 $f(x)-f(0)$ 或 $f(x)-f(x_q)$ 真是同一标量函数减固定常数，其梯度应与 $f(x)$ 相同。附录 B 的绝对误差和两条网络路径提供了可能不同的实际目标，但表头不足以唯一恢复实验；不能用这个表直接证明“减去基线常数使 IG 更好”。其末行与主表相应设置也未完全对齐，故不拿该数字作单变量因果证据。
 
 附录 D 四组问答展示个案行为；更长、更接近浮点答案不等于更正确，不能以少量描述例子证明普遍减少幻觉。这里只保留证据边界，不转录案例全集。
@@ -141,7 +150,7 @@ $$J(\delta)=\sum_t\lambda_t(x_t^\mathsf T\delta)^2
 
 **Weak：**完整性属于明确标量和真实路径梯度，无法直接保证绝对化、裁剪后的分配最优；公开 W/A 分支进一步存在梯度与裁剪差别。任务收益并不一致，校准分布、特殊 token、归因基线、函数门控和重构目标均影响结果。现有实验没有证明实际低比特端到端加速，也没有证明云端重新校准后下发参数的系统收益。
 
-因此可把 QIG 用作“量化误差导向的重要性估计”的深入参照；复用时优先固定目标、基线、权重后处理和代码分支，再与均匀/token/模态权重比较。归因质量、模型任务质量和 [部署执行收益](../implementation/quantized-matmul-scaling-execution.md) 应分别验证。本轮完成全文研读与指定代码路径核对，尚无模型复现结论。
+因此可把 QIG 用作“量化误差导向的重要性估计”的深入参照；复用时优先固定目标、基线、权重后处理和代码分支，再与均匀/token/模态权重比较。归因质量、模型任务质量和 [部署执行收益](../implementation/quantized-matmul-scaling-execution.md) 应分别验证。已有论文全文研读与指定代码路径核对；本次补核解读快照及相关论文证据，没有重新审计作者代码或运行模型。
 
 ## 来源身份
 
@@ -149,6 +158,7 @@ $$J(\delta)=\sum_t\lambda_t(x_t^\mathsf T\delta)^2
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
-| [Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients](https://arxiv.org/abs/2603.17809v1) | `arXiv:2603.17809v1` | — |
-| [Axiomatic Attribution for Deep Networks](https://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf) | `2017 PMLR 70, pp.3319–3328` | — |
-| [ucas-xiang/QIG](https://github.com/ucas-xiang/QIG/tree/06fa88134671647827dea08dc37c50c81e4eeac7) | `06fa88134671647827dea08dc37c50c81e4eeac7` | — |
+| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients，来源 `https://arxiv.org/abs/2603.17809v1` | `arXiv:2603.17809v1` | — |
+| Axiomatic Attribution for Deep Networks，来源 `https://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf` | `2017 PMLR 70, pp.3319–3328` | — |
+| ucas-xiang/QIG，来源 `https://github.com/ucas-xiang/QIG/tree/06fa88134671647827dea08dc37c50c81e4eeac7` | `06fa88134671647827dea08dc37c50c81e4eeac7` | — |
+| CVPR 2026｜从模态均衡到 token 敏感性建模：一文读懂 QIG 如何提升 LVLM 量化精度，来源 `https://mp.weixin.qq.com/s/LaDDYRV_vKbCY910dFJ2cg?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831805&enterid=1782831805` | `snapshot-2026-06-30`；获取于`2026-06-30T23:12:54+08:00` | 解读正文及5张方法/结果配图；机制与结果回查固定论文，未据此扩展作者代码或运行结论 |

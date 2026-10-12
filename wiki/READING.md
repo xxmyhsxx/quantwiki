@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **122 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **124 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -103,6 +103,8 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [(CVPR 2026) 从 SmoothQuant 到 MASQuant：多模态量化的新思路](methods/masquant.md)<br>snapshot-2026-06-30<br>来源 `https://mp.weixin.qq.com/s/CQhaOfG9b2PsxVO04pHe-Q?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831938&enterid=1782831938` | 正文及5张方法/结果配图；回查固定论文相关方法/表；MAS/CMC主线及图1/4、表1–3；核Opt.消融、层/通道主导及白化条件 | [方法页](methods/masquant.md)已承接机制；补消融或百分点口径，保留文章的概括边界 | 未获取现行网页；封面/广告不作研究证据，未逐点重建图或重审全部作者代码/论文；无模型/硬件复现 | [2026-10-12](LOG.md#2026-10-12--masquantqig-解读快照核对与独立评审) |
+| [CVPR 2026｜从模态均衡到 token 敏感性建模：一文读懂 QIG 如何提升 LVLM 量化精度](methods/qig.md)<br>snapshot-2026-06-30<br>来源 `https://mp.weixin.qq.com/s/LaDDYRV_vKbCY910dFJ2cg?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831805&enterid=1782831805` | 正文及5张方法/结果配图；回查固定论文相关方法/表；token归因/IQR/CWE主线及图2、表1–4；核六配置均分、W/A与WO基线及原表目标限制 | [方法页](methods/qig.md)已承接机制；补消融或百分点口径，保留文章的概括边界 | 未获取现行网页；封面/广告不作研究证据，未逐点重建图或重审全部作者代码/论文；无模型/硬件复现 | [2026-10-12](LOG.md#2026-10-12--masquantqig-解读快照核对与独立评审) |
 | PyTorch C++ / CUDA extensions and custom operators（`https://docs.pytorch.org/docs/2.14/cpp_extension.html`）<br>cpp-extension-2.14; custom-ops-snapshot-2026-10-04；`pytorch-cpp-cuda-operators-snapshot-2026-10-04` | 两个官方页面的编译、注册、加载、FakeTensor 与梯度职责 | [CUDA 算子的编写、编译与 PyTorch 接入](implementation/cuda-operator-build-and-integration.md) | 未编译示例或验证 ABI/backward | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
 | Block Scaled Matrix Multiplication — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/10-block-scaled-matmul.html`）<br>snapshot-2026-07-02；`block-scaled-matrix-multiplication-triton-documentation-snapshot-2026-07-02` | FP4/FP8 与 E8M0、K packing、scale 重排、descriptor 与累加/输出契约 | [块缩放矩阵乘：FP4/FP8 编码、Scale 布局与 Triton 调用](implementation/block-scaled-matmul-execution.md) | 未执行教程或测 GPU；硬件入口与实验性模拟分开 | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
 | 2.3. Writing SIMT Kernels — CUDA Programming Guide（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html`）<br>snapshot-2026-07-02；`2-3-writing-simt-kernels-cuda-programming-guide-snapshot-2026-07-02` | SIMT、线程与内存规则及 CUDA 编写/接入相关段落 | [CUDA 算子的编写、编译与 PyTorch 接入](implementation/cuda-operator-build-and-integration.md)；[Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 局部文档核对，不表示整个 CUDA 文档已读 | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
@@ -244,9 +246,9 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下107个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下105个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；QuIP#所选E8P12的逻辑/物理码、保存加载与单行/多行消费已接续；SpQR所选两级尺度/保护与旧恢复/3bit优化格式已接续，第6批完成；第7批QSLAW论文/所选uniform实现已整合，补尺度作用、数据阶段及浮点恢复边界；SmoothQuant+论文已补通道/MLP融合、评测输入校准与W4A16服务边界；VEQ论文已补专家目标/亲和曲率及其条件；下一项MASQuant/QIG解读文章，再接第8–9批 P1；具体优先缺口见 SELF（`SELF.md#6-下一步建设与维护`）。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；QuIP#所选E8P12的逻辑/物理码、保存加载与单行/多行消费已接续；SpQR所选两级尺度/保护与旧恢复/3bit优化格式已接续，第6批完成；第7批QSLAW论文/所选uniform实现已整合，补尺度作用、数据阶段及浮点恢复边界；SmoothQuant+论文已补通道/MLP融合、评测输入校准与W4A16服务边界；VEQ论文已补专家目标/亲和曲率及其条件；MASQuant/QIG解读已回查，第7批完成；下一项第8批CalibQuant，再接低比特KV与第9批评测协议；具体优先缺口见 SELF（`SELF.md#6-下一步建设与维护`）。
 
 ### 论文（42条）
 
@@ -295,7 +297,7 @@ updated: 2026-10-12
 | Query Independent Variable Rate Visual Token Coding（`https://arxiv.org/abs/2610.00204v1`） | `arXiv:2610.00204v1` |
 | CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding（`https://arxiv.org/abs/2609.39924v1`） | `arXiv:2609.39924v1` |
 
-### 文章与文档（53条）
+### 文章与文档（51条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -334,8 +336,6 @@ updated: 2026-10-12
 | Matrix Multiplication — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html`） | `snapshot-2026-07-02` |
 | Persistent Matmul — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/09-persistent-matmul.html`） | `snapshot-2026-07-02` |
 | Release v0.26.0 · vllm-project/vllm · GitHub（`https://github.com/vllm-project/vllm/releases/tag/v0.26.0`） | `snapshot-2026-08-20` |
-| (CVPR 2026) 从 SmoothQuant 到 MASQuant：多模态量化的新思路（`https://mp.weixin.qq.com/s/CQhaOfG9b2PsxVO04pHe-Q?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831938&enterid=1782831938`） | `snapshot-2026-06-30` |
-| CVPR 2026｜从模态均衡到 token 敏感性建模：一文读懂 QIG 如何提升 LVLM 量化精度（`https://mp.weixin.qq.com/s/LaDDYRV_vKbCY910dFJ2cg?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831805&enterid=1782831805`） | `snapshot-2026-06-30` |
 | 【2026年更新版】大模型研讨课第九期丨大模型系统软件（`https://www.bilibili.com/video/BV1R7jc6qEmn/`） | `page-description-snapshot-2026-09-24; BV1R7jc6qEmn` |
 | Learning CUDA by optimizing softmax: A worklog（`https://maharshi.bearblog.dev/optimizing-softmax-cuda/`） | `indexed-text-snapshot-2026-09-24` |
 | Supplementary Material for Lectures（`https://github.com/gpu-mode/lectures/blob/77a8df418834e5789c12da23e7d2719e0efabef1/README.md`） | `77a8df418834e5789c12da23e7d2719e0efabef1` |
