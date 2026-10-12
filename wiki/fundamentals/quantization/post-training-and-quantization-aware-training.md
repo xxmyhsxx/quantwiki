@@ -27,7 +27,12 @@ sources:
   - raw/papers/2026-09-21/q-vlm/paper.pdf
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-updated: 2026-10-11
+  - raw/papers/2026-09-21/multimodal-qat/paper.pdf
+  - raw/papers/2026-09-21/multimodal-qat/source/camera-ready.tex
+  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
+  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
+  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py
+updated: 2026-10-12
 ---
 
 # PTQ、QAT 与代理梯度
@@ -189,6 +194,22 @@ $$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
 
 对无偏条件噪声的恒等STE–SGD、合适固定步长，重构误差进入联合驻点界的平均惩罚；要控制最终部署模型的函数值还需额外全局PL条件及终点误差。主实验AdamW的收益需要实验支持，不能套用SGD保证。局部损失差近似使用 $H$，梯度差平方线性化使用 $H^2$，两者需要上述控制条件；任意把敏感度再平方不构成更准确的Hessian。降低代理上界也不证明每步真实低比特损失单调下降。（QUASAR v1 §5、附录A。）
 
+### 3.5 学习尺度前，先确定它进入哪一侧
+
+“每组一个可学习尺度”不唯一地定义前向。以固定浮点w、基础步长Δ>0和整数零点z为例，下面三种计算图调整的对象不同：
+
+| 前向 | 尺度改变什么 | 非饱和内部的尺度导数/代理 |
+| --- | --- | --- |
+| $d=a(q-z)$，q/z固定 | 合法码的恢复值 | 真实导数q−z，无需通过舍入 |
+| $d=a[\operatorname{round}_{STE}(w/a)+z-z]$ | 舍入与恢复同时变 | 舍入代理为round(w/a)−w/a |
+| $d=\Delta[\operatorname{round}_{STE}(w/(\Delta a))+z-z]$ | 进入固定网格的权重坐标 | 舍入代理为−w/a² |
+
+中间行按该简化零点抵消和不含裁剪边界的图展开；实际有clip、尺度参数化、整数码更新或梯度归一化时必须回到相应图。前两行分别对应固定码尺度优化和常见步长学习的区别；[QSLAW所选uniform](../../implementation/qslaw-scale-learning-and-float-export.md#3-前向与反向的量不同)采用第三种：除以Δa，最后只乘Δ，码在每次前向重算。
+
+第三种硬前向在码不变时真实导数为0，−w/a²来自STE链式法则，不能用有限差分把两者认成一致。整理者例w=1.2、Δ=0.5、z=2，a在1附近的小范围内给d=1，硬函数不变；STE在a=1给−1.2。a=2则给d=0.5，而不是把原恢复值再乘2。它也没有成对的输入补偿，不是自动保持WX的等价通道变换。
+
+学习目标决定这些自由度是否有用；参数数目减少并不免除整网反向或浮点基座成本。若导出只写恢复浮点值到Linear，质量模拟与低位驻留/执行仍是两个验证目标。（[QSLAW v1](https://arxiv.org/abs/2408.03735v1)式7–8；固定代码quantizer.py、utils.py、replace.py；计算图导数和算例为整理者展开。）
+
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
@@ -218,6 +239,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 > 来源维护（2026-09-21）：上列固定 commit 的外部代码引用对应已移除的本地快照；保留原版本身份，本轮未重新审查相关代码结论。
 
 ## 来源身份
+
+- [QSLAW v1](https://arxiv.org/abs/2408.03735v1)及[所选实现](https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802)；§3.5比较尺度位置/整数码更新与STE，导数和算例为整理者展开。
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
 
