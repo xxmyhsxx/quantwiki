@@ -39,7 +39,9 @@ sources:
   - raw/papers/2026-10-07/pivot-q/paper.pdf
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/selector.py
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/train.py
-updated: 2026-10-11
+  - raw/papers/2026-09-21/smoothquant-plus/paper.pdf
+  - raw/papers/2026-09-21/smoothquant-plus/source/rsc.tex
+updated: 2026-10-12
 ---
 
 # 校准数据与量化范围选择
@@ -180,6 +182,12 @@ $$p_{\pi,\theta}(u)=\sum_s\pi(s)p_\theta(u\mid s).$$
 
 教学例：两类种子等概率，生成目标语言的条件概率分别为0.9和0.2，则总体概率为0.55；只保留第一类种子时变成0.9，而非必然为1。均匀选语言也不等于均匀选其词表项，更不保证按训练语料比例生成。Norm Tweaking表8受限种子改善所列生成基线，但未全面超过各评测域的真实校准数据；不能由此认定生成语料不存在偏差。原模型未覆盖的知识也不会因种子重加权自动得到补足。
 
+### 5.3 使用评测输入校准时，要保留选择边界
+
+没有使用答案标签，也可能已针对评测输入选择量化配置。[SmoothQuant+](../methods/smoothquant-plus.md) v1用HumanEval的164个题目描述统计通道最大值并搜索α，再用同一基准比较校准集和网格间隔。这与在未见输入上作独立测试不同；它支持已知prompt集合的适配，未单独验证新任务或新分布。
+
+需分别记录输入是否参与统计、标签/教师是否参与优化，以及任务分数是否参与最终配置选择。论文称最小化“全模型量化损失”时，还要明确比较张量、归约和量化前缀；仅有单层平方输出差不足以补出最终logit MSE。表3显示校准集有影响，但子集规模/预处理不充分时，不能将差异全部归因于语料名称。（v1 §2.2、§3.1、§3.4、表3–4。）
+
 ## 6. 图文校准增加的是数据与目标条件
 
 [视觉语言模型](../fundamentals/model/vision-language-model-tokens-and-quantization.md) 沿用前述网格和误差基础，但同一校准序列含有视觉、提示和回答等不同位置。必须记录图像处理后的 token 数、模板、截断、padding、回答是否进入输入，以及重构 mask 与交叉熵标签的区别；不能把所有非视觉位置一概视作同一监督对象。
@@ -209,6 +217,8 @@ SpinQuant 表 11 在所测模型中，128 与 800 样本的 PPL 都约 6.2，100
 白化补偿还使用激活二阶矩，见 [激活加权低秩近似](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md)。校准未覆盖的方向既可能影响数值求逆，也可能在部署数据上突然重要。需要记录变换学习与补偿统计分别使用的数据及模型状态；不能只记录“128 个样本”而省略模态组成、有效 token 数与测试独立性。MASQuant 的公开音频数据路径存在测试来源待核对项，具体证据与未确定部分在其方法页保留。
 
 [QERA](../methods/qera.md) v2 §3 把完整二阶矩与逐通道 RMS 分别用于 exact 和 approx 补偿。统计应保留输入均值的贡献，不能把未中心化二阶矩替换成协方差，也不能把 RMS 替换成标准差。图 3 的样本量增加后 PPL 改善是特定实验观察，不是任务质量单调改善定理。附录 A.6 中，SST2 校准与 WikiText2 校准造成不同训练曲线；作者将原因假设为 padding 比例及预处理差异，尚未隔离验证该因果解释。实际复用需要核对哪些位置进入统计，以及下游输入是否仍对应所估计的分布。
+
+[SmoothQuant+](../methods/smoothquant-plus.md) v1表4还显示，α搜索从0.05细化到0.01后，13B代理loss从0.00399降到0.00393，HumanEval pass@1却从37.80%降到33.54%；34B亦出现同向差异。代理更低与任务更好是两个目标，较细候选网格只能在目标/候选/实现一致时扩大搜索空间，不能自动保证任务质量。这是原文所报消融，不是本轮运行结果。
 
 ## 9. 归因目标、数据混合与位宽选择
 
@@ -346,6 +356,8 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 锚点本身也须记录来源与刷新：PIVOT-Q 正文称原训练数据集，主代码却采 clean LIBERO 的学生短轨迹并存入 replay；这项差异随方法页保留。范围选择、状态选择和行为约束是相连但不同的优化自由度。
 
 ## 来源身份
+
+- SmoothQuant+ v1，来源 `https://arxiv.org/abs/2312.03788v1`，arXiv:2312.03788v1；§5.3与§8引用HumanEval输入校准/配方选择及代理loss与任务分数差异。
 
 - [Norm Tweaking: High-performance Low-bit Quantization of Large Language Models](https://arxiv.org/abs/2309.02784v2)，`arXiv:2309.02784v2`；§3校准生成、表1/8；§5.2混合公式与概率例为整理者展开。
 
