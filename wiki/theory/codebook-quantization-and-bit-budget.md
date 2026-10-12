@@ -29,7 +29,7 @@ sources:
   - raw/repositories/2026-09-21/spqr/source/convert_legacy_model_format.py
   - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/common.cuh
   - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda.cpp
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # 码本量化：标量、向量、加性表示与位宽预算
@@ -95,7 +95,7 @@ AQLM 使用残差 K-means 初始化，随后交替更新索引和码本。原文
 
 | 表示 | 平均 bit/weight | 含义 |
 | --- | --- | --- |
-| AQLM，组宽 $g$，$M$ 个 $2^B$ 项 FP16 码本 | $MB/g+16gM2^B/(mn)+16/n$ | 索引 + 层码本 + 行尺度 |
+| AQLM，每输出行沿输入分组、组宽 $g$，$M$ 个 $2^B$ 项 FP16 码本 | $MB/g+16gM2^B/(mn)+16/n$ | 索引 + 层码本 + 每行一个 FP16 尺度 |
 | SqueezeLLM，逐输出行 $2^b$ 项 FP16 表 | $b+16\cdot2^b/n$ | 主体索引 + 每行 LUT，不含稀疏 |
 | SpQR，主体 $b_w$、一级统计 $b_q$、两级组宽 $\beta_1,\beta_2$ | $b_w+2b_q/\beta_1+64/(\beta_1\beta_2)$ | 主体 + 量化 scale/zero + 四个 FP16 二级参数，不含稀疏 |
 
@@ -282,4 +282,4 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 - TurboQuant（`https://arxiv.org/abs/2504.19874v1`），v1；§3–4，分布码本、残差分数估计与位宽边界。
 - NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1；§3–4、附录 B/G/H，查询度量、分组与实际码本成本。
 
-- §10–12 依据 TurboQuant v1 §2–3 的 Lloyd–Max/高分辨率讨论与 NOVA-KV v1 附录 G 的 Gaussian 分组模型展开；条件均值、标量信息下界、中心密度及非负预算例子为整理者推导。不采用 TurboQuant 的球面 Shannon 下界，不把连续代理当成有限码本可达性证明。
+- §10–12 依据 TurboQuant v1 §2–3 的 Lloyd–Max/高分辨率讨论与 NOVA-KV v1 附录 G 的 Gaussian 分组模型展开；条件均值、标量信息下界、中心密度及非负预算例子为整理者推导。
