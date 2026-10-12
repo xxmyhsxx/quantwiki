@@ -75,7 +75,7 @@ generate_until的process_results把过滤后的字母与doc.answer交给exact_ma
 
 响应缓存CachingLM以`hash_args(method, req.args)`索引指定数据库；key不含模型权重/量化配置身份。相同请求若让浮点与量化模型共用DB，可直接读到先前输出。隔离夹具用dict和stub LM核到第二模型未被调用；这是缓存主链验证，不是实际数据库/模型评测。`do_sample=true`读取时绕过缓存，源码随后仍可写入该请求结果；不能仅凭采样设置推断数据库不存它。（`api/model.py`。）
 
-量化对照宜隔离缓存，并保留参考/压缩版本、最终任务配置、数据/提示hash、实际args、resps、filtered_resps、逐例分数和有效分母。`log_samples`打开时evaluate会返回doc/target、arguments、原始/过滤响应、filter/指标及doc/prompt/target hash；模型配置身份和有效分母还须结合完整结果记录。返回dict不证明文件已持久化，应由运行任务核保存产物。模型真实质量与[误差诊断](quantization-error-diagnosis.md)共同判断，不能用夹具通过替代业务结果。
+量化对照宜隔离缓存，并保留参考/压缩版本、最终任务配置、数据/提示hash、实际args、resps、filtered_resps、逐例分数和有效分母。`log_samples`打开时evaluate会返回doc/target、arguments、原始/过滤响应、filter/指标及doc/prompt/target hash；模型配置身份和有效分母还须结合完整结果记录。运行任务需保存这些返回结果，供复核输入、计分和缓存是否匹配。
 
 ## 来源身份与验证范围
 

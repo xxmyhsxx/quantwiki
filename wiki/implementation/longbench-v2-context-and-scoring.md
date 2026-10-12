@@ -67,4 +67,4 @@ RAG以GLM-4-9B tokenizer切512-token块，Zhipu Embedding-3编码“问题+选�
 
 ## 来源身份
 
-LongBench v2: Towards Deeper Understanding and Reasoning on Realistic Long-context Multitasks，`arXiv:2412.15204v2`，`https://arxiv.org/abs/2412.15204v2`。本次研读摘要、§3–4、结论/限制、附录B/D/E及C.3开头说明，回查PDF1–9、24–26共12页和表1–5/图1–4。没有逐项审完整平台、全部标注指南/实例/引用或503条数据；未取得匹配作者代码、执行检索/API/模型/GPU或量化评测。
+LongBench v2: Towards Deeper Understanding and Reasoning on Realistic Long-context Multitasks，`arXiv:2412.15204v2`，`https://arxiv.org/abs/2412.15204v2`。研读摘要、§3–4、结论/限制、附录B/D/E及C.3开头说明，回查PDF1–9、24–26和表1–5/图1–4。匹配作者代码尚未核读，未运行评测。

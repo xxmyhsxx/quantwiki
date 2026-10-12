@@ -51,4 +51,4 @@ GPT-4-Turbo从开放题解中提取短答案并生成三个干扰项，再把四
 
 ## 来源身份
 
-MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark，`arXiv:2406.01574v6`，`https://arxiv.org/abs/2406.01574v6`。本次研读摘要、§3–8、附录A.1–A.2/A.4，回查PDF4–9/13–14/16共9页，表1–7及图2–5；没有逐题审12,032题、全部来源题解/24个prompt/错误案例/引用或作者实现，未运行模型/API/GPU/量化评测。所选[harness快照](lm-evaluation-harness-request-filter-and-aggregation.md#3.%20%E4%B8%A4%E4%B8%AA%E2%80%9C%E5%8F%96%E7%AC%AC%E4%B8%80%E4%B8%AA%E2%80%9D%E5%8F%91%E7%94%9F%E5%9C%A8%E4%B8%8D%E5%90%8C%E5%B1%82%E6%AC%A1)已核到单regex、首个响应和失败计零，与论文二次提取/随机兜底不同；这不代表核了论文作者实现。
+MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark，`arXiv:2406.01574v6`，`https://arxiv.org/abs/2406.01574v6`。研读摘要、§3–8、附录A.1–A.2/A.4，回查PDF4–9/13–14/16、表1–7及图2–5；未核作者实现或运行评测。所选[harness快照](lm-evaluation-harness-request-filter-and-aggregation.md#3.%20%E4%B8%A4%E4%B8%AA%E2%80%9C%E5%8F%96%E7%AC%AC%E4%B8%80%E4%B8%AA%E2%80%9D%E5%8F%91%E7%94%9F%E5%9C%A8%E4%B8%8D%E5%90%8C%E5%B1%82%E6%AC%A1)已核到单regex、首个响应和失败计零，与论文二次提取/随机兜底不同。

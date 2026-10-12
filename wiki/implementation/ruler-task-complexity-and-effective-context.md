@@ -39,7 +39,7 @@ FWE中降低α使频率更平、目标更难区分；增加输出目标或干扰
 
 §4用目标是否出现在输出中的recall-based accuracy抑制拒答/解释影响。多目标被召回比例不等于整题全对，更不控制输出多余项；公共[多目标计分](model-quality-evaluation.md#3.3%20%E5%A4%9A%E7%9B%AE%E6%A0%87%E5%8F%AC%E5%9B%9E%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%95%B4%E9%A2%98%E6%AD%A3%E7%A1%AE%E6%88%96%E8%BE%93%E5%87%BA%E7%B2%BE%E7%A1%AE)给出教学集合例子。具体字串归一化、去重和分母须核作者实现，本文没有把教学集合匹配当作其已验证parser。
 
-§4称“all models”使用vLLM/BF16/8×A100，但附录A明确把GPT-4和Gemini列为API模型。保留这一范围表述冲突，不能据主文概括认定API权重在本地运行。本项目没有执行这些模型或复现吞吐。
+§4称“all models”使用vLLM/BF16/8×A100，但附录A明确把GPT-4和Gemini列为API模型。保留这一范围表述冲突，不能据主文概括认定API权重在本地运行。
 
 ## 3. 有效长度是带阈值的离散读数
 
@@ -65,4 +65,4 @@ LWM/Mistral-v0.2在inc为69.9/55.6，dec却75.7/81.2，排名随权重翻转。�
 
 ## 来源身份
 
-RULER: What's the Real Context Size of Your Long-Context Language Models?，`arXiv:2404.06654v3`，`https://arxiv.org/abs/2404.06654v3`。本次研读摘要、§3–8、附录A概述及主模型登记、B–D与表1–9所选主试验/配置/模板，回查PDF3–10/17–18/20–23共14页；未审全部37模型、附录E/F、全部曲线数值/引用或匹配生成/解析代码，未生成评测数据、执行模型/API/GPU/量化评测。
+RULER: What's the Real Context Size of Your Long-Context Language Models?，`arXiv:2404.06654v3`，`https://arxiv.org/abs/2404.06654v3`。研读摘要、§3–8、附录A概述及主模型登记、B–D与表1–9所选主试验/配置/模板，回查PDF3–10/17–18/20–23。未核匹配的生成/解析代码或运行评测。
