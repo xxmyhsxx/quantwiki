@@ -147,6 +147,7 @@ sources: []
 | [QTIP：trellis 高维量化](methods/qtip.md) | 路径表示、Viterbi、并行位窗口解码、尾咬合与有效位宽。 |
 | [PV-Tuning：连续参数与离散选码](methods/pv-tuning.md) | 精确P/V、代理下降、稀疏Adam与实际变化限制、数据/质量/运行条件。 |
 | [LC-QAT：仿射网格与代理训练](methods/lc-qat.md) | 受约束向量表示、输入侧重排、DGE/坐标接口与数据效率边界。 |
+| [FlexQ：INT6 分组量化与二值 Tensor Core 执行](methods/flexq.md) | 6-bit配方怎样结合位平面、signed位权和group恢复，质量/速度证据各有哪些条件。 |
 | [Atom：离群通道重排、分组整数 GEMM 与服务成本](methods/atom.md) | 固定128通道保护、group恢复与KV压缩怎样连接，质量/服务测量条件各是什么。 |
 | [ResQ：高精度子空间、组内旋转与混合精度执行](methods/resq.md) | 保护信号子空间怎样连接两路GEMM，PCA能量结论与原文最优性证明怎样区分。 |
 | [LLM-MQ：候选梯度评分、稀疏保护与混合位宽 GEMV](methods/llm-mq.md) | 怎样以候选扰动的一阶投影分配2/3/4位，保护存储与T4速度证据包含什么。 |
@@ -211,6 +212,7 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
+| [FlexQ 的位平面、组恢复与所选调用接口](implementation/flexq-bitplanes-and-group-restoration.md) | 浮点模拟、signed BMMA、尺度舍入和框架接口怎样衔接，哪些导出/加载条件仍未核。 |
 | [Atom 的混合整数 GEMM 与分页 KV 读取](implementation/atom-mixed-gemm-and-paged-kv.md) | 模拟、真实整数GEMM、非对称KV及效率基准的网格/精度/状态分别是什么。 |
 | [ResQ 基底与浮点模拟量化](implementation/resq-basis-and-fake-quantization.md) | 未中心化统计、共享基底、融合/重排、QK模拟与浮点缓存怎样衔接，哪里缺真实低位执行。 |
 | [OSCAR 混合 KV 缓存执行](implementation/oscar-mixed-kv-cache-execution.md) | affine INT2码/浮点元数据、BF16 sink/recent更新、QP/HP索引、读取舍入与LSE合并怎样配套。 |

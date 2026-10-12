@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **108 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **110 条**；另有 **59 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -30,6 +30,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2)<br>arXiv:2508.04405v2 | 正文方法/实验、式1–6、表1–6、代表布局与性能图；核signed位权、group恢复、免校准与down A8配方 | [FlexQ](methods/flexq.md)；[位分解执行](implementation/quantized-matmul-scaling-execution.md#16-多位整数怎样用二值点积执行) | 原式6缺位权与代码分开说明；未逐点重建全部曲线，未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
 | [Atom: Low-bit Quantization for Efficient and Accurate LLM Serving](https://arxiv.org/abs/2310.19102v3)<br>arXiv:2310.19102v3 | 正文设计/分析、表1–4、代表性能图及必要补充；回查PDF方法、主表/消融/服务条件，核固定重排、group恢复与质量/性能协议 | [Atom](methods/atom.md)；[分组归约](implementation/quantized-matmul-scaling-execution.md#15-归约维分组为什么要在累加途中恢复尺度) | 未逐点重建全部性能曲线；正文FP16恢复/代码FP32累加分别记录，FP4为模拟；未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--atom-论文代码-ingest-与独立评审) |
 | [ResQ: Mixed-Precision Quantization of Large Language Models with Low-Rank Residuals](https://arxiv.org/abs/2412.14363v2)<br>arXiv:2412.14363v2 | 正文、必要附录A–C、表1–6/关键图；核拼接/正交平方和、未中心化PCA、证明缺口、四处投影和质量/硬件条件，回查PDF关键页 | [ResQ](methods/resq.md)；[子空间能量代理](theory/orthogonal-rotation-and-hadamard-quantization.md#10-先选高精度子空间再在组内旋转) | 不将定理4.2作为已证实际量化最优；附表未逐格重算，未运行模型/GPU或复现CUTLASS性能 | [2026-10-12](LOG.md#2026-10-12--resq-论文代码-ingest-与独立评审) |
 | [LLM-MQ: Mixed-Precision Quantization for Efficient LLM Deployment](https://neurips2023-enlsp.github.io/papers/paper_4.pdf)<br>SHA-256 9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0 | 全部5页固定Workshop PDF；核式1–5/图1–2/表1，候选梯度投影、整数预算、保护/CSR、2/3/4位载荷和GEMV/端到端条件 | [LLM-MQ](methods/llm-mq.md)；[一阶评分与余项](theory/curvature-weighted-quantization-error.md#7-候选量化扰动的一阶评分) | 文件无正文所称其他模型附录；未核作者代码/梯度校准/solver/保护与packing细节，保留展开方向和正文/表格差异；未运行模型/GPU | [2026-10-12](LOG.md#2026-10-12--llm-mq-ingest-与独立评审) |
@@ -111,6 +112,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0)<br>a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选Llama W6/group128/down A8浮点模拟、engine signed W6A6/W6A8与M1/4/8位平面、BMMA/FP16尺度恢复、默认检查与FasterTransformer wrapper/FFN调用 | [FlexQ实现](implementation/flexq-bitplanes-and-group-restoration.md)；[FlexQ](methods/flexq.md) | 未导入/安装/编译/运行；全仓、全部shape/硬件/同步、完整导出/加载与融合链未核；绝对误差门限6.5504与性能计时分开 | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
 | [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6)<br>7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选Llama校准/重排/GPTQ/浮点模拟，native 7B INT4/INT8 GEMM与FP16尺度恢复、输出非对称KV编码、paged writer/RoPE decode及默认效率脚本 | [Atom实现](implementation/atom-mixed-gemm-and-paged-kv.md)；[Atom](methods/atom.md) | 未导入/安装/编译/运行；未核全部vendor/同步/边界形状及其他模型格式；随机权重/预填充随机KV/一层缓存共享，未闭合真实权重导出与同网格质量部署 | [2026-10-12](LOG.md#2026-10-12--atom-论文代码-ingest-与独立评审) |
 | [utkarsh-dmx/project-resq](https://github.com/utkarsh-dmx/project-resq/tree/cb87d0d059455858daaa66f7410da4afebee978a)<br>cb87d0d059455858daaa66f7410da4afebee978a | 所选Llama/full_shared/pretraining_tp=1、基底统计→融合/列重排→GPTQ与A/V模拟→post-RoPE QK与eager浮点缓存；核示例W16差异及K分组限制 | [ResQ实现](implementation/resq-basis-and-fake-quantization.md)；[ResQ](methods/resq.md) | 未导入/安装/运行；其他模型、训练/attention后端未全面核；43文件快照未包含论文CUTLASS部署kernel，无packed权重/KV实测 | [2026-10-12](LOG.md#2026-10-12--resq-论文代码-ingest-与独立评审) |
 | [Vahe1994/AQLM](https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2)<br>e79a896ed6656fe4ed06193d42d004e7d0bbdbb2 | 根finetune→PV optimizer/Adam→aq/L2选码→写回；原始main→AQEngine→激活选码/逐块微调；所选PV legacy转换、HF容器与CUDA 2×8前向读取 | [PV训练与选码](implementation/aqlm-pv-training-and-code-updates.md)；[校准、转换与所选推理](implementation/aqlm-calibration-export-and-inference.md)；[二阶矩归约](theory/layer-reconstruction-second-order-compensation.md#11-二阶矩的归约与分片合并) | CPU/Numba、Triton、Turing及其他CUDA格式、全部加载/分布式组合未完整核读；保留转换入口/args元数据/逐输出组尺度/低精度舍入条件；未执行上游、编译、模型、通信或GPU | [2026-10-08](LOG.md#2026-10-08--aqlm-pv-实现-ingest)；[2026-10-11](LOG.md#2026-10-11--aqlm-原始校准转换与所选推理-ingest) |
@@ -231,11 +233,11 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下120个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下118个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文59条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；下一项FlexQ及所选实现，再接续其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；下一项Ideogram INT8/GGUF，再接SharQ与其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
-### 论文（49条）
+### 论文（48条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -249,7 +251,6 @@ updated: 2026-10-12
 | [FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness](https://arxiv.org/abs/2205.14135v2) | `arXiv:2205.14135v2` |
 | [FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning](https://arxiv.org/abs/2307.08691v1) | `arXiv:2307.08691v1` |
 | [FlashInfer-Bench: Building the Virtuous Cycle for AI-driven LLM Systems](https://arxiv.org/abs/2601.00227v1) | `arXiv:2601.00227v1` |
-| [FlexQ: Efficient Post-training INT6 Quantization for LLM Serving via Algorithm-System Co-Design](https://arxiv.org/abs/2508.04405v2) | `arXiv:2508.04405v2` |
 | [FluxBin: Flexible LUT-based Ultra-low-bit LLM Inference by Algorithm-Kernel Synergy](https://arxiv.org/abs/2608.15602v1) | `arXiv:2608.15602v1` |
 | [Formal Algorithms for Transformers](https://arxiv.org/abs/2207.09238v1) | `arXiv:2207.09238v1` |
 | [GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245v3) | `arXiv:2305.13245v3` |
@@ -347,12 +348,11 @@ updated: 2026-10-12
 | [vla.simd model bundle](https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle) | `2026-09-28 page snapshot` |
 | [TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix](https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html) | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 
-### 代码条目（18条）
+### 代码条目（17条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
 | [Dao-AILab/flash-attention](https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68) | `73c992c8ca746935548df620ef3c1b6238fe6e68` |
-| [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | `a42424d843adffebe4b28ddb62a760cb52b0d2f0` |
 | [Summer-Summer/lm-evaluation-harness](https://github.com/Summer-Summer/lm-evaluation-harness/tree/62617a8cbd7f3beddc2a9c029536e0e387976beb) | `62617a8cbd7f3beddc2a9c029536e0e387976beb` |
 | [GeeeekExplorer/nano-vllm](https://github.com/GeeeekExplorer/nano-vllm/tree/bb823b3e06983d71485a8e1f23715ebd87d98ef8) | `bb823b3e06983d71485a8e1f23715ebd87d98ef8` |
 | [xjjxmu/QSLAW](https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802) | `264dfb081c210a8bab6a3fb5707d827ade7b6802` |

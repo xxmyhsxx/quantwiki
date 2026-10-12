@@ -37,6 +37,9 @@ sources:
   - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
   - raw/papers/2026-09-21/atom/source/04_Design.tex
   - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/GEMM/DenseLayerGEMM_i4.cu
+  - raw/papers/2026-09-21/flexq/source/text/methodology.tex
+  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/flexq_bmma_kernel.h
+  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/bgemm.cuh
 updated: 2026-10-12
 ---
 
@@ -276,6 +279,19 @@ $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}.$$
 
 具体精度也需追到代码：Atom所选DenseLayerGEMM_i4.cu先以FP16相乘两侧尺度，再转float恢复INT32部分和、跨组FP32累加并输出FP16。它与论文的FP16恢复/相加描述及“先在FP32计算尺度乘积”均有区别。原生路径、元数据复制和质量模拟条件见 [Atom实现](atom-mixed-gemm-and-paged-kv.md#3-native-gemm的表示尺度和累加)。数学恒等式不消除有限精度舍入，也不证明实现已达到某个速度。
 
+## 16. 多位整数怎样用二值点积执行
+
+整数不必以同名硬件指令执行。令a、b为沿归约维K的等长整数向量，位宽分别为q、p。将多位数拆成0/1位平面后，二值矩阵乘法可计算每个位对沿K的AND-popcount，再合并位权。unsigned的第r位权为 $2^r$；signed二补码最高位为负，以B表示通用位宽，定义 $\lambda_B(r)=2^r$（非最高位）、$\lambda_B(B-1)=-2^{B-1}$。因此
+
+$$\langle a,b\rangle=\sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
+\operatorname{popcount}(a^{(r)}\land b^{(s)}).$$
+
+这里 $a^{(r)}$ 是沿K打包的第r个位平面。AND-popcount返回未加权位对内积，不直接得到多位乘积；XOR-popcount的Hamming距离又是另一操作。2-bit的−1与4-bit的−3按signed位权相乘为3，全取正位权却为39。符号位不能因量化器对称就省略。（本段为分配律教学推导；[FlexQ v2](https://arxiv.org/abs/2508.04405v2)，式1–5及所选实现temp_mul。）
+
+如果沿K有group尺度，完整输出仍需第15节的组恢复：每组位对内积乘以该组的两侧尺度，再与位权合并。尺度或位权缺失都无法恢复原整数量化乘积。不同求和次序在实数域可以交换；固定实现先用FP16相乘尺度、按组FP32累积每个位对，再做FP32位权归约并存FP16，不能由代数等价推出逐bit结果一致。
+
+W6A6/W6A8有36/48个逻辑位对，不等于启动36/48个kernel，也不等于原生INT6 MMA。位维度怎样填入8×8×128的二值指令、小batch padding、整字载荷、组尺度与warp归约共同决定成本。以6-bit载荷和每128元素一个FP16尺度为理想预算，仅为6.125 bit/元素；实际对齐、尺度复制、在线packing、FP16输出与workspace还需计费。设计与所选固定代码见[FlexQ](../methods/flexq.md)、[位平面执行](flexq-bitplanes-and-group-restoration.md)。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -308,6 +324,8 @@ $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}.$$
 | [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
 | [Atom](https://arxiv.org/abs/2310.19102v3) | arXiv:2310.19102v3 | §4.2、图8的group恢复/融合 |
 | [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选DenseLayerGEMM_i4的group恢复精度 |
+| [FlexQ](https://arxiv.org/abs/2508.04405v2) | arXiv:2508.04405v2 | 式1–6的位展开与group恢复，式6缺项分别说明 |
+| [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0) | a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选signed AND-popcount、位权及FP16尺度/FP32归约 |
 
 - [PRQuant](https://arxiv.org/abs/2609.22106v1)，arXiv:2609.22106v1；置换、残差拼接与门控 FFN。
 - [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
