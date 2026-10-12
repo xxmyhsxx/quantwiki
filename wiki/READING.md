@@ -11,7 +11,7 @@ updated: 2026-10-12
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **115 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **116 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 ## 怎样理解与维护记录
 
@@ -115,6 +115,7 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [Cornell-RelaxML/QuIP](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184)<br>ac92cfc7a22f6100009e2caf53bb72257d3f3184 | 所选OPT逐block校准/Gram、预处理与qfn=b、Balance逆序LDLQ/LDLQ_RG/lazy、postproc/error及默认浮点保存/加载；等价脚本只核配置 | [QuIP实现](implementation/quip-ldlq-and-coordinate-restoration.md)；[恢复位置与误差坐标](theory/orthogonal-rotation-and-hadamard-quantization.md#41-先恢复浮点权重与保留量化坐标分别意味着什么) | 未导入/安装/运行上游，未核完整Llama/zeroShot/allbal/ADMM或legacy Quant3/CUDA；所选路径不交付W2 packed接口；字段/统计及LDLQ_RG+lazy实参差异为静态发现，未确认历史实验使用同分支 | [2026-10-12](LOG.md#2026-10-12--quip-所选实现-ingest-与独立评审) |
 | [actypedef/SharQ](https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11)<br>3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 所选NVFP4/Llama与SHARQ_SIM、BF16准备/共享32→16权重尺度、GEMM host/epilogue及vLLM导出/默认计时；匹配CUTLASS必要类型/转换 | [SharQ实现](implementation/sharq-sparse-residual-and-shared-scales.md)；[SharQ](methods/sharq.md) | 未导入/安装/编译/运行；全vendor设备主循环/同步、全部shape/模型/专家/VLM/视频、HiF4/MXFP4 native与完整外部vLLM加载/服务未核；子模块pin依归档记录，本轮无独立Git对象/归档可重新比字节 | [2026-10-12](LOG.md#2026-10-12--sharq-论文代码-ingest-与独立评审) |
 | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b)<br>b820cc8e6f94843d32f92c8ebd7db837dae2bd8b | 本轮定向读取ggml-common.h的Q4_K/Q8_0结构、ggml-quants.c参考编码/恢复、ggml.c类型表及实际量化入口；为Ideogram的一般GGUF说法提供固定版本对照 | [GGUF格式](implementation/gguf-block-quantization-formats.md)；[Ideogram格式边界](methods/ideogram-int8-gguf.md#6-gguf格式与作者编码器贡献需区分) | 既有部署页使用范围仍未全面补核；未贯通Ideogram导出/加载，未核论文6月工具历史、整仓后端或编译/模型/GPU | [2026-10-12](LOG.md#2026-10-12--ideogram-int8gguf-ingest-与独立评审) |
 | [FlyFoxPlayer/FlexQ](https://github.com/FlyFoxPlayer/FlexQ/tree/a42424d843adffebe4b28ddb62a760cb52b0d2f0)<br>a42424d843adffebe4b28ddb62a760cb52b0d2f0 | 所选Llama W6/group128/down A8浮点模拟、engine signed W6A6/W6A8与M1/4/8位平面、BMMA/FP16尺度恢复、默认检查与FasterTransformer wrapper/FFN调用 | [FlexQ实现](implementation/flexq-bitplanes-and-group-restoration.md)；[FlexQ](methods/flexq.md) | 未导入/安装/编译/运行；全仓、全部shape/硬件/同步、完整导出/加载与融合链未核；绝对误差门限6.5504与性能计时分开 | [2026-10-12](LOG.md#2026-10-12--flexq-论文代码-ingest-与独立评审) |
@@ -237,9 +238,9 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下114个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下113个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；下一项QuIP、QuIP#、SpQR所选实现，再接其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；下一项QuIP#、SpQR所选实现，再接其余 P1 批次；具体优先缺口见 [SELF](../SELF.md#6-下一步建设与维护)。
 
 ### 论文（45条）
 
@@ -349,7 +350,7 @@ updated: 2026-10-12
 | [vla.simd model bundle](https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle) | `2026-09-28 page snapshot` |
 | [TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix](https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html) | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 
-### 代码条目（16条）
+### 代码条目（15条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -357,7 +358,6 @@ updated: 2026-10-12
 | [Summer-Summer/lm-evaluation-harness](https://github.com/Summer-Summer/lm-evaluation-harness/tree/62617a8cbd7f3beddc2a9c029536e0e387976beb) | `62617a8cbd7f3beddc2a9c029536e0e387976beb` |
 | [GeeeekExplorer/nano-vllm](https://github.com/GeeeekExplorer/nano-vllm/tree/bb823b3e06983d71485a8e1f23715ebd87d98ef8) | `bb823b3e06983d71485a8e1f23715ebd87d98ef8` |
 | [xjjxmu/QSLAW](https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802) | `264dfb081c210a8bab6a3fb5707d827ade7b6802` |
-| [Cornell-RelaxML/QuIP](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184) | `ac92cfc7a22f6100009e2caf53bb72257d3f3184` |
 | [Cornell-RelaxML/quip-sharp](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98) | `1d8f873e9a2a8b86b12bb1064c312c5689b77d98` |
 | [QwenLM/Qwen2.5-Omni](https://github.com/QwenLM/Qwen2.5-Omni/tree/d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42) | `d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42` |
 | [QwenLM/Qwen3-VL](https://github.com/QwenLM/Qwen3-VL/tree/96588727e44c78b25ba03ea03b8e12f7e64fd0da) | `96588727e44c78b25ba03ea03b8e12f7e64fd0da` |

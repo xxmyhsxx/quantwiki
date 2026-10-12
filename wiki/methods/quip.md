@@ -9,7 +9,12 @@ tags:
 sources:
   - raw/papers/2026-09-21/quip/paper.pdf
   - raw/papers/2026-09-21/quip/source.eprint
-updated: 2026-09-22
+  - raw/repositories/2026-09-21/quip/source/opt.py
+  - raw/repositories/2026-09-21/quip/source/method.py
+  - raw/repositories/2026-09-21/quip/source/bal.py
+  - raw/repositories/2026-09-21/quip/source/quant.py
+  - raw/repositories/2026-09-21/quip/source/vector_balance.py
+updated: 2026-10-12
 ---
 
 # QuIP：非相干处理与 LDLQ 二阶量化
@@ -75,10 +80,12 @@ $$
 
 1. 从校准输入估计 $H$ 并加阻尼。先做对角平衡 $W\leftarrow WA$、$H\leftarrow A^{-1}HA^{-1}$，其中 $A_{ii}=(H_{ii}/(W^\mathsf TW)_{ii})^{1/4}$；这是额外启发式，退化通道需要数值处理。
 2. 采样随机正交 $U_o,V_o$，得到 $\widetilde W=U_oWA V_o^\mathsf T$ 与相应 $\widetilde H$。原始 QuIP 用两个较小正交矩阵的 Kronecker 乘积，并加入随机置换。
-3. 以 $s=\rho\|\widetilde W\|_F/\sqrt{mn}$ 定范围，映射到 $[0,2^b-1]$，执行带裁剪的 LDLQ。可选贪心坐标更新继续降低代理误差；不能把这个选项与所有结果混同。
-4. 保存压缩权重以及恢复所需的尺度和变换信息。推理的数学形式为 $y\approx U_o^\mathsf T\widehat{\widetilde W}(V_oA^{-1}x)$，这里 $\widehat{\widetilde W}$ 已恢复为实际数值单位。
+3. 以 $s=\rho\|\widetilde W\|_F/\sqrt{mn}$ 定范围，映射到 $[0,2^b-1]$，执行带裁剪的 LDLQ。可选贪心坐标更新用于进一步优化代理误差；是否单调降低需结合网格和实际更新条件，所选实现的轮末裁剪与残差同步见[实现页](../implementation/quip-ldlq-and-coordinate-restoration.md#3-网格逆序反馈与可选贪心分别是什么)。不能把这个选项与所有结果混同。
+4. 数学上的压缩推理可保留低位载荷及恢复所需的尺度和变换信息。其形式为 $y\approx U_o^\mathsf T\widehat{\widetilde W}(V_oA^{-1}x)$，这里 $\widehat{\widetilde W}$ 已恢复为实际数值单位。
 
 随机种子可以减少变换的存储，却不会消除执行成本。两个均衡 Kronecker 因子的向量变换约需 $O(n\sqrt n)$，仍须与权重解码、输入变换和输出变换一起实现。[正交旋转页](../theory/orthogonal-rotation-and-hadamard-quantization.md) 解释浮点等价与量化误差为何能同时成立；[QuIP#](quip-sharp.md) 进一步改变变换与码本以降低这些代价。
+
+固定ac92cfc7的所选OPT/Balance实现采用另一条保存路径：先在变换坐标内按四点网格做2bit近似，再逆投影/逆缩放成稠密浮点权重，默认保存普通state_dict；pack3调用被注释。代码还采用下三角/逆序LDLQ，并有meta flag字段连接和误差统计坐标差异。因此本页的压缩推理形式、理论保证和论文原始性能，应与[所选实现的校准、反馈和保存](../implementation/quip-ldlq-and-coordinate-restoration.md)分开核对；本轮只读代码，未运行模型或验证历史实验采用同一分支。
 
 ## 5. 实验怎样支持机制
 
@@ -89,3 +96,5 @@ QuIP v2 的 OPT-30B 消融使用 C4 的 128 段、每段 2048 token 校准；逐
 ## 来源身份
 
 [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2)，arXiv:2307.13304v2。使用正文、算法与相关理论/实验补充材料；公式依据归档 TeX 核对，本文统一了三角分解和损失尺度的记法。
+
+[固定QuIP实现](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184)，ac92cfc7a22f6100009e2caf53bb72257d3f3184；本轮核所选OPT/Balance校准、预处理、逆序LDLQ与默认浮点保存/加载，其余分支与运行未核。

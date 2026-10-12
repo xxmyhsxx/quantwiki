@@ -255,6 +255,7 @@ sources: []
 | [权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | AWQ/TinyChat 与现代 Marlin 的打包、元数据和设备消费；区分对称 GPTQ 固定偏置与非对称 AWQ 整数零点，以及尺度、MMA、归约和输出顺序。 |
 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) | 多模态模型压缩的评测常停在几个 VQA 分数上。 |
 | [量化误差诊断与验证](implementation/quantization-error-diagnosis.md) | 量化后结果变差，可能来自图变换错误、网格与分布不匹配、局部误差传播，也可能来自整数后端与模拟规则不一致。 |
+| [QuIP 的逆序 LDLQ、坐标恢复与浮点保存](implementation/quip-ldlq-and-coordinate-restoration.md) | 所选OPT怎样累计Gram、做预处理/逆序反馈、还原保存，压缩与诊断需核哪些边界。 |
 | [AQLM 的 PV 训练与选码](implementation/aqlm-pv-training-and-code-updates.md) | 恢复权重梯度、连续目标、新码本时序、候选比例/trust范围、FSDP与数据/保存接口。 |
 | [AQLM 的校准、转换与所选推理](implementation/aqlm-calibration-export-and-inference.md) | token 二阶矩、激活选码、条件导出、有符号码容器与 CUDA 2×8 读取／舍入。 |
 | [AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang](implementation/awq-implementation.md) | 方法页回答 AWQ 为什么这样设计、证据支持什么；本页回答代码层面的事情：量化脚本产出什么形状的权重、打包约定是什么、内核从哪里进入、同一个 AWQ checkpoint 在 vLLM 与 SGLang 里各走哪条路径。 |

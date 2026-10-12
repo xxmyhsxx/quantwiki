@@ -28,6 +28,9 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
   - raw/papers/2026-10-07/centriq/paper.pdf
   - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
+  - raw/repositories/2026-09-21/quip/source/method.py
+  - raw/repositories/2026-09-21/quip/source/bal.py
+  - raw/repositories/2026-09-21/quip/source/opt.py
 updated: 2026-10-12
 ---
 
@@ -120,6 +123,24 @@ QuaRot §4 Stage 1a 将全局残差坐标变换折叠到权重中。Stage 1b 则
 同一理想Hadamard也不保证不同浮点执行顺序得到相同码。[SAW所选融合writer](../methods/saw-int4.md#42-写入先核舍入再核码与元数据)先在FP32中预缩放并作FWHT，旋转结果经BF16舍入后才取范围；邻接未融合支路先做BF16预缩放。所选GQA decode对Q采用配套FP32预缩放/FWHT后回BF16，并在每个非空split各自计算；旋转已融合，不表示每请求只计算一次。精确算术下的正交点积关系与这些舍入、量化和调度条件应分开核对。（`fused_hadamard_int4_kv.py:150–191`；`memory_pool.py:1161–1189`；`decode_attention.py:970–998`。）
 
 同样的旋转坐标也可以在读取端还原。[SAW 所选 FA3 prefill](../methods/saw-int4.md#45-fa3-prefill从分页-int4-恢复到原-q-坐标)把量化 K 恢复为 FP32 行 $r$，在 FP32 内逆 Hadamard 后转 BF16，配原 Q；decode 则用旋转后的 Q 配旋转坐标内的 K。归一化对称 Hadamard 满足 $(QH)r^{\mathsf T}=Q(rH)^{\mathsf T}$，说明理想点积为何相同；恢复与逆旋转之间是否先舍入、Q 在何处舍入，则决定实际低精度路径。这里没有证明两个 attention 实现逐位相同。（`flatten_kv_cache.py:190–219`；`decode_attention.py:970–998,1047–1070`。）
+
+### 4.1 先恢复浮点权重与保留量化坐标分别意味着什么
+
+本小节采用列输入约定，令 $W\in\mathbb R^{m\times n}$，U/V为输出/输入维正交矩阵，A为正的可逆对角尺度。处理坐标权重为 $\widetilde W=UWA V^\top$，量化近似为 $Q(\widetilde W)$。两种执行位置的理想关系为
+
+$$W_{restored}=U^\top Q(\widetilde W)VA^{-1},\qquad
+W_{restored}x=U^\top Q(\widetilde W)(VA^{-1}x).$$
+
+左边可以离线恢复整个浮点矩阵，继续让普通Linear读取；右边可以保留处理坐标的低位载荷及恢复元数据，在推理时变换输入/输出。实数等价不定义存储相同，也不保证有限精度求和/舍入相同。恢复后的每个元素是多个码值的组合，通常不再位于原小网格；W2量化近似的质量证据不能直接说明保存文件或GPU权重只占2bit。
+
+误差统计也必须成对换坐标。若 $E_t=Q(\widetilde W)-\widetilde W$，原输入二阶矩为H，处理统计为 $H_t=VA^{-1}HA^{-1}V^\top$，则
+
+$$\operatorname{tr}(E_rHE_r^\top)=\operatorname{tr}(E_tH_tE_t^\top),
+\qquad E_r=U^\top E_tVA^{-1}.$$
+
+用处理残差E_t配原统计H一般不满足该关系。输出U的正交性和A的可逆性都是前提；阻尼/归一化及FP16恢复也需另记，不把代数恒等式称为逐bit实现证明。
+
+固定QuIP的OPT/Balance路径先postproc还原稠密浮点权重，再保存普通state_dict；而error_compute的局部残差仍在处理坐标。这说明需要沿实际对象/保存/消费路径核对，不能从有quantizer或pack函数推出已交付压缩接口。（[固定QuIP](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184)，method.py的preproc/postproc/error_compute、bal.py的fasterquant、opt.py的save/load；[所选实现](../implementation/quip-ldlq-and-coordinate-restoration.md)。）
 
 ## 5. 旋转也可能制造新的权重离群值
 
@@ -224,6 +245,7 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 | [jindajia/sglang-fork](https://github.com/jindajia/sglang-fork/tree/0fcc241961f9c79c27f6bad9a456bf10c8554a84) | `0fcc241961f9c79c27f6bad9a456bf10c8554a84` | 所选SAW融合writer/Q读取及prefill逆旋转的预缩放与舍入顺序 |
 | [ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs](https://arxiv.org/abs/2605.10793v2) | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
 | [OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting](https://arxiv.org/abs/2501.13987v1) | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
+| [固定QuIP实现](https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184) | `ac92cfc7a22f6100009e2caf53bb72257d3f3184` | 所选预处理/postproc、误差统计与默认浮点保存；§4.1等式为教学展开 |
 | [QuIP: 2-Bit Quantization of Large Language Models With Guarantees](https://arxiv.org/abs/2307.13304v2) | `arXiv:2307.13304v2` | 量化机制与适用条件 |
 | [QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks](https://arxiv.org/abs/2402.04396v2) | `arXiv:2402.04396v2` | 量化机制与适用条件 |
 | [SpinQuant: LLM quantization with learned rotations](https://arxiv.org/abs/2405.16406v4) | `arXiv:2405.16406v4` | — |
