@@ -252,6 +252,7 @@ sources: []
 | [算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 怎样选择验证用例，并正确解释 GPU 计时和吞吐。 |
 | [GGUF 与块量化存储格式](implementation/gguf-block-quantization-formats.md) | 论文里的量化方案要落到文件，还需要回答一组工程问题：权重怎么分块、每块保存哪些元数据、文件如何描述张量与模型、量化工具怎样按张量选择格式、以及校准统计在哪里参与。 |
 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | 量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。 |
+| [FlashInfer 分页 KV：写入契约、布局与 NVFP4 尺度](implementation/flashinfer-paged-kv-write-and-nvfp4.md) | 页指针、追加位置、NHD/HND和交织尺度怎样交给匹配reader。 |
 | [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md) | 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。 |
 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md) | 权重量化的加速通常以「生成阶段受权重读取带宽限制」为前提。 |
 | [量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) | 同样写着低比特量化，实际可能是浮点模拟、压缩权重配合即时反量化，或整数输入参与矩阵乘法。 |

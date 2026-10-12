@@ -37,6 +37,9 @@ sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
   - raw/papers/2026-09-21/plug-and-play-kv-quantization/paper.pdf
+  - raw/articles/2026-09-21/flashinfer-append-paged-kv-cache/article.md.txt
+  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/article.md.txt
+  - raw/articles/2026-09-21/flashinfer-nvfp4-kv-cache/article.md.txt
 updated: 2026-10-12
 ---
 
@@ -114,6 +117,12 @@ SAW-INT4 把生产推理引擎的约束归纳为两条，并据此筛掉了若�
 在作者讨论的统一页池与融合内核假设下，逐 token 量化避免跨页统计，是集成成本较低的选择。这是 SAW-INT4 的工程论证，不是所有分页实现都不可能支持其他粒度的定理；额外缓冲、元数据和专门内核的成本需要另行测量。旋转用于在所选布局内改善分布。
 
 这也解释了 KIVI 与 SAW-INT4 的分工差异：前者用逐通道键加残差窗口换取 2 bit 级别的压缩，后者指出混合精度残差会增加其分页布局的集成成本，转而在 4 bit 上追求零服务开销。两者的取舍对象不同，不能只比位宽。
+
+### 5.1 页表和数值写入分别由谁负责
+
+FlashInfer 0.6.14的`append_paged_kv_cache`原位写入已有页，调用方须先分配足够空间，并使页索引、页指针和末页长度反映**追加后的状态**。页指针的差是页数，ragged输入指针的差是token数；请求的非空长度为P(n−1)+m，满页时m=P。逻辑追加位置也须从旧长度开始，不能把页表更新当成数据已写入，或把一次成功调用当成后续读取正确。
+
+[FlashInfer分页写入与NVFP4](../implementation/flashinfer-paged-kv-write-and-nvfp4.md)核对地址示例、NHD/HND轴序、分段mask以及专用转换产物。其NVFP4输出包含FP4码、K/V块尺度和全局恢复因子，V尺度还有4-token交织；writer和reader须匹配这些协议。分页接口本身不会补出CalibQuant/VidKV的量化机制、保护索引或幅值恢复，也不能从位宽推导实际显存/速度。
 
 ## 6. 旋转：不改布局的精度补偿
 
@@ -281,3 +290,5 @@ VidKV算法1的prefill返回原始K/V，压缩状态用于后续decode；decode�
 - Kitty 官方实现（`https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1`），固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
 
 - Plug-and-Play 1.x-Bit KV Cache Quantization for Video Large Language Models（`https://arxiv.org/abs/2503.16257v2`），`arXiv:2503.16257v2`；式5–7、算法1–3，三值/FFT预算和残差后整段K重新量化的证据范围。
+
+- FlashInfer 0.6.14三份官方文档，`snapshot-2026-07-02`；append调用前页表状态、KV轴序及NVFP4产物接口，具体身份与阅读范围见实现页。

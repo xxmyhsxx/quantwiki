@@ -105,6 +105,9 @@ updated: 2026-10-12
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| [flashinfer.page.append_paged_kv_cache](implementation/flashinfer-paged-kv-write-and-nvfp4.md)<br>FlashInfer 0.6.14 · snapshot-2026-07-02<br>来源 `https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html` | 完整保存正文及追加示例；核逐行绑定、追加后页表、跨页位置与调用方职责 | [接口与布局](implementation/flashinfer-paged-kv-write-and-nvfp4.md)；[页表职责](theory/kv-cache-quantization-objects-and-granularity.md#51-页表和数值写入分别由谁负责) | 未取得匹配0.6.14代码，错误/alias/stream及实际读取未运行 | [2026-10-12](LOG.md#2026-10-12--flashinfer-分页kv文档-ingest-与独立评审) |
+| [KV-Cache Layout in FlashInfer](implementation/flashinfer-paged-kv-write-and-nvfp4.md)<br>FlashInfer 0.6.14 · snapshot-2026-07-02<br>来源 `https://docs.flashinfer.ai/tutorials/kv_layout.html` | 完整保存正文、2处数学重录与4张补采图；核ragged/paged单位、NHD/HND、mask、MLA/cascade view | [接口与布局](implementation/flashinfer-paged-kv-write-and-nvfp4.md)；[页表职责](theory/kv-cache-quantization-objects-and-granularity.md#51-页表和数值写入分别由谁负责) | 保留cascade图指针差异与图片补采时间；完整wrapper/空层/packed分段协议未核 | [2026-10-12](LOG.md#2026-10-12--flashinfer-分页kv文档-ingest-与独立评审) |
+| [flashinfer.quantization.nvfp4_quantize_paged_kv_cache](implementation/flashinfer-paged-kv-write-and-nvfp4.md)<br>FlashInfer 0.6.14 · snapshot-2026-07-02<br>来源 `https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html` | 完整保存正文；核SM100 MHA目标、K/V码/块尺度、V交织及全局因子方向 | [接口与布局](implementation/flashinfer-paged-kv-write-and-nvfp4.md)；[页表职责](theory/kv-cache-quantization-objects-and-granularity.md#51-页表和数值写入分别由谁负责) | V交织地址/nibble/余组/非有限值未明确；未运行FlashInfer/CUDA/SM100或测内存/性能 | [2026-10-12](LOG.md#2026-10-12--flashinfer-分页kv文档-ingest-与独立评审) |
 | [(CVPR 2026) 从 SmoothQuant 到 MASQuant：多模态量化的新思路](methods/masquant.md)<br>snapshot-2026-06-30<br>来源 `https://mp.weixin.qq.com/s/CQhaOfG9b2PsxVO04pHe-Q?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831938&enterid=1782831938` | 正文及5张方法/结果配图；回查固定论文相关方法/表；MAS/CMC主线及图1/4、表1–3；核Opt.消融、层/通道主导及白化条件 | [方法页](methods/masquant.md)已承接机制；补消融或百分点口径，保留文章的概括边界 | 未获取现行网页；封面/广告不作研究证据，未逐点重建图或重审全部作者代码/论文；无模型/硬件复现 | [2026-10-12](LOG.md#2026-10-12--masquantqig-解读快照核对与独立评审) |
 | [CVPR 2026｜从模态均衡到 token 敏感性建模：一文读懂 QIG 如何提升 LVLM 量化精度](methods/qig.md)<br>snapshot-2026-06-30<br>来源 `https://mp.weixin.qq.com/s/LaDDYRV_vKbCY910dFJ2cg?from=singlemessage&isappinstalled=0&scene=1&clicktime=1782831805&enterid=1782831805` | 正文及5张方法/结果配图；回查固定论文相关方法/表；token归因/IQR/CWE主线及图2、表1–4；核六配置均分、W/A与WO基线及原表目标限制 | [方法页](methods/qig.md)已承接机制；补消融或百分点口径，保留文章的概括边界 | 未获取现行网页；封面/广告不作研究证据，未逐点重建图或重审全部作者代码/论文；无模型/硬件复现 | [2026-10-12](LOG.md#2026-10-12--masquantqig-解读快照核对与独立评审) |
 | PyTorch C++ / CUDA extensions and custom operators（`https://docs.pytorch.org/docs/2.14/cpp_extension.html`）<br>cpp-extension-2.14; custom-ops-snapshot-2026-10-04；`pytorch-cpp-cuda-operators-snapshot-2026-10-04` | 两个官方页面的编译、注册、加载、FakeTensor 与梯度职责 | [CUDA 算子的编写、编译与 PyTorch 接入](implementation/cuda-operator-build-and-integration.md) | 未编译示例或验证 ABI/backward | [2026-10-04](LOG.md#2026-10-04--cudatriton-编写知识与块缩放执行补充review) |
@@ -248,9 +251,9 @@ updated: 2026-10-12
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下103个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下100个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；QuIP#所选E8P12的逻辑/物理码、保存加载与单行/多行消费已接续；SpQR所选两级尺度/保护与旧恢复/3bit优化格式已接续，第6批完成；第7批QSLAW论文/所选uniform实现已整合，补尺度作用、数据阶段及浮点恢复边界；SmoothQuant+论文已补通道/MLP融合、评测输入校准与W4A16服务边界；VEQ论文已补专家目标/亲和曲率及其条件；MASQuant/QIG解读已回查，第7批完成；第8批CalibQuant已补视觉编码/校准与吞吐条件；VidKV已补混合位宽、FFT/三值保护与完整预算条件；下一项FlashInfer三个接口及第9批评测协议；具体优先缺口见 SELF（`SELF.md#6-下一步建设与维护`）。
+执行先闭合已有材料可支持的关键断点，再依次处理新收录论文及匹配代码、其余方法与基础论文、官方文档/教程及代码条目。每项发现必要前置依赖时就近处理；队列分组与表内顺序用于查找，不是重要性排名。AQLM 同快照的原始校准、所选转换和 CUDA 2×8 前向读取已接续，其他分支保留未核范围；LC-QAT、QUASAR与Norm Tweaking论文及公共机制已整合；第4批CMPQ的通道/保护/预算及CoopQ的联合边际/交互代理已整合，LLM-MQ的候选梯度/整数预算/所选GEMV证据已整合，ResQ论文与所选Llama/full_shared实现已整合，第4批完成；第5批Atom论文与所选实现已整合，保留模拟/native网格及效率基准简化边界；FlexQ论文与所选实现已补signed位权、group恢复和质量/原生执行边界；Ideogram INT8/GGUF的双分支预算、保护/提示协议及配对质量评测已整合；SharQ的动态pair稀疏/量化后残差、共享尺度及所选执行已整合，第5批完成；第6批FluxBin的行列二值分解/显著残差与LUT消费已整合；QuIP所选OPT/Balance的逆序反馈、坐标恢复和浮点保存已接续，保留字段/统计差异及其余分支；QuIP#所选E8P12的逻辑/物理码、保存加载与单行/多行消费已接续；SpQR所选两级尺度/保护与旧恢复/3bit优化格式已接续，第6批完成；第7批QSLAW论文/所选uniform实现已整合，补尺度作用、数据阶段及浮点恢复边界；SmoothQuant+论文已补通道/MLP融合、评测输入校准与W4A16服务边界；VEQ论文已补专家目标/亲和曲率及其条件；MASQuant/QIG解读已回查，第7批完成；第8批CalibQuant已补视觉编码/校准与吞吐条件；VidKV已补混合位宽、FFT/三值保护与完整预算条件；FlashInfer三个文档已核页表/写入、轴序/分段与NVFP4双尺度，第8批完成；下一项第9批评测协议；具体优先缺口见 SELF（`SELF.md#6-下一步建设与维护`）。
 
 ### 论文（40条）
 
@@ -297,7 +300,7 @@ updated: 2026-10-12
 | Query Independent Variable Rate Visual Token Coding（`https://arxiv.org/abs/2610.00204v1`） | `arXiv:2610.00204v1` |
 | CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding（`https://arxiv.org/abs/2609.39924v1`） | `arXiv:2609.39924v1` |
 
-### 文章与文档（51条）
+### 文章与文档（48条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -313,14 +316,11 @@ updated: 2026-10-12
 | Quickstart — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/quickstart.html`） | `snapshot-2026-07-02` |
 | Synchronization primitives — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/pipeline.html`） | `snapshot-2026-07-02` |
 | Tile Iterator Concepts — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/tile_iterator_concept.html`） | `snapshot-2026-07-02` |
-| flashinfer.page.append_paged_kv_cache - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html`） | `snapshot-2026-07-02` |
 | flashinfer.testing.bench_gpu_time - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.testing.bench_gpu_time.html`） | `snapshot-2026-07-02` |
 | flashinfer.quantization.fp4_quantize - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.quantization.fp4_quantize.html`） | `snapshot-2026-07-02` |
 | flashinfer.gemm.gemm_fp8_nt_blockscaled - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.gemm.gemm_fp8_nt_blockscaled.html`） | `snapshot-2026-07-02` |
-| KV-Cache Layout in FlashInfer - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/tutorials/kv_layout.html`） | `snapshot-2026-07-02` |
 | flashinfer.gemm.mm_bf16_fp4 - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_bf16_fp4.html`） | `snapshot-2026-07-02` |
 | flashinfer.gemm.mm_fp4 - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_fp4.html`） | `snapshot-2026-07-02` |
-| flashinfer.quantization.nvfp4_quantize_paged_kv_cache - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html`） | `snapshot-2026-07-02` |
 | Attention States and Recursive Attention - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/tutorials/recursive_attention.html`） | `snapshot-2026-07-02` |
 | Release Release v0.6.17 · flashinfer-ai/flashinfer · GitHub（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`） | `snapshot-2026-08-20` |
 | flashinfer.decode.single_decode_with_kv_cache - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.decode.single_decode_with_kv_cache.html`） | `snapshot-2026-07-02` |
