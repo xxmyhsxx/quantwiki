@@ -76,7 +76,7 @@ $$
 
 推理需要输入变换、码本解码和乘加、输出变换。小 batch decode 常受权重读取限制，固定小码本的优势要通过实际访存与解码实现兑现；不能直接假设现有 AWQ/Marlin kernel 能接收 E8P。通用执行边界见 [量化矩阵乘法](../implementation/quantized-matmul-scaling-execution.md)。
 
-固定1d8f873e的所选Llama/E8P12/rank0实现已核离线协方差加回均值、逆序块反馈/128列buffer、微调与packed保存/HF加载；单行融合解码与多行先展开FP16权重是不同执行分支。16bit逻辑码还会交错重排，不能以相同容量的连续uint16数组替代；默认评速脚本也不是完整生成协议。具体格式、恢复尺度、形状条件及可选训练缓存的静态前提见[所选E8P实现](../implementation/quip-sharp-e8p-packing-and-inference.md)。这些是代码阅读与教学核算，未运行模型或复现本节实验。
+固定1d8f873e的所选Llama/E8P12/rank0实现已核离线协方差加回均值、逆序块反馈/128列buffer、微调与packed保存/HF加载；单行融合解码与多行先展开FP16权重是不同执行分支。16bit逻辑码还会交错重排，不能以相同容量的连续uint16数组替代；默认评速脚本也不是完整生成协议。具体格式、恢复尺度、形状条件及可选训练缓存的静态前提见[所选E8P实现](../implementation/quip-sharp-e8p-packing-and-inference.md)。
 
 ## 5. 证据：区分码本、微调与模型规模
 
@@ -91,7 +91,7 @@ v2 的 Llama-2 实验用 RedPajama 6144 段、原生长度 4096 估计 Hessian�
 
 这是同一论文中的逐步消融，分别支持向量码本和微调的贡献；不能把旧的无微调结果与另一方法微调后的结果混成最终排名。（Experiments，context length 4096 表。）
 
-论文讨论的“3 bit 优于 4 bit”涉及**给定模型存储预算下跨模型规模的质量曲线**，不是同一模型降低位宽必然提升质量。其 RTX 4090 生成实验另区分 FlashAttention 与 Hugging Face 路径；本页没有据不同实现的吞吐数字作横向排名，也没有运行原模型。
+论文讨论的“3 bit 优于 4 bit”涉及**给定模型存储预算下跨模型规模的质量曲线**，不是同一模型降低位宽必然提升质量。其 RTX 4090 生成实验另区分 FlashAttention 与 Hugging Face 路径；本页没有据不同实现的吞吐数字作横向排名。
 
 ## 来源身份
 

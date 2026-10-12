@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 10 批
+
+- 核读 DBW、FlexQ、FluxBin、GPTVQ、PV-Tuning、QTIP、QuantForge、QuIP# 八页，核心表示、选码目标与跨页承接一致。精简 DBW 末节重复的训练、执行和优化限制，保留表 19 的独有预算差异；压缩 FluxBin、QuantForge、QuIP# 重复运行声明。
+- 定向回查 DBW 分配与分阶段损失、GPTVQ 加权聚类及预算、FluxBin 显著列和两分支载荷、QTIP 尾咬合、QuantForge 激活选码及辅助状态、QuIP# 块反馈与微调；FlexQ/PV 的实现核对沿用上一批仍有效的结果。必要数学前提、作者实验协议和未消解的来源差异保留。
+- 无 ingest 或模型运行；累计完成 63 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 9 批
 
 - 通读 AQLM 方法及校准/PV 两实现、FlexQ、QuIP、QuIP#、SharQ 与 SpQR 实现八页，核对优化目标、保存对象、位预算、恢复坐标和所选内核消费。AQLM PV 将索引位数记为 b_c，避免与输入块下标 b 冲突。

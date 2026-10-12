@@ -205,13 +205,10 @@ P 图 5 报告 LLaMA-65B、RTX 3090、FP16 cuBLAS 与 OmniQuant INT2 的延迟�
 
 ## 9. 未解差异与使用边界
 
-- 论文算法 1 将重构和系数熵写成同一联合目标；固定快照把熵与额外系数均值正则放在无量化的 `progressive` 阶段，主 LBQ 训练仅 MSE；学习率及完整整网微调预算也不完全由表 8 描述。
-- 论文的 INT3/INT5 分 bit-plane 无填充 packing 与并行 bit-group CUDA GEMM，尚未在本轮固定路径里找到；不据此宣称论文性能被复现，也不据文件名推断实际运算。
 - 附录 E.1 的 component pruning 措辞与代码的 factor-parameter reduction 不同。表 19 还把各矩阵 `Bit` 标成 original-weight bpw，但这些数按表中 FP16 大小加权约为 1.11，而表尾为 1.61；`Mem` 总和约 38.86MB 则与均值 5.55MB 接近一致。本页以形状与源码推导预算，不将这张表当成精确数值换算依据；未修改原件或断言哪个字段应被替换。
-- 训练后的因子不保持 SVD 正交性；低熵、位宽预算不坍缩和 STE/Hamilton 的经验稳定性，没有提供整个 block 优化的全局保证。
 - 方法和主实验针对权重量化，未量化激活或 KV；低位宽仍有明显任务损失。动态 rank/bit 的部署收益依赖目标矩阵、token 数、恢复与 kernel 调度，不由 nominal bpw 自动推出。
 
-DBW 承接[低比特表示设计](../research/low-bit-representation-design.md)中的另一个变量：除了变换坐标、码本和例外，还可以改变主体矩阵的因子宽度；承接[混合精度分配](../theory/mixed-precision-allocation.md)时，选择单元是成对分量，成本是因子元素数而非原权重元素数；承接 [EfficientQAT](efficientqat.md) 时，需逐阶段核对可训练变量和真实恢复路径。上述机制、固定源码与作者结果已经核读，运行正确性、模型质量及性能复现仍是独立验证层级。
+DBW 承接[低比特表示设计](../research/low-bit-representation-design.md)中的另一个变量：除了变换坐标、码本和例外，还可以改变主体矩阵的因子宽度；承接[混合精度分配](../theory/mixed-precision-allocation.md)时，选择单元是成对分量，成本是因子元素数而非原权重元素数；承接 [EfficientQAT](efficientqat.md) 时，需逐阶段核对可训练变量和真实恢复路径。
 
 ## 来源身份
 
