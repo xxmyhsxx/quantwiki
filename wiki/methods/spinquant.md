@@ -25,7 +25,7 @@ sources:
   - raw/repositories/2026-09-21/spinquant/source/utils/data_utils.py
   - raw/repositories/2026-09-21/spinquant/source/utils/quant_utils.py
   - raw/repositories/2026-09-21/spinquant/source/utils/process_args.py
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # SpinQuant：用最终模型损失学习正交旋转
@@ -71,13 +71,13 @@ $$ (AB_2)(R_1^\mathsf TW_oB_2)^\mathsf T=AW_o^\mathsf TR_1.$$
 
 ### 优化最终语言模型损失
 
-令 $W$ 是冻结的预训练权重，$\mathcal R=\{R_1,R_{2,1},\ldots,R_{2,L}\}$，$f_q$ 是含模拟量化的整个网络。用校准文本的下一个 token 作为标签：
+令 $W$ 是冻结的预训练权重，$\mathcal R=\{R_1,R_{2,1},\ldots,R_{2,L}\}$，$f_q$ 是含模拟量化的整个网络。用校准文本的下一个 token 作为标签。对校准 batch $B$，令 $\mathcal V(x)$ 为有效预测位置、$N_B=\sum_{x\in B}|\mathcal V(x)|$，公开实现的 token 平均目标可写为：
 
-$$\min_{\mathcal R}\ \mathbb E_{x\sim\mathcal D}
-\left[-\sum_{t\in\mathcal V(x)}\log p_{f_q(W,\mathcal R)}(x_{t+1}\mid x_{\le t})\right],
+$$\min_{\mathcal R}\ \mathbb E_B
+\left[-\frac1{N_B}\sum_{x\in B}\sum_{t\in\mathcal V(x)}\log p_{f_q(W,\mathcal R)}(x_{t+1}\mid x_{\le t})\right],
 \qquad R_i^\mathsf TR_i=I.$$
 
-$\mathcal V(x)$ 表示有效预测位置；实际实现按有效 token 归约损失。这里不需要浮点教师输出作 MSE 目标，不学习原始 $W$。`modeling_llama_quant.py:LlamaForCausalLM.forward` 将 logits 和 labels 移位后调用 `CrossEntropyLoss`；`optimize_rotation.py` 先冻结参数，再建立可学习 R1/R2。（§3.2、附录 B.1。）
+这里不需要浮点教师输出作 MSE 目标，不学习原始 $W$。`modeling_llama_quant.py:LlamaForCausalLM.forward` 将 logits 和 labels 移位、展平后调用默认平均的 `CrossEntropyLoss`；`optimize_rotation.py` 先冻结参数，再建立可学习 R1/R2。上式描述单批前向的归约，批次采样与梯度累积仍按训练配置解释。（§3.2、附录 B.1。）
 
 如果没有量化且严格满足上述等价关系，改变旋转不会改变 logits，也就没有改善原模型任务损失的空间。量化让不同旋转对应不同舍入/裁剪误差，才使最终损失依赖 $\mathcal R$。这个事实也给出实现检查：关闭量化后仍有显著 loss 变化，应先排查等价图和数值精度。
 
@@ -106,7 +106,7 @@ $$Z_0=R+\eta YR,\qquad Z_{k+1}=R+\frac\eta2Y(R+Z_k).$$
 
 在 $\eta\|Y\|/2<1$ 的相容范数条件下，它向上述 Cayley 解收敛。**有限次迭代只是近似，不能宣称每步严格机器精度正交。**通用切空间、保持正交的证明和与 Cayley 参数化的区别见 [矩阵基础中的约束更新](../fundamentals/mathematics/invertible-transforms-and-kronecker-products.md)。
 
-公开 `train_utils/optimizer.py:SGDG.step/Cayley_loop` 使用负梯度进入动量，转置到其内部布局后构造反对称矩阵，限制步长，执行 5 次固定点迭代；另有单位化和概率性 QR 校正。单位化本身不保证列间正交，核对长期漂移仍应测 $\|R^\mathsf TR-I\|$。本轮没有运行该优化器的模型训练。
+公开 `train_utils/optimizer.py:SGDG.step/Cayley_loop` 使用负梯度进入动量，转置到其内部布局后构造反对称矩阵，限制步长，执行 5 次固定点迭代；另有单位化和概率性 QR 校正。单位化本身不保证列间正交，核对长期漂移仍应测 $\|R^\mathsf TR-I\|$。
 
 ## 5. 完整流程与论文、公开实现的边界
 

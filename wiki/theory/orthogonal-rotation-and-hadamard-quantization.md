@@ -28,7 +28,7 @@ sources:
   - raw/repositories/2026-09-21/quip/source/method.py
   - raw/repositories/2026-09-21/quip/source/bal.py
   - raw/repositories/2026-09-21/quip/source/opt.py
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # 正交旋转与量化：等价条件、离群值和在线代价
@@ -113,9 +113,9 @@ QuaRot §4 Stage 1a 将全局残差坐标变换折叠到权重中。Stage 1b 则
 
 注意力还有两组不同等价关系：RoPE 后 Q/K 同乘头内正交矩阵，保持点积；V 的头内旋转可沿注意力加权传到输出，再由 O 投影抵消。前者由于 RoPE 边界保留在线运算，后者可吸收入 V/O 权重。QuaRot 还在线完成 O 输入的跨头 Hadamard，具体维度、缓存写入与 prefill/decode 流程见 [QuaRot 的完整图改写](../methods/quarot.md)。（QuaRot §4 Stage 1c–1d、Stage 2c。）
 
-需要核对变换维度、归一化系数、权重转置、padding 和前后量化位置。浮点图等价后再引入量化，最后核对实际内核；这三个层次的检查见 [量化误差诊断](../implementation/quantization-error-diagnosis.md)。目标论文全文研读和 Python 入口阅读已完成，不代表模型或后端复现。
+需要核对变换维度、归一化系数、权重转置、padding 和前后量化位置。浮点图等价后再引入量化，最后核对实际内核；这三个层次的检查见 [量化误差诊断](../implementation/quantization-error-diagnosis.md)。
 
-同一机制用在 KV cache 上会得出不同的结构选择：[SAW-INT4](../methods/saw-int4.md) 用块对角 Hadamard 且只旋转键，块大小必须整除 head 维，并把旋转融进解码内核；其消融显示同时旋转键与值几乎没有额外收益。KV 侧的完整整理见 [KV cache 量化的对象与粒度](kv-cache-quantization-objects-and-granularity.md)。
+同一机制用在 KV cache 上会得出不同的结构选择：[SAW-INT4](../methods/saw-int4.md) 用块对角 Hadamard，默认在 K/V 中只旋转 K，decode 的 Q 也配套旋转；块大小必须整除 head 维，并把旋转融进内核。其所测消融中同时旋转 K/V 没有改善均分。KV 侧的完整整理见 [KV cache 量化的对象与粒度](kv-cache-quantization-objects-and-granularity.md)。
 
 同一理想Hadamard也不保证不同浮点执行顺序得到相同码。[SAW所选融合writer](../methods/saw-int4.md#4.2%20%E5%86%99%E5%85%A5%EF%BC%9A%E5%85%88%E6%A0%B8%E8%88%8D%E5%85%A5%EF%BC%8C%E5%86%8D%E6%A0%B8%E7%A0%81%E4%B8%8E%E5%85%83%E6%95%B0%E6%8D%AE)先在FP32中预缩放并作FWHT，旋转结果经BF16舍入后才取范围；邻接未融合支路先做BF16预缩放。所选GQA decode对Q采用配套FP32预缩放/FWHT后回BF16，并在每个非空split各自计算；旋转已融合，不表示每请求只计算一次。精确算术下的正交点积关系与这些舍入、量化和调度条件应分开核对。（`fused_hadamard_int4_kv.py:150–191`；`memory_pool.py:1161–1189`；`decode_attention.py:970–998`。）
 
@@ -190,7 +190,8 @@ $$\det\Sigma\le\prod_j\Sigma_{jj}\le(\max_j\Sigma_{jj})^d,$$
 
 [TurboQuant](../methods/turboquant.md) 用 Haar 随机正交变换把固定单位输入变为均匀球面点，单坐标均值零、方差 $1/d$；有限维坐标受总平方和为 1 的约束，并非独立。单个固定 Hadamard 或随机符号 Hadamard 不自动具有完全相同的边缘分布。因此“保持范数”“减小峰值”“产生特定随机分布”是三种不同主张。
 
-[NOVA-KV](../methods/nova-kv.md) 则希望重构误差按 query 二阶矩 $M_q$ 计费。行向量变换满足 $RR^\top=M_q$ 时，$\|eR\|_2^2=eM_qe^\top$；它一般不保持欧氏范数，却把指定 logit 误差精确变成变换域 MSE。K 乘 $R$、Q 乘 $R^{-\top}$ 才保持未量化内积；不能因为两侧都存在变换就一律同乘 $R$。精确的代数恒等式与高分辨率最优性、有限精度实现、实际任务质量仍应分开验证。
+[NOVA-KV](../methods/nova-kv.md) 则希望重构误差按 query 二阶矩 $M_q$ 计费。行向量变换满足 $RR^\top=M_q$ 时，$\|eR\|_2^2=eM_qe^\top$；它一般不保持欧氏范数，却把指定 logit 误差精确变成变换域 MSE。$M_q\succ0$、$R$ 可逆时，K 乘 $R$、Q 乘 $R^{-\top}$ 保持未量化内积；退化统计需先说明阻尼或特征值下限后的目标。精确的代数恒等式与高分辨率最优性、有限精度实现、实际任务质量仍应分开验证。
+
 ## 9. 从激活几何目标到闭式旋转更新
 
 [ConQuR](../methods/conqur.md) v2 §3、附录 B 提供另一种选择坐标系的目标。对单位列向量 $\tilde x$，正交旋转保持二范数，峰值至少为 $1/\sqrt d$；所有坐标幅值相等的超立方体顶点达到这个下界。无裁剪逐向量均匀量化的舍入界受峰值或带符号范围控制，因此靠近顶点可作为几何代理，但并非实际量化误差或下游任务的精确目标。
@@ -250,6 +251,8 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 | QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
 | SliceGPT: Compress Large Language Models by Deleting Rows and Columns（`https://arxiv.org/abs/2401.15024v2`） | `arXiv:2401.15024v2` | — |
 | MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
+| TurboQuant（`https://arxiv.org/abs/2504.19874v1`） | arXiv:2504.19874v1 | 引理 1、算法 1；Haar 球面边缘与标量码本 |
+| NOVA-KV（`https://arxiv.org/abs/2608.04074v1`） | arXiv:2608.04074v1 | §3、附录 F；查询加权变换及满秩条件 |
 
 ## 教学计算材料
 
@@ -257,5 +260,3 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 
 - [algebra-check.json](../assets/orthogonal-rotation-and-hadamard-quantization/checks/algebra-check.json)
 - [verify_algebra.py](../assets/orthogonal-rotation-and-hadamard-quantization/checks/verify_algebra.py)
-- TurboQuant（`https://arxiv.org/abs/2504.19874v1`），v1；引理 1、算法 1，Haar 球面边缘与标量码本。
-- NOVA-KV（`https://arxiv.org/abs/2608.04074v1`），v1；§3、附录 F，查询加权变换及其满秩条件。

@@ -84,4 +84,4 @@ W_u'=D_{in}W_uD_h^{-1},\quad W_d'=D_hW_d.$$
 
 ## 来源身份
 
-SmoothQuant+: Accurate and Efficient 4-bit Post-Training Weight Quantization for LLM，来源 `https://arxiv.org/abs/2312.03788v1`，arXiv:2312.03788v1；正文方法/实验、式1–6、表1–5及图1–7。PDF与源包保持固定版本，未逐点重建全部曲线或审计全部引用；未取得匹配作者代码/软件配置，也未运行质量、加载或服务性能实验。
+SmoothQuant+: Accurate and Efficient 4-bit Post-Training Weight Quantization for LLM，来源 `https://arxiv.org/abs/2312.03788v1`，arXiv:2312.03788v1；正文方法/实验、式1–6、表1–5及图1–7，未逐点重建全部曲线或审计全部引用。

@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 8 批
+
+- 通读 SmoothQuant+、SpinQuant、三方法比较与公共旋转四页，核对全局/局部目标、图位置、Cayley 更新、查询加权距离与研究结论。SpinQuant 将求和公式改为公开前向的有效 token 平均，区分单批归约和训练采样/梯度累积。
+- 公共旋转页同步 SAW-INT4 的 K/Q 配对，补 NOVA 满秩逆变换条件，来源表收回两条误放在教学材料下的论文身份。合并方法/比较/公共页重复过程说明，保留校准与评测重合、近似 Cayley、量化集合与部署范围。
+- 回查 SpinQuant 的 CE/Cayley 固定实现及论文、SmoothQuant+ 的搜索与校准表，复核 AffineQuant/FlatQuant 两种前缀推进；公共代数与既有教学计算一致，其余引用沿用明确的历史研读范围。至本批覆盖 47 个知识页，未进行 ingest 或模型实验。
+
 ## 2026-10-13 · 全库分批审查：第 7 批
 
 - 通读 ResQ 实现、AffineQuant、FlatQuant、OmniQuant、OSTQuant、QuaRot、ResQ 与 RGSQ 八页，核对变换位置、优化变量和部署路径。修正 FlatQuant/QServe 对比遗漏的量化粒度，明确完整整数累加后的尺度与分组部分和缩放；修正 QuaRot 对 SAW-INT4“只旋转键”的含混概括，补配套 Q 旋转与 decode 融合。
