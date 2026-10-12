@@ -29,6 +29,11 @@ sources:
   - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
   - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
   - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu
+  - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
+  - raw/repositories/2026-09-21/spqr/source/modelutils.py
+  - raw/repositories/2026-09-21/spqr/source/convert_legacy_model_format.py
+  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/common.cuh
+  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda.cpp
 updated: 2026-10-12
 ---
 
@@ -127,6 +132,16 @@ $$
 [VPTQ](../methods/vptq.md#5-两位索引不等于相同的总存储)提供了这类组合实例。它的附录 C.2 离群项误写为 $\log_2(k_0/v_0)$：例如 $k_0=4096,v_0=4$ 应为每个向量12位、每个权重3位，而非10位。1%这类离群权重与99%的2位主体，在不计中心表时为2.01 bit/weight。原表的 $k_2=-1$ 是关闭残差标记，不能代入上述数量公式。
 
 同为2位主体索引，$v=6,k=4096$ 的单张 FP16 表占48 KiB；$v=12,k_1=k_2=4096$ 的两张表占192 KiB。后者可以通过两个较小码本表达中心之和，但中心数据总量为前者的四倍，还多一次取表与相加；若分成多个独立组，中心表也需重复计费。是否改善质量与运行速度，要分别检查，不能由主体索引位数相同推出。（VPTQ v2 §3.2.2、附录 C.1–C.2；公式与数值为整理者按存储对象展开。）
+
+### 5.2 保护值应覆盖还是相加，由保存协议决定
+
+设普通主体在保护位置解码为d、目标保护值为w。若保存绝对值w，恢复应覆盖该位置；若计算时主体与稀疏分支相加，应保存残差r=w−d。保护mask、非零值和残差不是同一对象；没有零点约束时，量化输入0也不表示主体解码为0。
+
+例如采用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,7)$、$d=s(q-z)$，s=0.5、z=1.25的3bit网格将0编码为1，再恢复为d=−0.125。目标w=3时，直接相加得到2.875；残差3.125才恢复3。固定SpQR的旧浮点加载覆盖保存的绝对保护值，所选优化接口直接传这些值去相加，没有减去d；该静态条件与论文原先的调整稀疏分支说明需要分别记录。（[固定SpQR](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e)，spqr_engine.py、modelutils.py、convert_legacy_model_format.py及spqr_cuda.cpp。）
+
+预算同样需要跟随物理字段。此实现把16个3bit权重与两个3bit一级码、8bit二级片段、2bit空位放入每行一个64bit字；二级字节在两相邻行重复，16×16 tile实际128字节、4 bpw，论文理想逻辑格式为116字节、3.625 bpw。两个预算都包括主体及元数据，但对齐/重复不同，不能混用。
+
+主体仍占所有位置，CSR保护还加每项16bit值/16bit列、每行累计指针及可选置换；PTCSR按每16行的最大长度补齐，填充也占空间。因此真实保护比例、已存条目密度和runtime峰值分别核算。沿[所选SpQR实现](../implementation/spqr-metadata-outliers-and-cuda-format.md)核转换/恢复/消费，能同时检查质量语义与成本；这段教学核算未运行作者代码或GPU。
 
 ## 6. 从编码走向计算
 
@@ -245,6 +260,8 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 固定每组相同位宽时，$\sum a_\ell$ 决定预测失真。对固定坐标方差乘积，混合坐标使各组体积接近可减少 AM–GM 间隙，但一个具体离散分组未必能完全均衡。设计时应依次核对：来源分布和目标、近似适用区间、整数索引预算、元数据、编码/解码成本，最后才是任务效果。
 
 ## 来源身份
+
+- [固定SpQR实现](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e)，543d10e56f921e5eeb10d5f0aaaccd30b6662d0e；§5.2核绝对保护/相加及64bit物理格式，算例和预算为教学展开。
 
 - [固定QuIP#实现](https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98)，1d8f873e9a2a8b86b12bb1064c312c5689b77d98；§4.2核逻辑符号/平移与物理载荷、所选单行/多行消费，位预算为教学展开。
 

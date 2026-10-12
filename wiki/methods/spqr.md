@@ -9,7 +9,14 @@ tags:
 sources:
   - raw/papers/2026-09-21/spqr/paper.pdf
   - raw/papers/2026-09-21/spqr/source.eprint
-updated: 2026-09-22
+  - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
+  - raw/repositories/2026-09-21/spqr/source/quant_groups.py
+  - raw/repositories/2026-09-21/spqr/source/modelutils.py
+  - raw/repositories/2026-09-21/spqr/source/convert_legacy_model_format.py
+  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference.py
+  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda.cpp
+  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda_kernel.cu
+updated: 2026-10-12
 ---
 
 # SpQR：敏感权重保留与两级量化元数据
@@ -64,7 +71,9 @@ $$r_{ij}=w^*_{ij}-d_{ij},\qquad y=Dx+Rx.$$
 
 直接把 $w^*_{ij}$ 再加到 $d_{ij}$ 上会重复计入；$R$ 只有例外位置非零。论文按行、列排序例外，保存每项 16 bit 值、16 bit 列索引及每行 32 bit 累计计数。若例外密度为 $p$，在保留全部主体码的格式下，额外成本约为 $32p+32/n$ bit/weight，忽略末尾指针和对齐。1% 例外的值与列索引就增加约 0.32 bit，而非只增加 $0.01\times16$。
 
-原文推理实现分别处理稠密反量化乘法和稀疏乘法，没有宣称两者已融合成一个 kernel。未结构化稀疏需要索引访问和负载均衡；换成通用稀疏算子不保证更快。权重在存储上低比特，解码后仍配合 FP16 输入计算。
+原文推理章节描述稠密解码乘法和稀疏例外处理的流程，没有据此保证它们都融合在一个kernel。未结构化稀疏需要索引访问和负载均衡；换成通用稀疏算子不保证更快。权重在存储上低比特，解码后仍配合 FP16 输入计算。
+
+固定543d10e5的所选代码已接续逐列反馈/动态保护、输入列一级组与跨输出行二级组，以及旧浮点恢复和3bit/16×16的优化格式；代码beta1/beta2命名与本页论文组宽次序不同。优化稠密载荷因重复二级片段和对齐为4 bpw，CSR/PTCSR及置换另计。旧保存的绝对保护值由浮点加载覆盖，所选CUDA转换却直接相加，非整数零点下主体quantize(0)可能非零，需核一致恢复条件；所选matvec融合主体和稀疏，但forward多token逐向量循环。具体来源、保存/消费和静态边界见[所选SpQR实现](../implementation/spqr-metadata-outliers-and-cuda-format.md)；这些是代码阅读和教学核算，未运行模型/GPU或确认本节历史实验使用同一版本。
 
 ## 5. 实验支持什么
 
@@ -79,3 +88,5 @@ A100、batch 1、从头生成 100 token 的 LLaMA-7B 实验中，FP16、SpQR 配
 ## 来源身份
 
 [SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression](https://arxiv.org/abs/2306.03078v1)，arXiv:2306.03078v1。使用敏感性定义、算法、表示、实验与限制章节；敏感性公式按明确的损失归一化重新推导。
+
+[固定SpQR实现](https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e)，543d10e56f921e5eeb10d5f0aaaccd30b6662d0e；本轮核所选Linear校准/保护、两级分组、旧恢复与3/16/16优化格式/CSR/PTCSR matvec，未核全部模型/配置或执行质量/性能。
