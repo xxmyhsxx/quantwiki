@@ -2,7 +2,8 @@
 
 Uses the documented scalar and string-list frontmatter subset; no third-party
 packages. --links-only checks Wiki click boundaries and targets, optionally
-limited by --paths. --strict also fails on items needing review. No scientific,
+limited by --paths. --raw-links-only checks raw storage and its no-link rule.
+--strict also fails on items needing review. No scientific,
 relationship-purpose or client-jump verification is performed.
 """
 import argparse
@@ -11,6 +12,7 @@ from datetime import date
 from dataclasses import dataclass
 import html
 import json
+import os
 from pathlib import Path
 import re
 from urllib.parse import unquote
@@ -441,12 +443,94 @@ def metadata(text):
     return data, parts[2], errors
 
 
+def raw_record(path, raw):
+    """Only local management and source-entry records remain Markdown."""
+    parts = path.relative_to(raw).parts
+    return (len(parts) == 1 and parts[0] in {'README.md', 'LOG.md'}) or (
+        len(parts) == 4 and parts[0] in {'papers', 'articles', 'repositories'}
+        and parts[-1] == 'README.md')
+
+
+def check_raw_links(root):
+    root = Path(root).resolve()
+    raw = root / 'raw'
+    counts, errors, warnings, findings, files = Counter(), [], [], [], []
+
+    def issue(path, code, message, link=None, level='error'):
+        relative = str(path.relative_to(root))
+        finding = dict(path=relative, line=link.line if link else 1,
+                       target=link.target if link else '',
+                       syntax=link.kind if link else 'storage',
+                       level=level, code=code, message=message)
+        findings.append(finding)
+        (errors if level == 'error' else warnings).append(
+            relative + ':' + str(finding['line']) + ': ' + message)
+
+    if not raw.is_dir():
+        issue(raw, 'raw_missing', 'raw is absent; no-link storage was not checked')
+    elif not raw.resolve().is_relative_to(root):
+        issue(raw, 'raw_outside_root', 'raw resolves outside the project')
+    else:
+        def walk_error(error):
+            issue(Path(error.filename), 'raw_unreadable', str(error))
+
+        for directory, dirs, names in os.walk(raw, followlinks=False, onerror=walk_error):
+            # Git objects are original provenance, not expanded reading pages.
+            for name in dirs:
+                path = Path(directory) / name
+                if name != '.git' and path.is_symlink() and (
+                        not path.exists() or not path.resolve().is_relative_to(raw.resolve())):
+                    issue(path, 'raw_directory_symlink',
+                          'directory symlink is missing or resolves outside the checked raw tree')
+            dirs[:] = sorted(d for d in dirs if d != '.git' and not (Path(directory) / d).is_symlink())
+            for name in sorted(names):
+                path = Path(directory) / name
+                if name.lower().endswith(('.md.symlink.txt', '.markdown.symlink.txt')):
+                    counts['raw_sealed_symlink_files'] += 1
+                    continue
+                if name.lower().endswith(('.md.txt', '.markdown.txt')):
+                    counts['raw_sealed_text_files'] += 1
+                    continue
+                if path.suffix.lower() not in {'.md', '.markdown'}:
+                    continue
+                files.append(str(path.relative_to(root)))
+                counts['raw_markdown_files'] += 1
+                if not raw_record(path, raw):
+                    counts['raw_unsealed_markdown_files'] += 1
+                    issue(path, 'raw_unsealed_markdown',
+                          'source or reading Markdown must be stored as original-name + .txt')
+                    continue
+                if not path.resolve().is_relative_to(raw):
+                    issue(path, 'raw_outside_root', 'raw record resolves outside raw')
+                    continue
+                try:
+                    found, candidates = links(path.read_text())
+                except (OSError, UnicodeError) as error:
+                    issue(path, 'raw_unreadable', str(error))
+                    continue
+                counts['raw_clickable_references'] += len(found)
+                for link in found:
+                    issue(path, 'raw_clickable_reference',
+                          'raw records must use code text for URLs and file locations', link)
+                for link in candidates:
+                    issue(path, 'raw_clickable_reference' if link.kind == 'wikilink' else 'unparsed_link',
+                          'raw link candidate needs removal or review', link,
+                          'error' if link.kind == 'wikilink' else 'warning')
+    return dict(status='failed' if errors else 'needs_review' if warnings else 'passed',
+                counts=dict(counts), errors=errors, warnings=warnings, findings=findings,
+                files=files, skipped=LINK_LIMITS + [
+                    'Sealed .md.txt/.markdown.txt bytes and original Git object directories are not read.',
+                    'File hashes, original source completeness and application graph state are not verified.',
+                ], scope='raw storage extensions and no clickable references in retained Markdown records.',
+                semantic_review='Not performed: no source fidelity or scientific review.')
+
+
 def check(root, require_raw=False):
     root = Path(root).resolve()
     wiki = root / 'wiki'
     errors, warnings, skipped = [], [], []
     counts = Counter()
-    pages, bodies, graph, source_cache = {}, {}, {}, {}
+    pages, bodies, graph, source_cache, paper_cache = {}, {}, {}, {}, {}
     raw_present = (root / 'raw').is_dir()
     if not raw_present:
         (errors if require_raw else skipped).append('raw absent: local source files and raw metadata not verified')
@@ -522,7 +606,7 @@ def check(root, require_raw=False):
             fail(path, 'knowledge page needs direct sources')
         if len(sources) != len(set(sources)):
             fail(path, 'duplicate source registration')
-        known_ids = set()
+        known_ids, registered_papers = set(), {}
         for source in sources:
             counts['source_entries'] += 1
             if PINNED_CODE.fullmatch(source):
@@ -545,6 +629,7 @@ def check(root, require_raw=False):
             counts['local_sources_checked'] += 1
             if source not in source_cache:
                 found = set()
+                paper_cache[source] = None
                 for parent in target.parents:
                     if parent == root:
                         break
@@ -553,9 +638,20 @@ def check(root, require_raw=False):
                         mt = record.read_text()
                         if mt.startswith('---\n'):
                             found = set(ARXIV.findall(mt.split('---', 2)[1]))
+                            record_meta, _, _ = metadata(mt)
+                            if record_meta.get('kind') == 'paper' and record_meta.get('source_id'):
+                                paper_cache[source] = ('paper', record_meta['source_id'])
                             break
                 source_cache[source] = found
             known_ids |= source_cache[source]
+            identity = paper_cache[source]
+            if identity:
+                if identity in registered_papers:
+                    counts['duplicate_paper_carriers'] += 1
+                    fail(path, 'duplicate carriers for paper source ' + identity[1] + ': ' +
+                         registered_papers[identity] + ' and ' + source)
+                else:
+                    registered_papers[identity] = source
         if raw_present and not is_index:
             for aid in set(ARXIV.findall(body)) - known_ids:
                 fail(path, 'arXiv ID not present in registered source metadata: ' + aid)
@@ -598,10 +694,20 @@ def check(root, require_raw=False):
         outgoing = bool((graph.get(path, set()) - {path}) & set(pages.values()))
         if not incoming or not outgoing:
             warnings.append(slug + ': review missing knowledge incoming/outgoing links')
+    raw_files, raw_limits = [], []
+    if raw_present:
+        raw_result = check_raw_links(root)
+        counts.update(raw_result['counts'])
+        errors.extend(raw_result['errors'])
+        warnings.extend(raw_result['warnings'])
+        findings.extend(raw_result['findings'])
+        raw_files = raw_result['files']
+        raw_limits = raw_result['skipped']
     return dict(status='failed' if errors else 'needs_review' if warnings else 'passed',
                 counts=dict(counts), errors=errors, warnings=warnings, findings=findings,
-                files=[str(p.relative_to(root)) for p in sorted(bodies)], skipped=skipped + LINK_LIMITS,
-                scope='Mechanical structure, Wiki click boundary, links/anchors, source metadata and navigation.',
+                files=[str(p.relative_to(root)) for p in sorted(bodies)] + raw_files,
+                skipped=list(dict.fromkeys(skipped + LINK_LIMITS + raw_limits)),
+                scope='Mechanical structure, Wiki click boundary, raw no-link storage, source metadata and navigation.',
                 semantic_review='Not performed: no scientific, relationship-purpose or runtime verification.')
 
 
@@ -610,8 +716,11 @@ def main():
     parser.add_argument('--root', type=Path, required=True,
                         help='Project directory containing wiki/ and optional raw/')
     parser.add_argument('--require-raw', action='store_true')
-    parser.add_argument('--links-only', action='store_true',
-                        help='Check only Wiki body click boundaries and targets; no source or structure checks')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--links-only', action='store_true',
+                      help='Check only Wiki body click boundaries and targets; no source or structure checks')
+    mode.add_argument('--raw-links-only', action='store_true',
+                      help='Check raw no-link records and sealed Markdown storage; no source-content checks')
     parser.add_argument('--paths', nargs='+',
                         help='Wiki files/directories relative to --root; requires --links-only')
     parser.add_argument('--strict', action='store_true',
@@ -619,9 +728,10 @@ def main():
     args = parser.parse_args()
     if args.paths and not args.links_only:
         parser.error('--paths requires --links-only')
-    if args.links_only and args.require_raw:
-        parser.error('--require-raw cannot be combined with --links-only')
-    result = check_link_scope(args.root, args.paths) if args.links_only else check(args.root, args.require_raw)
+    if (args.links_only or args.raw_links_only) and args.require_raw:
+        parser.error('--require-raw cannot be combined with a links-only mode')
+    result = (check_raw_links(args.root) if args.raw_links_only else
+              check_link_scope(args.root, args.paths) if args.links_only else check(args.root, args.require_raw))
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 1 if result['errors'] or (args.strict and result['warnings']) else 0
 

@@ -8,14 +8,6 @@ tags:
   - serving
 sources:
   - raw/papers/2026-09-21/atom/paper.pdf
-  - raw/papers/2026-09-21/atom/source/mlsys.tex
-  - raw/papers/2026-09-21/atom/source/03_Analyze.tex
-  - raw/papers/2026-09-21/atom/source/04_Design.tex
-  - raw/papers/2026-09-21/atom/source/05_Evaluation.tex
-  - raw/papers/2026-09-21/atom/source/06_Discussion.tex
-  - raw/papers/2026-09-21/atom/source/tables/llama_ppl_and_zeroshot_v5.tex
-  - raw/papers/2026-09-21/atom/source/tables/quant_ablation_v2.tex
-  - raw/papers/2026-09-21/atom/source/tables/llama2_mixtral_ppl.tex
 updated: 2026-10-12
 ---
 

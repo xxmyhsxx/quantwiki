@@ -8,7 +8,7 @@ tags:
   - triton
 sources:
   - raw/papers/2026-09-21/kitty/paper.pdf
-  - raw/repositories/2026-09-21/kitty/source/README.md
+  - raw/repositories/2026-09-21/kitty/source/README.md.txt
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/utils_kv_per_layer.py
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py

@@ -18,13 +18,12 @@ sources:
   - raw/repositories/2026-09-21/qig/source/qmllm/quantization/qlinear.py
   - raw/repositories/2026-09-21/qig/source/qmllm/quantization/quant_funcs.py
   - raw/repositories/2026-09-21/qig/source/configs/llava_onevision/MBQ_search/7b_weight_activation.yaml
-  - raw/articles/2026-09-21/wechat-qig/article.md
+  - raw/articles/2026-09-21/wechat-qig/article.md.txt
   - raw/articles/2026-09-21/wechat-qig/assets/image-4911556eccc4.png
   - raw/articles/2026-09-21/wechat-qig/assets/image-f8c5cee88015.png
   - raw/articles/2026-09-21/wechat-qig/assets/image-10f4ef4535a6.png
   - raw/articles/2026-09-21/wechat-qig/assets/image-29370c576442.png
   - raw/articles/2026-09-21/wechat-qig/assets/image-c41632afce59.png
-  - raw/papers/2026-09-21/qig/source/main.tex
 updated: 2026-10-12
 ---
 

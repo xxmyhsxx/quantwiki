@@ -8,19 +8,6 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-09-21/fluxbin/paper.pdf
-  - raw/papers/2026-09-21/fluxbin/source/sections/4_methodology.tex
-  - raw/papers/2026-09-21/fluxbin/source/sections/5_experiment.tex
-  - raw/papers/2026-09-21/fluxbin/source/sections/appendix.tex
-  - raw/papers/2026-09-21/fluxbin/source/algorithm/PTQ.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/llama2_task.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/llama3_1_task.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/qwen3_task.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/ablation.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/memory.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/GPU_profile.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/mu_profile.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/ablation_nsample.tex
-  - raw/papers/2026-09-21/fluxbin/source/tables/kernel_latency.tex
 updated: 2026-10-12
 ---
 

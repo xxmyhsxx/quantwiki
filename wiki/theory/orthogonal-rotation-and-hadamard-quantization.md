@@ -7,7 +7,6 @@ tags:
   - outliers
 sources:
   - raw/papers/2026-09-21/resq/paper.pdf
-  - raw/papers/2026-09-21/resq/source/example_paper.tex
   - raw/repositories/2026-09-21/resq/source/fake_quant/get_basis.py
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/nova-kv/paper.pdf
@@ -20,14 +19,12 @@ sources:
   - raw/papers/2026-09-21/slicegpt/paper.pdf
   - raw/papers/2026-09-21/mquant/paper.pdf
   - raw/papers/2026-10-03/conqur/paper.pdf
-  - raw/papers/2026-10-03/conqur/source/waq.tex
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/QuantKernel/fused_hadamard_int4_kv.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
   - raw/papers/2026-09-21/saw-int4/paper.pdf
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
   - raw/papers/2026-10-07/centriq/paper.pdf
-  - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
   - raw/repositories/2026-09-21/quip/source/method.py
   - raw/repositories/2026-09-21/quip/source/bal.py
   - raw/repositories/2026-09-21/quip/source/opt.py

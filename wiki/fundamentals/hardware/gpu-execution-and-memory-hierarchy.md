@@ -6,8 +6,8 @@ tags:
   - memory
   - kernels
 sources:
-  - raw/repositories/2026-09-22/kernel-skills/source/skills/cuda/optimize-shared-memory-tiling/SKILL.md
-  - raw/articles/2026-09-21/cuda-simt-kernels/article.md
+  - raw/repositories/2026-09-22/kernel-skills/source/skills/cuda/optimize-shared-memory-tiling/SKILL.md.txt
+  - raw/articles/2026-09-21/cuda-simt-kernels/article.md.txt
   - raw/repositories/2026-09-21/cuda-samples/source/cpp/6_Performance/transpose/transpose.cu
   - raw/repositories/2026-09-21/cuda-samples/source/cpp/0_Introduction/matrixMul/matrixMul.cu
   - raw/repositories/2026-09-21/cs336-lectures/source/lecture_02.py

@@ -8,7 +8,6 @@ tags:
   - calibration
 sources:
   - raw/papers/2026-10-03/wush-kv/paper.pdf
-  - raw/papers/2026-10-03/wush-kv/source/main.tex
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_backend.py

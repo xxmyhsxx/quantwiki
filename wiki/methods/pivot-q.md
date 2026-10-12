@@ -9,13 +9,8 @@ tags:
   - evaluation
 sources:
   - raw/papers/2026-10-07/pivot-q/paper.pdf
-  - raw/papers/2026-10-07/pivot-q/source/sections/preliminaries.tex
-  - raw/papers/2026-10-07/pivot-q/source/sections/motivation.tex
-  - raw/papers/2026-10-07/pivot-q/source/sections/method.tex
-  - raw/papers/2026-10-07/pivot-q/source/sections/experiments.tex
-  - raw/papers/2026-10-07/pivot-q/source/sections/appendix.tex
-  - raw/repositories/2026-10-07/pivot-q/source/README.md
-  - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md
+  - raw/repositories/2026-10-07/pivot-q/source/README.md.txt
+  - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md.txt
   - raw/repositories/2026-10-07/pivot-q/source/config/pivot_q.yaml
   - raw/repositories/2026-10-07/pivot-q/source/scripts/train_pivot_q.py
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/selector.py

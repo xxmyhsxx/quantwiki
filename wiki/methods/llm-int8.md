@@ -8,7 +8,6 @@ tags:
   - mixed-precision
   - outliers
 sources:
-  - raw/papers/2026-09-21/llm-int8/source.eprint
   - raw/papers/2026-09-21/llm-int8/paper.pdf
 updated: 2026-10-06
 ---

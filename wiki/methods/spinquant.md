@@ -14,7 +14,7 @@ sources:
   - raw/papers/2026-09-21/quarot/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
   - raw/papers/2026-09-21/cayley-stiefel/paper.pdf
-  - raw/repositories/2026-09-21/spinquant/source/README.md
+  - raw/repositories/2026-09-21/spinquant/source/README.md.txt
   - raw/repositories/2026-09-21/spinquant/source/optimize_rotation.py
   - raw/repositories/2026-09-21/spinquant/source/train_utils/optimizer.py
   - raw/repositories/2026-09-21/spinquant/source/train_utils/main.py

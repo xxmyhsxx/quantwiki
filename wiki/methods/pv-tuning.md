@@ -9,14 +9,6 @@ sources:
   - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
   - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
-  - raw/papers/2026-09-22/pv-tuning/source/03_method.tex
-  - raw/papers/2026-09-22/pv-tuning/source/04_experiments.tex
-  - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
-  - raw/papers/2026-09-22/pv-tuning/source/resources/alg_main.tex
-  - raw/papers/2026-09-22/pv-tuning/source/resources/table_ablation.tex
-  - raw/papers/2026-09-22/pv-tuning/source/resources/table_aggregated.tex
-  - raw/papers/2026-09-22/pv-tuning/source/resources/table_llama2_2bit.tex
-  - raw/papers/2026-09-22/pv-tuning/source/resources/table_llama3_1bit.tex
 updated: 2026-10-11
 ---
 

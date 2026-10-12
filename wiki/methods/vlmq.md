@@ -9,7 +9,6 @@ tags:
   - second-order
 sources:
   - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/papers/2026-09-21/vlmq/source.eprint
   - raw/papers/2026-09-21/gptaq/paper.pdf
 paper_version: arXiv:2508.03351v2
 verification: 全文与附录研读；GPTAQ 必要章节局部研读；作者实现未定位；未运行模型实验

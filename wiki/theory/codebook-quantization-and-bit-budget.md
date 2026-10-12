@@ -8,13 +8,9 @@ tags:
   - memory
 sources:
   - raw/papers/2026-09-21/lc-qat/paper.pdf
-  - raw/papers/2026-09-21/lc-qat/source/main.tex
   - raw/papers/2026-09-22/gptvq/paper.pdf
-  - raw/papers/2026-09-22/gptvq/source/sections/method.tex
   - raw/papers/2026-09-22/vptq/paper.pdf
-  - raw/papers/2026-09-22/vptq/source/93.appendix.ablation_study.tex
   - raw/papers/2026-10-03/xor-trellis/paper.pdf
-  - raw/papers/2026-10-03/xor-trellis/source/main.tex
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/nova-kv/paper.pdf
   - raw/papers/2026-09-21/quip-sharp/source.eprint
@@ -25,7 +21,6 @@ sources:
   - raw/papers/2026-09-21/spqr/source.eprint
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
   - raw/papers/2026-09-21/fluxbin/source/sections/4_methodology.tex
-  - raw/papers/2026-09-21/fluxbin/source/sections/appendix.tex
   - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
   - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
   - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu

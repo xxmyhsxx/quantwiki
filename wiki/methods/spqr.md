@@ -8,7 +8,6 @@ tags:
   - sparsity
 sources:
   - raw/papers/2026-09-21/spqr/paper.pdf
-  - raw/papers/2026-09-21/spqr/source.eprint
   - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
   - raw/repositories/2026-09-21/spqr/source/quant_groups.py
   - raw/repositories/2026-09-21/spqr/source/modelutils.py

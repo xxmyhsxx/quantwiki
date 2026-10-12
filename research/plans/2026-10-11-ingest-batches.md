@@ -86,7 +86,7 @@
 
 OnPTQ 的匹配参数更新配置、WUSH-KV 作者改版及一般可逆变换接入继续作为 P1 条件事项。SAPrune、CentriQ、QuantForge、XOR-Trellis 等已整理论文的匹配作者实现，也按实际材料接续。材料具备后插入相应主题批次，并记录版本与可核范围；搜索未命中只说明当前查找结果。
 
-第 16 批的完整 Qwen3-VL 模型实现需补匹配材料。[归档 transformers 的身份记录](../../raw/repositories/2026-09-21/transformers/README.md)是 `hf-4.53.2`，没有 `qwen3_vl` 模型目录；[Qwen3-VL 固定仓库的 Quickstart](../../raw/repositories/2026-09-21/qwen3-vl/source/README.md#quickstart)要求 `transformers >= 4.57.0`。先完成现有可读范围，再按待补材料规则确认版本和范围，不能用同批的旧版本替代。
+第 16 批的完整 Qwen3-VL 模型实现需补匹配材料。[归档 transformers 的身份记录](../../raw/repositories/2026-09-21/transformers/README.md)是 `hf-4.53.2`，没有 `qwen3_vl` 模型目录；Qwen3-VL 固定仓库的 Quickstart（`../../raw/repositories/2026-09-21/qwen3-vl/source/README.md.txt#quickstart`）要求 `transformers >= 4.57.0`。先完成现有可读范围，再按待补材料规则确认版本和范围，不能用同批的旧版本替代。
 
 59 条历史范围待核记录随相应主题核实。来源已使用与完整研读分别判断；无法核实的范围继续保留未知。模型运行和性能验证另按具体任务登记。
 

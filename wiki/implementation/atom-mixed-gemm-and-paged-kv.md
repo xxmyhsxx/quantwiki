@@ -15,7 +15,7 @@ sources:
   - raw/repositories/2026-09-21/atom/source/model/qLinearLayer.py
   - raw/repositories/2026-09-21/atom/source/model/quant.py
   - raw/repositories/2026-09-21/atom/source/model/qLlamaLayer.py
-  - raw/repositories/2026-09-21/atom/source/e2e/README.md
+  - raw/repositories/2026-09-21/atom/source/e2e/README.md.txt
   - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/setup.py
   - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/models/llama.py
   - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/utils/kvcache.py

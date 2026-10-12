@@ -8,7 +8,7 @@ tags:
   - kernels
   - serving
 sources:
-  - raw/repositories/2026-10-08/oscar/source/README.md
+  - raw/repositories/2026-10-08/oscar/source/README.md.txt
   - raw/repositories/2026-10-08/oscar/source/rotation/eval_oscar_gpqa.sh
   - raw/repositories/2026-10-08/oscar/source/rotation/compute_kv_rotation.py
   - raw/repositories/2026-10-08/oscar/source/rotation/qwen3-8B/compute_rotation.sh

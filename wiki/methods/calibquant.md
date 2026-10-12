@@ -7,7 +7,6 @@ tags:
   - ptq
 sources:
   - raw/papers/2026-09-21/calibquant/paper.pdf
-  - raw/papers/2026-09-21/calibquant/source/main_iccv.tex
 updated: 2026-10-12
 ---
 

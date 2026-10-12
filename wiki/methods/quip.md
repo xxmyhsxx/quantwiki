@@ -8,7 +8,6 @@ tags:
   - second-order
 sources:
   - raw/papers/2026-09-21/quip/paper.pdf
-  - raw/papers/2026-09-21/quip/source.eprint
   - raw/repositories/2026-09-21/quip/source/opt.py
   - raw/repositories/2026-09-21/quip/source/method.py
   - raw/repositories/2026-09-21/quip/source/bal.py

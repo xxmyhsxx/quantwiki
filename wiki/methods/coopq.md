@@ -8,7 +8,6 @@ tags:
   - memory
 sources:
   - raw/papers/2026-09-21/coopq/paper.pdf
-  - raw/papers/2026-09-21/coopq/source/aaai2026.tex
 updated: 2026-10-12
 ---
 

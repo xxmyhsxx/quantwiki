@@ -7,15 +7,10 @@ tags:
   - optimization
 sources:
   - raw/papers/2026-09-21/quasar/paper.pdf
-  - raw/papers/2026-09-21/quasar/source/theory.tex
-  - raw/papers/2026-09-21/quasar/source/appendix_proofs.tex
   - raw/papers/2026-09-21/lc-qat/paper.pdf
-  - raw/papers/2026-09-21/lc-qat/source/main.tex
   - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
   - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
-  - raw/papers/2026-09-22/pv-tuning/source/03_method.tex
-  - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
   - raw/papers/2026-09-22/loftq/paper.pdf
   - raw/papers/2026-09-22/efficientqat/paper.pdf
   - raw/papers/2026-09-21/llm-qat/paper.pdf
@@ -28,7 +23,6 @@ sources:
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
   - raw/papers/2026-09-21/multimodal-qat/paper.pdf
-  - raw/papers/2026-09-21/multimodal-qat/source/camera-ready.tex
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py

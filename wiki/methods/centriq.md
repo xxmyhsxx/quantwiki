@@ -9,8 +9,6 @@ tags:
   - low-rank
 sources:
   - raw/papers/2026-10-07/centriq/paper.pdf
-  - raw/papers/2026-10-07/centriq/source.eprint
-  - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
 updated: 2026-10-08
 ---
 

@@ -8,7 +8,6 @@ tags:
   - sparsity
 sources:
   - raw/papers/2026-09-21/squeezellm/paper.pdf
-  - raw/papers/2026-09-21/squeezellm/source.eprint
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
   - raw/repositories/2026-09-21/squeezellm/source/squeezellm/outliers.py
   - raw/repositories/2026-09-21/squeezellm/source/quantization/nuq.py

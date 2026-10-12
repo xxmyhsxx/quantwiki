@@ -8,7 +8,7 @@ tags:
   - data-format
   - floating-point
 sources:
-  - raw/articles/2026-09-21/triton-block-scaled-matmul/article.md
+  - raw/articles/2026-09-21/triton-block-scaled-matmul/article.md.txt
   - raw/repositories/2026-09-21/triton/source/python/tutorials/10-block-scaled-matmul.py
   - raw/repositories/2026-09-21/triton/source/python/triton/tools/mxfp.py
   - raw/repositories/2026-09-21/triton/source/python/triton/tools/tensor_descriptor.py

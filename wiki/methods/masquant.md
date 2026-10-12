@@ -8,7 +8,7 @@ tags:
   - low-rank
 sources:
   - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/repositories/2026-09-21/efficientai/source/masquant/README.md
+  - raw/repositories/2026-09-21/efficientai/source/masquant/README.md.txt
   - raw/repositories/2026-09-21/efficientai/source/masquant/main.py
   - raw/repositories/2026-09-21/efficientai/source/masquant/quantize/masquant.py
   - raw/repositories/2026-09-21/efficientai/source/masquant/quantize/quantizer.py
@@ -16,13 +16,12 @@ sources:
   - raw/repositories/2026-09-21/efficientai/source/masquant/quantize/svd_utils.py
   - raw/repositories/2026-09-21/efficientai/source/masquant/infer_mas.py
   - raw/repositories/2026-09-21/efficientai/source/masquant/custom_dataset.py
-  - raw/articles/2026-09-21/wechat-masquant/article.md
+  - raw/articles/2026-09-21/wechat-masquant/article.md.txt
   - raw/articles/2026-09-21/wechat-masquant/assets/image-12825ee64822.png
   - raw/articles/2026-09-21/wechat-masquant/assets/image-92421c63436c.png
   - raw/articles/2026-09-21/wechat-masquant/assets/image-24908d320bf0.png
   - raw/articles/2026-09-21/wechat-masquant/assets/image-051fa5c5deca.png
   - raw/articles/2026-09-21/wechat-masquant/assets/image-0c6873feb802.png
-  - raw/papers/2026-09-21/masquant/source/sec/4.Experiments.tex
 updated: 2026-10-12
 ---
 

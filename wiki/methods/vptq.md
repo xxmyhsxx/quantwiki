@@ -8,10 +8,6 @@ tags:
   - data-format
 sources:
   - raw/papers/2026-09-22/vptq/paper.pdf
-  - raw/papers/2026-09-22/vptq/source/3.method.tex
-  - raw/papers/2026-09-22/vptq/source/4.optimization.tex
-  - raw/papers/2026-09-22/vptq/source/93.appendix.ablation_study.tex
-  - raw/papers/2026-09-22/vptq/source/94.appendix.inference_evaluation.tex
 updated: 2026-10-08
 ---
 

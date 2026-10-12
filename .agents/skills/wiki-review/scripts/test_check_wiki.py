@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 
-from check_wiki import check, check_link_scope
+from check_wiki import check, check_link_scope, check_raw_links
 
 SCRIPT = Path(__file__).with_name('check_wiki.py')
 BT = chr(96)
@@ -187,8 +187,103 @@ class LinkLintTests(unittest.TestCase):
     def test_invalid_cli_combinations_exit_two(self):
         self.assertEqual(self.cli('--paths', 'wiki/INDEX.md').returncode, 2)
         self.assertEqual(self.cli('--links-only', '--require-raw').returncode, 2)
+        self.assertEqual(self.cli('--links-only', '--raw-links-only').returncode, 2)
+        self.assertEqual(self.cli('--raw-links-only', '--paths', 'raw/README.md').returncode, 2)
+
+    def test_raw_rejects_unsealed_upstream_and_reading_markdown_without_reading_it(self):
+        self.write('raw/repositories/2026-10-12/repo/source/README.MD', '\ufffd')
+        self.write('raw/papers/2026-10-12/paper/paper.md', '# Original\n')
+        result = check_raw_links(self.root)
+        self.assertEqual(self.codes(result), ['raw_unsealed_markdown'] * 3, result)
+
+    def test_raw_accepts_sealed_original_bytes_and_nonclickable_records(self):
+        (self.root / 'raw/source.md').rename(self.root / 'raw/source.md.txt')
+        self.write('raw/repositories/2026-10-12/repo/source/README.md.txt',
+                   '[original](original.md)\n![image](image.png)\n')
+        self.write('raw/README.md', '# raw\n' + BT + 'LOG.md' + BT + '\n')
+        self.write('raw/papers/2026-10-12/paper/README.md',
+                   '---\nurl: https://example.org\n---\n' + BT + 'paper.md.txt' + BT + '\n'
+                   + BT + 'https://example.org' + BT + '\n')
+        result = check_raw_links(self.root)
+        self.assertEqual(result['status'], 'passed', result)
+        self.assertEqual(result['counts']['raw_sealed_text_files'], 2)
+        self.assertEqual(result['counts']['raw_clickable_references'], 0)
+
+    def test_raw_records_reject_local_external_image_and_wikilinks(self):
+        (self.root / 'raw/source.md').unlink()
+        self.write('raw/LOG.md', '[file](README.md)\nhttps://example.org\n'
+                   '![image](image.png)\n[[source]]\n')
+        result = check_raw_links(self.root)
+        self.assertEqual(self.codes(result), ['raw_clickable_reference'] * 4, result)
+
+    def test_raw_missing_and_unreadable_record_cannot_pass(self):
+        (self.root / 'raw/source.md').unlink()
+        (self.root / 'raw').rmdir()
+        self.assertEqual(self.codes(check_raw_links(self.root)), ['raw_missing'])
+        path = self.root / 'raw/README.md'
+        path.parent.mkdir()
+        path.write_bytes(b'\xff')
+        self.assertEqual(self.codes(check_raw_links(self.root)), ['raw_unreadable'])
+
+    def test_raw_cli_and_full_check_detect_reintroduced_links(self):
+        (self.root / 'raw/source.md').rename(self.root / 'raw/source.md.txt')
+        self.write('raw/README.md', '[file](LOG.md)\n')
+        self.assertEqual(self.cli('--raw-links-only').returncode, 1)
+        result = check(self.root)
+        self.assertIn('raw_clickable_reference', self.codes(result))
+
+    def test_raw_does_not_read_record_symlink_outside_raw(self):
+        (self.root / 'raw/source.md').unlink()
+        (self.root / 'raw/README.md').symlink_to(self.root / 'README.md')
+        self.assertEqual(self.codes(check_raw_links(self.root)), ['raw_outside_root'])
+
+    def test_raw_cannot_pass_by_hiding_markdown_in_symlinked_directory(self):
+        (self.root / 'raw/source.md').unlink()
+        (self.root / 'raw/linked').symlink_to(self.root / 'wiki', target_is_directory=True)
+        self.assertEqual(self.codes(check_raw_links(self.root)), ['raw_directory_symlink'])
+
+    def test_raw_internal_directory_alias_does_not_hide_original_markdown(self):
+        (self.root / 'raw/linked').symlink_to(self.root / 'raw', target_is_directory=True)
+        result = check_raw_links(self.root)
+        self.assertEqual(self.codes(result), ['raw_unsealed_markdown'])
+        (self.root / 'raw/source.md').rename(self.root / 'raw/source.md.txt')
+        self.assertEqual(check_raw_links(self.root)['status'], 'passed')
+
+    def test_full_check_rejects_two_carriers_of_same_paper_identity(self):
+        self.write('raw/papers/2026-10-12/paper/README.md',
+                   '---\nsource_id: paper-v1\nkind: paper\n---\n# Source\n')
+        self.write('raw/papers/2026-10-12/paper/paper.pdf', 'pdf')
+        self.write('raw/papers/2026-10-12/paper/source/main.tex', 'tex')
+        self.write('wiki/methods/page.md',
+                   '---\ntitle: page\ntype: method\ntags:\n  - ptq\nsources:\n'
+                   '  - raw/papers/2026-10-12/paper/paper.pdf\n'
+                   '  - raw/papers/2026-10-12/paper/source/main.tex\n---\n# Page\n## 来源身份\n')
+        result = check(self.root)
+        self.assertEqual(result['counts']['duplicate_paper_carriers'], 1)
+        self.assertTrue(any('duplicate carriers for paper source paper-v1' in e for e in result['errors']))
+
+    def test_distinct_paper_versions_and_code_files_are_not_merged(self):
+        sources = []
+        for version in ['v1', 'v2']:
+            prefix = 'raw/papers/2026-10-12/paper-' + version
+            self.write(prefix + '/README.md',
+                       '---\nsource_id: paper-' + version + '\nkind: paper\n---\n# Source\n')
+            self.write(prefix + '/paper.pdf', 'pdf')
+            sources.append(prefix + '/paper.pdf')
+        prefix = 'raw/repositories/2026-10-12/repo'
+        self.write(prefix + '/README.md', '---\nsource_id: repo-commit\nkind: repository\n---\n# Source\n')
+        for name in ['a.py', 'b.py']:
+            self.write(prefix + '/source/' + name, 'code')
+            sources.append(prefix + '/source/' + name)
+        self.write('wiki/methods/page.md',
+                   '---\ntitle: page\ntype: method\ntags:\n  - ptq\nsources:\n' +
+                   ''.join('  - ' + source + '\n' for source in sources) +
+                   '---\n# Page\n## 来源身份\n')
+        result = check(self.root)
+        self.assertNotIn('duplicate_paper_carriers', result['counts'])
 
     def test_full_check_preserves_sources_navigation_and_nonwiki_local_checks(self):
+        (self.root / 'raw/source.md').rename(self.root / 'raw/source.md.txt')
         self.write('raw/paper.pdf', 'source')
         for name, peer in [('page', 'target'), ('target', 'page')]:
             self.write('wiki/methods/' + name + '.md',
@@ -201,7 +296,7 @@ class LinkLintTests(unittest.TestCase):
                        '[page](methods/page.md)\n[target](methods/target.md)\n')
         self.write('wiki/README.md', '# Rules\n')
         self.write('wiki/LOG.md', '# Log\n')
-        self.write('README.md', '[wiki](wiki/INDEX.md)\n[raw](raw/source.md)\n[folder](raw/)\n'
+        self.write('README.md', '[wiki](wiki/INDEX.md)\n[raw](raw/source.md.txt)\n[folder](raw/)\n'
                    '[web](https://example.org)\n')
         result = check(self.root, require_raw=True)
         self.assertEqual(result['status'], 'passed', result)

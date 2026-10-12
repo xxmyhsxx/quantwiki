@@ -11,8 +11,8 @@ sources:
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-quants.c
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml.c
-  - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md
-  - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/README.md
+  - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md.txt
+  - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/README.md.txt
   - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/imatrix.cpp
 updated: 2026-09-22
 ---

@@ -12,7 +12,7 @@ sources:
   - raw/papers/2026-09-21/spinquant/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
   - raw/papers/2026-09-21/affinequant/paper.pdf
-  - raw/articles/2026-09-21/pytorch-orthogonal/article.md
+  - raw/articles/2026-09-21/pytorch-orthogonal/article.md.txt
   - raw/repositories/2026-09-21/flatquant/source/flatquant/trans_utils.py
   - raw/repositories/2026-09-21/flatquant/source/flatquant/function_utils.py
   - raw/repositories/2026-09-21/flatquant/source/flatquant/train_utils.py
@@ -20,7 +20,7 @@ sources:
   - raw/repositories/2026-09-21/flatquant/source/flatquant/flat_linear.py
   - raw/repositories/2026-09-21/flatquant/source/flatquant/quant_utils.py
   - raw/repositories/2026-09-21/flatquant/source/flatquant/model_tools/llama_utils.py
-  - raw/repositories/2026-09-21/flatquant/source/REALQUANT.md
+  - raw/repositories/2026-09-21/flatquant/source/REALQUANT.md.txt
   - raw/repositories/2026-09-21/flatquant/source/benchmarks/layer_benchmark.py
 updated: 2026-09-15
 ---

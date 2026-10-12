@@ -8,7 +8,6 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-10-07/stagq/paper.pdf
-  - raw/papers/2026-10-07/stagq/source.eprint
 updated: 2026-10-07
 ---
 

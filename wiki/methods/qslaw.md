@@ -8,7 +8,6 @@ tags:
   - parameter-efficient-adaptation
 sources:
   - raw/papers/2026-09-21/multimodal-qat/paper.pdf
-  - raw/papers/2026-09-21/multimodal-qat/source/camera-ready.tex
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py

@@ -8,7 +8,7 @@ tags:
   - data-format
   - gpu-kernel
 sources:
-  - raw/repositories/2026-09-21/spqr/source/README.md
+  - raw/repositories/2026-09-21/spqr/source/README.md.txt
   - raw/repositories/2026-09-21/spqr/source/main.py
   - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
   - raw/repositories/2026-09-21/spqr/source/quant_groups.py

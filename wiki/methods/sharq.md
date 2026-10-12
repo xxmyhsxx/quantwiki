@@ -8,7 +8,6 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-09-21/sharq/paper.pdf
-  - raw/papers/2026-09-21/sharq/source/neurips_2026.tex
   - raw/repositories/2026-09-21/sharq/source/model/quantize.py
   - raw/repositories/2026-09-21/sharq/source/kernels/src/fused_sparse_prepare.cu
   - raw/repositories/2026-09-21/sharq/source/third-party/cutlass/include/cutlass/exmy_base.h

@@ -7,7 +7,6 @@ tags:
   - serving
 sources:
   - raw/papers/2026-09-21/deepseek-v2/paper.pdf
-  - raw/papers/2026-09-21/deepseek-v2/source.eprint
   - raw/repositories/2026-09-21/kitty/source/src/kitty/models/qwen3/modeling_qwen3.py
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py
   - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
@@ -23,7 +22,6 @@ sources:
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/papers/2026-09-21/saw-int4/paper.pdf
   - raw/papers/2026-10-03/wush-kv/paper.pdf
-  - raw/papers/2026-10-03/wush-kv/source/main.tex
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py
   - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_backend.py

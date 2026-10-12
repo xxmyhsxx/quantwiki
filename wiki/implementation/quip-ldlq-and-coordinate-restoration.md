@@ -7,7 +7,7 @@ tags:
   - rotation
   - data-format
 sources:
-  - raw/repositories/2026-09-21/quip/source/README.md
+  - raw/repositories/2026-09-21/quip/source/README.md.txt
   - raw/repositories/2026-09-21/quip/source/opt.py
   - raw/repositories/2026-09-21/quip/source/method.py
   - raw/repositories/2026-09-21/quip/source/bal.py

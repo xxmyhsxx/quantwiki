@@ -17,7 +17,7 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_attention_helpers.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_model_runner.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/cudagraph_dispatcher.py
-  - raw/repositories/2026-09-21/vllm/source/docs/design/cuda_graphs.md
+  - raw/repositories/2026-09-21/vllm/source/docs/design/cuda_graphs.md.txt
 updated: 2026-10-07
 ---
 

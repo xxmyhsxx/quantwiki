@@ -8,7 +8,6 @@ tags:
   - calibration
 sources:
   - raw/papers/2026-10-03/conqur/paper.pdf
-  - raw/papers/2026-10-03/conqur/source/waq.tex
 updated: 2026-10-07
 ---
 

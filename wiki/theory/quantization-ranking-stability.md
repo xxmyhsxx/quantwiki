@@ -9,7 +9,6 @@ sources:
   - raw/papers/2026-09-23/bos-sink-topology/paper.pdf
   - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
   - raw/papers/2026-10-03/decision-flips/paper.pdf
-  - raw/papers/2026-10-03/decision-flips/source/main.tex
 updated: 2026-10-07
 ---
 

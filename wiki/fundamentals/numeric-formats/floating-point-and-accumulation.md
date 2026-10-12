@@ -6,7 +6,7 @@ tags:
   - numerical-error
   - kernels
 sources:
-  - raw/articles/2026-09-22/floating-point/article.md
+  - raw/articles/2026-09-22/floating-point/article.md.txt
   - raw/repositories/2026-09-21/cs336-lectures/source/lecture_02.py
   - raw/repositories/2026-09-21/cs336-lectures/source/images/fp16.png
   - raw/repositories/2026-09-21/cs336-lectures/source/images/bf16.png

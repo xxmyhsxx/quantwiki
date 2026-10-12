@@ -8,7 +8,6 @@ tags:
   - reconstruction
 sources:
   - raw/papers/2026-09-21/norm-tweaking/paper.pdf
-  - raw/papers/2026-09-21/norm-tweaking/source/norm_tweak.tex
 updated: 2026-10-11
 ---
 

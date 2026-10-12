@@ -7,19 +7,15 @@ tags:
   - reliability
 sources:
   - raw/papers/2026-10-03/quantforge/paper.pdf
-  - raw/papers/2026-10-03/quantforge/source/sections/experiments.tex
-  - raw/papers/2026-10-03/quantforge/source/sections/appendix.tex
   - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
   - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
   - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
-  - raw/articles/2026-09-22/perplexity/article.md
+  - raw/articles/2026-09-22/perplexity/article.md.txt
   - raw/papers/2026-09-21/quantization-reliable-vqa/paper.pdf
   - raw/papers/2026-10-03/decision-flips/paper.pdf
-  - raw/papers/2026-10-03/decision-flips/source/main.tex
   - raw/papers/2026-10-07/pivot-q/paper.pdf
-  - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md
+  - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md.txt
   - raw/papers/2026-09-21/int8-gg/paper.pdf
-  - raw/papers/2026-09-21/int8-gg/source/paper.tex
 updated: 2026-10-12
 ---
 

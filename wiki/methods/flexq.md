@@ -8,11 +8,6 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-09-21/flexq/paper.pdf
-  - raw/papers/2026-09-21/flexq/source/text/introduction.tex
-  - raw/papers/2026-09-21/flexq/source/text/background_RW.tex
-  - raw/papers/2026-09-21/flexq/source/text/motivation.tex
-  - raw/papers/2026-09-21/flexq/source/text/methodology.tex
-  - raw/papers/2026-09-21/flexq/source/text/evaluation.tex
 updated: 2026-10-12
 ---
 

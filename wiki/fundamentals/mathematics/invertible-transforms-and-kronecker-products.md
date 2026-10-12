@@ -13,7 +13,7 @@ sources:
   - raw/papers/2026-09-21/cayley-stiefel/paper.pdf
   - raw/papers/2026-09-21/affinequant/paper.pdf
   - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/articles/2026-09-21/pytorch-orthogonal/article.md
+  - raw/articles/2026-09-21/pytorch-orthogonal/article.md.txt
 updated: 2026-09-29
 ---
 

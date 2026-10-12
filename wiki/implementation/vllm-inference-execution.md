@@ -7,8 +7,8 @@ tags:
   - memory
   - performance
 sources:
-  - raw/repositories/2026-09-21/vllm/source/docs/design/arch_overview.md
-  - raw/repositories/2026-09-21/vllm/source/docs/design/prefix_caching.md
+  - raw/repositories/2026-09-21/vllm/source/docs/design/arch_overview.md.txt
+  - raw/repositories/2026-09-21/vllm/source/docs/design/prefix_caching.md.txt
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/engine/core.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/sched/scheduler.py
   - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_manager.py

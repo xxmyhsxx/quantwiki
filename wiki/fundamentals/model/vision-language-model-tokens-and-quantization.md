@@ -8,7 +8,6 @@ tags:
   - activation-quantization
 sources:
   - raw/papers/2026-10-07/saprune/paper.pdf
-  - raw/papers/2026-10-07/saprune/source/main.tex
   - raw/papers/2026-09-21/qapruner/paper.pdf
   - raw/papers/2026-09-21/akvq-vl/paper.pdf
   - raw/papers/2026-09-23/coreprune/paper.pdf

@@ -8,7 +8,7 @@ tags:
   - triton
   - weight-quantization
 sources:
-  - raw/articles/2026-09-22/ptx-mma-layout/article.md
+  - raw/articles/2026-09-22/ptx-mma-layout/article.md.txt
   - raw/repositories/2026-09-21/marlin/source/marlin/marlin_cuda_kernel.cu
   - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/awq_triton.py
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/awq/awq_triton.py

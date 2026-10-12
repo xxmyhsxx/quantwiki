@@ -8,13 +8,6 @@ tags:
   - kv-cache
 sources:
   - raw/papers/2026-09-21/resq/paper.pdf
-  - raw/papers/2026-09-21/resq/source/example_paper.tex
-  - raw/papers/2026-09-21/resq/source/latex/Tables/main_table-4-4-4.tex
-  - raw/papers/2026-09-21/resq/source/latex/Tables/generative_tasks.tex
-  - raw/papers/2026-09-21/resq/source/latex/Tables/Vision_language_model.tex
-  - raw/papers/2026-09-21/resq/source/latex/Tables/comparison_w_outlier+rot.tex
-  - raw/papers/2026-09-21/resq/source/latex/Tables/ablation_removing_components.tex
-  - raw/papers/2026-09-21/resq/source/latex/Tables/appendix_time_taken.tex
   - raw/repositories/2026-09-21/resq/source/fake_quant/get_basis.py
 updated: 2026-10-12
 ---

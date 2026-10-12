@@ -9,9 +9,6 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-10-07/dbw/paper.pdf
-  - raw/papers/2026-10-07/dbw/source/neurips_2026.tex
-  - raw/papers/2026-10-07/dbw/source/table.tex
-  - raw/papers/2026-10-07/dbw/source/algorithm.tex
   - raw/repositories/2026-10-07/dbw/source/dbw/utils/decompose.py
   - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
   - raw/repositories/2026-10-07/dbw/source/dbw/block_ap.py

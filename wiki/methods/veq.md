@@ -8,7 +8,6 @@ tags:
   - weighted-reconstruction
 sources:
   - raw/papers/2026-09-21/veq/paper.pdf
-  - raw/papers/2026-09-21/veq/source/arxiv-main.tex
 updated: 2026-10-12
 ---
 

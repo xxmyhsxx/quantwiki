@@ -8,14 +8,6 @@ tags:
   - weight-quantization
 sources:
   - raw/papers/2026-09-21/quasar/paper.pdf
-  - raw/papers/2026-09-21/quasar/source/preliminaries.tex
-  - raw/papers/2026-09-21/quasar/source/methodology.tex
-  - raw/papers/2026-09-21/quasar/source/theory.tex
-  - raw/papers/2026-09-21/quasar/source/appendix_proofs.tex
-  - raw/papers/2026-09-21/quasar/source/appendix_rubin.tex
-  - raw/papers/2026-09-21/quasar/source/experiments.tex
-  - raw/papers/2026-09-21/quasar/source/healing_tables.tex
-  - raw/papers/2026-09-21/quasar/source/adaptation_table.tex
 updated: 2026-10-11
 ---
 

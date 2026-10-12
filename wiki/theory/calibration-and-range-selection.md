@@ -7,17 +7,12 @@ tags:
   - sensitivity
 sources:
   - raw/papers/2026-09-21/norm-tweaking/paper.pdf
-  - raw/papers/2026-09-21/norm-tweaking/source/norm_tweak.tex
   - raw/papers/2026-09-21/quasar/paper.pdf
-  - raw/papers/2026-09-21/quasar/source/methodology.tex
   - raw/repositories/2026-09-21/aqlm/source/finetune.py
   - raw/repositories/2026-09-21/aqlm/source/src/datautils.py
   - raw/papers/2026-09-22/pv-tuning/paper.pdf
-  - raw/papers/2026-09-22/pv-tuning/source/supplementary.tex
   - raw/papers/2026-10-05/onptq/paper.pdf
-  - raw/papers/2026-10-05/onptq/source/iclr2027_conference.tex
   - raw/papers/2026-10-03/scale-sensitivity/paper.pdf
-  - raw/papers/2026-10-03/scale-sensitivity/source/main_arxiv.tex
   - raw/papers/2026-09-22/qera/paper.pdf
   - raw/papers/2026-09-21/llm-qat/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
@@ -35,14 +30,11 @@ sources:
   - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
   - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
   - raw/papers/2026-10-07/centriq/paper.pdf
-  - raw/papers/2026-10-07/centriq/source/iclr2027_conference.tex
   - raw/papers/2026-10-07/pivot-q/paper.pdf
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/selector.py
   - raw/repositories/2026-10-07/pivot-q/source/pivot_q/train.py
   - raw/papers/2026-09-21/smoothquant-plus/paper.pdf
-  - raw/papers/2026-09-21/smoothquant-plus/source/rsc.tex
   - raw/papers/2026-09-21/veq/paper.pdf
-  - raw/papers/2026-09-21/veq/source/arxiv-main.tex
 updated: 2026-10-12
 ---
 

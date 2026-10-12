@@ -7,14 +7,14 @@ tags:
   - performance
   - matmul
 sources:
-  - raw/repositories/2026-09-22/kernel-skills/source/skills/patterns/choose-tile-size-and-work-partitioning/SKILL.md
-  - raw/repositories/2026-09-22/kernel-skills/source/skills/triton/optimize-triton-block-parameters/SKILL.md
+  - raw/repositories/2026-09-22/kernel-skills/source/skills/patterns/choose-tile-size-and-work-partitioning/SKILL.md.txt
+  - raw/repositories/2026-09-22/kernel-skills/source/skills/triton/optimize-triton-block-parameters/SKILL.md.txt
   - raw/repositories/2026-09-21/triton/source/python/tutorials/02-fused-softmax.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/03-matrix-multiplication.py
   - raw/repositories/2026-09-21/triton/source/python/tutorials/09-persistent-matmul.py
   - raw/repositories/2026-09-21/triton/source/python/triton/runtime/autotuner.py
   - raw/repositories/2026-09-21/triton/source/python/triton/language/semantic.py
-  - raw/articles/2026-09-21/cuda-simt-kernels/article.md
+  - raw/articles/2026-09-21/cuda-simt-kernels/article.md.txt
 updated: 2026-09-22
 ---
 

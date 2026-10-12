@@ -8,7 +8,6 @@ tags:
   - distillation
   - kernels
 sources:
-  - raw/papers/2026-09-21/zeroquant/source.eprint
   - raw/papers/2026-09-21/zeroquant/paper.pdf
 updated: 2026-09-22
 ---

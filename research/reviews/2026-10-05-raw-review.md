@@ -81,13 +81,13 @@ U+FFFD 的位置已经定位到文件页：
 
 | 提取稿 | 文件页及数量 | 回查情况 |
 | --- | --- | --- |
-| [MIT 6.441 Lecture 1](../../raw/articles/2026-09-21/mit-6441-lecture-1/article.md) | 页 3：4；页 4：8；页 5：3；页 6：5；页 7：3 | 人工回查页 3，熵公式的求和符号在原件/页图中完整，文字层损坏；共 23 个 |
-| [BiLLM](../../raw/papers/2026-09-21/billm/paper.md) | 页 1：1；页 2：5；页 3：1；页 4：9；页 5：1 | 人工回查代表页的图表与公式，原件可读；共 17 个 |
-| [SplitQ](../../raw/papers/2026-09-21/splitq/paper.md) | 页 7：21 | 已定位，未在本轮逐个恢复这 21 个字形 |
+| MIT 6.441 Lecture 1（`../../raw/articles/2026-09-21/mit-6441-lecture-1/article.md.txt`） | 页 3：4；页 4：8；页 5：3；页 6：5；页 7：3 | 人工回查页 3，熵公式的求和符号在原件/页图中完整，文字层损坏；共 23 个 |
+| BiLLM（`../../raw/papers/2026-09-21/billm/paper.md.txt`） | 页 1：1；页 2：5；页 3：1；页 4：9；页 5：1 | 人工回查代表页的图表与公式，原件可读；共 17 个 |
+| SplitQ（`../../raw/papers/2026-09-21/splitq/paper.md.txt`） | 页 7：21 | 已定位，未在本轮逐个恢复这 21 个字形 |
 
 多数主读本已经写明“文字层用于检索，公式和表格以页图为准”，这是正确的边界。问题是已知损坏只被总括说明覆盖，具体页没有警示，而主读本名称容易让人误认为文字可以直接用于数学推导。建议在受影响页附近标明已知提取缺陷及原件位置；不要盲目删除非字符、把控制字符替换为空白，或根据上下文猜写公式。
 
-[perplexity 提取稿](../../raw/articles/2026-09-22/perplexity/article.md) 还存在类似 `p*\theta(x_t|x*{<t})` 的公式写法，不能直接当作正确 LaTeX 使用。该条目的历史说明把异常归于源网页显示，但原始网页载体未保存；本轮无法独立确定历史源文异常与转换错误各占多少，不能凭现行网页倒推当时状态。现行来源为 [Hugging Face 困惑度文档](https://huggingface.co/docs/transformers/en/perplexity)。
+perplexity 提取稿（`../../raw/articles/2026-09-22/perplexity/article.md.txt`） 还存在类似 `p*\theta(x_t|x*{<t})` 的公式写法，不能直接当作正确 LaTeX 使用。该条目的历史说明把异常归于源网页显示，但原始网页载体未保存；本轮无法独立确定历史源文异常与转换错误各占多少，不能凭现行网页倒推当时状态。现行来源为 [Hugging Face 困惑度文档](https://huggingface.co/docs/transformers/en/perplexity)。
 
 ### 源码树的额外文件与混杂版本
 
@@ -138,7 +138,7 @@ GPTQ 的 reviews/README.md 沿用独立 article 身份，但没有 tags。公开
 
 “忠实保存”与“内容正确”需要分别判断。raw 不应该把来源的论断自动升级为本地已验证事实，也不应该把上游明显错误悄悄改成整理者版本。
 
-[Floating Point and IEEE 754 本地材料](../../raw/articles/2026-09-22/floating-point/article.md) 的 FMA 十进制例子写 x=1.0008、x²=1.00160064，却把 x²−1 写成 1.60064×10⁻⁴。直接计算为 0.00160064，即 1.60064×10⁻³。相关表格中的 rn(x²) 也与正文 1.0016 不一致。本轮核对 [NVIDIA 现行官方页面](https://docs.nvidia.com/cuda/floating-point/index.html)，仍能看到相同的矛盾，不能将其简单归因于我们的提取程序。
+Floating Point and IEEE 754 本地材料（`../../raw/articles/2026-09-22/floating-point/article.md.txt`） 的 FMA 十进制例子写 x=1.0008、x²=1.00160064，却把 x²−1 写成 1.60064×10⁻⁴。直接计算为 0.00160064，即 1.60064×10⁻³。相关表格中的 rn(x²) 也与正文 1.0016 不一致。本轮核对 [NVIDIA 现行官方页面](https://docs.nvidia.com/cuda/floating-point/index.html)，仍能看到相同的矛盾，不能将其简单归因于我们的提取程序。
 
 建议保留来源正文，在条目说明中标记“源文疑点”及具体位置、版本、依据，后续 Wiki 解释采用核实后的推导并说明归属。这样的局部算术核查属于阅读质量审查，不要求复现每篇论文的实验或证明全部结论。
 
@@ -704,26 +704,26 @@ GPTQ 的公开评议另核对 3 个附件，均一致；19 条快照记录的 ID
 
 | 资料与定位 | 核实问题、处理与限制 |
 | --- | --- |
-| [LLM-MQ](../../raw/papers/2026-09-21/llm-mq/formulas.md)、[Integrated Gradients](../../raw/papers/2026-09-21/integrated-gradients/formulas.md)、[LQ-Nets](../../raw/papers/2026-09-22/lq-nets/formulas.md)、[PACT](../../raw/papers/2026-09-22/pact/formulas.md) | Taylor 符号和余项、IG 的非零/抵消与绝对连续前提、矩阵逆的秩条件及 PACT 的 STE 条件分别写清。来源原式保留，不能把代理梯度当 round 的普通导数。 |
-| [PagedAttention](../../raw/papers/2026-09-21/pagedattention/formulas.md) M00050 | 块内 exp 与求和次序错误；零 logits 的两 token 反例中，原式权重各为 1，正确为各 1/2。讲义中同一错误另作标记。 |
-| [QuIP](../../raw/papers/2026-09-21/quip/formulas.md) M00303 | 附录式 (9) 的量化损失缺少减 W；一维精确重构本应为 0，原式产生非零损失。 |
-| [PV-Tuning](../../raw/papers/2026-09-22/pv-tuning/formulas.md) M00249 | 展开损失与 smoothness 二次代理一般是上界不等式，不能写恒等式；以二维例子核对。正确的单调改进条件另保留，没有据此否定下降主张。 |
-| [LLM.int8()](../../raw/papers/2026-09-21/llm-int8/formulas.md) M00018/M00019 | 仿射零点与整数范围不相合；给出明确范围的修正及 [1,2] 的数值反例，避免无偏移码溢出。 |
-| [Integer-only Quantization](../../raw/papers/2026-09-21/integer-only-quantization/formulas.md) M00084 | clamp 左侧输入 r，右侧却用自由变量 x，统一为 r；量化间距要求 b>a、整数 n>1。 |
-| [BRECQ](../../raw/papers/2026-09-21/brecq/formulas.md) M00108 | 饱和步长梯度混用层数 n 和激活上界，且缺整数上界因子；针对明确的 ReLU 无符号量化器重推。Qp=3 的饱和有限差分为 3，原式一般不能取 1。 |
-| [AQLM](../../raw/papers/2026-09-21/aqlm/formulas.md) M00056/M00067 | 两行连接导致交叉项符号错误；应为 −2 交叉项。一维精确重构损失 0，错误双负号式给 4。 |
-| [LLM-QAT](../../raw/papers/2026-09-21/llm-qat/formulas.md)、[QSLAW](../../raw/papers/2026-09-21/multimodal-qat/formulas.md)、[SignRound](../../raw/papers/2026-09-22/signround/formulas.md) | 非对称整数码、实数偏移与整数零点未一致使用，反量化漏偏移或漏乘步长；给出显式定义与零输入反例。零点为 0 的特殊配置及实际代码另行判断。 |
-| [EfficientQAT](../../raw/papers/2026-09-22/efficientqat/formulas.md) | 附录把前向的 2^N−1 写成 2^(N−1)，饱和零点梯度漏步长 s；按指定 STE 推导并保留边界约定。只对饱和普通导数使用有限差分，未把 STE 内部当真实微分。 |
-| [LSQ+](../../raw/papers/2026-09-22/lsq-plus/formulas.md) | PDF 的微分变量与同版 TeX 不一致；宏的星号签名造成读本括号错误已修复。偏移梯度全为零的推论还缺上饱和条件，有明确反例。 |
-| [ResQ](../../raw/papers/2026-09-21/resq/formulas.md) | 块矩阵相加的维度歧义、正交残差范数应为平方和、trace 缺平方根、期望错误线性相减、协方差方向与元素计数分别纠正。Theorem 4.2 标注“原文证明存在疑点”，相关步骤问题与原式一并保留；未据此断言定理结论必为假，不要求继续重推才能完成 raw 核查。 |
-| [QJL](../../raw/papers/2026-09-22/qjl/formulas.md) | 自由下标、尾界正指数、常数与范数半径的量纲、算法索引以及图内缺 sqrt(π/2) 分别核对。换成负号仍不足以修好原尾界：提供高斯固定向量下的独立 MGF 推导与安全界，并给出原常数的反例；attention 界限定固定 q/k、独立随机投影、范数与误差范围。 |
-| [检索损害与量化](../../raw/papers/2026-09-23/quantization-retrieval-damage/formulas.md) | Conformal 上尾阈值应为第 k 小值，不能写第 k 大值；k=n+1 采用无穷阈值。n=5 的排序反例及实际 flip 构造显示错误阈值可超过 α；保证是交换性下的边际联合风险，不能误作条件风险。 |
-| [Kitty](../../raw/papers/2026-09-21/kitty/formulas.md) | 图内 attention 分母 d 与同文正文 sqrt(d) 不符；保留原图，以 d=4 的概率差核实更正。 |
-| [SmoothQuant](../../raw/papers/2026-09-21/smoothquant/formulas.md) | 图中变换后 X 的 AbsMax 被误标为缩放因子 (1,4,1,3)；逐项计算应为 (2,4,2,3)，同时验证变换前后矩阵乘法保持一致。 |
-| [QServe](../../raw/papers/2026-09-21/qserve/formulas.md) | 保护范围推导方向及 127−17/2 的算术错误单列；以非零最近舍入尺度 s≤16、整数零点与 clip 范围重新给出 [-119,119] 的安全依据。图内 −5、−16 和 −2 的字节常量错误另修正，核对 32 bit 跨 byte 进位；未运行 PTX。 |
-| [OSTQuant](../../raw/papers/2026-09-22/ostquant/formulas.md) | 附录右侧 S₂ 应为 X₂，图内非线性分支混用原激活/缩放激活名称；以明确的 A/B 定义和逐元素非零尺度修正等价式，给出 σ(0.5) 与 σ(1) 的反例。 |
-| [floating-point](../../raw/articles/2026-09-22/floating-point/formulas.md) | 示例 1.0008×x²−1 的残差为 1.60064×10^-3，原指数误写 −4。 |
-| [GPU Mode](../../raw/articles/2026-09-24/gpu-mode-lecture-materials/formulas.md)、[IIT Bombay](../../raw/articles/2026-09-24/iit-bombay-systems-for-ml-2026/formulas.md)、[Microsoft](../../raw/articles/2026-09-24/microsoft-system-for-ai/formulas.md) | 打包图漏 F/重复 G；算术强度 100 与 1000；GHz 到 TFLOP/s 的换算；链式导数 2.805 与 1.972602；两次 GEMM 输出；0x72 与 144；FP32 最小有限值、FP16 范围；线程/块索引次序等分别用整数、矩阵或有限差分核查。合法 MMA 形状仍依 dtype、布局和 ISA。 |
+| LLM-MQ（`../../raw/papers/2026-09-21/llm-mq/formulas.md.txt`）、Integrated Gradients（`../../raw/papers/2026-09-21/integrated-gradients/formulas.md.txt`）、LQ-Nets（`../../raw/papers/2026-09-22/lq-nets/formulas.md.txt`）、PACT（`../../raw/papers/2026-09-22/pact/formulas.md.txt`） | Taylor 符号和余项、IG 的非零/抵消与绝对连续前提、矩阵逆的秩条件及 PACT 的 STE 条件分别写清。来源原式保留，不能把代理梯度当 round 的普通导数。 |
+| PagedAttention（`../../raw/papers/2026-09-21/pagedattention/formulas.md.txt`） M00050 | 块内 exp 与求和次序错误；零 logits 的两 token 反例中，原式权重各为 1，正确为各 1/2。讲义中同一错误另作标记。 |
+| QuIP（`../../raw/papers/2026-09-21/quip/formulas.md.txt`） M00303 | 附录式 (9) 的量化损失缺少减 W；一维精确重构本应为 0，原式产生非零损失。 |
+| PV-Tuning（`../../raw/papers/2026-09-22/pv-tuning/formulas.md.txt`） M00249 | 展开损失与 smoothness 二次代理一般是上界不等式，不能写恒等式；以二维例子核对。正确的单调改进条件另保留，没有据此否定下降主张。 |
+| LLM.int8()（`../../raw/papers/2026-09-21/llm-int8/formulas.md.txt`） M00018/M00019 | 仿射零点与整数范围不相合；给出明确范围的修正及 [1,2] 的数值反例，避免无偏移码溢出。 |
+| Integer-only Quantization（`../../raw/papers/2026-09-21/integer-only-quantization/formulas.md.txt`） M00084 | clamp 左侧输入 r，右侧却用自由变量 x，统一为 r；量化间距要求 b>a、整数 n>1。 |
+| BRECQ（`../../raw/papers/2026-09-21/brecq/formulas.md.txt`） M00108 | 饱和步长梯度混用层数 n 和激活上界，且缺整数上界因子；针对明确的 ReLU 无符号量化器重推。Qp=3 的饱和有限差分为 3，原式一般不能取 1。 |
+| AQLM（`../../raw/papers/2026-09-21/aqlm/formulas.md.txt`） M00056/M00067 | 两行连接导致交叉项符号错误；应为 −2 交叉项。一维精确重构损失 0，错误双负号式给 4。 |
+| LLM-QAT（`../../raw/papers/2026-09-21/llm-qat/formulas.md.txt`）、QSLAW（`../../raw/papers/2026-09-21/multimodal-qat/formulas.md.txt`）、SignRound（`../../raw/papers/2026-09-22/signround/formulas.md.txt`） | 非对称整数码、实数偏移与整数零点未一致使用，反量化漏偏移或漏乘步长；给出显式定义与零输入反例。零点为 0 的特殊配置及实际代码另行判断。 |
+| EfficientQAT（`../../raw/papers/2026-09-22/efficientqat/formulas.md.txt`） | 附录把前向的 2^N−1 写成 2^(N−1)，饱和零点梯度漏步长 s；按指定 STE 推导并保留边界约定。只对饱和普通导数使用有限差分，未把 STE 内部当真实微分。 |
+| LSQ+（`../../raw/papers/2026-09-22/lsq-plus/formulas.md.txt`） | PDF 的微分变量与同版 TeX 不一致；宏的星号签名造成读本括号错误已修复。偏移梯度全为零的推论还缺上饱和条件，有明确反例。 |
+| ResQ（`../../raw/papers/2026-09-21/resq/formulas.md.txt`） | 块矩阵相加的维度歧义、正交残差范数应为平方和、trace 缺平方根、期望错误线性相减、协方差方向与元素计数分别纠正。Theorem 4.2 标注“原文证明存在疑点”，相关步骤问题与原式一并保留；未据此断言定理结论必为假，不要求继续重推才能完成 raw 核查。 |
+| QJL（`../../raw/papers/2026-09-22/qjl/formulas.md.txt`） | 自由下标、尾界正指数、常数与范数半径的量纲、算法索引以及图内缺 sqrt(π/2) 分别核对。换成负号仍不足以修好原尾界：提供高斯固定向量下的独立 MGF 推导与安全界，并给出原常数的反例；attention 界限定固定 q/k、独立随机投影、范数与误差范围。 |
+| 检索损害与量化（`../../raw/papers/2026-09-23/quantization-retrieval-damage/formulas.md.txt`） | Conformal 上尾阈值应为第 k 小值，不能写第 k 大值；k=n+1 采用无穷阈值。n=5 的排序反例及实际 flip 构造显示错误阈值可超过 α；保证是交换性下的边际联合风险，不能误作条件风险。 |
+| Kitty（`../../raw/papers/2026-09-21/kitty/formulas.md.txt`） | 图内 attention 分母 d 与同文正文 sqrt(d) 不符；保留原图，以 d=4 的概率差核实更正。 |
+| SmoothQuant（`../../raw/papers/2026-09-21/smoothquant/formulas.md.txt`） | 图中变换后 X 的 AbsMax 被误标为缩放因子 (1,4,1,3)；逐项计算应为 (2,4,2,3)，同时验证变换前后矩阵乘法保持一致。 |
+| QServe（`../../raw/papers/2026-09-21/qserve/formulas.md.txt`） | 保护范围推导方向及 127−17/2 的算术错误单列；以非零最近舍入尺度 s≤16、整数零点与 clip 范围重新给出 [-119,119] 的安全依据。图内 −5、−16 和 −2 的字节常量错误另修正，核对 32 bit 跨 byte 进位；未运行 PTX。 |
+| OSTQuant（`../../raw/papers/2026-09-22/ostquant/formulas.md.txt`） | 附录右侧 S₂ 应为 X₂，图内非线性分支混用原激活/缩放激活名称；以明确的 A/B 定义和逐元素非零尺度修正等价式，给出 σ(0.5) 与 σ(1) 的反例。 |
+| floating-point（`../../raw/articles/2026-09-22/floating-point/formulas.md.txt`） | 示例 1.0008×x²−1 的残差为 1.60064×10^-3，原指数误写 −4。 |
+| GPU Mode（`../../raw/articles/2026-09-24/gpu-mode-lecture-materials/formulas.md.txt`）、IIT Bombay（`../../raw/articles/2026-09-24/iit-bombay-systems-for-ml-2026/formulas.md.txt`）、Microsoft（`../../raw/articles/2026-09-24/microsoft-system-for-ai/formulas.md.txt`） | 打包图漏 F/重复 G；算术强度 100 与 1000；GHz 到 TFLOP/s 的换算；链式导数 2.805 与 1.972602；两次 GEMM 输出；0x72 与 144；FP32 最小有限值、FP16 范围；线程/块索引次序等分别用整数、矩阵或有限差分核查。合法 MMA 形状仍依 dtype、布局和 ISA。 |
 
 公式复核还澄清了未必构成原文错误的范围，例如：HELM 可见像素与隐藏重叠文字、QERA 的对数轴标签、SpikeLLM 的类别标签、VEQ 的两种梯度比率口径、SqueezeLLM 的有符号分解与 magnitude、RMSE 在零残差处的不可微性、QServe 的缩放对非线性分支的条件、排序间隔在 ties 下的边界。未把正常简写或不同统计口径机械判为错误。
 

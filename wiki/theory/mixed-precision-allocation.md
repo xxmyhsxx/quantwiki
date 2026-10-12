@@ -8,9 +8,7 @@ tags:
   - deployment
 sources:
   - raw/papers/2026-09-21/coopq/paper.pdf
-  - raw/papers/2026-09-21/coopq/source/aaai2026.tex
   - raw/papers/2026-09-21/channel-wise-mixed-precision/paper.pdf
-  - raw/papers/2026-09-21/channel-wise-mixed-precision/source/CMPQ_V2.tex
   - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
   - raw/papers/2026-09-28/foldquantvla/paper.pdf
   - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf

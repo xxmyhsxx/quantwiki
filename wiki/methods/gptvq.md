@@ -8,9 +8,6 @@ tags:
   - inference
 sources:
   - raw/papers/2026-09-22/gptvq/paper.pdf
-  - raw/papers/2026-09-22/gptvq/source/sections/method.tex
-  - raw/papers/2026-09-22/gptvq/source/sections/results.tex
-  - raw/papers/2026-09-22/gptvq/source/sections/appendix.tex
 updated: 2026-10-08
 ---
 

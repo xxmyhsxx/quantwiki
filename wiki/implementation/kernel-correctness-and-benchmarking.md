@@ -18,13 +18,13 @@ sources:
   - raw/repositories/2026-09-21/triton/source/python/triton/testing.py
   - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/kernel_cuda/kernel.cu
   - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/torch-ext/torch_binding.cpp
-  - raw/articles/2026-09-22/compute-sanitizer/article.md
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-bench.md
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-event.md
-  - raw/articles/2026-09-22/nsight-compute/pages/ncu-guide.md
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-profiler.md
-  - raw/articles/2026-09-22/nsight-systems/article.md
-  - raw/articles/2026-09-21/cutlass-profiler/article.md
+  - raw/articles/2026-09-22/compute-sanitizer/article.md.txt
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-bench.md.txt
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-event.md.txt
+  - raw/articles/2026-09-22/nsight-compute/pages/ncu-guide.md.txt
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-profiler.md.txt
+  - raw/articles/2026-09-22/nsight-systems/article.md.txt
+  - raw/articles/2026-09-21/cutlass-profiler/article.md.txt
 updated: 2026-09-22
 ---
 

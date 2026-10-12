@@ -8,7 +8,6 @@ tags:
   - serving
 sources:
   - raw/papers/2026-09-21/smoothquant-plus/paper.pdf
-  - raw/papers/2026-09-21/smoothquant-plus/source/rsc.tex
 updated: 2026-10-12
 ---
 

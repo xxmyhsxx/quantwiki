@@ -9,7 +9,7 @@ tags:
 sources:
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/billm/paper.pdf
-  - raw/articles/2026-09-21/luq-project/article.md
+  - raw/articles/2026-09-21/luq-project/article.md.txt
 updated: 2026-09-15
 ---
 

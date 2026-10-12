@@ -8,7 +8,6 @@ tags:
   - memory
 sources:
   - raw/repositories/2026-09-21/kivi/source/quant/new_pack.py
-  - raw/papers/2026-09-21/kivi/source.eprint
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/repositories/2026-09-21/kivi/source/models/llama_kivi.py
 updated: 2026-10-03

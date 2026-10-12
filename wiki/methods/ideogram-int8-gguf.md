@@ -9,7 +9,6 @@ tags:
   - data-format
 sources:
   - raw/papers/2026-09-21/int8-gg/paper.pdf
-  - raw/papers/2026-09-21/int8-gg/source/paper.tex
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-quants.c
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml.c

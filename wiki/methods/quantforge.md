@@ -9,11 +9,6 @@ tags:
   - evaluation
 sources:
   - raw/papers/2026-10-03/quantforge/paper.pdf
-  - raw/papers/2026-10-03/quantforge/source/sections/prelim.tex
-  - raw/papers/2026-10-03/quantforge/source/sections/lakatos.tex
-  - raw/papers/2026-10-03/quantforge/source/sections/eigenquant.tex
-  - raw/papers/2026-10-03/quantforge/source/sections/experiments.tex
-  - raw/papers/2026-10-03/quantforge/source/sections/appendix.tex
 updated: 2026-10-08
 ---
 

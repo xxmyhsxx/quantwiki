@@ -12,9 +12,7 @@ sources:
   - raw/papers/2026-09-21/turboquant/paper.pdf
   - raw/papers/2026-09-21/kivi/paper.pdf
   - raw/papers/2026-10-03/wush-kv/paper.pdf
-  - raw/papers/2026-10-03/wush-kv/source/main.tex
   - raw/papers/2026-09-21/calibquant/paper.pdf
-  - raw/papers/2026-09-21/calibquant/source/main_iccv.tex
 updated: 2026-10-12
 ---
 

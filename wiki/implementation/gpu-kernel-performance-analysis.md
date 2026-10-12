@@ -7,12 +7,12 @@ tags:
   - performance
   - evaluation
 sources:
-  - raw/articles/2026-09-22/nsight-compute/pages/ncu-guide.md
-  - raw/articles/2026-09-22/nsight-compute/pages/ncu-cli.md
-  - raw/articles/2026-09-22/nsight-systems/article.md
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-profiler.md
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-event.md
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-rms.md
+  - raw/articles/2026-09-22/nsight-compute/pages/ncu-guide.md.txt
+  - raw/articles/2026-09-22/nsight-compute/pages/ncu-cli.md.txt
+  - raw/articles/2026-09-22/nsight-systems/article.md.txt
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-profiler.md.txt
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-event.md.txt
+  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-rms.md.txt
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/layernorm_kernels.cu
   - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/fused_add_rmsnorm.cuh
   - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/int8_kernel.py

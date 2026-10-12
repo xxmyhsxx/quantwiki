@@ -7,7 +7,7 @@ tags:
   - data-format
   - gpu-kernel
 sources:
-  - raw/repositories/2026-09-21/quip-sharp/source/README.md
+  - raw/repositories/2026-09-21/quip-sharp/source/README.md.txt
   - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/hessian_offline_llama.py
   - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/quantize_finetune_llama.py
   - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/hfize_llama.py

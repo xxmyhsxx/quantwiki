@@ -8,7 +8,6 @@ tags:
   - calibration
 sources:
   - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/mbq/source.eprint
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/pre_quant.py
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale.py
   - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale_wa.py

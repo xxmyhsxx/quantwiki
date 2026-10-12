@@ -8,7 +8,6 @@ tags:
   - calibration
 sources:
   - raw/papers/2026-10-05/onptq/paper.pdf
-  - raw/papers/2026-10-05/onptq/source/iclr2027_conference.tex
   - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
   - raw/papers/2026-09-21/luq/paper.pdf
   - raw/papers/2026-09-21/qig/paper.pdf

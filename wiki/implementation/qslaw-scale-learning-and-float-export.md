@@ -7,7 +7,7 @@ tags:
   - fake-quantization
   - model-export
 sources:
-  - raw/repositories/2026-09-21/qslaw/source/README.md
+  - raw/repositories/2026-09-21/qslaw/source/README.md.txt
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/int_linear.py
   - raw/repositories/2026-09-21/qslaw/source/llava/quantize/int_llama_layer.py

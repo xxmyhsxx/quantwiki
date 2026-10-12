@@ -9,13 +9,10 @@ tags:
 sources:
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_backend.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/papers/2026-09-21/saw-int4/source.eprint
-  - raw/papers/2026-09-21/saw-int4/source/section3.tex
-  - raw/papers/2026-09-21/saw-int4/source/section5.tex
   - raw/papers/2026-09-21/saw-int4/paper.pdf
-  - raw/repositories/2026-09-21/saw-int4/source/README.md
-  - raw/repositories/2026-09-21/saw-int4/source/docs/bdr_env_vars.md
-  - raw/repositories/2026-09-21/saw-int4/source/SUBMODULE_VERSIONS.md
+  - raw/repositories/2026-09-21/saw-int4/source/README.md.txt
+  - raw/repositories/2026-09-21/saw-int4/source/docs/bdr_env_vars.md.txt
+  - raw/repositories/2026-09-21/saw-int4/source/SUBMODULE_VERSIONS.md.txt
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/QuantKernel/fused_hadamard_int4_kv.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/kv_quant_kernels.py
   - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py

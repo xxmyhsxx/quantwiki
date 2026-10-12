@@ -17,7 +17,7 @@ sources:
   - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cutlass_extensions/epilogue/scaled_mm_epilogues_c2x.hpp
   - raw/repositories/2026-09-21/vllm/source/CMakeLists.txt
   - raw/repositories/2026-09-21/triton/source/third_party/nvidia/language/cuda/libdevice.py
-  - raw/articles/2026-09-22/cuda-libdevice-round/article.md
+  - raw/articles/2026-09-22/cuda-libdevice-round/article.md.txt
   - https://github.com/NVIDIA/cutlass/blob/57e3cfb47a2d9e0d46eb6335c3dc411498efa198/include/cutlass/gemm/kernel/default_gemm.h
   - https://github.com/NVIDIA/cutlass/blob/57e3cfb47a2d9e0d46eb6335c3dc411498efa198/include/cutlass/gemm/threadblock/default_mma.h
   - https://github.com/NVIDIA/cutlass/blob/57e3cfb47a2d9e0d46eb6335c3dc411498efa198/include/cutlass/gemm/threadblock/mma_multistage.h
