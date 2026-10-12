@@ -35,7 +35,9 @@ sources:
   - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
   - raw/repositories/2026-09-21/gptq/source/quant.py
   - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-updated: 2026-10-03
+  - raw/papers/2026-09-21/atom/source/04_Design.tex
+  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/GEMM/DenseLayerGEMM_i4.cu
+updated: 2026-10-12
 ---
 
 # 量化矩阵乘法的缩放与执行路径
@@ -262,6 +264,18 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 
 [TTS 的真实 INT4/INT8 对照](tts-quantization-evaluation.md) 提供了算子覆盖的具体例子：满足约束的 $1\times1$ Conv 可转成 MatMul，使 Supertonic flow estimator 的更多权重进入 `MatMulNBits`。权重覆盖率仍不等于执行时间覆盖率，保留浮点 vocoder 也意味着系统不是全 INT4。同一研究中存在质量通过却更慢的 INT8，也存在更快却未通过预设质量带的 INT4，必须联合报告实际图、质量约束和时间/内存/能耗口径。
 
+## 15. 归约维分组为什么要在累加途中恢复尺度
+
+§1说明外维尺度可放在整数求和之后；分组沿归约维切开时，尺度一般留在组和内部。令 $A\in\mathbb R^{T\times d}$、$W\in\mathbb R^{d\times o}$，组 $g$ 的整数部分和为 $C^{(g)}_{tj}=\sum_{k\in g}q^A_{tk}q^W_{kj}$，恢复结果为
+
+$$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}.$$
+
+因此可以先在每组用INT32累加，但需在合并组之前应用该组的两侧尺度。将所有组的INT32部分和直接相加，通常丢失分组权重信息；§1的两组反例也适用。只有各组尺度乘积相同等额外条件下，才可用一个共同后置尺度。采用高精度尾部时，再加尾部自己的恢复部分和，不能将两路混成同一个INT4网格。
+
+[Atom](../methods/atom.md) v3 §4.2/图8把每组恢复及浮点相加放进MMA流水，省去部分和写回全局内存再发另一kernel的成本。融合不会消除参数读取、类型转换、尺度乘法与跨组相加，也不自动保证计算与访存完全重叠。组变小改善局部范围，但元数据及恢复次数会增加；真实收益仍需按相同shape和测量协议判断。
+
+具体精度也需追到代码：Atom所选DenseLayerGEMM_i4.cu先以FP16相乘两侧尺度，再转float恢复INT32部分和、跨组FP32累加并输出FP16。它与论文的FP16恢复/相加描述及“先在FP32计算尺度乘积”均有区别。原生路径、元数据复制和质量模拟条件见 [Atom实现](atom-mixed-gemm-and-paged-kv.md#3-native-gemm的表示尺度和累加)。数学恒等式不消除有限精度舍入，也不证明实现已达到某个速度。
+
 ## 来源身份
 
 下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
@@ -292,6 +306,8 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 | [mit-han-lab/smoothquant.git](https://github.com/mit-han-lab/smoothquant.git/tree/c61476d728e42ae0d8a35e7e78494edcac3237b5) | `c61476d728e42ae0d8a35e7e78494edcac3237b5` | — |
 | [IST-DASLab/gptq](https://github.com/IST-DASLab/gptq/tree/2d65066eeb06a5c9ff5184d8cebdf33662c67faf) | `2d65066eeb06a5c9ff5184d8cebdf33662c67faf` | — |
 | [Guangxuan-Xiao/torch-int](https://github.com/Guangxuan-Xiao/torch-int/tree/65266db1eadba5ca78941b789803929e6e6c6856) | `65266db1eadba5ca78941b789803929e6e6c6856` | — |
+| [Atom](https://arxiv.org/abs/2310.19102v3) | arXiv:2310.19102v3 | §4.2、图8的group恢复/融合 |
+| [efeslab/Atom](https://github.com/efeslab/Atom/tree/7e3618b1a7a7c86e1c93cc909b1510c046d76ac6) | 7e3618b1a7a7c86e1c93cc909b1510c046d76ac6 | 所选DenseLayerGEMM_i4的group恢复精度 |
 
 - [PRQuant](https://arxiv.org/abs/2609.22106v1)，arXiv:2609.22106v1；置换、残差拼接与门控 FFN。
 - [FoldQuantVLA](https://arxiv.org/abs/2609.24433v1)，arXiv:2609.24433v1；共享输入折叠、目标投影位宽和编译基线。
