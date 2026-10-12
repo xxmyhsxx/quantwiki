@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 16 批
+
+- 核读压缩评测、TTS 评测、AKVQ-VL、CentriQ、CoRePrune、FoldQuantVLA、MASQuant 与 MBQ 八页；定向回查联合压缩表、配对 bootstrap、KV 保护、删除恒等式、均值旁路、INT4 prologue 及模态重构路径。
+- 修正逐通道 KV “性能一致更差”的概括，补明 MME 反例；评测表区分离线校准与权重反向更新。合并评测页重复边界，删除 MBQ/MASQuant 的重复 Strong/Weak 及 CentriQ 的 ingest 过程表达，保留独有的指标核对、模型范围和部署条件。
+- 无 ingest 或模型运行；累计完成 98 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 15 批
 
 - 核读 QAT 基础、QSLAW 方法/实现、EfficientQAT、LC-QAT、LLM-QAT、LSQ 与 QUASAR 八页；定向回查步长/零点 STE、固定码尺度、仿射网格与 DGE、QUASAR 条件界及 QSLAW 浮点恢复路径。关键推导与跨页表述一致，未发现新增算法性错误。
