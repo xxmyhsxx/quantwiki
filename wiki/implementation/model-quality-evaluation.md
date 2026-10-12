@@ -17,6 +17,7 @@ sources:
   - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md.txt
   - raw/papers/2026-09-21/int8-gg/paper.pdf
   - raw/papers/2026-09-21/helm/paper.pdf
+  - raw/papers/2026-09-21/longbench-v2/paper.pdf
 updated: 2026-10-12
 ---
 
@@ -51,6 +52,12 @@ Hugging Face 的 Perplexity of fixed-length models 说明：模型最多接收 $
 
 PPL 给的是“真实上下文上的预测损失”。自由生成会把模型输出接回输入，早期错误可能改变后续轨迹，因而需要任务评测补充。生成过程见 [自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)。
 
+### 2.1 长度分组和截断不能替代配对长度试验
+
+[LongBench v2](longbench-v2-context-and-scoring.md)的语料长度按words分组，模型窗口按各自tokenizer的tokens限制，超窗从中间截断。必须分别记录原文长度、实际输入tokens、提示/输出预算、保留位置与证据是否留下；“语料长”不能直接说明模型读入同样长的材料。
+
+不同长度组的任务构成也可能不同。要判断增加长度本身的影响，应对同一问题构造可比的长度变体、控制有效证据/干扰位置，并固定模板、生成和计分；只比较两组平均值会混入任务差异。这是整理者的配对设计建议，不是论文已经完成的长度因果试验。
+
 ## 3. 任务准确率背后也有算法
 
 以下为本页的协议整理，而非新的模型实验。一次量化对照需要共同固定：
@@ -61,6 +68,12 @@ PPL 给的是“真实上下文上的预测损失”。自由生成会把模型�
 - 汇总规则：按样本还是任务平均，分母是否包含所有请求；丢掉失败样本后再报准确率会改变问题。
 
 例如“B”“答案是 B”“(B)”是否相同应由事先确定的 parser 决定，不能看过量化结果后单独放宽。比较同一批样本可同时报告浮点独对、量化独对和双方皆错，避免均值相近掩盖错误集合变化。多模态数据协议的实例见 [VLM 压缩评测](lvlm-compression-benchmark.md)。
+
+### 3.1 失败计零、随机补偿和有效样本计分有不同分母
+
+总请求n、有效正确C、解析失败/拒答I时，strict为C/n；给无效请求k选一随机猜测期望分则是(C+I/k)/n；只保留有效请求为C/(n−I)，须注明条件及覆盖率，I=n时未定义。教学例：100请求中70对、20错、10无效，四选一分别70%、72.5%、约77.8%；最后一个没有包含全部请求。
+
+[LongBench v2](longbench-v2-context-and-scoring.md)主表与附表采用前两个口径。补偿是人为评价政策，不是模型实际答对无效样本；应同时给出invalid率并在浮点/压缩对照中共用parser，不能将补偿值与strict混比。
 
 ## 4. 校准与错误排序是两个问题
 
@@ -216,3 +229,5 @@ CI含零与质量等价按[第8节](#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E
 - Ideogram INT8/GGUF研究（`https://arxiv.org/abs/2606.12280v2`），arXiv:2606.12280v2；§3–7、表1–4，生成质量/参考保真度/OCR、共享JSON输入、配对统计与消融协议边界。
 
 - Holistic Evaluation of Language Models，`arXiv:2211.09110v2`；BPB、C.2与式3/6–7/12–15，固定提示/计分及分箱和面积边界，具体身份与阅读范围见HELM页。
+
+- LongBench v2，`arXiv:2412.15204v2`；words/token窗口、截断、两阶段CoT和主表/补偿计分，阅读范围与原件差异见协议页。
