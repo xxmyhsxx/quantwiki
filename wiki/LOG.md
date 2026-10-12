@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 17 批
+
+- 核读 MQuant、OnPTQ、Pivot-Q、PRQuant、Q-VLM、QAPruner、QIG 与 RAMP 八页；定向回查分模态布局、决策风险、时序选择、尾部残差、熵分块、剪枝评分、归因分支及聚类阈值。
+- Q-VLM 相邻分数平均补明 $b>a$，单层块不使用此式；压缩 Q-VLM/MQuant/QIG 的重复优劣段落，删除 OnPTQ/QIG 的过程尾注。保留论文与代码差异、OCRBench 反例、梯度与裁剪分支以及校准成本等具体条件。
+- 无 ingest 或模型运行；累计完成 106 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 16 批
 
 - 核读压缩评测、TTS 评测、AKVQ-VL、CentriQ、CoRePrune、FoldQuantVLA、MASQuant 与 MBQ 八页；定向回查联合压缩表、配对 bootstrap、KV 保护、删除恒等式、均值旁路、INT4 prologue 及模态重构路径。
