@@ -173,8 +173,6 @@ $$\Lambda=\operatorname{logsumexp}_s\lambda_s,\qquad O'=\sum_s e^{\lambda_s-\Lam
 
 它需要用局部分母恢复全历史的softmax质量，**不能将HP与QP各自归一化输出直接相加**。这个公式的共同推导见[在线 softmax 与分段 Attention](sglang-attention-operator-design.md#4.%20Decode%EF%BC%9A%E6%8A%8A%E5%8E%86%E5%8F%B2%E7%BB%B4%E6%8B%86%E5%BC%80%EF%BC%8C%E5%86%8D%E6%8C%89%20LSE%20%E5%90%88%E5%B9%B6)。此处wrapper不要求最终LSE输出；stage2先将结果存成BF16，再由backend执行独立BF16 `O'@Rv.T` 恢复Value坐标并返回模型输出dtype。V absorption仍保留这一输出逆旋转。[18:2265–2367][17:1848–1856]
 
-本页把“元数据存储FP32 → 读取s/z转BF16 → 概率转BF16 → 局部O/LSE与合并FP32 → 最终BF16 → BF16逆旋转”分开，是为了说明低位宽码之外的数值接口；没有据此估计模型误差或GPU速度。
-
 ## 8. 来源定位与未覆盖范围
 
 正文的 `[n]` 对应frontmatter第n个文件；runtime代码路径以下均相对 `sglang-research/python/sglang/`：

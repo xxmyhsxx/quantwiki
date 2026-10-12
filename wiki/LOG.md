@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 20 批
+
+- 核读 FlashInfer 分页/NVFP4、OSCAR、Kitty、KIVI、KVQuant、NOVA-KV、QJL 与 TurboQuant 八页；回查尺度倒数、INT2 打包与恢复精度、窗口刷新、敏感度尺度平方、查询加权变换及投影/残差估计。
+- KIVI 的 GSM8K 差距明确为1.90个百分点，TruthfulQA 指标改善不擅自判作波动；吞吐倍数限定同显存增批条件。删去 KIVI 重复 Strong/Weak、OSCAR 数值接口回顾和 KVQuant 运行尾注，保留真实预算、论文证明问题及具体未核接口。
+- 无 ingest 或模型运行；累计完成 123 个知识页。内容复核、链接与差异检查通过。
+
 ## 2026-10-13 · 全库分批审查：第 19 批
 
 - 通读选择性预测页，回查 MaxProb/Selector 定义及两张主表。原文“所有位宽都降低 ECE”的概括存在反例：Qwen2-VL int8 HQQ 的 ECE 从3.5升到4.3，正文改按指标分别解释。
