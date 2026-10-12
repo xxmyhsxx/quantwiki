@@ -225,10 +225,6 @@ ncu --nvtx --nvtx-include 'perf_target/' --set basic \
 
 2026-09-22 在 Darwin arm64 上检查：本机没有可用的 NVIDIA CUDA 采集环境，未运行 nsys/ncu/Compute Sanitizer，也未运行两个 factory 的 CUDA 路径。配套脚本只完成 CLI、Python 语法、无 CUDA 失败路径、计时统计/状态约束及教学预算的 CPU 检查；[检查脚本](../assets/gpu-kernel-performance-analysis/check_analysis.py)与[记录](../assets/gpu-kernel-performance-analysis/checks-2026-09-22.json)保留具体范围。
 
-后续实验将在具备 NVIDIA GPU 和 CUDA 环境的目标设备上执行；当前编辑主机的硬件条件只说明本次检查范围，不限制后续实验环境。目标设备上依次完成 CUDA 路径的正确性检查、Compute Sanitizer 检查、独立计时和 Nsight 分析，并记录实际 GPU、软件版本及输入条件。
-
-本页案例在目标设备执行前属于实验方案。执行后保留原始样本与分析报告，再将有实测依据、可复用的结论反馈到对应知识页。
-
 ## 来源身份
 
 | 来源 | 版本/快照与使用范围 |

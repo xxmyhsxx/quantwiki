@@ -11,10 +11,11 @@ sources:
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-quants.c
   - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml.c
+  - raw/repositories/2026-09-21/llama-cpp/source/src/llama-quant.cpp
   - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md.txt
   - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/README.md.txt
   - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/imatrix.cpp
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # GGUF 与块量化存储格式
@@ -59,7 +60,7 @@ q4_0 的 4.5 位中，有 0.5 位用于 fp16 尺度：$16/32=0.5$。这是块量
 
 ## 3. 二级尺度：K-quant 超块
 
-k-quant 把块扩大为超块（super-block，$QK\_K = 256$），并在超块内再分 8 或 16 个子块，形成两级尺度：超块级用两个 fp16 保存尺度与最小值，子块级用 6 bit（或 8 bit）保存各自的尺度与最小值。以 4 bit 为例（`ggml-common.h`）：
+k-quant 把块扩大为超块（super-block，$QK\_K = 256$），并在超块内再分 8 或 16 个子块，形成两级尺度。各格式的参数不同：q2_K 用4 bit子块尺度/最小值，q3_K 用6 bit尺度，q6_K 用 int8尺度；q4_K/q5_K 用6 bit尺度/最小值，并用两个 fp16保存超块级基准。以 q4_K 为例（`ggml-common.h`）：
 
 ```c
 #define QK_K 256
@@ -125,7 +126,7 @@ const float d = GGML_FP16_TO_FP32(scale.f16);
 
 第二，iq2_xxs 与 iq3_xxs 的位宽高于名义位数，原因是「按 ggml 的块设计要求」每 256 个权重必须配一个 16 bit 尺度。这说明有效位宽由数据结构决定，名义位宽与实际存储之间可以有稳定差额；引用某格式的 bpw 时应注明是名义值还是该实现的实际块尺寸。
 
-码本类格式的解码依赖网格表（源码中的查找表与索引运算），比 q4_K 的仿射形式复杂，因此对内核的友好程度更低；它们的收益主要体现在同样位宽下的重建质量。i-quant 的质量依赖重要性矩阵（下一节）。
+码本类格式的解码涉及网格表与索引运算，需与后端内核一起评估；不能仅凭表示形式推定速度。imatrix 可参与量化拟合，但是否必需取决于格式与张量（`src/llama-quant.cpp:tensor_requires_imatrix`）。网格表的全部解码细节及 CUDA/Metal/Vulkan 对应内核未逐一核对。
 
 ## 5. 混合格式与量化工具
 
@@ -156,7 +157,7 @@ $$\mathrm{values}[j]\mathrel{+}=x[j]^{2},$$
 
 $$w_{l}=qw_{l}\cdot\sqrt{\sigma^{2}+x_{l}^{2}},\qquad \sigma^{2}=\frac{2}{256}\sum_{l}x_{l}^{2},$$
 
-其中 $qw_l$ 是 imatrix 提供的通道权重。也就是在块内做加权拟合时，同时考虑该元素自身幅度与所在通道的激活统计。文档说明 `--process-output` 默认关闭，即通常不使用 imatrix 量化 `output.weight`。
+此式的 $x_l$ 是待量化权重，$qw_l$ 是 imatrix 提供的通道重要性，与前文累积统计时的激活 x 区分。块内拟合同时考虑权重幅度与输入通道的激活统计。文档说明 `--process-output` 默认关闭，即通常不使用 imatrix 量化 `output.weight`。
 
 imatrix 的定位是「校准统计改善量化拟合」，与 GPTQ 的二阶补偿有共同的信息来源（激活二阶统计），但机制不同：这里只改变参考量化器的加权最小二乘目标，不做逐列误差补偿，也不更新未量化权重。两者的差别见 [GPTQ](../methods/gptq.md) 与 [层重构页](../theory/layer-reconstruction-second-order-compensation.md)。
 
@@ -179,7 +180,7 @@ imatrix 的定位是「校准统计改善量化拟合」，与 GPTQ 的二阶补
 | Q8_0 | 8.5008 | 7.95 | 50.93 |
 | F16 | 16.0005 | 14.96 | 29.17 |
 
-两点解释边界：这是单一 CPU／后端条件下的生成吞吐，不是跨硬件结论；位宽更高的格式在这里更慢，与「生成阶段受权重读取带宽限制」的一般判断方向一致，但缺少数值证明与硬件说明，不能拿来推算其他设备或批量场景。文档同时给出内存与磁盘需求表（例如 8B 模型 F32 为 32.1 GB、Q4_K_M 为 4.9 GB），并说明量化过程需要把模型载入内存。
+生成速度并不随位宽单调变化，例如 IQ1_M 的72.92低于位宽更高的 IQ2_XXS 的79.86。原表未说明硬件与后端，不能将它标为CPU结果，也不足以确定瓶颈或外推其他负载。文档另给出内存与磁盘需求表（例如 8B 模型 F32 为32.1 GB、Q4_K_M 为4.9 GB），并说明量化过程需要把模型载入内存。
 
 ## 8. 与论文格式的差别和适用条件
 
@@ -187,13 +188,6 @@ imatrix 的定位是「校准统计改善量化拟合」，与 GPTQ 的二阶补
 - **口径必须写清。** 名义位宽、块尺寸算出的位宽、包含元数据的文件大小、运行时常驻内存是四个不同量。
 - **质量依赖配置。** imatrix、张量级别覆盖、输出层是否量化都影响结果；同一格式名在不同配置下不是一个质量点。
 - **跨模型不通用。** 混合格式的层选择与 imatrix 都依赖具体模型与校准数据，不能直接套用另一模型的最优配置。
-
-## 9. 局限与未验证
-
-- 本页全部内容来自单项代码快照与工具文档，未构建、未运行 llama.cpp，未生成或读取任何 `.gguf` 文件；位宽为按块结构计算的推导值，不是磁盘实测。
-- i-quant 的网格表与索引解码细节、CUDA／Metal／Vulkan 各后端的对应内核分支未逐一核对；本页不评价其性能表现。
-- 作者表格缺少硬件、线程数、后端与测量方法说明，其数值只用于说明格式间的相对关系。
-- llama.cpp 版本迭代频繁，格式编号与默认行为可能随版本变化；引用时应固定 commit。
 
 ## 来源身份
 
