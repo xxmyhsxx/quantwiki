@@ -142,7 +142,7 @@ C2_p=\operatorname{RN}_T\!\left(\operatorname{RN}_T(F_p)\,\operatorname{RN}_T(g_
 Y_{t,d}=\operatorname{RN}_T\!\left(\sum_{j=0}^{R-1}{}_{\!\text{FP32}}\operatorname{float}(C2_{tR+j,d})\right).
 $$
 
-求和记号的 FP32 表示按 j=0,…,R−1 顺序加到 float accumulator。它不等于既有 FP8/Triton 的“在 FP32 accumulator 上乘 gate 后转 T”。教学例取 BF16、$F=1.00390625$、$g=0.99609375$：F 在 BF16 中以 ties-to-even 舍入为1，Marlin 顺序得到0.99609375；直接把 FP32 的 $Fg=0.9999847412109375$ 舍入为 BF16 则得到1。例子只说明舍入顺序可改变数值，不表示已运行或发现模型精度缺陷。
+求和记号的 FP32 表示按 j=0,…,R−1 顺序加到 float accumulator。它不等于既有 FP8/Triton 的“在 FP32 accumulator 上乘 gate 后转 T”。教学例取 BF16、$F=1.00390625$、$g=0.99609375$：F 在 BF16 中以 ties-to-even 舍入为1，Marlin 顺序得到0.99609375；直接把 FP32 的 $Fg=0.9999847412109375$ 舍入为 BF16 则得到1。例子说明舍入顺序可改变数值。
 
 这里的 sum 来自实际 `MarlinExperts.apply` 传入的 `self.moe_sum` callback，继而调用 CUDA `ops.moe_sum`；不是 standalone `fused_marlin_moe` 无 callback 分支的 `torch.sum`。有 map 的 sum 可按原 ID 跳过无效配对，本页无 map 主线直接按合法 R 路求和。[3][20]
 
@@ -160,7 +160,7 @@ cache 互换避免输出归约与仍被消费的数据别名。专家结果已�
 
 ## 来源身份
 
-本页使用统一归档于 2026-09-21 的 vLLM 官方 v0.26.0 固定源码，source_id 为 `vllm-project-vllm-568afb3a`，resolved commit 为 568afb3a13806beb53bb2e6bd518269357b237c0（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`）。来源身份与实际读取范围分别说明；默认配置和静态接口没有作为部署状态证明。
+本页使用统一归档于 2026-09-21 的 vLLM 官方 v0.26.0 固定源码，source_id 为 `vllm-project-vllm-568afb3a`，resolved commit 为 568afb3a13806beb53bb2e6bd518269357b237c0（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`）。
 
 ### 核读定位与验证边界
 
@@ -174,4 +174,4 @@ cache 互换避免输出归约与仍被消费的数据别名。专家结果已�
 | host / 模板 / 生成规则 | [17] `marlin_moe_wna16/ops.cu:626–891`；[18] `marlin_template.h:310–562,684–791,974–983,1223–1426,1535–1764,1795–1900,2162–2186`；[19] `generate_kernels.py:65–72,177–220` |
 | SiLU / CUDA sum / finalize | [13] `fused_moe/activation.py:145–161`；[22] `activation_kernels.cu:27–75,156–169,290–294`；[20] `moe_align_sum_kernels.cu:373–493,757–920`；[7] `no_dp_ep.py:57–97`；[14] `topk_weight_and_reduce.py:44–77` |
 
-生成脚本登记所选同 T、kU4、group-blocks=8 的模板规则；模板阅读不等于已生成、编译或命中某个具体 tile。本文核通所选 BF16/SM80+/G128 多组、单设备合法路由的准备、专家读取、恢复与输出接口。单组形参边界、SM75/A8、其他组长/格式、Batched/其他 backend、act-order、任意无效 ID、TP/EP、LoRA/DBO/graph/多 stream 和所有 tile/容量组合仍需沿具体条件核查。源码及教学计算不能替代数值、模型接受或性能实测。
+生成脚本登记所选同 T、kU4、group-blocks=8 的模板规则。本文核通所选 BF16/SM80+/G128 多组、单设备合法路由的准备、专家读取、恢复与输出接口。单组形参边界、SM75/A8、其他组长/格式、Batched/其他 backend、act-order、任意无效 ID、TP/EP、LoRA/DBO/graph/多 stream 和其他 tile/容量组合仍需沿具体条件核查。
