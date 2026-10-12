@@ -113,8 +113,6 @@ $$J(R)=\|S^{1/2}(WR-Q(WR))(R^\top A R)^{1/2}\|_F^2
 | `quantizer.py:extract_quant_params` | 另一条 pseudo-quant 路径先白化，量化白化后权重；可在白化空间旋转、量化后乘 $Q^\top$ 折回，再逆白化，另有候选选择。它不能直接证明原格式整数网格约束成立。 |
 | `quant_layers.py:RiemannianQuantLinear.forward` | 旋转输入后走 `F.linear`，权重可在白化空间量化再逆白化；返回浮点张量的模拟路径不证明真实 W4 内核已经执行。 |
 
-因此“支持几何评分”“可得到浮点模拟权重”“存在可部署整数格式”“真实加速”是不同证据层次。当前 ingest 承接前两者的分析，并保留后两者的验证缺口。
-
 ## 7. 实验结果及原件中的不一致
 
 论文 §V 使用 ShareGPT4V 的 COCO 图文校准，评估 LLaVA-OneVision 7B/72B、InternVL2 8B/26B、Qwen2-VL 7B/72B。主表为六任务均分：MMMU、SEED、OCRBench、VizWiz、ScienceQA、TextVQA。默认表 III 为权重对称分组、group 128，激活逐 token 对称 A8，GPTQ 阻尼 0.01、block 128、关闭 act-order，曲率阻尼 $10^{-4}$。主文同时称权重 per-output-channel，故实际粒度仍应结合具体代码配置核对。

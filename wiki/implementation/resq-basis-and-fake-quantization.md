@@ -75,7 +75,7 @@ down权重预先变换，wrapper在线执行完整Hadamard后再量化；由于�
 
 ## 6. 与论文性能结果的断点
 
-固定归档共有43个源码文件，保存范围中未包含论文所述CUTLASS INT4/INT8部署kernel；`fake_quant` 的浮点Linear也没有转入该实现。因此论文RTX3090单block的1.61–3.03倍结果仍是原文报告，不能从本快照重建并确认。完整部署还需要实际packed权重/KV协议、在线Q/K与Hadamard成本、两个GEMM输出归约和测量边界。后续获取或执行这些材料需另定范围，本次保留断点。
+固定归档共有43个源码文件，保存范围中未包含论文所述CUTLASS INT4/INT8部署kernel；`fake_quant` 的浮点Linear也没有转入该实现。因此论文RTX3090单block的1.61–3.03倍结果仍是原文报告，不能从本快照重建并确认。完整部署还需要实际packed权重/KV协议、在线Q/K与Hadamard成本、两个GEMM输出归约和测量边界。
 
 ## 来源身份
 

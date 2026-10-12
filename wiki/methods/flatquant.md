@@ -22,7 +22,7 @@ sources:
   - raw/repositories/2026-09-21/flatquant/source/flatquant/model_tools/llama_utils.py
   - raw/repositories/2026-09-21/flatquant/source/REALQUANT.md.txt
   - raw/repositories/2026-09-21/flatquant/source/benchmarks/layer_benchmark.py
-updated: 2026-09-15
+updated: 2026-10-13
 ---
 
 # FlatQuant：结构化可学习变换与低比特执行
@@ -150,7 +150,7 @@ $$
 4. 计算整个块的输出 MSE，反向更新变换与裁剪。代码用 STE 处理舍入，不能把离散量化的精确导数当成该代理梯度。
 5. 当前块结束后保存参数；所有块校准完成再进行重参数化与权重量化，导出需要的矩阵、网格和打包权重。
 
-**与 OmniQuant 的重要区别：**当前代码 `train_utils.cali_flat_quant` 的教师和学生都接收 `fp_inps`，每层结束用教师输出推进下一层输入；没有 OmniQuant 默认的浮点/量化前缀双路径。优化中还采用 $L/\operatorname{stopgrad}(L)$，前向数值约 1、梯度按当前损失缩放；日志保存未归一化 MSE。相同的“块重构”标签并不表示相同误差补偿目标。
+**与 OmniQuant 的重要区别：**当前代码 `train_utils.cali_flat_quant` 的教师和学生都接收 `fp_inps`，每层结束用教师输出推进下一层输入；没有 OmniQuant 默认的浮点/量化前缀双路径。优化中还采用 $L/\operatorname{stopgrad}(L)$：当 $L>0$ 时，前向值为 1，梯度乘 $1/L$；日志保存未归一化 MSE。相同的“块重构”标签并不表示相同误差补偿目标。
 
 论文 §4.1 配方：WikiText-2 的 128 段、每段 2048 tokens，batch 4，15 epochs，AdamW；矩阵/尺度初始学习率 $5\times10^{-3}$，裁剪 $5\times10^{-2}$，cosine 衰减。默认 AMP+SVD 配方在 LLaMA-3-8B 报告约 0.9 小时、27,554 MiB（表 4）。该表未直接给出 GPU 型号，不用推理计时的 RTX 3090 补成校准硬件事实。
 
@@ -166,7 +166,7 @@ KV 量化在这里属于附带对象；KV 侧的粒度选择、流式约束与�
 
 在线计算 $P_1^\mathsf T V P_2$ 有两次小矩阵乘，后面还要取范围、量化与打包。若每一步都写回显存，会增加中间张量读写与 kernel 启动。论文 §3.3 将变换与量化放进一个 Triton kernel，尽量在片上保存中间结果，再交给 CUTLASS INT4 矩阵乘；KV 低比特执行使用 FlashInfer 路线。
 
-**与 W4A8 路线的分歧。** [QServe](qserve.md) 论证按组 W4A4 在 Ampere 与 Hopper 上必须在主循环内反量化部分和、因而被 CUDA 核心限制，转向 W4A8；FlatQuant 则用结构化在线变换与融合内核承担变换成本，主张 W4A4 可以落地。两者的前提不同（变换放在哪里、反量化是否融合、内核实现方式），这类分歧需要同硬件、同批次、同测量口径的对照实验来判断。
+**与 W4A8 路线的差别。** [QServe](qserve.md) 分析的是沿归约维分组的 W4A4：不同组的尺度要求在主循环内转换并缩放部分和，受 CUDA 核心与寄存器压力限制。FlatQuant 主配置采用权重逐输出通道、激活逐 token 的 INT4，尺度可在完整整数累加后应用；在线变换与量化另行融合。因此量化粒度是关键前提，融合变换并没有消除任意分组 W4A4 的缩放代价。实际收益仍按硬件、批次和完整变换成本对照。
 
 这不是“所有模型操作融合成一个 kernel”，也不是消除了变换算术。需要区分 [存储、反量化与实际矩阵乘](../implementation/quantized-matmul-scaling-execution.md)。
 

@@ -14,7 +14,7 @@ sources:
   - raw/repositories/2026-09-21/quarot/source/quarot/nn/linear.py
   - raw/repositories/2026-09-21/quarot/source/quarot/transformers/kv_cache.py
   - raw/repositories/2026-09-21/quarot/source/e2e/quantized_llama/modeling_llama.py
-updated: 2026-09-15
+updated: 2026-10-13
 ---
 
 # QuaRot：固定旋转、全图等价与四位推理
@@ -99,7 +99,7 @@ V 的头内旋转已在投影权重内，量化缓存存的是该坐标下的 V�
 
 执行流程为：融合 Norm 并配套改写浮点权重 → 固定旋转 → 收集旋转后线性输入做 GPTQ → 保存量化权重/参数 → 部署时在线 Hadamard、动态量化与低比特线性。GPTQ 主配置使用 128 段校准数据，每段 2048 token；其补偿机制由 [GPTQ](gptq.md) 解释。RTN 变体不需激活校准数据，但更低位宽下质量差异明显。
 
-KV 一侧的粒度与布局选择另有专门讨论：本页的旋转作用在 RoPE 之后的 Q/K 上并按 head 施加，而 [SAW-INT4](saw-int4.md) 在服务约束下改用块对角 Hadamard 且只旋转键，并报告融合后的旋转开销只占总运行时 0.1%–0.3%；两者的共同框架见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
+KV 一侧的粒度与布局选择另有专门讨论：本页在 RoPE 后按 head 旋转 Q/K；[SAW-INT4](saw-int4.md) 则用块对角 Hadamard，默认在 K/V 中只旋转 K，查询 Q 也配套旋转以保持点积。其固定 decode 实现将 Q 旋转融合进 attention，论文报告融合后的旋转开销占总运行时 0.1%–0.3%。两者的共同框架见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)。
 
 固定代码把模拟与真实打包分开：`fake_quant/main.py` 添加量化/旋转 wrapper，用浮点张量模拟误差；`quarot/nn/linear.py:Linear4bit` 用 `uint8` 存两个四位权重，接收 `PackedQuantizedTensor` 并调用整数 matmul，再反量化。模拟脚本明确保留 `lm_head` 输入高精度，不能由 W4A4 标签推断所有边界层都量化。
 

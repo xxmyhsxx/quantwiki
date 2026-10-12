@@ -148,7 +148,7 @@ $$\frac{\partial L_{partial}}{\partial a_j}=m_pq_j-p_j\mathbf1_{j\in I}.$$
 
 沿现有 Wiki，可把“学习什么”分为不同对象：[LSQ](lsq.md) 学量化步长；[OmniQuant](omniquant.md) 学尺度/平移与裁剪；[SpinQuant](spinquant.md) 学受图结构约束的正交旋转；[FlatQuant](flatquant.md) 学局部结构化可逆变换；[LoftQ](loftq.md) 则构造低秩初始化并在后续任务中训练适配器。它们不是同一参数空间的简单换名。
 
-OSTQuant 对这条路径的贡献是正交和尺度的共同选择、权重感知初始化与教师 top-k 整网目标。其优势应由同协议消融判断；QSUR 的高斯几何直觉、浮点等价和部署收益是三类不同证据。本文已补齐它们之间的解释，同时保留 KL-Top 实际归一化、RoPE 尺度约束、优化器和最终量化/导出格式等代码核验缺口。
+OSTQuant 对这条路径的贡献是正交和尺度的共同选择、权重感知初始化与教师 top-k 整网目标。其优势应由同协议消融判断；QSUR 的高斯几何直觉、浮点等价和部署收益是三类不同证据。
 
 ## 来源身份
 

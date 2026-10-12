@@ -1,5 +1,11 @@
 # Wiki 变动记录
 
+## 2026-10-13 · 全库分批审查：第 7 批
+
+- 通读 ResQ 实现、AffineQuant、FlatQuant、OmniQuant、OSTQuant、QuaRot、ResQ 与 RGSQ 八页，核对变换位置、优化变量和部署路径。修正 FlatQuant/QServe 对比遗漏的量化粒度，明确完整整数累加后的尺度与分组部分和缩放；修正 QuaRot 对 SAW-INT4“只旋转键”的含混概括，补配套 Q 旋转与 decode 融合。
+- 明确 FlatQuant 正损失归一化的梯度为原梯度乘 1/L，压缩 AffineQuant、OSTQuant、RGSQ 与 ResQ 实现的重复过程说明，保留可逆条件、RoPE、证明缺陷、格式与硬件范围。
+- 定向回查固定论文的核心变换/证明/目标，以及 FlatQuant 校准、AffineQuant mask、ResQ 基底、RGSQ 角度搜索和 SAW-INT4 查询旋转代码。OmniQuant 已移除的本地代码沿用历史核读范围；未重新审计全部实现或实验。至本批覆盖 43 个知识页，未进行 ingest。
+
 ## 2026-10-13 · 全库分批审查：第 6 批
 
 - 通读 QERA 与 SPHQuant 两页，回查固定论文的加权 SVD、对角二阶矩条件、方向/半径投影、角度参数化与代表质量表。QERA 和 LoftQ 的变量、主体更新及最优性区别一致，核心解释保留。
