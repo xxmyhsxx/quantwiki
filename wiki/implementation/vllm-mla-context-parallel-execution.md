@@ -191,4 +191,4 @@ FlashAttention 调用端允许 FP16/BF16，DeepSeek 的 $d_K=128,d_R=64,d_V=128$
 
 | 来源 | 固定版本 | 实际使用范围 |
 | --- | --- | --- |
-| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 普通 MLA、PCP=1、Model Runner V1 的 DCP 缓存/metadata、所选 Triton decode、两种 O/LSE 通信、公共 FlashAttention prefix prefill，以及必要的调度、投影和库接口。直接使用文件登记于 sources，函数就近定位；外部 FlashAttention/NCCL 设备实现未核。 |
+| vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 普通 MLA、PCP=1、Model Runner V1 的 DCP 缓存/metadata、所选 Triton decode、两种 O/LSE 通信、公共 FlashAttention prefix prefill，以及必要的调度、投影和库接口。相关文件与函数由正文就近定位；外部 FlashAttention/NCCL 设备实现未核。 |

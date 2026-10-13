@@ -137,7 +137,40 @@ cache 互换避免输出归约与仍被消费的数据别名。专家结果已�
 
 ### 核读定位与验证边界
 
-下面的位置相对固定源码根；编号对应 frontmatter 的登记顺序。
+正文的方括号编号对应下表；文件路径相对 vLLM 固定仓库根目录。
+
+| 编号 | 固定源码文件 |
+| --- | --- |
+| [1] | `vllm/model_executor/layers/quantization/auto_awq.py` |
+| [2] | `vllm/model_executor/layers/fused_moe/oracle/int_wna16.py` |
+| [3] | `vllm/model_executor/layers/fused_moe/experts/marlin_moe.py` |
+| [4] | `vllm/model_executor/layers/quantization/utils/marlin_utils.py` |
+| [5] | `vllm/model_executor/layers/fused_moe/config.py` |
+| [6] | `vllm/model_executor/layers/fused_moe/all2all_utils.py` |
+| [7] | `vllm/model_executor/layers/fused_moe/prepare_finalize/no_dp_ep.py` |
+| [8] | `vllm/model_executor/layers/fused_moe/modular_kernel.py` |
+| [9] | `vllm/model_executor/layers/fused_moe/utils.py` |
+| [10] | `vllm/model_executor/layers/fused_moe/routed_experts.py` |
+| [11] | `vllm/model_executor/layers/fused_moe/expert_map_manager.py` |
+| [12] | `vllm/model_executor/layers/fused_moe/moe_align_block_size.py` |
+| [13] | `vllm/model_executor/layers/fused_moe/activation.py` |
+| [14] | `vllm/model_executor/layers/fused_moe/topk_weight_and_reduce.py` |
+| [15] | `vllm/_custom_ops.py` |
+| [16] | `csrc/libtorch_stable/quantization/marlin/awq_marlin_repack.cu` |
+| [17] | `csrc/libtorch_stable/moe/marlin_moe_wna16/ops.cu` |
+| [18] | `csrc/libtorch_stable/moe/marlin_moe_wna16/marlin_template.h` |
+| [19] | `csrc/libtorch_stable/moe/marlin_moe_wna16/generate_kernels.py` |
+| [20] | `csrc/libtorch_stable/moe/moe_align_sum_kernels.cu` |
+| [21] | `csrc/libtorch_stable/moe/torch_bindings.cpp` |
+| [22] | `csrc/libtorch_stable/activation_kernels.cu` |
+| [23] | `csrc/libtorch_stable/cuda_vec_utils.cuh` |
+| [24] | `csrc/libtorch_stable/quantization/marlin/marlin.cuh` |
+| [25] | `csrc/libtorch_stable/quantization/marlin/dequant.h` |
+| [26] | `csrc/libtorch_stable/quantization/marlin/marlin_dtypes.cuh` |
+| [27] | `csrc/libtorch_stable/quantization/marlin/marlin_mma.h` |
+| [28] | `vllm/envs.py` |
+
+下表的核读位置使用文件名或局部路径简写，完整路径以上方编号表为准。
 
 | 核对对象 | 定位 |
 | --- | --- |
