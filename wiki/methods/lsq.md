@@ -7,7 +7,8 @@ tags:
   - activation-quantization
 sources:
   - raw/papers/2026-09-22/lsq
-updated: 2026-09-22
+  - raw/papers/2026-09-22/pact
+updated: 2026-10-13
 ---
 
 # LSQ：任务驱动的步长学习与梯度缩放
@@ -108,6 +109,8 @@ $N_W$ 是该层权重元素数；$N_F$ 是原文激活特征数，附录伪代�
 
 ## 6. 与已有知识怎样衔接
 
+[PACT](pact.md)以任务损失学习非负激活裁剪上界。对同一无符号网格可令$\alpha=(2^b-1)s$换算前向，但PACT v2式3在上界以下的阈值代理梯度为零，LSQ保留内部舍入残差，并有专门的步长梯度缩放；两种训练不能仅靠变量换算认定等价。（PACT §4式1–3；LSQ §2.1式3、图2。）
+
 [OmniQuant](omniquant.md) 的可学习裁剪也改变有效步长，但它冻结基座、以 block 重构学习裁剪和变换；LSQ 则以任务损失联合更新模型权重与直接参数化的尺度。OmniQuant 中替换 LSQ 组件的消融，不等同于复现完整 LSQ 训练。
 
 LSQ 提供的是量化器学习的机制实例。迁移到 LLM 时，还必须决定有符号激活、分组粒度、数据、训练目标、可训练变量、归约和优化器，不能把 CNN 的首尾层配置、BN 假设或精度数值直接照搬。
@@ -115,3 +118,5 @@ LSQ 提供的是量化器学习的机制实例。迁移到 LLM 时，还必须�
 ## 来源身份
 
 Learned Step Size Quantization（`https://arxiv.org/abs/1902.08153v3`），arXiv:1902.08153v3，ICLR 2020。使用正文 §2–3、表 1–4、附录 A/B；保留论文实验条件，未执行模型或部署复现。
+
+PACT: Parameterized Clipping Activation for Quantized Neural Networks（`https://arxiv.org/abs/1805.06085v2`），arXiv:1805.06085v2；本轮仅用于第6节的非负前向与阈值代理比较，原文§4式1–3，完整研读范围见PACT页。

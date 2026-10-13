@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/pact
   - raw/papers/2026-09-21/lora
   - raw/papers/2026-09-22/lrq
   - raw/papers/2026-09-22/signround
@@ -116,6 +117,8 @@ $$
 内部项来自外部乘以 $\Delta$ 的导数与内部除以 $\Delta$ 的导数相减；饱和处只剩端点倍数。若仿射零点用连续潜变量、反向近似其舍入导数，则零点的代理导数在非饱和区为 0，在饱和区为 $-\Delta$。改变参数化、裁剪次序或梯度缩放后，公式也可能变化。（W 式 (36)–(40)。）
 
 步长必须保持正值，零点与部署编码范围也要满足约束。[LSQ](../../methods/lsq.md) 将这种步长代理与专门的梯度缩放组合：每层共享尺度的梯度汇聚多个元素，因而用 $1/\sqrt{NQ_P}$ 调整尺度梯度，前向网格保持不变。其推导依赖梯度相关性、饱和比例等启发式假设，激活侧还讨论了前置 BN；不能只把 scale 设为可训练，就认为复现了完整 LSQ，也不能把此缩放当成任意模型的最优规则。（LSQ v3 §2、附录 A/B。）
+
+[PACT](../../methods/pact.md)说明代理还可能直接定义在裁剪输出上：其激活上界$\alpha$同时决定步长$\alpha/(2^b-1)$，但原文式3规定上界以下的阈值代理为零，上界处及以上为1。相同前向网格不保证同一反向；直接对完整乘除和round节点套常规STE，会保留内部舍入残差，不能将其称为已复现PACT的阈值规则。（PACT v2 §4式1–3。）
 
 代理规则应核对到具体计算节点。OmniQuant 官方 commit `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` 的 `quantize/quantizer.py:round_ste` 使用 `(round(x)-x).detach()+x`，前向仍取整，反向近似为恒等；权重零点却使用普通 `.round()`，其梯度为零。其学习步长来自 sigmoid 强度与当前权重极值的组合，不是直接套用一个独立可训练步长。不能把“使用 STE”扩写成所有离散节点都使用同一种反向规则。
 
@@ -238,6 +241,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- PACT: Parameterized Clipping Activation for Quantized Neural Networks（`https://arxiv.org/abs/1805.06085v2`），arXiv:1805.06085v2；本页§3连接方法特定阈值代理与前向网格的区别，原文§4式1–3。
 
 - LoRA: Low-Rank Adaptation of Large Language Models（`https://arxiv.org/abs/2106.09685v2`），arXiv:2106.09685v2；本页§1连接任务适配、加法增量与固定缩放，原文§2、§4.1。
 

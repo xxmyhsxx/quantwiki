@@ -11,7 +11,7 @@ updated: 2026-10-13
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **138 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **139 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -32,6 +32,7 @@ updated: 2026-10-13
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| PACT: Parameterized Clipping Activation for Quantized Neural Networks（`https://arxiv.org/abs/1805.06085v2`）<br>arXiv:1805.06085v2 | 正文及附录A–C；式1–3、图2–3/6–8、表1/2/5，定向核阈值代理、正则、粒度/初始化、端层、基线与性能建模条件；公式/编号和所用表格对照15页PDF | [任务驱动的激活裁剪与代理梯度](methods/pact.md)；[LSQ的前向与反向区别](methods/lsq.md#6.%20%E4%B8%8E%E5%B7%B2%E6%9C%89%E7%9F%A5%E8%AF%86%E6%80%8E%E6%A0%B7%E8%A1%94%E6%8E%A5) | 源包仅PDF包装；未逐点重建曲线或逐项核全部比较表；正约束/完整反向/作者代码、训练与硬件复现未核，保留ResNet18基线差异 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20PACT%20ingest%EF%BC%9A%E6%BF%80%E6%B4%BB%E8%A3%81%E5%89%AA%E4%B8%8E%E4%BB%BB%E5%8A%A1%E6%A2%AF%E5%BA%A6) |
 | LoRA: Low-Rank Adaptation of Large Language Models（`https://arxiv.org/abs/2106.09685v2`）<br>arXiv:2106.09685v2 | 正文问题/方法/实验主线与秩分析；式1–3、表2/5/6，定向核附录D.2–D.4、F.2、H.2–H.4及表10/11/15/18；主要编号回查固定PDF | [任务适配、目标与参数预算](methods/lora.md)；[任务增量与量化变量](fundamentals/quantization/post-training-and-quantization-aware-training.md#1.%20%E5%8C%BA%E5%88%86%E8%8C%83%E5%BC%8F%E4%B8%8E%E5%8F%AF%E8%B0%83%E6%95%B4%E5%8F%98%E9%87%8F) | D.4预算与表15的冲突保留；全部附表、分类任务头完整计数及作者实现/训练/合并/性能未核 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20LoRA%20ingest%EF%BC%9A%E4%BB%BB%E5%8A%A1%E5%A2%9E%E9%87%8F%E4%B8%8E%E5%8F%82%E6%95%B0%E9%A2%84%E7%AE%97) |
 | LRQ（`https://arxiv.org/abs/2407.11534v2`）<br>arXiv:2407.11534v2 | 正文问题/方法/实验主线及限制；式1–2、图3–4、表7，定向核附录B/F/G/I/J/M的消融、预算、混合配置与成本；主要编号回查固定PDF | [低秩对数缩放、块重构与参数预算](methods/lrq.md)；[结构化选码参数](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.5%20%E5%AD%A6%E4%B9%A0%E5%B0%BA%E5%BA%A6%E5%89%8D%EF%BC%8C%E5%85%88%E7%A1%AE%E5%AE%9A%E5%AE%83%E8%BF%9B%E5%85%A5%E5%93%AA%E4%B8%80%E4%BE%A7) | 表29只计主因子；全部附表未逐项核；作者实现/反向、零点/有限范围、参数dtype/缓存、导出/packing/kernel未核，未运行模型或测性能 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20LRQ%20ingest%EF%BC%9A%E5%AF%B9%E6%95%B0%E5%9B%A0%E5%AD%90%E4%B8%8E%E5%8F%82%E6%95%B0%E9%A2%84%E7%AE%97) |
 | SignRound（`https://arxiv.org/abs/2309.05516v5`）<br>arXiv:2309.05516v5 | 正文问题/方法/实验主线、限制；式1–6/算法1，表1/3–7及附录A表8–9的成本与协议，主要编号回查固定PDF | [舍入偏移、裁剪与符号梯度搜索](methods/signround.md)；[代理反向与更新规则](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.%20%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%20STE) | 反量化零点缺项/学习率措辞/耗时步数差异保留；全部附表与作者实现、代理反向/投影/共享轴、导出/内核未核，未运行模型或测性能 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20SignRound%20ingest%EF%BC%9A%E9%98%88%E5%80%BC%E6%90%9C%E7%B4%A2%E4%B8%8E%E7%AC%A6%E5%8F%B7%E6%9B%B4%E6%96%B0) |
@@ -262,11 +263,11 @@ updated: 2026-10-13
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下91个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下90个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。下一项按第11批接续PACT。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批首项PACT已补激活裁剪、任务代理与正则条件，下一项接续LSQ+，再接LQ-Nets。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
-### 论文（32条）
+### 论文（31条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -297,7 +298,6 @@ updated: 2026-10-13
 | TritonBench: Benchmarking Large Language Model Capabilities for Generating Triton Operators（`https://arxiv.org/abs/2502.14752v1`） | `arXiv:2502.14752v1` |
 | LQ-Nets: Learned Quantization for Highly Accurate and Compact Deep Neural Networks（`https://arxiv.org/abs/1807.10029v1`） | `arXiv:1807.10029v1` |
 | LSQ+: Improving low-bit quantization through learnable offsets and better initialization（`https://arxiv.org/abs/2004.09576v1`） | `arXiv:2004.09576v1` |
-| PACT: Parameterized Clipping Activation for Quantized Neural Networks（`https://arxiv.org/abs/1805.06085v2`） | `arXiv:1805.06085v2` |
 | vla.simd: Efficient CPU Inference for Language-Conditioned Manipulation（`https://arxiv.org/abs/2609.24274v1`） | `arXiv:2609.24274v1` |
 | MWOP: Modality-aware Width-wise Operation Pruning for Efficient MLLMs（`https://arxiv.org/abs/2610.01434v1`） | `arXiv:2610.01434v1` |
 | Query Independent Variable Rate Visual Token Coding（`https://arxiv.org/abs/2610.00204v1`） | `arXiv:2610.00204v1` |
