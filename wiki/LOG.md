@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · vLLM v0.26.0发布说明 ingest：配置对象与组合边界
+
+- 完整研读固定v0.26.0、snapshot-2026-08-20发布正文，137行及SHA与登记一致；现有568afb…源码属于同一tag。仅在[Attention接口](implementation/vllm-attention-operator-design.md)、[部署配置](implementation/quantized-llm-deployment-backends.md)和[DCP边界](implementation/vllm-mla-context-parallel-execution.md)增补相应声明。
+- 区分KV group后端、head与sampler精度、target/draft/层级KV dtype、加载峰值与运行内存、普通V1与MRV2/PCP/推测组合；FlashInfer依赖0.6.14与独立0.6.17分开。已有末轴K/V打包与短sparse-MLA回退可复用，缺测量条件的kernel/TPOT数字不加总或排名；未核PR/新组合实现或运行。
+- READING/SELF/计划同步：158条有依据、71条队列，本轮基线88已处理17条；第13批下一项vLLM V1官方架构文档，准备不计完成。
+- 独立Astra正式review通过，无必修问题；发布原文、既有AWQ/普通DCP与支持范围已对照。全库结构/来源strict检查186知识页、655项登记，0错误/待核；5个受影响Wiki页链接strict通过，AWQ目标及版本/阅读关联已核。仅提交本项7个成果文件，Obsidian改动保留；未运行框架或GPU。
+
 ## 2026-10-14 · nano-vllm ingest：离线状态与分页执行
 
 - 完整读取固定bb823b3e…的21个Python文件、README与pyproject，归档SHA/commit及26文件字节对应通过；只做AST和独立槽位教学计算，未导入上游。新增[nano-vllm离线执行](implementation/nano-vllm-inference-execution.md)，沿已知token/KV、本轮调度、块引用/尾块、紧凑输入、浮点Qwen3、采样/完成与TP/Graph解释主线；vLLM、内存和INDEX只加阅读入口。

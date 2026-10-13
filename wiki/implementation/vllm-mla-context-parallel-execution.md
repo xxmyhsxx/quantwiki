@@ -7,6 +7,7 @@ tags:
   - serving
   - low-rank
 sources:
+  - raw/articles/2026-09-21/vllm-release-notes
   - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/repositories/2026-09-21/vllm
 updated: 2026-10-14
@@ -188,11 +189,15 @@ FlashAttention 调用端允许 FP16/BF16，DeepSeek 的 $d_K=128,d_R=64,d_V=128$
 
 没有安装依赖、编译、启动模型/服务或运行 GPU/分布式测试，没有测量误差、网络和性能。空分片 A2A 的静态数值路径就近保留，不能当作已复现的服务故障。其他 $D/I/P$ 组合、MRV2、PCP、DSA/packed cache、其他 backend、推测执行及完整图行为仍是边界。特殊缓存格式需要继续核其字节/scale、更新与读取契约；不由本页的普通联合行自动承接。
 
+同一tag的v0.26.0发布说明另列MRV2 virtual-batch PCP for MLA、hybrid-attention DCP和Tokenspeed MLA backend的DCP+Eagle（Engine Core/Large Scale Serving & Distributed，#46570/#40996/#48180）。这些组合改变runner、并行轴或多query/推测执行条件；本页固定Model Runner V1、PCP=1、普通非DSA MLA与单query decode，不能直接把地址公式和O/LSE合并接口推广过去。发布条目没有提供这些新组合的分片、metadata、LSE和Graph契约。该发布的Dependencies列FlashInfer 0.6.14；下段独立的0.6.17说明不代表vLLM已经集成那个版本。
+
 ### Ulysses 的布局交换与 DCP 的状态合并
 
 固定 FlashInfer v0.6.17 发布说明另称 Ulysses 的 head-scatter/sequence-gather all-to-all 提供公开 API：NVLink-P2P kernel 经 CUDA IPC 把布局置换融合到跨 GPU 写入，P2P 不可用时自动回退 NCCL（Highlights，Ulysses sequence parallelism；#3820/#4240）。这是发布声明中的序列/heads 布局交换；第 7 节 DCP 的 A2A 则交换局部 O/LSE，按各历史分片的 softmax 分母合并，再将结果交给 head owner。二者解决的交换对象和归约问题不同，不能因都叫 A2A 就把此发布项当成固定 vLLM DCP 的调用链。本次未核新 API 的 shape/stride、适用拓扑、调用端或设备实现，未取得通信性能证据。
 
 ## 来源身份
+
+- vLLM Release v0.26.0（`https://github.com/vllm-project/vllm/releases/tag/v0.26.0`），snapshot-2026-08-20，获取于2026-08-20T02:37:51+08:00；MRV2 PCP、hybrid DCP、DCP+Eagle和FlashInfer依赖声明。
 
 - FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`），snapshot-2026-08-20，获取于2026-08-20T02:38:02+08:00；Ulysses head-scatter/sequence-gather、NVLink-P2P/CUDA IPC 与 NCCL fallback 声明，未核 PR、调用集成或运行。
 

@@ -7,20 +7,21 @@ tags:
   - data-format
   - serving
 sources:
+  - raw/articles/2026-09-21/vllm-release-notes
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/tensorrt-llm
   - raw/repositories/2026-09-21/mlc-llm
   - raw/repositories/2026-09-21/llama-cpp
   - raw/repositories/2026-09-21/omniserve
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # 量化模型的部署框架与后端支持
 
 量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。同一个算法名在不同框架里可能对应不同内核，同一位宽标签在不同框架里可能对应不同的量化粒度。本页把这条链路拆开，并记录多个主流推理框架在固定快照下实际暴露的量化支持面。
 
-本页依据 SGLang（快照 `2f730e29`）、vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。所有内容为单一快照的只读核对，本轮没有构建、导出或运行任何框架。
+本页依据 SGLang（快照 `2f730e29`）、vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。各框架按各自固定快照核对；本次另补vLLM v0.26.0固定发布说明中的配置声明，没有构建、导出或运行任何框架。
 
 部署时还需核对 [张量并行的分片与量化元数据](tensor-parallel-quantization.md)。后端能够加载后，按 [模型质量协议](model-quality-evaluation.md)与 [服务性能协议](serving-performance-evaluation.md)分别确认质量和收益，不能只用“支持该格式”作为完成依据。
 
@@ -63,6 +64,8 @@ online（含 fp8_per_tensor、fp8_per_block 等在线量化简写）
 
 **格式名与生态来源并不统一。** `compressed-tensors`、`modelopt`、`quark`、`bitsandbytes`、`torchao`、`inc` 对应各自的工具链与序列化格式，`fp8` 与 `fbgemm_fp8` 则区分了 FP8 的两条实现路径。看到「vLLM 支持 X」时，需要进一步确认是哪条内核路径。
 
+同一tag的v0.26.0发布说明还列出 `head_dtype` 配置FP32 `lm_head`（含LoRA路径），以及sampler不再把logits升为FP32（Highlights/Engine Core/Hardware & Performance，#48390/#48525/#48641）。两项改动分别作用于输出head与采样阶段，head精度不能替代采样dtype记录，取消sampler转换也不能反推head精度。作者称FP32 head改善generation head精度，但没有给出统一任务、模型配置或收益幅度。
+
 ### 3.1 已核对到实现的算法与表示
 
 下表限定 vLLM `568afb3a` 和 SGLang `2f730e29` 的内置代码，并区分算法名与消费格式。有论文、有官方仓库、有注册项、能够实际运行，是四种不同证据；本表不宣称已完成最后一项。
@@ -76,6 +79,8 @@ online（含 fp8_per_tensor、fp8_per_block 等在线量化简写）
 AWQ 的官方代码、格式转换与内核链已在[既有实现页](awq-implementation.md)展开。内置注册表没有某个论文名，也不能据此否定其可经其他表示或插件接入，需另核对转换与加载证据。
 
 其中 vLLM 的 GPTQ 分派修正了“两个配置名就是两种固定内核”的简化：最终后端还受能力检查、逐层设置、设备和显式后端选项影响。SGLang 原生 GPTQ 甚至可能随 token 数切换到先重建 FP16 权重再用 cuBLAS，故性能记录需要保存实际执行路径。
+
+发布说明另报告限制Marlin的FP4 MoE权重重排峰值及NVFP4 MoE权重加载峰值（Quantization，#47851/#46276）。这针对加载和布局准备阶段，不能当作运行常驻显存或workspace结论，也不能推广到AWQ整数W4A16。已有[AWQ专家链](w4a16-moe-expert-execution.md)选择非对称 `kU4/G128`，逐专家调用 `awq_marlin_repack`；它与这里的浮点FP4/NVFP4分别保留证据。发布条目未给峰值字节数、模型规模或具体限制机制。
 
 ## 4. TensorRT-LLM：量化格式与自动搜索
 
@@ -122,6 +127,8 @@ llama.cpp 在导出时按 `Q4_K_M`、`IQ1_M` 等策略选择各张量的量化�
 
 **KV cache 的量化参数存放在哪里。** [QServe](../methods/qserve.md) 采用与 vLLM、TensorRT-LLM 相同的分页 KV 布局，但因为 KV 位宽更低而使用逐 head 动态量化，于是把每个 head 的 fp16 尺度与零点放在分页中量化 KV 特征之后，支持运行时更新。这说明「KV4」不只是一个位宽，还包含一套页内布局约定；换成静态逐张量量化可以省掉动态估计，但精度条件随之变化。
 
+v0.26.0发布说明列出 `speculative_config` 独立的 `kv_cache_dtype`，以及MLA的 `kv_cache_dtype_skip_layers`（Engine Core/Quantization，#48787/#47309）。包含推测模型或逐层覆盖时，需要说明target、draft与受覆盖层各自的KV dtype，不能只保存一个无对象归属的“KV位宽”。这些名称表示独立配置轴，发布条目没有交代默认值、继承、允许组合、尺度粒度或缓存layout。
+
 **同一模型需要不同的配置。** QServe 在 A100 上使用逐通道权重、在 L40S 上使用按组权重，原因是两块 GPU 的 CUDA 核心承担反量化开销的能力不同。部署配置与硬件绑定，不是模型属性。
 
 **推理时不再重算的部分要写清。** 各类校准统计、搜索出的缩放与裁剪阈值在部署时都已固化；而令牌级动态量化（如逐 token 激活尺度、逐 head KV 尺度）仍需运行时统计。把二者混为一谈会导致对开销的错误预期，判断依据见 [执行路径](quantized-matmul-scaling-execution.md)。
@@ -143,6 +150,8 @@ llama.cpp 在导出时按 `Q4_K_M`、`IQ1_M` 等策略选择各张量的量化�
 已核对的算法与格式路径见对应实现页；其余方法、TensorRT-LLM 插件、MLC-LLM 后端代码生成和跨框架格式互转尚未核验。各框架缺少统一场景的对照性能数据，不能据支持面排序。
 
 ## 来源身份
+
+- vLLM Release v0.26.0（`https://github.com/vllm-project/vllm/releases/tag/v0.26.0`），snapshot-2026-08-20，获取于2026-08-20T02:37:51+08:00；head/sampler精度、独立KV配置和FP4 MoE加载/重排峰值声明。
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |

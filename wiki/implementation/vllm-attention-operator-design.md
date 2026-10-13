@@ -8,8 +8,9 @@ tags:
   - attention
   - performance
 sources:
+  - raw/articles/2026-09-21/vllm-release-notes
   - raw/repositories/2026-09-21/vllm
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # vLLM 算子设计：Attention 后端、分页计算与图执行
@@ -79,6 +80,8 @@ QKV 投影将相关输出放在同一次线性层调用中；`LlamaMLP` 类似�
 
 `AttentionBackend` 同时提供实现类、metadata builder、缓存 shape/stride 约定和能力验证。`validate_configuration` 检查 head size、计算与 KV dtype、块大小、硬件、attention 类型和滑窗等组合。初始化选出合法后端之后，具体后端内部还可以按本轮工作负载选择执行路径。
 
+同一tag的vLLM v0.26.0发布说明补充了配置粒度：attention backend可按KV-cache group选择，sliding-window支持成为显式backend capability（Highlights/Engine Core，#48012/#48011）。一个模型有多个缓存组时，需要逐组确认dtype、shape/stride、metadata与能力组合，单个backend名不足以概括全部层。本页仍只解释所选普通因果路径，没有由发布声明展开hybrid的分组算法或证明任意组合都可运行。
+
 这意味着替换 backend 需要保持一组共同契约：缓存写入与读取解释一致；metadata builder 与设备代码解释同一个边界；未支持的能力有明确处理；图执行能力如实声明。将一个只接收连续 Q/K/V 的测试 kernel 直接替换分页后端，缺失的是状态与地址转换，不能只在外围补一次函数调用。
 
 FlashAttention 接口和下面的 Triton kernel 是两条可选后端路径，不是 FlashAttention 再调用本页的 Triton kernel。`backends/triton_attn.py` 将元数据和缓存传给 `ops/triton_unified_attention.py::unified_attention`，后者选择 grid 并启动设备程序。
@@ -145,6 +148,8 @@ MLA 的跨 rank 分片沿同一分母恢复原则，但通信轴和状态 dtype 
 这些是由源码契约推导的验证设计。本轮实际完成代码研读和 CPU 教学模型核对，覆盖变长边界、槽位、在线 softmax 与 segment 合并；未编译 Triton/FlashAttention、未运行 vLLM 模型、未验证真实 GPU 图捕获与性能，也未将以上集成用例声称为已运行。
 
 ## 来源身份
+
+- vLLM Release v0.26.0（`https://github.com/vllm-project/vllm/releases/tag/v0.26.0`），snapshot-2026-08-20，获取于2026-08-20T02:37:51+08:00；Highlights/Engine Core的按KV group后端选择与显式滑窗能力声明。
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
