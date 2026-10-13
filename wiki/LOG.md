@@ -2,6 +2,14 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · FlashAttention代码 ingest：分派、精度与反向
+
+- 固定Dao-AILab/flash-attention `73c992c8ca746935548df620ef3c1b6238fe6e68`，包声明2.8.4；15个相关源码文件与固定Git对象字节一致，不重验全部25846项档案。静态研读普通Python/C++入口、SM80 FP16/d64/causal/dropout0标准前向及seqK反向，必要补GQA/deterministic。
+- 新增[普通CUDA执行](implementation/flash-attention-2-cuda-execution.md)：核自动split-KV条件、shape/元素stride、raw-score在线状态/自然LSE、FP16乘法与FP32累计/舍入、空行sentinel、反向三次launch、dQ工作区/atomic/split合并及GQA展开缓冲。两论文页只补独立实现连接，保留版本与框架外部pin差异。
+- 用户认可五条实现页解释原则，补入维护规范；FA示例按输入/前向状态/保存/反向梯度/归约重组，补变量角色、首块与mask条件，分派和核验细节后置。块缩放页“先把逻辑计算写清楚”改为“块尺度在 K 归约中的作用”，标题直接指向内容。
+- INDEX/READING/SELF及计划同步：144条有依据、85条队列、184知识页；本轮88已处理3条，第12批下一项9份FlashInfer文档。源码按版本字符串分支而非语义版本比较、det仍用atomic及共享KV梯度舍入条件保留，未将静态分派或资源推算当设备/性能结果。
+- 独立Astra内容review及独立可读性复核完成，公式可见域、保存范围与默认/deterministic合并时序修复闭环，无剩余必修问题。全库结构/来源strict检查184知识页、631项登记，0错误/待核；8个受影响Wiki页链接strict通过。复用CPU教学检查的分派/grid、48 KiB共享缓冲、8/32 MiB工作区、split分工、exp2换底与字符串版本判断；不构成CUDA或设备执行。split-KV设备/combine、其他接口/架构、完整RNG/构建与模型/设备运行未核。
+
 ## 2026-10-13 · FlashAttention-2 ingest：累计与工作分配
 
 - 固定FlashAttention-2 arXiv:2307.08691v1，PDF14页与同版TeX；原PDF/源包SHA-256与登记一致。核读正文§1–5、算法1–2、图2–7和表1，关键公式/图表定位回PDF。

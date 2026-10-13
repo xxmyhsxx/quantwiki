@@ -19,7 +19,7 @@ updated: 2026-10-04
 
 格式原理见[FP8 与 Microscaling](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md)，尺度为何不能任意移出 K 归约见[量化矩阵乘的缩放](quantized-matmul-scaling-execution.md)，逻辑块与物理线程的区别见[Triton 语言语义](../fundamentals/operators/triton-language-and-compilation.md)。以下索引例子为整理者推导；本次没有编译、运行教程或测量吞吐。
 
-## 1. 先把逻辑计算写清楚
+## 1. 块尺度在 K 归约中的作用
 
 设逻辑矩阵为 $A\in\mathbb R^{M\times K}$、$B\in\mathbb R^{K\times N}$。低精度位模式分别解码成 $q^A_{mk}$ 与 $q^B_{kn}$，每 V 个 K 元素共享一个尺度，尺度的**逻辑** shape 为
 

@@ -7,6 +7,7 @@ tags:
   - performance
   - gpu
 sources:
+  - raw/repositories/2026-09-21/flash-attention
   - raw/papers/2026-09-21/flashattention-2
   - raw/papers/2026-09-21/flashattention
 updated: 2026-10-13
@@ -106,7 +107,10 @@ MQA/GQA使多个query heads使用同一KV head。§3.1说明可通过head索引�
 
 H100-80GB-SXM5结果使用未适配TMA等新特性的同一实现；正文报最高335 TFLOPs/s，图7(b)在无causal、$d=128,N=16K$的前向＋反向点标338，保留此差异。未来1.5–2倍及TMA/FP8/其他设备适配属于预期。§5由约2倍算子收益推及“16K与8K同成本”也不是一般结论：固定batch/head时dense attention算术随$N^2$增长，整模型成本还包含投影、MLP、调度和其他状态。
 
+所选后续固定库的[普通CUDA前后向](../implementation/flash-attention-2-cuda-execution.md)已按独立commit核到分派、舍入、LSE及梯度归约；它不替代论文时期代码或当前框架外部pin的验证。
+
 ## 来源身份
 
+- Dao-AILab/flash-attention（`https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68`），固定commit `73c992c8ca746935548df620ef3c1b6238fe6e68`；后续普通CUDA实现连接，实际selected配置与源码定位见实现页，保留版本差异。
 - FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning（`https://arxiv.org/abs/2307.08691v1`），arXiv:2307.08691v1；正文§1–5、算法1–2、图2–7和表1，PDF/同版TeX核对；重缩放/因果条件校正、形状与计数展开、教学反例为整理者分析。未逐点重建曲线，未核作者代码、全部接口或GPU/模型运行。
 - FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness（`https://arxiv.org/abs/2205.14135v2`），arXiv:2205.14135v2；复用§3.1–3.2与附录B/C的归一化定义、反向数学和IO范围；不把原循环流量证明直接归给FA2实现。

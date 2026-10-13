@@ -11,7 +11,7 @@ updated: 2026-10-13
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **143 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **144 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -140,6 +140,7 @@ updated: 2026-10-13
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| Dao-AILab/flash-attention（`https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68`） | `73c992c8ca746935548df620ef3c1b6238fe6e68`；包声明2.8.4；15文件与Git对象比对；Python/C++普通入口、SM80 FP16/d64/causal/dropout0标准前向、online精度/LSE、seqK反向及必要GQA/deterministic分支 | [普通CUDA执行与反向](implementation/flash-attention-2-cuda-execution.md) | 未编译/运行；split-KV/varlen/paged/append/rotary、非零dropout完整RNG、其他dtype/head/设备/ROCm/FA3/FA4/图/构建与模型性能未核，det范围与GQA舍入保留 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashAttention%E4%BB%A3%E7%A0%81%20ingest%EF%BC%9A%E5%88%86%E6%B4%BE%E3%80%81%E7%B2%BE%E5%BA%A6%E4%B8%8E%E5%8F%8D%E5%90%91) |
 | [Summer-Summer/lm-evaluation-harness](implementation/lm-evaluation-harness-request-filter-and-aggregation.md)<br>`62617a8cbd7f3beddc2a9c029536e0e387976beb`<br>来源 `https://github.com/Summer-Summer/lm-evaluation-harness/tree/62617a8cbd7f3beddc2a9c029536e0e387976beb` | MMLU-Pro默认/组/十四学科配置与prompt工具；simple_evaluate/evaluate、Task所选构造/结果/少样本、LM接口/缓存、Instance、过滤/metric/聚合主线；29文件字节、13 Python AST及原函数隔离夹具 | [请求到聚合](implementation/lm-evaluation-harness-request-filter-and-aggregation.md)；[公共执行协议](implementation/model-quality-evaluation.md#3.4%20%E8%AF%B7%E6%B1%82%E3%80%81%E8%BF%87%E6%BB%A4%E5%92%8C%E8%81%9A%E5%90%88%E9%A1%BB%E5%88%86%E5%88%AB%E6%A0%B8%E5%AF%B9) | 固定fork未确认为论文作者实现；未运行完整框架或模型/backend评测，其他任务与后端未核 | [2026-10-12](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1) |
 | xjjxmu/QSLAW（`https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802`）<br>264dfb081c210a8bab6a3fb5707d827ade7b6802 | 所选LLaVA/Vicuna uniform/group128初始化、fake尺度前向/优化器、mix数据、脚本阶段与保存/浮点恢复/LoRA入口；14文件相关链路 | [QSLAW实现](implementation/qslaw-scale-learning-and-float-export.md)；[QSLAW](methods/qslaw.md) | ZIP/所选14文件核字节，历史174文件完整性依归档；未全面核NF4/bnb/其他模型、attention/tokenizer/image/外部依赖、尾组、warmup采样或保存重载；未导入/安装/训练/运行；比例/索引与文件名/结构前提保留 | [2026-10-12](LOG.md#2026-10-12%20%C2%B7%20QSLAW%20%E8%AE%BA%E6%96%87%E4%B8%8E%E6%89%80%E9%80%89%E5%AE%9E%E7%8E%B0%20ingest%20%E5%8F%8A%E7%8B%AC%E7%AB%8B%E8%AF%84%E5%AE%A1) |
 | Vahe1994/SpQR（`https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e`）<br>543d10e56f921e5eeb10d5f0aaaccd30b6662d0e | 所选Linear逐列补偿/保护、两级分组和旧保存/浮点恢复；3/16/16优化转换/CSR/PTCSR/置换及融合matvec，必要容器/测试/计时入口 | [SpQR实现](implementation/spqr-metadata-outliers-and-cuda-format.md)；[保护/相加与物理预算](theory/codebook-quantization-and-bit-budget.md#5.2%20%E4%BF%9D%E6%8A%A4%E5%80%BC%E5%BA%94%E8%A6%86%E7%9B%96%E8%BF%98%E6%98%AF%E7%9B%B8%E5%8A%A0%EF%BC%8C%E7%94%B1%E4%BF%9D%E5%AD%98%E5%8D%8F%E8%AE%AE%E5%86%B3%E5%AE%9A) | 未导入/安装/编译/运行；绝对保护值/非零量化零码、真实分组/位宽、signed列索引、尾块/批量、计时参数与外部HF加载保留条件；未核全部模型/harness/任意配置/设备同步，pin与历史885文件完整性依归档，本轮无新Git对象或归档复验 | [2026-10-12](LOG.md#2026-10-12%20%C2%B7%20SpQR%20%E6%89%80%E9%80%89%E5%AE%9E%E7%8E%B0%20ingest%20%E4%B8%8E%E7%8B%AC%E7%AB%8B%E8%AF%84%E5%AE%A1) |
@@ -267,9 +268,9 @@ updated: 2026-10-13
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下86个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下85个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；下一项核固定flash-attention实现，再处理9份FlashInfer文档，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；下一项接9份FlashInfer文档，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
 ### 论文（27条）
 
@@ -356,11 +357,10 @@ updated: 2026-10-13
 | vla.simd model bundle（`https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle`） | `2026-09-28 page snapshot` |
 | TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix（`https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html`） | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 
-### 代码条目（11条）
+### 代码条目（10条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
-| Dao-AILab/flash-attention（`https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68`） | `73c992c8ca746935548df620ef3c1b6238fe6e68` |
 | GeeeekExplorer/nano-vllm（`https://github.com/GeeeekExplorer/nano-vllm/tree/bb823b3e06983d71485a8e1f23715ebd87d98ef8`） | `bb823b3e06983d71485a8e1f23715ebd87d98ef8` |
 | QwenLM/Qwen2.5-Omni（`https://github.com/QwenLM/Qwen2.5-Omni/tree/d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42`） | `d8a31ca56c0456b6edfcbcbf4bdbb6ae2200ef42` |
 | QwenLM/Qwen3-VL（`https://github.com/QwenLM/Qwen3-VL/tree/96588727e44c78b25ba03ea03b8e12f7e64fd0da`） | `96588727e44c78b25ba03ea03b8e12f7e64fd0da` |
