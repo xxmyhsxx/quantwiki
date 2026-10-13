@@ -200,6 +200,7 @@
   },
   "active": "5a912df1522255da",
   "lastOpenFiles": [
+    "wiki/theory/flash-attention-tiling-and-recomputation.md",
     "wiki/methods/lq-nets.md",
     "wiki/methods/lsq-plus.md",
     "wiki/methods/pact.md",
@@ -235,7 +236,6 @@
     "raw/repositories/2026-10-05/tensorrt-edge-llm/source/3rdParty/googletest/docs/gmock_for_dummies.md",
     "wiki/methods/calibquant.md",
     "raw/repositories/2026-09-21/flash-attention/source/third_party/aiter/3rdparty/composable_kernel/CHANGELOG.md",
-    "raw/repositories/2026-09-21/flash-attention/source/csrc/cutlass/examples/README.md",
     "raw/papers/2026-10-07/centriq/source/figures/fig_collapse.png",
     "raw/papers/2026-10-07/centriq/assets/figures/002-sorted_magnitudes.png",
     "raw/papers/2026-10-07/centriq/assets/figures/001-dc_energy_fraction.png"

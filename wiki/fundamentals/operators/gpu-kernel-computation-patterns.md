@@ -7,11 +7,12 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/papers/2026-09-21/flashattention
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/triton
   - raw/repositories/2026-09-21/cuda-samples
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # GPU 算子的计算模式：逐元素、归约与分块矩阵乘
@@ -96,6 +97,8 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 融合让中间值留在片上，减少全局读写和 kernel 启动；但较大的中间状态可能增加寄存器使用、spill 或缩小可驻留并行度，因此融合收益需要测量。
 
+[FlashAttention](../../theory/flash-attention-tiling-and-recomputation.md)将两次矩阵乘与行归一化共同分块：用逐行统计合并key块，避免物化完整概率矩阵；训练反向再重算局部score/概率，减少保存和读取二次规模中间值。它展示了增加算术仍可能减少访存的情形，稠密算术量仍为$O(N^2d)$；IO定理的容量范围与实测速度必须分别核对。（原论文arXiv:2205.14135v2 §3.1–3.2、附录B/C。）
+
 矩阵乘教程的 grouped program ID 映射则促使相邻输出 tile 复用 L2 中的 A/B 块。它重新安排工作与数据局部性，不改变矩阵的数学结果，也不承诺 GPU 严格按照 program ID 次序执行；不能把这种排序当作同步依赖。
 
 进一步选择 tile、warp 数和流水阶段时，需要同时计算片上资源、尾部浪费与工作块数量，见 [Kernel 配置选择与自动调优](../../implementation/kernel-configuration-and-autotuning.md)。把加载与当前 tile 计算重叠时，还要显式维护完成等待和缓冲生命周期，见 [异步拷贝与多级流水](../../implementation/gpu-async-copy-pipelines.md)。
@@ -110,6 +113,7 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| FlashAttention（`https://arxiv.org/abs/2205.14135v2`） | arXiv:2205.14135v2 | §4的分块、融合与反向重计算连接；论文§3.1–3.2、附录B/C，未核作者CUDA或性能。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | NVIDIA CUDA Samples（`https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc`） | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | `matrixMul.cu:MatrixMulCUDA` 的共享内存分块和同步。 |
 | vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton RMSNorm 的固定分段与两遍读取。 |
