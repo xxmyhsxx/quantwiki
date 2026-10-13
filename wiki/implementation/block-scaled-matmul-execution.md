@@ -1,5 +1,5 @@
 ---
-title: 块缩放矩阵乘：FP4/FP8 编码、Scale 布局与 Triton 调用
+title: 块缩放矩阵乘：FP4/FP8 编码、尺度布局与执行接口
 type: implementation
 tags:
   - kernels
@@ -8,14 +8,15 @@ tags:
   - data-format
   - floating-point
 sources:
+  - raw/articles/2026-09-21/flashinfer-fp4-quantize
   - raw/articles/2026-09-21/triton-block-scaled-matmul
   - raw/repositories/2026-09-21/triton
-updated: 2026-10-04
+updated: 2026-10-13
 ---
 
-# 块缩放矩阵乘：FP4/FP8 编码、Scale 布局与 Triton 调用
+# 块缩放矩阵乘：FP4/FP8 编码、尺度布局与执行接口
 
-块缩放点积把低精度浮点元素与共享尺度一起交给运算接口。理解它需要同时追踪逻辑数值、打包字节、scale 的存储顺序和实际点积调用；普通 FP32 输出不能说明乘法输入已恢复成 FP32。本页深读固定 Triton 教程的 **NVIDIA descriptor 路径**，不展开 AMD preshuffle 分支，也不把教程当作完整模型量化工具。
+块缩放点积把低精度浮点元素与共享尺度一起交给运算接口。理解它需要同时追踪逻辑数值、打包字节、scale 的存储顺序和实际点积调用；普通 FP32 输出不能说明乘法输入已恢复成 FP32。本页先沿固定 Triton 教程的 **NVIDIA descriptor 路径**解释编码、布局和点积，再用固定 FlashInfer 文档说明量化产物与接口参数。Triton 教程的硬件入口要求 compute capability major 为 10 或 11，A100（SM80）不满足；FlashInfer 的支持条件在对应接口处说明。这里不展开 AMD preshuffle，也不把教程当作完整模型量化工具。
 
 格式原理见[FP8 与 Microscaling](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md)，尺度为何不能任意移出 K 归约见[量化矩阵乘的缩放](quantized-matmul-scaling-execution.md)，逻辑块与物理线程的区别见[Triton 语言语义](../fundamentals/operators/triton-language-and-compilation.md)。以下索引例子为整理者推导；本次没有编译、运行教程或测量吞吐。
 
@@ -121,7 +122,35 @@ accumulator 先创建为 `[BLOCK_M,BLOCK_N]` FP32，每轮点积加入该状态�
 
 同时，固定 `core.py:dot_scaled` 文档说明了无原生 microscaling 硬件时的实验性软件模拟：通常先上转 BF16 后做 dot，部分后端另有规则。这是语言接口的另一种 lowering，不代表本教程的 descriptor/原生路径已经在 A100 可用，更不表示获得原生低精度算力。A100 上学习本页的编码、K 尺度与布局关系后，应结合实际环境选择解码/转换及普通 FP16/BF16 GEMM，或已有[Marlin W4A16](marlin-batched-w4a16-gemm.md)路径；不同存储格式须先核对转换，不能直接互换。
 
+## 7. FlashInfer 的低精度输入准备与消费
+
+### FP4 量化产物：打包数据、块尺度与全局尺度
+
+FlashInfer 0.6.14 的 `fp4_quantize` 文档快照把 `[M,K]` 输入变成两份产物：沿 K 打包的 FP4 数据 `x_q`，以及独立的块尺度 `sf`。消费方还需要知道尺度粒度、编码与布局，才能解释这些产物；仅保留“FP4”格式名不够。
+
+| 对象 | 文档声明的 shape/dtype | 作用 |
+| --- | --- | --- |
+| input | `[M,K]`，fp16/bf16/fp8_quantized | 待量化的数值；文档未展开 `fp8_quantized` 的具体格式和已有尺度 |
+| 可选 global_scale | `[1]`，FP32 | 传入全局尺度；`is_global_scale_inversed=True` 时按逆尺度解释 |
+| x_q | `[M,K/2]`，`FLOAT4_E2M1X2` | 两个 FP4 元素对应一个打包存储元素，存储 K 维减半 |
+| sf | 形状随布局及 `sf_vec_size` 而定 | 保存解释局部 FP4 数值所需的块尺度；快照没有列出各布局的精确返回 shape |
+
+尺度的三个选择各有不同作用：`sf_vec_size` 决定每个尺度对应多少元素，`sf_use_ue8m0` 决定是否使用 UE8M0 尺度格式，布局参数决定尺度在内存中的排列。默认 `sf_vec_size=16`、`sf_use_ue8m0=False`、`is_sf_swizzled_layout=True`、`is_sf_8x4_layout=False`，即默认选 swizzled 128×4 而非 8×4。选择其他布局不会改变前述矩阵的逻辑 K，只会改变尺度的消费约定。（来源签名与 Parameters。）
+
+量化后端默认是文档称为 stable 的 `cuda`。另一个 `cute-dsl` 后端声明 SM100+、experimental，并仅列出以下组合：
+
+| 文档中的 recipe | 尺度参数组合 | 声明的输入支持 |
+| --- | --- | --- |
+| NVFP4 | `sf_vec_size=16, sf_use_ue8m0=False` | fp16/bf16/fp8，全部尺度布局 |
+| MXFP4 | `sf_vec_size=32, sf_use_ue8m0=True` | fp16/bf16，全部尺度布局 |
+
+这些组合是该 CuTe-DSL 量化入口的声明，不能据此补成 CUDA 后端或矩阵乘的完整能力表。BF16/FP8 支持还受相应特性是否启用的条件限制，文档列出功能未启用及不支持组合时的异常。`enable_pdl=None` 时按设备能力选择 Programmatic Dependent Launch；本次没有核自动选择实现或实际运行。（来源 backend、Raises 与 Warning。）
+
+该快照没有给出尺度 swizzle 的索引、padding、字节内 FP4 顺序、舍入/裁剪与尺度选择算法，也没有完整定义全局尺度和块尺度的代数关系。因此，第 2–4 节 Triton helper 的 nibble 顺序、E8M0 编码及 packed-scale 映射不能直接拿来解读 FlashInfer 的返回字节。这里确认的是“输入 → 数据与尺度产物 → 消费方所需参数”的文档契约；精确转换与消费仍须核匹配版本实现。（来源 Returns；页面标识 0.6.14，snapshot-2026-07-02。）
+
 ## 来源身份
+
+- FlashInfer `fp4_quantize`（`https://docs.flashinfer.ai/generated/flashinfer.quantization.fp4_quantize.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的输入/产物、尺度参数与后端组合，未核匹配实现或运行。
 
 - Triton 官方 Block Scaled Matrix Multiplication 教程（`https://triton-lang.org/main/getting-started/tutorials/10-block-scaled-matmul.html`），2026-07-02T02:41:08+08:00 快照，`block-scaled-matrix-multiplication-triton-documentation-snapshot-2026-07-02`；使用格式、scale 布局与执行解释，未沿用性能图作本地结果。
 - Triton 固定源码（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`），`81a46fa0c04526e5df55a018ecfab72ff922f592`；`python/tutorials/10-block-scaled-matmul.py` 的 NVIDIA 初始化、descriptor、设备循环、包装与参考比较；`python/triton/tools/mxfp.py` 的编码/解码/打包；`tools/tensor_descriptor.py` 的接口约束；`language/core.py/semantic.py` 的 `dot_scaled` 定义与形状检查。AMD 与底层后端具体指令分派未完整核读。

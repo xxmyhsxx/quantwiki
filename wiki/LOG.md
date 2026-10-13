@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · FlashInfer FP4量化文档 ingest：数据与尺度产物
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。在[块缩放页](implementation/block-scaled-matmul-execution.md)接续packed FP4数据与sf、global scale逆解释、尺度粒度/编码/布局及CUDA/CuTe组合；Triton的原生硬件前提前置，既有编码/布局解释保留。
+- 不用Triton的nibble/scale映射补FlashInfer缺失字段，保留sf精确shape、swizzle、算法、全局/局部尺度关系及匹配实现未核。INDEX/READING/SELF与计划同步：146条有依据、83条队列；本轮88已处理5条，7份FlashInfer文档待接续。
+- 独立Astra内容review通过，无必修问题，启用条件按原文收紧。全库结构/来源strict检查184知识页、633项登记，0错误/待核；4个受影响Wiki页链接strict通过，新增入口与上下文已核。无量化实现或GPU运行验证。
+
 ## 2026-10-13 · FlashInfer计时文档 ingest：后端与样本口径
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致；未保存原HTML。现有[正确性与计时页](implementation/kernel-correctness-and-benchmarking.md)补CUPTI/Graph/Event优先级、返回毫秒列表、调用方median及次数/时间预算区别，不新增摘要页。
