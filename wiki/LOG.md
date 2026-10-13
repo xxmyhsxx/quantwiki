@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Ray Serve文档 ingest与第13批收尾
+
+- 完整读七份保存正文26/224/514/29/209/206/263行，7文件hash/大小匹配；ASCII图与十处图注已核，原图未保存。接续[服务编排](implementation/distributed-llm-serving-orchestration.md)的模型/副本两级选择、配置/协议/启动、placement与路由策略、DP gang计数/重启及decode侧P/D和connector预热；Dynamo机制保持各自归属。
+- 保留CPU server actor、engine、GPU worker与DP组单位；路由事件/估计负载与实际KV身份分开，集中get/set不证复合选择线性化；head轴TP与MLA DCP分别解释。文档后端覆盖、原图缺失、外链/API/literalinclude、匹配代码与运行边界保留，没有导入或执行上游。
+- READING/SELF/计划同步：162条有依据、67条队列，本轮基线88已处理21条。第13批九项选定来源完成研读、知识承接与独立review流程，未核实现/设备分支按实际记录保留；下一项第14批ModelOpt PTQ，准备不计完成。
+- 独立Astra正式review通过，无必修问题；七稿/ASCII图/图注、Ray增量和EP/MLA DCP阅读目标已核。全库结构/来源strict检查187知识页、660项登记，0错误/待核；3个受影响Wiki页的778条链接strict通过，162/67实际记录与第13批九项队列移出已核。仅提交本项5文件，其他任务的能力包工作已独立提交，本项保留Obsidian改动；未运行服务、模型或GPU。
+
 ## 2026-10-14 · Dynamo文档 ingest：路由、容量与KV交接
 
 - 完整研读三份保存正文220/128/329行与四张原图，7文件hash/大小匹配。新建[分布式服务编排](implementation/distributed-llm-serving-orchestration.md)，补引擎外三路径、backend-specific传输元数据/时序、xPyD与滚动更新；内存/部署/INDEX只补入口，复用已有DistServe/Sarathi和评测解释。

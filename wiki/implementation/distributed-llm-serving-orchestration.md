@@ -9,6 +9,7 @@ tags:
   - performance
 sources:
   - raw/articles/2026-09-24/nvidia-dynamo-architecture
+  - raw/articles/2026-09-24/ray-serve-llm-architecture
 updated: 2026-10-14
 ---
 
@@ -16,7 +17,7 @@ updated: 2026-10-14
 
 单个引擎决定本轮计算哪些 token；多引擎服务还要决定请求送给谁、哪些实例可接纳、历史 KV 怎样复用或交接，以及负载变化时怎样调整容量。一次路由的输出是目标服务实例及必要的协调信息，接收引擎仍需完成自己的 KV 接纳和模型执行。缓存位置、可用容量和实际传输完成是三个不同状态。
 
-引擎内的进度、块池与批次见[vLLM 执行](vllm-inference-execution.md)和[SGLang 执行](sglang-inference-execution.md)；阶段分离为何可能减轻干扰，以及混合轮次的取舍，复用[DistServe 与 Sarathi](serving-memory-and-batching.md#5.%20%E6%89%B9%E5%A4%84%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6)。本页依据已保存的 Dynamo 架构文档解释引擎外的责任与交接，未核其匹配实现或运行服务。来源条目登记为 v1.4.2，但兼容稿含 v1.5.0/dev 内容；后文按明确版本行与快照声明分别解释。
+引擎内的进度、块池与批次见[vLLM 执行](vllm-inference-execution.md)和[SGLang 执行](sglang-inference-execution.md)；阶段分离为何可能减轻干扰，以及混合轮次的取舍，复用[DistServe 与 Sarathi](serving-memory-and-batching.md#5.%20%E6%89%B9%E5%A4%84%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6)。本页依据已保存的 Dynamo 与 Ray 架构文档解释引擎外的责任与交接，未核其匹配实现或运行服务。Dynamo 条目登记为 v1.4.2，但兼容稿含 v1.5.0/dev 内容；Ray 文档固定为 2.58.0/642b00f8。两者及本 Wiki 引擎源码各自保留版本。
 
 ## 1. 请求执行、容量控制与缓存状态
 
@@ -50,7 +51,45 @@ SGLang 例子的提前进入不表示 Attention 可以读取尚未可用的 KV�
 
 同稿的 N−2 窗口指当前及前两个 release line 的 frontend/worker 混用，保证范围是 Dynamo 自己拥有的发现元数据和线协议；不覆盖直接 worker-to-worker、特别是 prefill-to-decode 协议。显式启用的特性若无法安全表达，还可拒绝混合版本。因此 frontend 可发现不同版本实例，不等于跨版本 P/D 可以任意配对；该声明按保存快照归属，未核对应历史实现。（Compatibility：Mixed-Version Compatibility。）
 
-## 4. 版本配套与能力范围
+## 4. Ray 的模型选择、副本路由与实例放置
+
+Ray Serve 的 deployment 定义服务与伸缩单位，replica 是该 deployment 的 Ray actor 实例，deployment handle 用来调用其副本。`OpenAiIngress` 先按 `model_id` 选择 deployment；handle 的 request router 再选择一个 replica；该副本中的 `LLMServer` 管理一个 engine instance，将请求交给引擎执行并返回响应或 token 流。Router 运行在持有 handle 的 caller 进程中，因此一个集群可以有多个 router 实例。（Ray Overview：Ray Serve primitives、Core components；Request routing：Routing versus ingress、Request routing architecture。）
+
+文档的默认 vLLM 放置为：server actor 申请 1 个 CPU、不申请 GPU；一个 engine 的 TP×PP 个 GPU worker bundles 由 placement group 组织。PACK 尽量在同节点放置，必要时可跨节点，TP ranks 优先靠近。server actor、engine instance 和 GPU worker 分别计数，replica 数不直接等于 GPU 数。（Overview：Physical placement、Engine management。）
+
+`LLMConfig` 将 API 使用的 `model_id` 与权重位置 `model_source` 分开；`engine_kwargs` 传引擎参数，`deployment_config` 管副本/伸缩，placement 配置组织资源。Builder 取得组件默认部署选项，再应用配置、装饰 deployment 并绑定构造输入。文档的异步构造先等待引擎启动，再进入可服务状态；测试用 `sync_init` 返回的对象仍需 `start`。（Core：LLMConfig、Deployment protocols、Builder pattern、Async constructor pattern。）
+
+Ray 文档中的 `LLMEngine` 是 OpenAI request/response 层的接口，tokenization、sampling 等细节封装在接口之后；不能与 vLLM/nano-vllm 的同名类直接等同。保存稿列 vLLM 为深度集成、SGLangServer 为 community integration，TensorRT-LLM 为未来候选，接口可扩展不表示现有后端能力相同。（Core：LLMEngine protocol、Engine implementations。）
+
+副本路由的三个策略使用不同负载信息：
+
+| 策略 | 保存文档中的选择依据 | 适用条件与边界 |
+| --- | --- | --- |
+| Power of Two Choices（Po2） | 随机抽两个副本，选 ongoing requests 较少者，并考虑 locality | 请求数是负载代理，不直接表示 token 工作量 |
+| `PrefixCacheAffinityRouter` | 负载较均衡时，前缀匹配率≥10%选匹配最高者；低于10%选缓存利用率最低者 | 负载不均衡时退回 Po2；10%是该文档的策略阈值，未核实现默认值 |
+| `KVAwareRouter` | 从 KV Events 估计未缓存 prefill 工作，与活跃 prefill/decode 工作合成 token load，选估计最低者 | 事件提供潜在缓存位置，接收引擎仍需验证实际身份与可用状态 |
+
+这些依据来自 Request routing 的 Available routing policies。自定义 router 可以逐请求查询集中 metrics actor，代价是额外 RPC 与潜在瓶颈；也可以使用 Serve controller 轮询后广播的统计，减少逐请求查询但存在时滞。文档称集中方案有 strong consistency，所示原子 `get/set` 本身未证明“选择→更新”的复合调度操作可线性化；广播数据也不能直接当作当前真实容量。（Request routing：Design patterns for custom routing policies。）
+
+## 5. Ray 的 DP 组与 P/D 编排
+
+### DP 请求分配、集体通信与组级伸缩
+
+DP attention 将不同请求交给不同 engine，组员的 MoE 专家 dispatch/combine 等 collective 仍须协同。Controller 建立 `data_parallel_size` 个 rank 的 gang；`DPServer` 从 gang context 取得 rank/组身份，rank 0 向 GCS-backed `GangMasterInfoRegistry` 登记 master 地址/端口，其他 rank 查询后把 DP 信息交给引擎。这份注册表保存控制地址，Attention KV 仍由引擎管理。（Ray Data parallel attention：Architecture overview、Components；专家通信的作用见[EP 执行](moe-expert-parallel-execution.md)。）
+
+保存稿将一名组员失败时整组重启作为 gang 的生命周期；autoscaling 的 `min_replicas/max_replicas/initial_replicas` 计 **DP groups**，每组含 `dp_size` 个 engine instances。例如组数2、DP大小4表示8个 engine，GPU 数仍需结合每个 engine 的 TP/PP 与资源配置。普通独立副本数、DP 组数和组内 engine 数不能混用。（Data parallel attention：Autoscaling、Fault tolerance；例子为计数教学。）
+
+该文档推荐 DP 的条件是高并发、稀疏 MoE 专家能被有效利用及 KV 容量受限，低负载下的协调成本未必值得。它对 GQA/MLA 的比较针对 **head 轴 TP 分片**：GQA 可按 KV heads 分片至相应 TP 范围，MLA 的共享 latent 不按同一 head 轴拆分。历史 token 轴的[MLA DCP 分片](vllm-mla-context-parallel-execution.md#1.%20%E6%89%80%E9%80%89%E8%B7%AF%E5%BE%84%E4%B8%8E%E4%B8%A4%E7%A7%8D%E5%B9%B6%E8%A1%8C%E8%BD%B4)是另一机制，不能把该比较推广为 MLA 缓存完全不可分片。（Data parallel attention：When to use/When not to use。）
+
+### Decode 侧发起远程 prefill 与 connector 预热
+
+Ray 的 P/D 请求先到 `PDDecodeServer`。它持有 prefill deployment handle，远程调用 `PDPrefillServer`，取得 KV metadata 后由自己的 engine 接续 decode 并流式返回。协调者在 decode 侧；两阶段各有 deployment/负载队列，可独立调整实例与 engine 配置。保存稿展示 `NixlConnector`，但“storage backend”只描述交接抽象，没有给出磁盘持久化、零拷贝、量化 scale/布局转换或完成释放协议。（Ray Prefill-decode disaggregation：Components、Request flow。）
+
+文档还给出 experimental connector 预热：decode 的 `LLMConfig` 设置 `experimental_configs={"_prewarm_prefill_decode": True}`，用极短 dummy 请求走完整 P/D 路径，为 prefill 副本提前建立连接，并在标记健康前完成 handshake。它处理首次交接的冷连接成本，与前述等待引擎启动的生命周期分开；不能据配置示例声称匹配格式、传输同步或实际部署已验证。（Prefill-decode：Pre-warming the connector。）
+
+收益由两阶段排队、网络/connector backend 与 KV 传输共同决定；短输出、网络带宽不足或小模型可使分离开销大于收益。DP+PD 的文档组合让两个阶段各有自己的 gang 和 DP 大小，具体配置与恢复/同步实现未核。本项完整读了七份保存正文及 ASCII 图，十处原图未保存，仅核正文与图注；外链指南/API、literalinclude 配置、匹配 Ray/engine/NIXL 源码与运行未核。（Prefill-decode：Performance characteristics、Design considerations；Data parallel：Combining with other patterns。）
+
+## 6. Dynamo 版本配套与能力范围
 
 兼容稿明确列出的 **Dynamo v1.4.2 行**为：
 
@@ -64,7 +103,7 @@ SGLang 例子的提前进入不表示 Attention 可以读取尚未可用的 KV�
 
 保存稿同时写 current stable=v1.5.0，后半功能表明确为 v1.5.0，SGLang 组合说明又使用 dev pin 0.5.19；SGLang 的 LoRA 在前段写“不支持”，后段写 experimental，并限制卸载、分离与路由组合的端到端验证。这里保留这些版本和状态差异，不把全部功能表登记成 v1.4.2 的完整能力，也不据“某功能支持”推出任意两功能组合已验证。（Compatibility：Per-Backend Detail、Feature support by backend、Feature interactions。）
 
-## 5. 文档性能结果的测量条件
+## 7. Dynamo 文档性能结果的测量条件
 
 总体稿的三张结果图支持不同的结论，应分别理解：
 
@@ -81,3 +120,4 @@ SGLang 例子的提前进入不表示 Attention 可以读取尚未可用的 KV�
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
 | NVIDIA Dynamo Architecture and Compatibility Documentation（`https://docs.nvidia.com/dynamo/v1.4.2/knowledge-base/overview`） | 条目登记 v1.4.2；获取于2026-09-24T02:12:20+08:00；兼容稿含 v1.5.0/dev 内容 | 完整保存的 Overall Architecture、Disaggregated Serving、Compatibility 与四张原图；版本混杂和图文差异按正文保留。匹配实现、详细外链和运行未核。 |
+| Ray Serve LLM Architecture（`https://docs.ray.io/en/v2.58.0/serve/llm/architecture/index.html`） | Ray 2.58.0；commit `642b00f8c3c5a01cab7c2e2bff8725fa027b23b4`；获取于2026-09-24T02:12:20+08:00 | 完整七份保存正文与ASCII图，模型/副本路由、资源单位、DP gang及P/D协调；十处原图仅核图注，匹配实现和运行未核。 |
