@@ -67,7 +67,7 @@ $$\arg\min_{\Delta \mathbf W^{(\ell)}_{k,:}}\ \mathbb E\left[\left(\Delta \mathb
 
 在忽略跨层耦合、预激活 Hessian 为与数据无关的正对角等近似下，各输出行的正常数权重不改变其独立最小值，目标可化为预激活均方误差。不能仅凭“不知道后续层”就断言 MSE 是最优任务代理。论文特别指出，这个目标此前已被多种压缩与量化工作使用，但本文是把它从任务损失的二阶展开中推导出来的——它的正当性来自上述假设，而不是经验选择。卷积层的对应推导在附录给出，结论相同：在同样的对角假设下等价于最小化输出特征图的 MSE，并可按输出通道分解。
 
-这一步是理解 AdaRound 与后续工作分工的关键：**它把「优化什么」固定为逐层重构，把「怎么优化」留给舍入决策。** 相邻的解析补偿方法（如 [层输出重构与二阶误差补偿](../theory/layer-reconstruction-second-order-compensation.md) 中的 GPTQ 路线）在同样的局部目标下改动权重值，而不是在网格的上下两点之间做选择。
+在这些假设下，AdaRound 将任务损失代理化为逐层重构，再在固定网格上优化舍入决策。
 
 ## 4. 松弛与正则
 
@@ -161,13 +161,11 @@ x 是全精度网络产生的层输入，$\hat x$ 是前面各层已经量化后
 
 ## 8. 与相邻方法的关系
 
-[层输出重构与二阶误差补偿](../theory/layer-reconstruction-second-order-compensation.md) 的 §6 曾按量化白皮书综述记录过软舍入与 AdaRound 的思路，本页补上原始来源的完整推导、消融与条件；两者应互相参照，白皮书版本保留其综述定位。
-
 **与后续工作的分工。** [BRECQ](brecq.md) 沿用 AdaRound 的舍入优化作为实现手段，但把重构单元从单层改成基本模块，并改用 Fisher 信息矩阵近似预激活 Hessian，从而把权重量化推到 2 bit。二者的差别正是「在哪一个粒度上定义重构目标」。
 
-**与解析补偿的分工。** GPTQ 顺序固定量化权重，并调整尚未固定的连续权重来补偿误差；AdaRound 保留原始浮点权重与网格，学习上下舍入决策。两者都会改变最终量化权重，只是搜索变量与步骤不同；组合使用还需明确共享目标、网格和执行顺序。
+**与解析补偿的分工。** GPTQ 的[解析补偿](../theory/layer-reconstruction-second-order-compensation.md)顺序固定量化权重，并调整尚未固定的连续权重来补偿误差；AdaRound 保留原始浮点权重与网格，学习上下舍入决策。两者都会改变最终量化权重，只是搜索变量与步骤不同；组合使用还需明确共享目标、网格和执行顺序。
 
-**与 QAT 的分工。** AdaRound 优化舍入变量，不需要标签或端到端训练，因此定位在后训练量化；[BRECQ](brecq.md) 继续采用这一参数化。参数化权重微调的关系见 [PTQ、QAT 与代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)。
+**与 QAT 的分工。** AdaRound 优化舍入变量，不需要标签或端到端训练，因此定位在后训练量化。参数化权重微调的关系见 [PTQ、QAT 与代理梯度](../fundamentals/quantization/post-training-and-quantization-aware-training.md)。
 
 ## 来源身份
 

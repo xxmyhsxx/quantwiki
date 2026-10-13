@@ -92,7 +92,7 @@ SmoothQuant 官方 commit `c61476d728e42ae0d8a35e7e78494edcac3237b5` 的 `smooth
 
 公式分别来自 SmoothQuant 第 4 页式 (4)、AWQ 第 5 页式 (5)。表中只比较这两个来源的设定，不断言其他实现都使用相同公式或超参数。完整流程、代码及证据分别见 [SmoothQuant](../methods/smoothquant.md) 和 [AWQ](../methods/awq.md)。
 
-在 SmoothQuant 中记 $a_j=\max|X_j|$、$b_j=\max|W_j|$，alpha=0.5 使变换后对应通道两侧最大值同为 $\sqrt{a_jb_j}$，不意味着所有通道同幅度或全局量化误差最优。该论文的不同模型使用不同 alpha，详见 SmoothQuant 主页面。平滑因子 $s_j$ 也不同于运行时量化步长；逐输入通道缩放和整数 GEMM 外维缩放的区别见[执行路径页](../implementation/quantized-matmul-scaling-execution.md)。
+平滑因子 $s_j$ 不同于运行时量化步长；逐输入通道缩放和整数 GEMM 外维缩放的区别见[执行路径页](../implementation/quantized-matmul-scaling-execution.md)。
 
 [MBQ](../methods/mbq.md) 提供了另一个实例：共享线性层同时处理视觉与文本位置时，恒等式仍是同一条，但搜索目标会区分模态误差。固定实现的默认 MAE 使用回答/视觉 mask 内的加权和；这会与 token 数量共同决定候选排名。改变重构权重不等于改变等价条件，也不等于为各模态分别量化一套权重。（MBQ v2 §3；代码细节见方法页。）
 

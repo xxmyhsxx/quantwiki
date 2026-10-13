@@ -86,7 +86,7 @@ W4A16 表示相应权重采用 4-bit 表示、激活保持 16-bit；它不意味
 
 模拟量化常把浮点权重映射到网格后，仍以浮点张量保存 $\widehat W$。它可以帮助评估低比特取值带来的质量变化，却没有自动减少物理存储，也没有证明后端实际运行了高效内核。实际压缩还需要编码打包、保存元数据以及读取这些数据的运算实现；不同路径的区别和代码实例见 [量化的实际执行路径](../../implementation/quantized-matmul-scaling-execution.md#3.%20%E4%BD%8E%E6%AF%94%E7%89%B9%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84)。
 
-PTQ 是从训练好的模型出发做量化；它可以使用校准数据、搜索甚至局部优化，并不等于完全无数据或不调整参数。QAT 则在训练前向中考虑量化影响并训练模型。范式、可调整变量与代理梯度的区别见 [PTQ、QAT 与代理梯度](post-training-and-quantization-aware-training.md)。AWQ 属于前者，使用校准输入进行统计和候选比较，不执行权重梯度训练。AWQ v6 §2、§3.2。
+AWQ 使用校准输入进行统计和候选比较，不执行权重梯度训练，属于 PTQ。范式、可调整变量与代理梯度的区别见 [PTQ、QAT 与代理梯度](post-training-and-quantization-aware-training.md)。AWQ v6 §2、§3.2。
 
 ## 5. 应用到 AWQ 时必须区分的两种公式
 
