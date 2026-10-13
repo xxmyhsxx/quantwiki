@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · nano-vllm ingest：离线状态与分页执行
+
+- 完整读取固定bb823b3e…的21个Python文件、README与pyproject，归档SHA/commit及26文件字节对应通过；只做AST和独立槽位教学计算，未导入上游。新增[nano-vllm离线执行](implementation/nano-vllm-inference-execution.md)，沿已知token/KV、本轮调度、块引用/尾块、紧凑输入、浮点Qwen3、采样/完成与TP/Graph解释主线；vLLM、内存和INDEX只加阅读入口。
+- 保留prefill选中即让decode等待、首次完整历史分块、最后完整块也重算、chunk采样仍消耗RNG、全局活跃数与本轮序列数的区别。代码的输入/长度/参数校验、Graph规格、rank池协商和loader完整性边界就近说明；作者benchmark与运行证据分开。
+- READING/SELF/计划同步：157条有依据、72条队列，本轮基线88已处理16条；第13批下一项vLLM v0.26.0发布说明，准备不计完成。
+- 独立Astra正式review通过，warmup的token ID/长度歧义修正后已独立闭环，无剩余必修问题。全库结构/来源strict检查186知识页、652项登记，0错误/待核；6个受影响Wiki页链接strict通过，状态/页表/模型/TP/评测的阅读承接已核。只提交本项8个成果文件，Obsidian改动保留；没有运行模型、服务或GPU。
+
 ## 2026-10-14 · SGLang v2 ingest：程序依赖与前缀共享
 
 - 完整研读固定arXiv:2312.07104v2主文与附录A–D，PDF/源包哈希与登记一致，13份展开文本对应原包，15份图保留在原包。新增[结构化程序执行](implementation/structured-language-model-program-execution.md)，串起提示流/分支依赖、跨调用Radix、离线DFS、FSM/重新分词、API文本复用及IR；公共内存/评测页只补生命周期与计量关联，现代Scheduler主线保留。

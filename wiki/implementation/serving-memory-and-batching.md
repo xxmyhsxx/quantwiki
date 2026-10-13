@@ -22,7 +22,7 @@ updated: 2026-10-14
 
 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。同一个量化模型接进不同的引擎，有效批量不同，吞吐就不同——这也是为什么「量化之后快了多少」不能只由模型和内核决定。本页整理部署侧第一层知识：KV cache 的内存管理、批处理与调度。
 
-本页的分页机制与相应实验依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）；第 5.1–5.2 节另接续 DistServe v3 与 Sarathi-Serve v3 的阶段调度，共享部分连接 SGLang v2 的跨调用缓存。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留各论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。原论文机制与所选现代源码分别保留版本和核读范围。
+本页的分页机制与相应实验依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）；第 5.1–5.2 节另接续 DistServe v3 与 Sarathi-Serve v3 的阶段调度，共享部分连接 SGLang v2 的跨调用缓存。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留各论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。紧凑离线实例可从[nano-vllm 的状态、分页与模型执行](nano-vllm-inference-execution.md)进入。原论文机制与各份固定源码分别保留版本和核读范围。
 
 ## 1. KV 容量怎样限制可用批量
 
