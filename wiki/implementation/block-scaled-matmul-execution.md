@@ -8,11 +8,12 @@ tags:
   - data-format
   - floating-point
 sources:
+  - raw/articles/2026-09-21/flashinfer-mm-bf16-fp4
   - raw/articles/2026-09-21/flashinfer-gemm-fp8-blockscaled
   - raw/articles/2026-09-21/flashinfer-fp4-quantize
   - raw/articles/2026-09-21/triton-block-scaled-matmul
   - raw/repositories/2026-09-21/triton
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # 块缩放矩阵乘：FP4/FP8 编码、尺度布局与执行接口
@@ -164,7 +165,35 @@ FlashInfer 0.6.14 的 `fp4_quantize` 文档快照把 `[M,K]` 输入变成两份�
 
 文档将更完整的参数语义交给 `gemm_fp8_nt_groupwise`，该引用页不在本条保存正文中。本次尚不能从这个短页确定尺度精确 shape/stride、各粒度对应的索引、尾块/对齐、具体 FP8 编码、accumulator dtype 或硬件分派；也不能把 Triton descriptor 的硬件入口或上一小节 CuTe-DSL 量化的 SM100+ 条件套到此 GEMM。这里确认输入轴、独立尺度、存储模式与输出的接口关系，未核匹配实现或运行。（来源概述与参数转引，snapshot-2026-07-02。）
 
+### BF16×FP4：权重准备与同后端消费
+
+`mm_bf16_fp4` 文档声明 W4A16 的 NVFP4 权重路径：激活 A 保持 BF16 `[M,K]`，权重及其尺度先按后端准备，再由 GEMM 消费，得到 `[M,N]` 输出。这里的 A16 **只声明支持 BF16**，不能据位宽推成同时支持 FP16。文档用 `out=(a@dequant(b).T)*alpha` 描述数值关系，块尺度参与权重恢复，全局因子则可显式传入或在准备时折入尺度。
+
+模型加载与每次调用的状态关系为：
+
+| 阶段 | 输入 | 交给下一阶段的状态 |
+| --- | --- | --- |
+| 模型加载时准备 | NVFP4 权重 b、块尺度 b_descale、可选全局因子 alpha，以及 `cudnn` 或 `cute-dsl` 后端标识 | 后端专用的 b_p、sf_p、alpha_p |
+| 运行 GEMM | BF16 激活 a、上述三份返回值，以及**相同**后端标识 | `[M,N]` 输出，默认 dtype 为 a.dtype，即 BF16 |
+
+来源示例直接把准备函数的返回值传入消费函数：
+
+```python
+b_p, sf_p, alpha_p = flashinfer.prepare_bf16_fp4_weights(
+    b, b_descale, alpha, backend="cute-dsl",
+)
+out = flashinfer.mm_bf16_fp4(
+    a, b_p, sf_p, alpha_p, backend="cute-dsl",
+)
+```
+
+`alpha` 是可选 `(1,)` FP32 全局标量。准备函数可能将它折入 `b_descale`，此时返回的 alpha_p 可以是 None；调用方应原样传递返回值，不能再套原始 alpha，也不能从参数名判断它尚未施加。换后端时也须重新核准备约定，已有某后端的 prepared 权重不能凭相同 FP4 名称交给另一后端。（来源概述、Example 与 alpha/backend 参数。）
+
+本接口 `block_size` 为 16，可传预分配 `[M,N]` 的 out，并提供 `out_dtype` 参数；`enable_pdl` 默认 True，与前述量化入口的 None 默认值分别保留。文档没有展开准备函数的布局转换、b_p/sf_p 的物理 shape/dtype、折叠算法、尾部/对齐、累加精度或后端设备支持矩阵。第 2–4 节的 Triton 布局和上一量化入口的硬件条件均不能补成此 GEMM 的事实。此处核的是**加载时准备 → 同后端消费 → 输出**的接口契约，未核准备函数页面、匹配实现或执行。（来源 Parameters 与 Returns；页面标识 0.6.14，snapshot-2026-07-02。）
+
 ## 来源身份
+
+- FlashInfer `mm_bf16_fp4`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_bf16_fp4.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的 BF16/NVFP4 输入、权重准备/同后端消费、alpha 折叠与输出，未核匹配实现或运行。
 
 - FlashInfer `gemm_fp8_nt_blockscaled`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.gemm_fp8_nt_blockscaled.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的 NT 输入、FP32 块尺度、存储方向与输出契约，未核所引 groupwise 文档或实现。
 
