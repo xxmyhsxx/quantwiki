@@ -45,8 +45,6 @@ updated: 2026-10-13
 | TensorRT-LLM | 所选文档的 checkpoint → 引擎流程 | qformat 指定，含 FP8、INT8 SQ、INT4 AWQ、W4A8 | 此流程经 `trtllm-build` 编译 |
 | MLC-LLM | 编译产物，量化模式写在编译配置里 | 权重 q3f16／q4f16／q4f16_awq，W/A 为 FP8 | 先编译再运行，可插入校准步骤 |
 
-这张表本身就是一条结论：**量化方法的部署成本取决于框架把它表达为什么**。llama.cpp 把量化固定在文件里，vLLM 把它表达为一个可探测的方法，TensorRT-LLM 把它当作编译期配置，MLC-LLM 把它当作编译选项并支持独立的校准运行。
-
 ## 3. vLLM：方法名清单
 
 vLLM 在 `vllm/model_executor/layers/quantization/__init__.py` 中定义了可用量化方法的字面量集合。固定快照 `568afb3a` 下的清单包括：
