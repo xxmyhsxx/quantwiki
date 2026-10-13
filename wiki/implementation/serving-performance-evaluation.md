@@ -6,6 +6,7 @@ tags:
   - evaluation
   - performance
 sources:
+  - raw/papers/2026-09-21/sglang
   - raw/papers/2026-09-21/sarathi-serve
   - raw/papers/2026-09-21/distserve
   - raw/repositories/2026-09-21/vllm
@@ -52,6 +53,8 @@ $$\text{request throughput}=N_{\mathrm{completed}}/T,\qquad
 若另报输入加输出 token/s，应明确命名。失败数、失败类型、实际完成的输出长度要一起记录；只报成功请求延迟可能掩盖高失败率。短测试的启动和排空时间占比大，也不能与长时间稳态区间混比。
 
 量化改变输出或 EOS 时，实际 $L_i$ 可能改变。固定生成长度可用于隔离服务性能，但这是专门的性能协议；实际任务质量仍需按正常停止条件在 [模型质量评测](model-quality-evaluation.md)中判断。
+
+多调用应用还须区分程序与请求。SGLang v2主吞吐实验计完整程序的programs/s，主延迟计一次无程序批处理的完整执行时间；一个程序可以含多次生成和分支等待。其图8(a)消融另计tokens/s，不能把两种单位互换，程序延迟也不能当作单调用TTFT或在线SLO容量。具体负载、基线版本和长输出反例见[程序性能证据](structured-language-model-program-execution.md#7.%20%E6%80%A7%E8%83%BD%E8%AF%81%E6%8D%AE%E7%9A%84%E7%A8%8B%E5%BA%8F%E5%8F%A3%E5%BE%84%E4%B8%8E%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4)。（SGLang v2 §6.1、§6.3及附录C。）
 
 ## 4. Goodput 把延迟目标放进吞吐
 
@@ -139,6 +142,8 @@ Strict/relaxed 分别参考4K context、batch32、无 prefill 干扰的 decode �
 本页核对所选 benchmark 的定义与处理分支，没有启动服务、产生请求或测得性能曲线。
 
 ## 来源身份
+
+- SGLang: Efficient Execution of Structured Language Model Programs（`https://arxiv.org/abs/2312.07104v2`），`arXiv:2312.07104v2`；§6及附录C，程序吞吐/平均程序延迟与消融tokens/s的对象区别，未核历史实现或运行。
 
 - Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve（`https://arxiv.org/abs/2403.02310v3`），`arXiv:2403.02310v3`；主文§2–6、算法1–3、表1–4/图6–14与Artifact Appendix，token级TBT/capacity和条件/消融/原件差异，未核作者代码或运行。
 

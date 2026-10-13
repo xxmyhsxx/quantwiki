@@ -8,6 +8,7 @@ tags:
   - kv-cache
   - performance
 sources:
+  - raw/papers/2026-09-21/sglang
   - raw/papers/2026-09-21/sarathi-serve
   - raw/papers/2026-09-21/distserve
   - raw/papers/2026-09-21/qserve
@@ -21,7 +22,7 @@ updated: 2026-10-14
 
 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。同一个量化模型接进不同的引擎，有效批量不同，吞吐就不同——这也是为什么「量化之后快了多少」不能只由模型和内核决定。本页整理部署侧第一层知识：KV cache 的内存管理、批处理与调度。
 
-本页的分页机制与相应实验依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）；第 5.1 节另接续 DistServe v3 的阶段分离。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留各论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。这些源码分析不代表已研读对应服务论文。
+本页的分页机制与相应实验依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）；第 5.1–5.2 节另接续 DistServe v3 与 Sarathi-Serve v3 的阶段调度，共享部分连接 SGLang v2 的跨调用缓存。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留各论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。原论文机制与所选现代源码分别保留版本和核读范围。
 
 ## 1. KV 容量怎样限制可用批量
 
@@ -60,6 +61,8 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 | 共享前缀（系统提示、few-shot 示例） | 预置前缀的物理块 | 吞吐相对 Orca（Oracle）：单示例前缀 1.67×，5 示例前缀 3.58× |
 
 机制细节值得注意：被多个序列共同引用的块在写入时才复制（与操作系统的 fork 相同），因此只复制一个块；束搜索中失效候选的块在引用计数归零后释放。论文指出，既有系统在这种场景下需要频繁整段拷贝 KV cache，这是共享带来的主要节省来源。
+
+SGLang v2进一步让不同模型调用复用已有完整前缀：Radix tree保留已计算的提示和生成历史，运行引用保护路径，可淘汰叶子按LRU回收，历史缓存与运行请求共享一个KV池。它解决跨调用的前缀查找与生命周期，分页解决物理放置，两者可以配合。请求结束后缓存仍可保留；程序的fork hint与离线DFS条件见[结构化程序的前缀共享](structured-language-model-program-execution.md#2.%20RadixAttention%20%E4%BF%9D%E7%95%99%E8%B7%A8%E8%B0%83%E7%94%A8%E7%9A%84%E5%89%8D%E7%BC%80%20KV)。（SGLang v2 §3、附录A。）
 
 ## 5. 批处理与调度
 
@@ -162,12 +165,13 @@ PP 气泡有三类来源：相邻 prefill 的长度不同、prefill 与 decode �
 
 ## 8. 局限与未验证
 
-SGLang 的服务论文尚未接续；DistServe与Sarathi-Serve v3的选定论文范围已补，作者实现与运行仍未核。本页数值均为论文报告，未运行服务或基准；现代实现的行为以各执行页的固定源码为准。
+SGLang v2、DistServe与Sarathi-Serve v3的选定论文范围已接续；匹配的历史作者实现与运行仍未核。本页数值均为论文报告，未运行服务或基准；现代实现的行为以各执行页的固定源码为准。
 
 ## 来源身份
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| SGLang: Efficient Execution of Structured Language Model Programs（`https://arxiv.org/abs/2312.07104v2`） | `arXiv:2312.07104v2` | §3、附录A的跨调用共享与引用/淘汰；程序机制、离线定理及实验由结构化程序页承接，未核历史实现或运行 |
 | Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve（`https://arxiv.org/abs/2403.02310v3`） | `arXiv:2403.02310v3` | §2–4、算法1–3与必要实验，token预算/混合轮次/历史读取/PP气泡，实验条件由评测页承接；未核作者实现或运行 |
 | DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`） | `arXiv:2401.09670v3` | §2–5与附录A，两阶段/队列/并行/placement及KV pull；实验和版本差异由评测页承接，未核实现或运行 |
 | Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`） | `arXiv:2309.06180v1` | — |

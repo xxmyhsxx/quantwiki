@@ -8,7 +8,7 @@ tags:
   - performance
 sources:
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # SGLang 推理执行：Radix 缓存、批次调度与重叠执行
@@ -16,6 +16,8 @@ updated: 2026-10-07
 SGLang 的推理执行把请求、前缀复用、显存槽位和设备批次连接起来：Radix cache 找到可复用的历史 KV，调度器选择本轮 extend 或 decode 工作，内存池建立请求位置到 KV 槽位的映射，worker 再把调度批次交给模型执行。重叠调度进一步让 CPU 准备与 GPU 计算并行推进。
 
 本页基于所收录的固定源码，选择普通自回归生成、MHA/GQA、设备内 RadixCache 的主线。从已完成输入处理的请求进入 Scheduler 开始，不展开前端编程接口、分布式路由、HiCache 分层存储或原始 SGLang 论文的实验。分页与连续批处理基础见[内存管理与批处理](serving-memory-and-batching.md)，算子侧接续到[SGLang Attention 设计](sglang-attention-operator-design.md)。
+
+原论文v2的提示状态、fork依赖、跨调用前缀共享与compressed FSM，见[结构化语言模型程序](structured-language-model-program-execution.md)。该页承担前端程序及历史实验解释，本页继续承担所选现代源码的Scheduler到设备批次主线。
 
 模型计算的共通前置见 [Transformer 与自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)；模型内各 rank 怎样分担投影见 [张量并行与量化](tensor-parallel-quantization.md)。本页的缓存和重叠机制最终需用 [服务延迟与 goodput](serving-performance-evaluation.md)判断收益。
 

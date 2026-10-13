@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · SGLang v2 ingest：程序依赖与前缀共享
+
+- 完整研读固定arXiv:2312.07104v2主文与附录A–D，PDF/源包哈希与登记一致，13份展开文本对应原包，15份图保留在原包。新增[结构化程序执行](implementation/structured-language-model-program-execution.md)，串起提示流/分支依赖、跨调用Radix、离线DFS、FSM/重新分词、API文本复用及IR；公共内存/评测页只补生命周期与计量关联，现代Scheduler主线保留。
+- 保留最优命中率的离线/容量条件、未知生成与饥饿、原算法计数省略、图14变量标签差异、概率失真与prompt重排语义风险。性能按程序/请求/token分别计数，长输出反例与旧基线保留；没有核匹配历史实现、完整KV失效/API回退或运行服务。
+- READING/SELF/计划同步：156条有依据、73条队列，本轮基线88已处理15条；第13批下一项nano-vllm，准备不计完成。
+- 独立Astra正式review完成，修正图/定理/附录编号、Vicuna收益归属与API模型名后复核通过；图2同步/数据传递按原件核清。全库结构/来源strict检查185知识页、651项登记，0错误/待核；7个受影响Wiki页链接strict通过，程序→现代缓存与公共计量的阅读路径已核。已有能力包任务的独立提交保留；本项只提交9个成果文件，Obsidian改动排除。未运行程序、服务或GPU。
+
 ## 2026-10-14 · Sarathi-Serve v3 ingest：混合预算与token级TBT
 
 - 完整研读固定arXiv:2403.02310v3正式主文与Artifact Appendix，PDF/源包哈希与登记一致；36份展开文件对应原包，25份图保留在原包。沿[内存与批处理](implementation/serving-memory-and-batching.md)接续三种调度轴、剩余预算/顺序、历史KV与气泡；在[服务评测](implementation/serving-performance-evaluation.md)补token级P99 TBT、排队条件、硬件/负载/预算与消融。
