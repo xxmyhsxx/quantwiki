@@ -16,12 +16,10 @@
 
 | 任务 | 入口 |
 | --- | --- |
-| 定位 Wiki 知识 | [wiki-query](.agents/skills/wiki-query/SKILL.md) |
-| 研究问题与比较路线 | [wiki-research](.agents/skills/wiki-research/SKILL.md) |
+| 使用 Wiki 知识、研究问题、实现或优化 Kernel、向指定项目外派能力包 | [use-quant-wiki](.agents/skills/use-quant-wiki/SKILL.md) |
 | 论文研读与知识入库 | [wiki-ingest](.agents/skills/wiki-ingest/SKILL.md) |
 | 审查 Wiki 内容 | [wiki-review](.agents/skills/wiki-review/SKILL.md) |
 | 精简、合并与去重 | [wiki-prune](.agents/skills/wiki-prune/SKILL.md) |
-| 实现或优化 Kernel | [wiki-kernel-writing](.agents/skills/wiki-kernel-writing/SKILL.md) |
 | 创建或修改 Skill | [skill-creator](.agents/skills/skill-creator/SKILL.md) |
 
 ## 云端环境

@@ -1,6 +1,6 @@
 ---
 name: wiki-kernel-writing
-description: "在需要将 PyTorch 或高层算子实现为 CUDA/Triton Kernel，或针对指定 GPU、workload、dtype 优化已有 Kernel 时使用。按基线建立、编译、正确性验证、性能测量、按需 Profiling、假设驱动迭代和最终验证的流程工作，保留可追溯实验及当前最佳已验证实现。正常运行时不查询外部 Wiki。"
+description: "use-quant-wiki 包内的算子编写能力。在应用工程中将高层算子实现为 CUDA/Triton Kernel，或针对指定 GPU、workload、dtype 优化已有 Kernel。保留编译、正确性、Benchmark、按需 Profiling、假设驱动迭代和最终验证闭环；正常执行不查询外部 Wiki，反馈交外层入口。"
 ---
 
 # 算子编写
@@ -13,11 +13,13 @@ description: "在需要将 PyTorch 或高层算子实现为 CUDA/Triton Kernel�
 
 不自动用于概念解释、代码阅读或总结、没有实际运行与测量的静态评审，以及不涉及 Kernel 的纯框架层、模型层或业务层优化。缺少可执行环境和可信 Reference，且任务也不包含补齐这些条件时，不启动完整开发闭环。
 
-本文件定义开发流程、验证门槛、实验记录和停止条件。具体优化知识由本 Skill 实际随附的 `references/` 提供；外部 Wiki 仅服务于离线知识积累和后续 Skill 迭代。
+本文件定义开发流程、验证门槛、实验记录和停止条件。具体优化知识由本 Skill 实际随附的 `references/` 提供。统一入口在任务准备时按需读取包内 [wiki-query](../wiki-query/SKILL.md) 或 [wiki-research](../wiki-research/SKILL.md)，整理必要知识；进入算子执行循环后不追加外部 Wiki 查询。
+
+本能力按明确路径读取，不依赖平台递归发现。执行规范与随包材料始终取自入口固定的本次包快照，不单独核对或升级外派版本。代码、依赖和原始结果保存在应用工程，GPU 与服务器由应用任务确定，不默认使用 Wiki 的历史实验位置。
 
 ## 输入
 
-从用户任务、当前仓库、已有测试和运行环境中确认以下信息。已有等价配置或记录时直接复用，不要求用户重新填写，也不为遵守 Skill 创建重复文件。
+从用户任务、当前应用工程、已有测试和运行环境中确认以下信息。已有等价配置或记录时直接复用，不要求用户重新填写，也不为遵守 Skill 创建重复文件。
 
 | 信息 | 需要确认的内容 |
 | --- | --- |
@@ -43,7 +45,7 @@ description: "在需要将 PyTorch 或高层算子实现为 CUDA/Triton Kernel�
 
 5. **以假设驱动迭代，保护 best-so-far。** 初始实现优先简单、正确、可验证；后续每个 Candidate 默认检验一个主要性能假设。组合修改必须说明各项变化和组合理由。`latest candidate` 不等于 `best candidate`；只有通过编译与正确性、满足全部 required workload，并按统一协议证实目标指标更优的 Candidate 才能替换 best。
 
-6. **保持运行时闭包。** 正常执行仅使用当前 `SKILL.md`、本 Skill 实际随附的 `references/` 和 `scripts/`、当前仓库代码与文档、当前任务和实验记录，以及本地可用的编译、测试、Benchmark、Profiler 工具。不查询外部 Kernel Wiki，也不以材料不足为由静默扩大运行时依赖。References 在相关步骤按需读取，不默认全部加载；不存在的文件或工具不能当作可用依赖。无法继续时保留当前 best verified result，记录 unresolved issue，留待离线迭代。
+6. **保持运行时闭包。** 正常执行仅使用本次固定包快照中的 `SKILL.md`、本 Skill 实际随附的 `references/` 和 `scripts/`、应用工程代码与文档、当前任务和实验记录，以及可用的编译、测试、Benchmark、Profiler 工具。入口在执行前整理的知识可以作为当前任务材料使用，但不能替代当前验证。不查询外部 Kernel Wiki，也不以材料不足为由静默扩大运行时依赖。References 在相关步骤按需读取，不默认全部加载；不存在的文件或工具不能当作可用依赖。无法继续时保留当前 best verified result，记录 unresolved issue，将额外知识需求交给入口反馈或后续研究。
 
 ## 工作步骤
 
@@ -249,6 +251,8 @@ planned → implemented → compiled → verified → benchmarked
 
 报告明确区分实际测量确认的结论、推测和 unresolved issue。只完成部分阶段时，如实交付已有代码与证据，说明未完成项，不宣称已获得最终已验证 Kernel 或性能提升。
 
+向统一入口提供实际使用的知识、实现版本、验证范围、关键结果、限制和可复用的方法改进依据，由入口整合本次调用的唯一反馈。本能力不单独写反馈日志，不修改公共 Wiki、来源或源 Skill。任务记录保留本次包版本、内容标识及快照位置。
+
 ## 校验
 
 结束前结合代码、实际日志和实验记录逐项核对，不仅检查文档是否填写：
@@ -263,3 +267,4 @@ planned → implemented → compiled → verified → benchmarked
 - [ ] 停止条件有明确依据，尚未解决的问题未被写成已解决。
 - [ ] 最终交付版本已重新执行正式 Correctness 与 Benchmark，覆盖全部 required workload；无法完成或失败时未声称最终验证通过。
 - [ ] 报告与实际实现、日志一致，明确区分已验证结论、推测和未完成项。
+- [ ] 代码和实验记录留在应用工程，包版本及快照可追溯；反馈材料交统一入口，未重复写反馈或修改公共知识。

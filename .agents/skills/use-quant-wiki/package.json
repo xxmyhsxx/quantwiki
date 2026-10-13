@@ -1,0 +1,40 @@
+{
+  "bindings": {
+    "feedback_root": "/Users/xiao/Desktop/量化/query-feedback",
+    "source_package": "/Users/xiao/Desktop/量化/.agents/skills/use-quant-wiki",
+    "wiki_root": "/Users/xiao/Desktop/量化"
+  },
+  "capabilities": [
+    {
+      "name": "wiki-query",
+      "path": "skills/wiki-query/SKILL.md",
+      "purpose": "直接使用知识，完成定位、解释、比较与分析。"
+    },
+    {
+      "name": "wiki-research",
+      "path": "skills/wiki-research/SKILL.md",
+      "purpose": "研究应用中的实际问题，形成方案并按任务要求验证。"
+    },
+    {
+      "name": "wiki-kernel-writing",
+      "path": "skills/wiki-kernel-writing/SKILL.md",
+      "purpose": "在应用环境实现或优化算子，完成编译、正确性与性能验证。"
+    }
+  ],
+  "content_sha256": "6df39b2c20c3204f73113f02cd8956e6d24262c077db05b7b1a0535cb14779e0",
+  "files": {
+    "README.md": "bcae92b09de589f82447336f35a083dd2d18241cc3df70d6273035ab67c3e66a",
+    "SKILL.md": "26cdce40cbfe8d27320066049f51c3d6c6f4e98391bc8d6164592de84ba0d40a",
+    "scripts/package.py": "14958bbdd5d9bb0f0312dd7572415105ecd8b218dda67f8a5538d2e5c2df8b97",
+    "scripts/test_package.py": "7e8bbc26931fa5ac620db60066a0d15eb9adecc387d0a442d7852c9a008c73a1",
+    "skills/wiki-kernel-writing/README.md": "75e08512b9115db8a4f6d092bc42e72eb20148e35864a2ac89e889effbeb0fd4",
+    "skills/wiki-kernel-writing/SKILL.md": "c09c6ca750de571539f82c50972ca84f295493bd09374934bb53867e65be8be1",
+    "skills/wiki-query/README.md": "ea7ad983123e25fe7eff9d89ce71867440be67da8cf2119a7ded696be07af788",
+    "skills/wiki-query/SKILL.md": "b67fa001b22155430458d151e317032438f620c4c51e9628a7ce4e5de120ee56",
+    "skills/wiki-research/README.md": "f4e550f9946eb0164a1ee064eca954605172c0d5e11770bc0d34026d19227a0e",
+    "skills/wiki-research/SKILL.md": "2e2caa4d511679cf0c1447daa2d6ecaadd2f11209bf1d38af59e5ca46b8deea0"
+  },
+  "name": "use-quant-wiki",
+  "schema_version": 1,
+  "version": 1
+}
