@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish, inspect, install and freeze the complete use-quant-wiki package.
+"""Publish, inspect, install and freeze a complete Wiki capability package.
 
 Only Python's standard library is required. Every command returns JSON. Refused
 writes preserve the target; post-install verification failures report rollback
@@ -12,13 +12,13 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 from pathlib import Path, PurePosixPath
 import shutil
 import sys
 import tempfile
 import uuid
 
-NAME = "use-quant-wiki"
 MANIFEST = "package.json"
 INSTALLATION = ".installation.json"
 SNAPSHOT = ".snapshot.json"
@@ -101,11 +101,18 @@ def relative(value):
     return path
 
 
+def skill_name(value):
+    if not isinstance(value, str) or len(value) > 64 or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", value):
+        raise PackageError("invalid_manifest", "Names must be safe Skill names of 1-64 lowercase letters, digits or single hyphens", name=value)
+    return value
+
+
 def metadata(value, version=None):
     if not isinstance(value, dict):
         raise PackageError("invalid_manifest", "Metadata must be a JSON object")
-    if value.get("schema_version") != SCHEMA or value.get("name") != NAME:
-        raise PackageError("invalid_manifest", "Unsupported schema_version or package name")
+    if value.get("schema_version") != SCHEMA:
+        raise PackageError("invalid_manifest", "Unsupported schema_version")
+    package_name = skill_name(value.get("name"))
     chosen = value.get("version") if version is None else version
     if type(chosen) is not int or chosen < 1:
         raise PackageError("invalid_manifest", "version must be a positive integer")
@@ -115,6 +122,8 @@ def metadata(value, version=None):
     resolved = {key: str(absolute(path, key)) for key, path in bindings.items()}
     if resolved != bindings:
         raise PackageError("invalid_manifest", "Bindings must use canonical absolute paths")
+    if Path(resolved["source_package"]).name != package_name:
+        raise PackageError("invalid_manifest", "source_package directory must match the package name")
     if Path(resolved["feedback_root"]) != Path(resolved["wiki_root"]) / "query-feedback":
         raise PackageError("invalid_manifest", "feedback_root must be wiki_root/query-feedback")
     capabilities = value.get("capabilities")
@@ -125,15 +134,16 @@ def metadata(value, version=None):
         if not isinstance(capability, dict) or set(capability) != {"name", "purpose", "path"}:
             raise PackageError("invalid_manifest", "Each capability requires name, purpose and path")
         name, purpose = capability["name"], capability["purpose"]
-        if not isinstance(name, str) or not name or name in seen or any(c not in "abcdefghijklmnopqrstuvwxyz0123456789-_" for c in name):
-            raise PackageError("invalid_manifest", "Capability names must be unique simple identifiers")
+        skill_name(name)
+        if name in seen:
+            raise PackageError("invalid_manifest", "Capability names must be unique")
         if not isinstance(purpose, str) or not purpose.strip():
             raise PackageError("invalid_manifest", "Capability purpose must not be empty")
         path = relative(capability["path"])
         if path != PurePosixPath("skills") / name / "SKILL.md":
             raise PackageError("invalid_manifest", "Capability path must be skills/<name>/SKILL.md")
         seen.add(name)
-    return {"schema_version": SCHEMA, "name": NAME, "version": chosen,
+    return {"schema_version": SCHEMA, "name": package_name, "version": chosen,
             "bindings": bindings, "capabilities": capabilities}
 
 
@@ -228,27 +238,45 @@ def record(root, filename=INSTALLATION):
     return read_json(path, "customized")
 
 
-def assert_record(root, manifest, item):
-    expected = {"schema_version": SCHEMA, "name": NAME, "version": manifest["version"],
+def assert_record(root, manifest, item, filename=INSTALLATION):
+    expected = {"schema_version": SCHEMA, "name": manifest["name"], "version": manifest["version"],
                 "source_package": manifest["bindings"]["source_package"],
                 "content_sha256": manifest["content_sha256"], "manifest_sha256": manifest_digest(root)}
-    if not isinstance(item, dict) or any(item.get(key) != value for key, value in expected.items()):
-        raise PackageError("customized", "Installation or snapshot identity no longer matches the package")
+    fields = {"created_at", "original_package"} if filename == SNAPSHOT else {"created_at", "scope", "skills_root", "project_root"}
+    if not isinstance(item, dict) or set(item) != set(expected) | fields or any(item.get(key) != value for key, value in expected.items()):
+        raise PackageError("customized", "Installation or snapshot identity or fields no longer match the package")
 
 
 def identity_record(root, manifest, **extra):
-    return {"schema_version": SCHEMA, "name": NAME, "version": manifest["version"],
+    return {"schema_version": SCHEMA, "name": manifest["name"], "version": manifest["version"],
             "source_package": manifest["bindings"]["source_package"],
             "content_sha256": manifest["content_sha256"], "manifest_sha256": manifest_digest(root),
             "created_at": timestamp(), **extra}
 
 
-def valid_for_use(root):
+def assert_installation_location(root, manifest, item):
+    scope = item.get("scope")
+    recorded = item.get("skills_root")
+    if not isinstance(scope, str) or scope not in {"project", "shared"} or not isinstance(recorded, str) or str(absolute(recorded, "skills_root")) != recorded:
+        raise PackageError("customized", "Installation record lacks a valid scope and canonical skills_root")
+    if root.name != manifest["name"] or recorded != str(root.parent):
+        raise PackageError("installation_mismatch", "Installation record belongs to another receiving Skill directory", package=str(root), recorded_skills_root=recorded, actual_skills_root=str(root.parent))
+    project = item.get("project_root")
+    if scope == "shared":
+        if project is not None:
+            raise PackageError("customized", "Shared installation must not claim a project_root")
+    elif root.parent.name != "skills" or root.parent.parent.name != ".agents" or project != str(root.parent.parent.parent):
+        raise PackageError("installation_mismatch", "Installation record does not match the actual receiving project", package=str(root), recorded_project=project, actual_project=str(root.parent.parent.parent))
+
+
+def valid_for_use(root, check_project=True):
     manifest = verified(root)
     for filename in (INSTALLATION, SNAPSHOT):
         item = record(root, filename)
         if item is not None:
-            assert_record(root, manifest, item)
+            assert_record(root, manifest, item, filename)
+            if filename == INSTALLATION and check_project:
+                assert_installation_location(root, manifest, item)
     return manifest
 
 
@@ -263,9 +291,11 @@ def status(root, source=None):
     try:
         installation = record(root)
         snapshot_record = record(root, SNAPSHOT)
-        for item in (installation, snapshot_record):
+        for filename, item in ((INSTALLATION, installation), (SNAPSHOT, snapshot_record)):
             if item is not None:
-                assert_record(root, manifest, item)
+                assert_record(root, manifest, item, filename)
+        if installation is not None:
+            assert_installation_location(root, manifest, installation)
     except PackageError as exc:
         return {**result, "state": exc.state, "message": str(exc)}
     source = source or absolute(manifest["bindings"]["source_package"], "source_package")
@@ -293,6 +323,8 @@ def status(root, source=None):
 
 
 def publish(root, version, metadata_path=None):
+    if metadata_path is None and not (root / MANIFEST).exists():
+        raise PackageError("unpublished", "Initial publication requires explicit --metadata")
     raw = read_json(metadata_path) if metadata_path else read_json(root / MANIFEST)
     info = metadata(raw, version)
     if Path(info["bindings"]["source_package"]) != root:
@@ -351,18 +383,25 @@ def copy_payload(source, destination, manifest):
         raise PackageError("source_changed", "Source release changed while preparing a complete copy")
 
 
-def install(root, project, source=None, allow_update=False, *, _source_manifest=None, _local_manifest=None):
+def install(root, project=None, source=None, allow_update=False, skills_dir=None, *, _source_manifest=None, _local_manifest=None):
     if source is None:
         source = absolute(load_manifest(root)["bindings"]["source_package"], "source_package")
     release = _source_manifest if _source_manifest is not None else verified(source)
     if Path(release["bindings"]["source_package"]) != source:
         raise PackageError("different_source", "Requested source is not the bound authoritative source_package")
-    target = project / ".agents" / "skills" / NAME
+    if (project is None) == (skills_dir is None):
+        raise PackageError("invalid_target", "Choose exactly one receiving project or shared skills directory")
+    name = release["name"]
+    scope = "project" if project is not None else "shared"
+    skills_root = project / ".agents" / "skills" if project is not None else skills_dir
+    location = {"scope": scope, "skills_root": str(skills_root),
+                "project_root": str(project) if project is not None else None}
+    target = skills_root / name
     if is_within(target, source) or is_within(source, target):
         raise PackageError("invalid_target", "Source and installation directory must not overlap")
-    check_destination(target, project.parent)
+    check_destination(target, project.parent if project is not None else skills_root.parent)
     target.parent.mkdir(parents=True, exist_ok=True)
-    lock = target.parent / f".{NAME}.install-lock"
+    lock = target.parent / f".{name}.install-lock"
     try:
         lock_fd = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError as exc:
@@ -383,14 +422,28 @@ def install(root, project, source=None, allow_update=False, *, _source_manifest=
             if origin(installed) != origin(release):
                 raise PackageError("different_source", "Existing same-name package belongs to another source")
             installed_record = record(target)
+            project_mismatch = None
             if installed_record is not None:
                 assert_record(target, installed, installed_record)
+                try:
+                    assert_installation_location(target, installed, installed_record)
+                    if any(installed_record.get(key) != value for key, value in location.items()):
+                        raise PackageError("installation_mismatch", "Installation record scope differs from the requested receiving scope")
+                except PackageError as exc:
+                    if exc.state != "installation_mismatch":
+                        raise
+                    project_mismatch = exc
             before = (installed, local["manifest_sha256"], json_bytes(installed_record) if installed_record else None)
-            if local["manifest_sha256"] == manifest_digest(source):
-                if installed_record is None:
-                    write_json(target / INSTALLATION, identity_record(target, installed, project_root=str(project)))
-                return {"state": "reused", "project": str(project), "installation": str(target),
-                        "version": installed["version"], "content_sha256": installed["content_sha256"]}
+            if installed == release and local["manifest_sha256"] == manifest_digest(source):
+                refreshed = installed_record is None or project_mismatch is not None
+                if refreshed:
+                    write_json(target / INSTALLATION, identity_record(target, installed, **location))
+                    valid_for_use(target)
+                return {"state": "reused", "project": location["project_root"], "scope": scope, "skills_root": str(skills_root), "installation": str(target),
+                        "version": installed["version"], "content_sha256": installed["content_sha256"],
+                        "installation_record_refreshed": refreshed}
+            if project_mismatch is not None:
+                raise project_mismatch
             if installed_record is None:
                 raise PackageError("unrecorded", "Existing different contents have no installation provenance; preserve them")
             if release["version"] <= installed["version"]:
@@ -398,9 +451,9 @@ def install(root, project, source=None, allow_update=False, *, _source_manifest=
             if not allow_update:
                 raise PackageError("update_required", "A newer complete release exists; update permission is required", source_version=release["version"], installed_version=installed["version"])
             state = "updated"
-        stage = Path(tempfile.mkdtemp(prefix=f".{NAME}-stage-", dir=target.parent))
+        stage = Path(tempfile.mkdtemp(prefix=f".{name}-stage-", dir=target.parent))
         copy_payload(source, stage, release)
-        write_json(stage / INSTALLATION, identity_record(stage, release, project_root=str(project)))
+        write_json(stage / INSTALLATION, identity_record(stage, release, **location))
         assert_record(stage, release, record(stage))
         if before is not None:
             try:
@@ -411,7 +464,7 @@ def install(root, project, source=None, allow_update=False, *, _source_manifest=
             current = (now, manifest_digest(target), json_bytes(current_record) if current_record else None)
             if current != before:
                 raise PackageError("target_changed", "Target changed while preparing the update; preserve it")
-            backup = target.parent / f".{NAME}-backup-{uuid.uuid4().hex}"
+            backup = target.parent / f".{name}-backup-{uuid.uuid4().hex}"
             os.replace(target, backup)
         try:
             os.replace(stage, target)
@@ -426,7 +479,7 @@ def install(root, project, source=None, allow_update=False, *, _source_manifest=
         except (PackageError, OSError) as exc:
             if backup is None:
                 raise PackageError("installation_verification_failed", "Installed files could not be verified; retain the actual new directory for review", installation=str(target), restored_previous=False, cause=str(exc)) from exc
-            failed = target.parent / f".{NAME}-failed-{uuid.uuid4().hex}"
+            failed = target.parent / f".{name}-failed-{uuid.uuid4().hex}"
             try:
                 # Retain the failed new directory, including any concurrent edit.
                 os.replace(target, failed)
@@ -435,16 +488,13 @@ def install(root, project, source=None, allow_update=False, *, _source_manifest=
             except OSError as rollback_error:
                 raise PackageError("rollback_failed", "Final verification failed and previous installation could not be restored", installation=str(target), previous_installation=str(backup), retained_failed_package=str(failed), cause=str(exc), rollback_error=str(rollback_error)) from rollback_error
             raise PackageError("installation_verification_failed", "Final verification failed; previous complete installation restored and new directory retained", installation=str(target), restored_previous=True, retained_failed_package=str(failed), cause=str(exc)) from exc
-        result = {"state": state, "project": str(project), "installation": str(target),
+        result = {"state": state, "project": location["project_root"], "scope": scope, "skills_root": str(skills_root), "installation": str(target),
                   "version": release["version"], "content_sha256": release["content_sha256"],
                   "file_count": len(release["files"])}
         if backup is not None:
-            try:
-                shutil.rmtree(backup)
-                backup = None
-            except OSError as exc:
-                result["cleanup_warning"] = str(exc)
-                result["previous_installation"] = str(backup)
+            # Keep the old directory even after success: edits made after the
+            # final target comparison must remain recoverable by the user.
+            result["previous_installation"] = str(backup)
         return result
     finally:
         if stage is not None:
@@ -464,7 +514,7 @@ def snapshot(root, output, *, _manifest=None):
     try:
         copy_payload(root, stage, manifest)
         write_json(stage / SNAPSHOT, identity_record(stage, manifest, original_package=str(root)))
-        assert_record(stage, manifest, record(stage, SNAPSHOT))
+        assert_record(stage, manifest, record(stage, SNAPSHOT), SNAPSHOT)
         if output.exists() or output.is_symlink():
             raise PackageError("snapshot_exists", "Task snapshot appeared during preparation; preserve it")
         # mkdir reserves the exact output without replacing any existing path.
@@ -488,11 +538,11 @@ def snapshot(root, output, *, _manifest=None):
 
 
 def prepare(root, output, allow_update=False):
-    """Select one verified task package; keep update/state handling inside the tool."""
+    """Verify one task version, update when authorized, and freeze its full package."""
     try:
         manifest = valid_for_use(root)
     except PackageError as exc:
-        if (root / INSTALLATION).exists():
+        if (root / INSTALLATION).exists() and exc.state != "installation_mismatch":
             raise PackageError("customized", "Installed package is not intact; preserve local contents", cause=exc.state) from exc
         raise
     if record(root, SNAPSHOT) is not None:
@@ -502,11 +552,15 @@ def prepare(root, output, allow_update=False):
 
     source = absolute(manifest["bindings"]["source_package"], "source_package")
     freshness, source_checked, updated, limitations = "current", True, False, []
+    previous_installation = None
     if source != root:
-        if record(root) is None:
+        installation = record(root)
+        if installation is None:
             raise PackageError("unrecorded", "Mirror has no installation provenance; install it before preparing a task")
         release = inspect(source)
         if release["state"] != "valid":
+            if release["state"] not in {"unavailable", "unpublished", "source_modified"}:
+                raise PackageError(release["state"], "Source cannot be trusted for task preparation; preserve the installed package", source_details=release)
             unavailable = release["state"] == "unavailable"
             freshness = "source_unavailable" if unavailable else "source_unpublished"
             source_checked = not unavailable
@@ -521,21 +575,34 @@ def prepare(root, output, allow_update=False):
             if latest["version"] == manifest["version"]:
                 if manifest_digest(root) != release["manifest_sha256"]:
                     raise PackageError("release_conflict", "Same-version source and mirror have different release identities")
+            elif not allow_update:
+                freshness = "outdated"
+                limitations.append("A newer release exists; update was not authorized, so this task uses the intact installed version.")
             else:
-                if not allow_update:
-                    raise PackageError("update_required", "A newer release exists; prepare again with authorized update enabled", source_version=latest["version"], installed_version=manifest["version"])
-                # Installation is always at the existing default project location.
-                # Do not derive a write target from editable installation metadata.
-                project = root.parent.parent.parent
-                if root != project / ".agents" / "skills" / NAME:
-                    raise PackageError("invalid_target", "Mirror is not at the supported project installation location")
-                install(root, project, source, True, _source_manifest=latest, _local_manifest=manifest)
+                scope = installation["scope"]
+                result = install(root, root.parent.parent.parent if scope == "project" else None,
+                                 source, True, root.parent if scope == "shared" else None,
+                                 _source_manifest=latest, _local_manifest=manifest)
+                previous_installation = result.get("previous_installation")
                 manifest, updated = latest, True
 
-    frozen = snapshot(root, output, _manifest=manifest)
-    return {"state": "ready", "snapshot": frozen["snapshot"], "version": manifest["version"],
-            "content_sha256": manifest["content_sha256"], "freshness": freshness,
-            "source_checked": source_checked, "updated": updated, "limitations": limitations}
+    try:
+        frozen = snapshot(root, output, _manifest=manifest)
+    except (PackageError, OSError) as exc:
+        if not updated:
+            raise
+        details = {"updated": True, "version": manifest["version"], "installation": str(root),
+                   "previous_installation": previous_installation}
+        if isinstance(exc, PackageError):
+            exc.details.update(details)
+            raise
+        raise PackageError("snapshot_failed", str(exc), **details) from exc
+    result = {"state": "ready", "snapshot": frozen["snapshot"], "version": manifest["version"],
+              "content_sha256": manifest["content_sha256"], "freshness": freshness,
+              "source_checked": source_checked, "updated": updated, "limitations": limitations}
+    if previous_installation is not None:
+        result["previous_installation"] = previous_installation
+    return result
 
 
 def feedback(root, input_path):
@@ -569,7 +636,7 @@ def feedback(root, input_path):
     query_id = uuid.uuid4().hex
     path = folder / f"{dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).strftime('%Y%m%dT%H%M%S')}-{query_id}.json"
     body = {**value, "query_id": query_id, "created_at": timestamp(), "timezone": "Asia/Taipei",
-            "package": NAME, "package_version": manifest["version"],
+            "package": manifest["name"], "package_version": manifest["version"],
             "content_sha256": manifest["content_sha256"], "wiki_root": str(wiki)}
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
@@ -598,7 +665,9 @@ def main(argv=None):
     inspect_cmd = commands.add_parser("status")
     inspect_cmd.add_argument("--source")
     install_cmd = commands.add_parser("install")
-    install_cmd.add_argument("--project", required=True)
+    receiving = install_cmd.add_mutually_exclusive_group(required=True)
+    receiving.add_argument("--project")
+    receiving.add_argument("--skills-dir", help="absolute shared Skill directory")
     install_cmd.add_argument("--source")
     install_cmd.add_argument("--allow-update", action="store_true")
     freeze = commands.add_parser("snapshot")
@@ -620,7 +689,9 @@ def main(argv=None):
         elif args.operation == "status":
             result = status(root, absolute(args.source, "source") if args.source else None)
         elif args.operation == "install":
-            result = install(root, destination(args.project, "project"), absolute(args.source, "source") if args.source else None, args.allow_update)
+            result = install(root, destination(args.project, "project") if args.project else None,
+                             absolute(args.source, "source") if args.source else None, args.allow_update,
+                             destination(args.skills_dir, "skills_dir") if args.skills_dir else None)
         elif args.operation == "snapshot":
             result = snapshot(root, destination(args.output, "output"))
         elif args.operation == "prepare":

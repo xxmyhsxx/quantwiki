@@ -21,12 +21,12 @@
       "purpose": "在应用环境实现或优化算子，完成编译、正确性与性能验证。"
     }
   ],
-  "content_sha256": "96b7d88e49cffa13d116dd9b99736af70e99e4a97d8e56ed67e0ccc53038cbde",
+  "content_sha256": "9760d6f1153de229a3a12106be2fe48057090a39741d363fa8e6fe0c38023fb8",
   "files": {
-    "README.md": "56f01de79e36e50b3cd1911048669e2849e7e48229bc8f7ec5ce2c12c240cb43",
-    "SKILL.md": "2fe88edbbc7d7c26e32c998d1fe199b1b2a7fb67b983ed8350c473434d6e1e4c",
-    "scripts/package.py": "0c68713506a3958b0b96e04b9156f8a29c9dd422f50261f907e95d2923d9bc1f",
-    "scripts/test_package.py": "dbfd8157e8d2e205e29d728244b0d32df99d329cd4c36f3a8b0a56012a77b011",
+    "README.md": "10f69f2e0b0b4d59bdf1126ca518ff6d1372357c76bb20e47dab5c39192aec96",
+    "SKILL.md": "2ce699ef3a4092d39b2e1cfb47a294f246ad4ed9cde072776270c6da215beb4c",
+    "scripts/package.py": "c46acc33b09cd654ef946d1caebafb44121cd87da61275705a8dc7b120c4ca8b",
+    "scripts/test_package.py": "99b3fef44b17ad09e9ca53a9e9918ca373c1aac8704c52d734b12055162dee61",
     "skills/wiki-kernel-writing/README.md": "75e08512b9115db8a4f6d092bc42e72eb20148e35864a2ac89e889effbeb0fd4",
     "skills/wiki-kernel-writing/SKILL.md": "c09c6ca750de571539f82c50972ca84f295493bd09374934bb53867e65be8be1",
     "skills/wiki-query/README.md": "ea7ad983123e25fe7eff9d89ce71867440be67da8cf2119a7ded696be07af788",
@@ -36,5 +36,5 @@
   },
   "name": "use-quant-wiki",
   "schema_version": 1,
-  "version": 2
+  "version": 3
 }

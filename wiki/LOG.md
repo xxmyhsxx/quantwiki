@@ -1260,3 +1260,7 @@
 - 方法页已注明的论文内部数字差异、公开代码与论文配置差异、未读分支和有限实验条件继续保留；资料或依赖文件补齐不等于相应代码已经研读。
 - 当时服务知识对 chunked prefill、前缀树共享和 prefill/decode 分离覆盖不足；后续已有 [vLLM 调度](implementation/vllm-inference-execution.md)、[SGLang 缓存](implementation/sglang-inference-execution.md)和[分阶段量化](methods/disaggregated-quantization.md)承接，具体范围见各页正文。
 - 研究线索与实验设想保留在项目研究说明，未因本次迁移升级为已验证结论。
+
+## 2026-10-14 · 能力包统一
+
+- 与 wiki_backbone 使用相同包工具和测试，日常收敛为 prepare、按需能力、统一反馈，发布 v3；保留绑定和三项能力，更新保留旧包。两边各 31 项测试及临时接入、更新和查询流程通过；不增加旧记录兼容，未运行模型或 GPU。

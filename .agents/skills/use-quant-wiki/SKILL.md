@@ -17,23 +17,15 @@ description: "使用量化 Wiki 支撑量化、模型推理、部署、GPU 算�
 
 将 `quantwiki_package` 设置为本入口所在目录的实际绝对路径。
 
-**外派请求：** 取得可读写的接收项目绝对路径，读取其已有协作约定，将路径设置为 `quantwiki_project`，执行：
+同一任务已有快照时继续使用原快照。新任务在应用已有任务目录中选择尚不存在的快照绝对路径，设置为 `quantwiki_snapshot`，执行一次：
 
 ```sh
-python3 -B "$quantwiki_package/scripts/package.py" install --project "$quantwiki_project" --allow-update
+python3 -B "$quantwiki_package/scripts/package.py" prepare --output "$quantwiki_snapshot"
 ```
 
-用户明确要求接入并跟随源包时，同一授权覆盖干净镜像的更新，无需每次再问。工具负责创建缺少的目录、完整复制、保留项目定制内容并核验，默认安装到项目的 `.agents/skills/use-quant-wiki/`。仓库 URL 或服务器地址需要对应的接收路径及访问方式；缺少时说明具体缺项。仅外派时交付实际安装路径、版本和知识可访问性，至此结束，不制造使用反馈；同时需要应用任务时，将 `quantwiki_package` 设为返回的安装目录继续准备。
+已有更新授权才加 --allow-update。工具完成版本检查、已授权的干净镜像更新和完整快照，保留旧包并报告路径。成功后将返回的 snapshot 路径设为 quantwiki_snapshot，记录版本及必要限制；失败按原因交付具体阻塞。源端无法确认最新或没有更新授权时，可用本地版本的限制由工具说明。
 
-**应用任务：** 同一任务已有快照时继续使用原快照。新任务在应用已有任务目录中选择尚不存在的快照绝对路径，设置为 `quantwiki_snapshot`，执行一次：
-
-```sh
-python3 -B "$quantwiki_package/scripts/package.py" prepare --output "$quantwiki_snapshot" --allow-update
-```
-
-工具完成版本检查、已授权的干净镜像更新和完整快照。成功后将返回的 `snapshot` 路径设为 `quantwiki_snapshot`，记录版本及必要限制；失败时按返回原因交付具体阻塞。源端无法确认最新时，可用本地发布包的限制由工具说明。
-
-完整性检查由工具负责。正常结果不再追加 `status`、`verify`、目录遍历或清单对比；更新选用了新入口时，读取所选快照的入口以取得当前规范。只有失败或结果明显不一致时才定向排查。任务执行期间不切换快照。
+完整性检查由工具负责。正常结果不再追加 `status`、`verify`、目录遍历或清单对比；读取所选快照入口以取得本次规范。只有失败或结果明显不一致时才定向排查。任务执行期间不切换快照。
 
 ### 2. 使用所需内部能力和原 Wiki
 
@@ -51,7 +43,7 @@ python3 -B "$quantwiki_package/scripts/package.py" prepare --output "$quantwiki_
 
 ### 3. 统一反馈并交付
 
-用户任务结束后整合内部能力的依据、结果和改进信息，只提交一份反馈。同任务续接不重复反馈。反馈 JSON 使用应用已有任务记录位置，必需字段为 `task_id`、`task_summary`、`capabilities_used`、`knowledge_locations`（已读知识绝对路径数组，可空）和 `result_summary`；限制与建议按实际填写，实验保留代码版本、配置和证据位置。
+用户任务结束后整合内部能力的依据、结果和改进信息，只提交一份反馈。同任务续接不重复反馈；这是入口约定，task_id 不自动防止重复写入。反馈 JSON 使用应用已有任务记录位置，必需字段为 `task_id`、`task_summary`、`capabilities_used`、`knowledge_locations`（已读知识绝对路径数组，可空）和 `result_summary`；限制与建议按实际填写，实验保留代码版本、配置和证据位置。
 
 将 JSON 的实际绝对路径设置为 `quantwiki_feedback_input`，通过所选快照的工具提交一次：
 
@@ -62,3 +54,29 @@ python3 -B "$quantwiki_snapshot/scripts/package.py" feedback --input "$quantwiki
 工具负责唯一新建、写入和核验反馈。成功后不再回读复查；失败时交付反馈文本并说明未回传。反馈不自动修改 Wiki 或源 Skill，不复制完整业务代码或对话。
 
 交付应用所需答案、方案、实现或验证进展，说明关键依据和实际限制。区分安装、知识访问与应用实测，算子结果同时满足内部规范的交付要求。
+
+## 接入与维护
+
+### 明确接入时安装
+
+将 quantwiki_package 设为实际包目录。取得可读写的接收项目绝对路径，读取其协作约定，设为 quantwiki_project 后执行：
+
+```sh
+python3 -B "$quantwiki_package/scripts/package.py" install --project "$quantwiki_project"
+```
+
+共享接入改用 install --skills-dir 并给出已确认 Skill 目录，不能当项目参数，不猜全局路径。只有本次请求或已有接入约定授权更新时才加 --allow-update；同一有效授权无需重复询问。
+
+工具创建目录、完整复制、核对实际接收记录并保留定制；默认项目位置为 `.agents/skills/use-quant-wiki/`，共享位置为 `<Skill目录>/use-quant-wiki/`。更新报告保留的旧包路径，不自动删除。接收位置、来源或内容不能确认时保留并报告，不猜测接管。
+
+成功依据结果交付位置、路径、版本、记录与备份，不重复 status、verify 或文件对比，知识可访问性另按目标环境确认。仓库 URL 或服务器地址缺少接收路径时说明具体缺项。纯安装至此结束，不制造使用反馈；同时有应用任务时，将返回安装路径设为 quantwiki_package，再准备任务。
+
+### 授权维护端发布
+
+维护者按 skill-creator 同步设计与执行，检查完整能力、依赖和包内引用后，在绑定源包发布，保留三项能力和实际绑定。将 quantwiki_package 设为源目录，quantwiki_version 设为大于当前版本的正整数：
+
+```sh
+python3 -B "$quantwiki_package/scripts/package.py" publish --version "$quantwiki_version"
+```
+
+已有清单元数据沿用，工具核验完整清单与载荷；成功不追加重复 verify，status、verify 与独立 snapshot 留给维护或定向诊断。知识变化不升级包，使用端不发布来认可未知草稿。按 Wiki 约定记实际维护结果，发布不等于安装、Git 推送或应用实测。
