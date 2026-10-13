@@ -123,7 +123,7 @@ kernel 的 256-entry pair table 由两份 codebook 派生，属于运行时展�
 
 ## 7. 对现有知识的增量与后续边界
 
-StagQ 将多精度可读性、元数据和 decoder 放在同一约束下：共享 pair 让细组便宜，dyadic digits 让多项重建折成 affine 整数，pre/post guard 保护难以追回的尾部，同时带来所有精度都必须承担的固定记录。它补足[表示设计](../research/low-bit-representation-design.md)中“例外释放主体容量”的多精度情况，并为[预算口径](../theory/mixed-precision-allocation.md)提供 logical rate 与实际固定 slots 读取不同的例子。
+StagQ 补足[表示设计](../research/low-bit-representation-design.md)中“例外释放主体容量”的多精度情况，并为[预算口径](../theory/mixed-precision-allocation.md)提供 logical rate 与实际固定 slots 读取不同的例子。
 
 [DBW](dbw.md)在低秩分量上联合分配 rank/bit，StagQ 则对原权重主体建立多个前缀 operating points；两者的选择单元和 decoder 不同，名义 2 bit 不能直接对比压缩率或吞吐。对具体部署，应先核全部字段/布局、精度切换加载成本、保护位置重建、量化逆变换与完整质量，再测实际 decoder/服务成本。
 
