@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Dynamo文档 ingest：路由、容量与KV交接
+
+- 完整研读三份保存正文220/128/329行与四张原图，7文件hash/大小匹配。新建[分布式服务编排](implementation/distributed-llm-serving-orchestration.md)，补引擎外三路径、backend-specific传输元数据/时序、xPyD与滚动更新；内存/部署/INDEX只补入口，复用已有DistServe/Sarathi和评测解释。
+- 版本按明确1.4.2依赖行与保存快照声明分别归属，保留v1.5.0/dev混杂、SGLang LoRA状态与分离图模型身份差异；KV可见/元数据/完成及控制目标/ready容量分别解释。README所称source原稿缺失，当前hash一致不证明转换前后；没有改raw或核匹配实现/外链/运行。
+- READING/SELF/计划同步：161条有依据、68条队列，本轮基线88已处理20条；第13批下一项Ray，准备不计完成。
+- 独立Astra正式review通过，SGLang LoRA归属与延迟比方向修正后已回读，无剩余必修项；三稿/四图、新页全文及必要目标已核。全库结构/来源strict检查187知识页、659项登记，0错误/待核；6个受影响Wiki页的1243条链接strict通过，161/68实际记录与KVBM图中比值已核。仅提交本项8文件，能力包及Obsidian改动保留；未运行服务或GPU。
+
 ## 2026-10-14 · vLLM KV管理文章 ingest：容量接纳与空闲队列
 
 - 完整研读snapshot-2026-09-24文章506行及六图，7文件hash/大小与登记一致；作者自述ba221历史代码未核。沿[vLLM推理](implementation/vllm-inference-execution.md)补watermark条件/两次容量检查、CPU块元数据与空闲链表/归零分组顺序，复用已有token进度和紧凑批次解释。

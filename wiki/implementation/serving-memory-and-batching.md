@@ -24,6 +24,8 @@ updated: 2026-10-14
 
 本页的分页机制与相应实验依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）；第 5.1–5.2 节另接续 DistServe v3 与 Sarathi-Serve v3 的阶段调度，共享部分连接 SGLang v2 的跨调用缓存。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留各论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。紧凑离线实例可从[nano-vllm 的状态、分页与模型执行](nano-vllm-inference-execution.md)进入。原论文机制与各份固定源码分别保留版本和核读范围。
 
+多引擎服务还需在实例之间选择请求目标、调整阶段容量并协调 KV 交接，见[分布式服务编排](distributed-llm-serving-orchestration.md)。它承接引擎外的路由与生命周期，下面继续解释单个 KV 池及调度的内存约束。
+
 ## 1. KV 容量怎样限制可用批量
 
 论文 §1 的动机分析：自回归生成逐 token 进行，每生成一个 token 都要读一遍权重与历史缓存，因此论文关注的小批量生成场景常受内存带宽限制，GPU 算力被闲置；提高吞吐要靠同时批处理多个请求。而批量能开多大，受到显存里 KV cache 占用的限制——论文给出的 A100 40GB 例子中，约 65% 显存被静态权重占用，接近 30% 用于请求的动态状态（即 KV cache），剩余少部分是临时激活。**在这一设置下，权重驻留固定、临时激活占比较小，KV 管理决定了可用批量。**

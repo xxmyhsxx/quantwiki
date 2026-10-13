@@ -261,6 +261,7 @@ sources: []
 | [CUDA 算子的编写、编译与接入](implementation/cuda-operator-build-and-integration.md) | 从完整设备代码和包装走到编译、dispatcher、FakeTensor 与接口检查。 |
 | [FP4/FP8 块缩放矩阵乘](implementation/block-scaled-matmul-execution.md) | 元素编码、K 组尺度、packed scale 布局与点积接口如何衔接，量化产物需保留哪些尺度参数。 |
 | [nano-vllm 离线推理：token进度、分页缓存与模型执行](implementation/nano-vllm-inference-execution.md) | 固定Qwen3离线实例的prefill/decode选择、完整块命中、输入/槽位与采样如何配合。 |
+| [分布式 LLM 服务编排：路由、副本与 KV 交接](implementation/distributed-llm-serving-orchestration.md) | 引擎外的请求目标、阶段容量、缓存可见性与实际传输怎样衔接，版本混用有什么边界。 |
 | [vLLM 推理执行：从 token 调度到变长批次](implementation/vllm-inference-execution.md) | 请求如何分配 token 与 KV 空间，再变成算子的紧凑输入。 |
 | [vLLM 算子设计：Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) | 分页状态与元数据如何进入 Attention，设备端怎样复用、归约并适配图执行。 |
 | [结构化语言模型程序：依赖、前缀共享与约束解码](implementation/structured-language-model-program-execution.md) | 提示流与fork如何暴露依赖，原论文Radix、FSM与API文本复用分别依赖什么条件。 |

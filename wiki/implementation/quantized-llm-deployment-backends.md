@@ -26,6 +26,8 @@ updated: 2026-10-14
 
 部署时还需核对 [张量并行的分片与量化元数据](tensor-parallel-quantization.md)。后端能够加载后，按 [模型质量协议](model-quality-evaluation.md)与 [服务性能协议](serving-performance-evaluation.md)分别确认质量和收益，不能只用“支持该格式”作为完成依据。
 
+多个引擎组成在线服务后，框架/格式之外还要核请求路由、阶段副本和 KV 传输依赖；[分布式服务编排](distributed-llm-serving-orchestration.md)说明这些责任及文档版本配套，具体格式/加载/内核仍按本页的固定来源判断。
+
 ## 1. 部署链路的环节
 
 部署链路包含四段，需逐段核对参数与接口：
