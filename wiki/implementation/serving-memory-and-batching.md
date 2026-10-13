@@ -8,6 +8,7 @@ tags:
   - kv-cache
   - performance
 sources:
+  - raw/papers/2026-09-21/sarathi-serve
   - raw/papers/2026-09-21/distserve
   - raw/papers/2026-09-21/qserve
   - raw/papers/2026-09-23/disaggregated-quantization
@@ -107,6 +108,32 @@ $$\overline T_{PP}\approx D+\frac{RD^2}{4(2-RD)},\qquad
 
 这些机制针对有延迟目标且有资源分配余地的服务。离线吞吐优先、单卡/资源受限部署未必适合；百万上下文收益只属 §7 讨论。该论文的实验口径和版本内差异见[DistServe 的评测条件](serving-performance-evaluation.md#4.1%20DistServe%20%E7%9A%84%E5%AE%B9%E9%87%8F%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%AE%9E%E9%AA%8C%E6%9D%A1%E4%BB%B6)，不以当前 vLLM/SGLang 源码代替其历史基线。
 
+### 5.2 Sarathi-Serve：剩余 token 预算与混合轮次
+
+Sarathi-Serve v3 在同一实例内用有界混合批次减轻阶段干扰。迭代级调度改变每轮的请求成员；hybrid batching 把 prefill/decode 放入同一轮；chunked prefill 把一个 prompt 分多轮。三者各有作用：论文当时 Orca 已有 hybrid batching，完整长 prefill 仍会拉长混合轮次；当时 vLLM 的分轮基线也会暂停已有 decode。这些历史基线不代表[当前固定 vLLM](vllm-inference-execution.md)的全部路径。（Sarathi §2.5、§3.2，图7。）
+
+#### 用 decode 轮次的算力余量处理 prefill
+
+不同请求的 token 可以合为线性层的行数 M，摊销权重读取。在权重流量主导的区间，增加一些 prefill 行只小幅增加线性层时间；越过拐点后，计算时间随 M 上升。因此需要限制本轮 prefill 量，而非把任意完整长 prompt 并入 decode。图6在 LLaMA2-70B/A100 的不同 TP 下展示了先平坦后上升的趋势，拐点依赖硬件/并行与固定开销，不能把论文的 token 数当通用阈值。（§3.1；[roofline 的强度关系](../fundamentals/hardware/arithmetic-intensity-and-roofline.md#2.%20%E4%B8%A4%E4%B8%AA%E5%BC%BA%E5%BA%A6%E9%87%8F)。）
+
+给定 TBT 目标，profile/模拟选定总 token 预算 $\tau$。每轮先放入运行中的 decode，各贡献一个 token；再接续未完成 prefill；最后在剩余预算与 KV 接纳条件允许时加入新请求。Chunk 长度按剩余预算与剩余 prompt 长度决定，不是每个请求固定得到 $\tau$ 个 token。（§4.1–4.2，算法3。）
+
+在运行 decode 数不超过预算、KV 接纳可行的教学情形中，令 D 为本轮 decode 请求数、$c_i$ 为各 prefill chunk 长度，则
+
+$$M=D+\sum_i c_i\le\tau.$$
+
+例如 $\tau=512,D=64$，prefill 最多贡献448行。这是对调度正文的整理，不是论文原式或完整实现。算法3第18行写 `B←R_new`，内层也没有显式取下一个新请求；图注称可选一个 ongoing prefill，正文/循环则遍历未完成 prefill，不能逐行照抄成已核可运行调度器。
+
+“Stall-free”指持续推进已有 decode，避免等待一个完整长 prompt 的专用 prefill；混合轮次仍可能比纯 decode 慢。图9的 LLaMA2-70B/4×A100、context length4096、decode batch1、预算512例子中，chunk 混合轮次约为纯 decode 的3.7×，完整 prefill 混合轮次为28.3×。它说明干扰减轻，不证明延迟不变或 TTFT 最优。（§4.2，图9。）
+
+#### Chunk 的历史依赖与流水线气泡
+
+当前 chunk 的 attention 仍需读取同请求前面各 chunk 的 KV，并保留当前段内的因果范围；切分没有删除历史。N 个等长 chunk 中，第一段作为历史被后续读取 N−1 次，第二段 N−2 次，依此类推。教学上共有 $N(N-1)/2$ 个“历史 chunk 读取单位”；这是依赖记账，不是作者实测 HBM 字节或与完整 prefill 的流量差。小 chunk 另增加启动/准备成本和利用率损失。（§4.3。）
+
+PP 气泡有三类来源：相邻 prefill 的长度不同、prefill 与 decode 工作量不同、不同 decode 的历史长度不同。Sarathi 用有界且较均匀的混合 token 批次减少前两项；第三项仍使相同 M 的轮次耗时不同，所以不能写成消除所有气泡。较小预算有利于降低 TBT，却可能增加 prefill/TTFT 开销；较大预算提高效率，又可能扩大轮次差异。Tile 对齐也影响利用率，作者用 Vidur 辅助 profile/模拟选择预算，动态预算留作未来工作。（§3.3、§4.3，图8。）
+
+量化改变权重流量、矩阵乘接口及拐点后，应重核预算。与第5.1节的阶段分离相比，本机制在同一实例组合工作；DistServe 另需转移 KV、分别配置阶段实例。Sarathi §6只作定性讨论，将两条路线的定量性能比较留作未来工作，不能把不同论文的容量倍数直接排名。指标与消融条件见[Sarathi 的评测](serving-performance-evaluation.md#4.2%20Sarathi%20%E7%9A%84%20token%20%E7%BA%A7%20TBT%20%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%8F%96%E8%88%8D)；本文未核作者实现或运行服务。
+
 ## 6. 与量化研究的接口
 
 这四点决定了量化收益如何被服务系统放大或抵消：
@@ -135,12 +162,13 @@ $$\overline T_{PP}\approx D+\frac{RD^2}{4(2-RD)},\qquad
 
 ## 8. 局限与未验证
 
-SGLang、Sarathi-Serve 的服务论文尚未接续；DistServe v3 的选定论文范围已补，作者实现与运行仍未核。本页数值均为论文报告，未运行服务或基准；现代实现的行为以各执行页的固定源码为准。
+SGLang 的服务论文尚未接续；DistServe与Sarathi-Serve v3的选定论文范围已补，作者实现与运行仍未核。本页数值均为论文报告，未运行服务或基准；现代实现的行为以各执行页的固定源码为准。
 
 ## 来源身份
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve（`https://arxiv.org/abs/2403.02310v3`） | `arXiv:2403.02310v3` | §2–4、算法1–3与必要实验，token预算/混合轮次/历史读取/PP气泡，实验条件由评测页承接；未核作者实现或运行 |
 | DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`） | `arXiv:2401.09670v3` | §2–5与附录A，两阶段/队列/并行/placement及KV pull；实验和版本差异由评测页承接，未核实现或运行 |
 | Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`） | `arXiv:2309.06180v1` | — |
 | QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | 分页量化元数据布局 |

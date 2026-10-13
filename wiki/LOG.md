@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Sarathi-Serve v3 ingest：混合预算与token级TBT
+
+- 完整研读固定arXiv:2403.02310v3正式主文与Artifact Appendix，PDF/源包哈希与登记一致；36份展开文件对应原包，25份图保留在原包。沿[内存与批处理](implementation/serving-memory-and-batching.md)接续三种调度轴、剩余预算/顺序、历史KV与气泡；在[服务评测](implementation/serving-performance-evaluation.md)补token级P99 TBT、排队条件、硬件/负载/预算与消融。
+- 保留mixed轮次仍慢于pure decode、chunk预算须重profile、TTFT/TBT取舍；核关键PDF表1–4/算法3/图6–14，保留算法省略、3.5×归因与25%开销图文差异；不混用旧稿或不同基线/并行/容量定义，不与DistServe直接排名。未核作者实现或运行服务。
+- READING/SELF/计划同步：155条有依据、74条队列，本轮基线88已处理14条；第13批下一项SGLang v2，准备不计完成。
+- 独立Astra正式review通过，无必修问题；补清GQA/滑动窗口、Falcon部署指代和作者增补PP基线后已独立闭环。全库结构/来源strict检查184知识页、648项登记，0错误/待核；4个受影响Wiki页链接strict通过，机制/评测互链与roofline/现代调度目标已核。保留Obsidian改动，不纳入本项提交；未核作者实现或运行服务。
+
 ## 2026-10-14 · DistServe v3 ingest：阶段分离与容量口径
 
 - 完整研读固定arXiv:2401.09670v3主文/附录A–C，PDF/源包哈希与登记一致，16份展开文件对应源包，20份图/徽章保留在原包。在[内存与批处理](implementation/serving-memory-and-batching.md)补两阶段实例/排队/TP-PP/带宽placement与KV pull；在[服务评测](implementation/serving-performance-evaluation.md)补容量goodput/GPU、联合SLO与扫描/实验条件。

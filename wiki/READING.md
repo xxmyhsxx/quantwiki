@@ -11,7 +11,7 @@ updated: 2026-10-14
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **154 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **155 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -32,6 +32,7 @@ updated: 2026-10-14
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve（`https://arxiv.org/abs/2403.02310v3`）<br>arXiv:2403.02310v3 | 完整正式主文/Artifact Appendix，算法1–3；核chunk/混合预算顺序、线性层拐点/历史KV/PP气泡与TBT capacity、表1–4/图6–14原件及基线/消融 | [混合预算](implementation/serving-memory-and-batching.md#5.2%20Sarathi-Serve%EF%BC%9A%E5%89%A9%E4%BD%99%20token%20%E9%A2%84%E7%AE%97%E4%B8%8E%E6%B7%B7%E5%90%88%E8%BD%AE%E6%AC%A1)；[TBT/条件](implementation/serving-performance-evaluation.md#4.2%20Sarathi%20%E7%9A%84%20token%20%E7%BA%A7%20TBT%20%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%8F%96%E8%88%8D) | 未核匹配作者实现/完整KV接纳/超预算/fairness或运行，未逐点复算全部图；算法3省略、3.5×归因与图14开销图文差异保留，旧稿排除，不作与DistServe定量排名 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20Sarathi-Serve%20v3%20ingest%EF%BC%9A%E6%B7%B7%E5%90%88%E9%A2%84%E7%AE%97%E4%B8%8Etoken%E7%BA%A7TBT) |
 | DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`）<br>arXiv:2401.09670v3 | 完整主文与附录A–C；式1–3/算法1–2、阶段/并行/placement/模拟器与KV pull、主实验条件和99%目标；PDF关键公式、表1–3/图2–4/6–14对照 | [两阶段与KV](implementation/serving-memory-and-batching.md#5.1%20DistServe%EF%BC%9A%E4%B8%A4%E9%98%B6%E6%AE%B5%E5%AE%9E%E4%BE%8B%E4%B8%8E%20KV%20%E8%BD%AC%E7%A7%BB)；[容量/实验](implementation/serving-performance-evaluation.md#4.1%20DistServe%20%E7%9A%84%E5%AE%B9%E9%87%8F%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%AE%9E%E9%AA%8C%E6%9D%A1%E4%BB%B6) | 未逐点重建曲线、核作者代码/真实同步释放/格式重分片/抢占容错或运行；保留OPT-66B placement、High/Low标签和传输CDF图文差异，理论/模拟/主实验分开 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20DistServe%20v3%20ingest%EF%BC%9A%E9%98%B6%E6%AE%B5%E5%88%86%E7%A6%BB%E4%B8%8E%E5%AE%B9%E9%87%8F%E5%8F%A3%E5%BE%84) |
 | FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning（`https://arxiv.org/abs/2307.08691v1`）<br>arXiv:2307.08691v1 | 正文§1–5，算法1–2、图2–7和表1；14页PDF及同版TeX核累计/循环与warp分工、反向共享梯度、因果/GQA、原件公式和性能口径 | [累计、序列并行与warp分工](theory/flash-attention-2-work-partitioning.md) | 保留逆缩放/归一化/因果方向/形状/缩放脚注及性能文字差异；未逐点重建曲线，作者代码/原子确定性/RNG/全部接口/设备及模型性能未核 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashAttention-2%20ingest%EF%BC%9A%E7%B4%AF%E8%AE%A1%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%88%86%E9%85%8D) |
 | FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness（`https://arxiv.org/abs/2205.14135v2`）<br>arXiv:2205.14135v2 | 正文§1–5、附录B/C，定向核D/E实现与实验条件；算法0–2/4、定理1–2/5与命题3、式3–6、图2及表1/2/4/7/11/21回查34页PDF和同版TeX | [精确分块、IO与反向重计算](theory/flash-attention-tiling-and-recomputation.md)；[GPU融合连接](fundamentals/operators/gpu-kernel-computation-patterns.md) | 未逐点重建全部图表；作者CUDA、具体RNG/空mask处理、现代FA2/FA3/分页/GQA接口及设备/模型/性能未核，保留原文下界与性能口径边界 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashAttention%20ingest%EF%BC%9A%E7%B2%BE%E7%A1%AE%E5%88%86%E5%9D%97%E3%80%81IO%E4%B8%8E%E5%8F%8D%E5%90%91%E9%87%8D%E8%AE%A1%E7%AE%97) |
@@ -278,11 +279,11 @@ updated: 2026-10-14
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下75个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下74个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；recursive state的完整LSE、子集条件与单位边界已接续；single decode的读取/返回、数值参数及LSE未知边界已接续；single prefill的多query/mask、按head尺度与NVFP4线性读取边界已接续；v0.6.17发布声明的FP4/MoE/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段/并行/placement与KV pull、容量/SLO及原件差异已接续；下一项为Sarathi-Serve，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；recursive state的完整LSE、子集条件与单位边界已接续；single decode的读取/返回、数值参数及LSE未知边界已接续；single prefill的多query/mask、按head尺度与NVFP4线性读取边界已接续；v0.6.17发布声明的FP4/MoE/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段/并行/placement与KV pull、容量/SLO及原件差异已接续；Sarathi-Serve v3的chunk预算/顺序/历史读取、PP气泡与token级TBT容量/消融已接续；下一项为SGLang v2，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
-### 论文（26条）
+### 论文（25条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -304,7 +305,6 @@ updated: 2026-10-14
 | Qwen3 Technical Report（`https://arxiv.org/abs/2505.09388v1`） | `arXiv:2505.09388v1` |
 | Qwen3-VL Technical Report（`https://arxiv.org/abs/2511.21631v2`） | `arXiv:2511.21631v2` |
 | Root Mean Square Layer Normalization（`https://arxiv.org/abs/1910.07467v1`） | `arXiv:1910.07467v1` |
-| Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve（`https://arxiv.org/abs/2403.02310v3`） | `arXiv:2403.02310v3` |
 | SGLang: Efficient Execution of Structured Language Model Programs（`https://arxiv.org/abs/2312.07104v2`） | `arXiv:2312.07104v2` |
 | SpikeMLLM: Spike-based Multimodal Large Language Models via Modality-Specific Temporal Scales and Temporal Compression（`https://arxiv.org/abs/2604.18610v1`） | `arXiv:2604.18610v1` |
 | TritonBench: Benchmarking Large Language Model Capabilities for Generating Triton Operators（`https://arxiv.org/abs/2502.14752v1`） | `arXiv:2502.14752v1` |

@@ -6,6 +6,7 @@ tags:
   - evaluation
   - performance
 sources:
+  - raw/papers/2026-09-21/sarathi-serve
   - raw/papers/2026-09-21/distserve
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
@@ -93,6 +94,37 @@ $A_{\rm joint}$ 是同一请求同时满足 TTFT 与 TPOT 阈值的比例，$\et
 
 §6.4 的 vLLM++ 与 DistServe-High/Low 消融是模拟实验；表2模拟器与系统的 attainment 差异在所列样本中小于2个百分点，不能视为任意负载的保证。上述内容来自 v3 论文与关键 PDF 公式/图表核对，本次未核作者代码、复现服务或测量质量/性能。
 
+### 4.2 Sarathi 的 token 级 TBT 目标与取舍
+
+Sarathi-Serve v3 的 capacity 是满足延迟目标的最大可持续到达率（qps）。主实验约束 **token 级 P99 TBT**，另用 median scheduling delay≤2s 控制排队不发散；TTFT 主要报告 P50。每个后续 decode token 贡献一个间隔样本，长输出贡献更多样本，TBT 分布接近第2节的逐间隔 ITL口径；它不能替代每请求平均 TPOT 的分位数，也不是 DistServe 的联合 TTFT/TPOT attainment 或给定区间的合格完成数/T。（§2.4、§5–5.1。）
+
+表1、表3的模型/硬件与绝对目标如下；这些模型用GQA，Mistral另有滑动窗口：
+
+| 模型与部署 | Strict P99 TBT | Relaxed P99 TBT |
+| --- | --- | --- |
+| Mistral-7B，1×A100 80GB | 0.1s | 0.5s |
+| Yi-34B，2×A100 80GB，TP2 | 0.2s | 1s |
+| LLaMA2-70B，8×A40 48GB，TP4/PP2 | 1s | 5s |
+| Falcon-180B，两节点各4×A100 80GB，TP4/PP2 | 1s | 5s |
+
+Strict/relaxed 分别参考4K context、batch32、无 prefill 干扰的 decode 时间的5×/25×，因此是各模型/硬件的经验目标。Strict 预算512；relaxed通常2048，LLaMA2-70B取1536以减轻PP气泡。A100节点间100Gbps Ethernet，论文全部评测用 FlashAttention backend；实现支持 FlashInfer 不能当作 FlashInfer 也被测过。（§4.4、§5–5.1。）
+
+负载基于 `openchat_sharegpt4` 与 `arxiv_summarization` 的长度轨迹和泊松到达；剔除总长度超过8192/16384的请求。前者prompt/output中位数1730/415，后者7059/208。ShareGPT每个交互轮次作为独立请求，不证明这里测了跨轮KV复用。（表2、§5。）
+
+在 ShareGPT/Yi-34B/TP2 的 strict 条件下，作者报告 capacity 相对 Orca 为4.0×、相对 vLLM为3.7×（§5.1，图10）。在前述 Falcon-180B双节点部署与ShareGPT负载下，Sarathi TP4/PP2相对 vLLM TP4/PP2为strict3.6×、relaxed1.48×；strict相对跨节点TP8为4.3×。其中vLLM TP4/PP2使用作者增补的流水实现。后两种基线分别回答调度效果与并行部署问题，不能合成一个无条件收益。（§5.3，图13。）
+
+表4用128请求、Yi-34B/两张A100、预算1024对照两种机制：
+
+| 方案 | ShareGPT P50 TTFT / P99 TBT | arXiv P50 TTFT / P99 TBT |
+| --- | --- | --- |
+| 仅 hybrid batching | 0.53 / 0.68s | 3.78 / 1.38s |
+| 仅 chunked prefill | 1.04 / 0.17s | 5.38 / 0.20s |
+| 组合 | 0.76 / 0.14s | 3.90 / 0.17s |
+
+组合相对仅chunk改善TTFT、相对仅hybrid改善TBT，但TTFT并未优于仅hybrid；表注“降低两项”需保留比较对象。这是[预算与混合轮次](serving-memory-and-batching.md#5.2%20Sarathi-Serve%EF%BC%9A%E5%89%A9%E4%BD%99%20token%20%E9%A2%84%E7%AE%97%E4%B8%8E%E6%B7%B7%E5%90%88%E8%BD%AE%E6%AC%A1)的取舍证据。（§5.4.2。）
+
+数值还有原件差异：图12图注把3.5×归于Yi，§5.2正文归于100ms的Mistral；图14所选Yi/TP2的512-token chunk柱高超过1.25，正文却称开销最多约25%，没有原始数据复算时不取该文字为统一上界。摘要的Falcon5.6×可在图11的ShareGPT/relaxed、相对Orca定位，不能改为相对vLLM的结果。论文没有定量比较Sarathi与阶段分离，Artifact Appendix也注明它是研究原型、没有完整vLLM feature parity；本次未核作者代码或复现服务。
+
 ## 5. 从量化收益定位到系统限制
 
 下面是诊断路径，不是本次实测结果：
@@ -107,6 +139,8 @@ $A_{\rm joint}$ 是同一请求同时满足 TTFT 与 TPOT 阈值的比例，$\et
 本页核对所选 benchmark 的定义与处理分支，没有启动服务、产生请求或测得性能曲线。
 
 ## 来源身份
+
+- Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve（`https://arxiv.org/abs/2403.02310v3`），`arXiv:2403.02310v3`；主文§2–6、算法1–3、表1–4/图6–14与Artifact Appendix，token级TBT/capacity和条件/消融/原件差异，未核作者代码或运行。
 
 - DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`），`arXiv:2401.09670v3`；§1–6、附录A–C，goodput/attainment、表1–3与图7–14的条件和原件差异，未核作者实现或运行。
 
