@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · FlashInfer FP8 GEMM文档 ingest：NT与尺度存储
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。[块缩放页](implementation/block-scaled-matmul-execution.md)接续FP8 NT输入轴、FP32块尺度、MN/K存储方向、mma_sm及BF16默认输出；复用既有K归约/尺度解释，不新增摘要页。
+- 保留groupwise转引未读、尺度精确shape/stride/粒度索引、尾块与设备/精度路径缺失，不把Triton microscaling、descriptor或CuTe量化条件当本接口的实现。READING147条有依据、82条队列；本轮88已处理6条，6份FlashInfer文档待接续。
+- 独立Astra内容review通过，无必修问题；全库结构/来源strict检查184知识页、634项登记，0错误/待核，3个受影响Wiki页链接strict通过，新增入口与上下文已核。未核匹配实现或运行GPU。
+
 ## 2026-10-13 · FlashInfer FP4量化文档 ingest：数据与尺度产物
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。在[块缩放页](implementation/block-scaled-matmul-execution.md)接续packed FP4数据与sf、global scale逆解释、尺度粒度/编码/布局及CUDA/CuTe组合；Triton的原生硬件前提前置，既有编码/布局解释保留。

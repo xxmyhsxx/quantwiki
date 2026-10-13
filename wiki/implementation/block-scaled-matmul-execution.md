@@ -8,6 +8,7 @@ tags:
   - data-format
   - floating-point
 sources:
+  - raw/articles/2026-09-21/flashinfer-gemm-fp8-blockscaled
   - raw/articles/2026-09-21/flashinfer-fp4-quantize
   - raw/articles/2026-09-21/triton-block-scaled-matmul
   - raw/repositories/2026-09-21/triton
@@ -148,7 +149,24 @@ FlashInfer 0.6.14 的 `fp4_quantize` 文档快照把 `[M,K]` 输入变成两份�
 
 该快照没有给出尺度 swizzle 的索引、padding、字节内 FP4 顺序、舍入/裁剪与尺度选择算法，也没有完整定义全局尺度和块尺度的代数关系。因此，第 2–4 节 Triton helper 的 nibble 顺序、E8M0 编码及 packed-scale 映射不能直接拿来解读 FlashInfer 的返回字节。这里确认的是“输入 → 数据与尺度产物 → 消费方所需参数”的文档契约；精确转换与消费仍须核匹配版本实现。（来源 Returns；页面标识 0.6.14，snapshot-2026-07-02。）
 
+### FP8 块缩放 GEMM：NT 输入与尺度存储方向
+
+同一 0.6.14 文档快照中的 `gemm_fp8_nt_blockscaled` 接收 FP8 A `[M,K]`、FP8 B `[N,K]`及两份 FP32 块尺度，输出 `[M,N]`。按输入轴理解，B 的每一行对应一个输出列，点积沿两侧的 K 维归约；它是 NT 乘法的权重表示，不要求调用方把 B 先变成 `[K,N]`。
+
+| 参数或产物 | 文档契约 | 与前文的区别 |
+| --- | --- | --- |
+| a_scale、b_scale | FP32 block scales | 不能直接传前述 Triton 的 uint8 E8M0 位模式 |
+| 尺度粒度 | groupwise 的特例，声明为 `(128,128,128)` | 不是第 1 节每 V=32 个 K 元素共享 E8M0 的同一契约 |
+| scale_major_mode | 默认 `MN`，非归约维为存储主方向；`K` 则以归约维为主方向 | 决定尺度存储的解释，A/B 的逻辑矩阵轴仍是 `[M,K]`、`[N,K]` |
+| out | `[M,N]`，默认输出 BF16；可传预分配输出，否则新分配 | 输出 dtype 不能说明乘法或累加的完整精度路径 |
+
+非归约维在 A/B 两侧分别是 M/N，归约维都是 K；尺度数据必须与 `scale_major_mode` 声明的存储顺序匹配。`mma_sm` 允许 1 或 2，默认 1，文档描述为每次 MMA 融合的 SM 数；本次没有据此推导 CTA 调度、具体指令或性能。（来源 Parameters 与 Returns。）
+
+文档将更完整的参数语义交给 `gemm_fp8_nt_groupwise`，该引用页不在本条保存正文中。本次尚不能从这个短页确定尺度精确 shape/stride、各粒度对应的索引、尾块/对齐、具体 FP8 编码、accumulator dtype 或硬件分派；也不能把 Triton descriptor 的硬件入口或上一小节 CuTe-DSL 量化的 SM100+ 条件套到此 GEMM。这里确认输入轴、独立尺度、存储模式与输出的接口关系，未核匹配实现或运行。（来源概述与参数转引，snapshot-2026-07-02。）
+
 ## 来源身份
+
+- FlashInfer `gemm_fp8_nt_blockscaled`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.gemm_fp8_nt_blockscaled.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的 NT 输入、FP32 块尺度、存储方向与输出契约，未核所引 groupwise 文档或实现。
 
 - FlashInfer `fp4_quantize`（`https://docs.flashinfer.ai/generated/flashinfer.quantization.fp4_quantize.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的输入/产物、尺度参数与后端组合，未核匹配实现或运行。
 
