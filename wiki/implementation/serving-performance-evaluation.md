@@ -6,9 +6,10 @@ tags:
   - evaluation
   - performance
 sources:
+  - raw/papers/2026-09-21/distserve
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
-updated: 2026-09-22
+updated: 2026-10-14
 ---
 
 # 推理服务评测：负载、延迟、吞吐与 SLO
@@ -63,6 +64,35 @@ vLLM `calculate_metrics` 对配置中的条件取交集，再用 `good_completed
 
 只比较平均延迟也不够：两组平均值相同可以有不同长尾。报告 p50/p95/p99 时写清样本数与分位数算法；样本很少时，p99 主要反映最极端的几个观测。
 
+### 4.1 DistServe 的容量目标与实验条件
+
+DistServe v3 的 per-GPU goodput 是固定工作负载、TTFT/TPOT 阈值和 attainment 目标后，**可承载的最大请求到达率除以配置的全部 GPU 数**。对一个配置 C，整理为
+
+$$\lambda^*(C)=\sup\{\lambda:A_{\rm joint}(C,\lambda)\ge\eta\},\qquad
+G_{\rm DS}(C)=\frac{\lambda^*(C)}{N_{\rm GPU}(C)}.$$
+
+$A_{\rm joint}$ 是同一请求同时满足 TTFT 与 TPOT 阈值的比例，$\eta$ 是目标满足率；GPU 分母包含 prefill、decode 和所有副本。这个容量口径不同于上文给定测量区间的合格完成数/T。分别求两项延迟的 P90，也不能自动推出同一请求的联合满足率为90%；分阶段估计还须由完整服务的交集结果复核。论文的 placement/实例与 KV 衔接见[阶段分离机制](serving-memory-and-batching.md#5.1%20DistServe%EF%BC%9A%E4%B8%A4%E9%98%B6%E6%AE%B5%E5%AE%9E%E4%BE%8B%E4%B8%8E%20KV%20%E8%BD%AC%E7%A7%BB)。（来源 §1–2、§4、§6.1；公式为按其定义的整理。）
+
+主文目标 $\eta=90\%$。Rate 扫描固定延迟阈值；SLO Scale 扫描固定 rate，并用同一系数同时缩放 TTFT 与 TPOT 阈值，系数越小要求越严。附录C的99%目标另列，不能与主文倍数混用。表1与图7的负载条件为：
+
+| 应用/模型 | TTFT / TPOT 阈值 | 输入 / 输出长度均值 |
+| --- | --- | --- |
+| ShareGPT，OPT-13B | 0.25s / 0.1s | 755.5 / 200.3 token |
+| ShareGPT，OPT-66B | 2.5s / 0.15s | 同上 |
+| ShareGPT，OPT-175B | 4.0s / 0.2s | 同上 |
+| HumanEval，OPT-66B | 0.125s / 0.2s | 171.3 / 98.2 token |
+| LongBench summarization，OPT-66B | 15s / 0.15s | 1738.3 / 90.7 token |
+
+测试床为四节点共32张 SXM A100 80GB，节点内 NVLink、节点间25Gbps；32张是测试床容量，不表示每项实验均占满32张。所有主结果用 FP16 OPT/MHA，长度从数据集采样、到达由泊松过程合成，SLO 由作者经验设定。LongBench 输入受 OPT 最大2048位置限制，不能当作原始长上下文任务的未截断结果。论文当时 vLLM 基线用 TP=1/4/8；DeepSpeed-MII 因词表整除/OOM 没有 OPT-175B 结果，这些是历史配置边界。（§6.1。）
+
+在上述90%目标下，作者报告 ShareGPT 的可承载率/GPU 相对 vLLM 为2.0–4.6×、相对 MII 为1.6–7.4×；HumanEval/OPT-66B 相对 vLLM 为5.7× rate、1.4×更严 SLO；LongBench/OPT-66B 相对 vLLM 为4.3× rate、12.6×更严 SLO。7.4×和12.6×来自不同任务与基线，rate 与 SLO Scale 也来自不同扫描，不能合为一套配置的收益。（§6.2，图8–9。）
+
+传输成本需绑定 placement 和分母。作者在 OPT-175B/ShareGPT 的同节点配对 placement 中，将所有请求各阶段累计时间求和，报告 KV 传输占比小于0.1%；它不是单请求尾延迟界。正文另称95%以上传输小于30ms，但图10的 OPT-175B 曲线在30ms附近尚未达到0.95并有长尾，图文差异保留，不当作三模型统一分位界。（§6.3，图10。）
+
+另外两处原件差异影响复用：附录B表3的 OPT-66B 为 prefill TP4/PP1、decode TP2/PP2，不能直接对上 §4.2/算法2的共同流水阶段与对应层段同节点叙述，论文未讲清该配置怎样满足传输约束；§6.5 把算法1标作 Low、算法2标作 High，与 §4 的算法标题和 §6.4 对调。本页按算法标题解释机制，不补造 placement 或运行时间对应关系。
+
+§6.4 的 vLLM++ 与 DistServe-High/Low 消融是模拟实验；表2模拟器与系统的 attainment 差异在所列样本中小于2个百分点，不能视为任意负载的保证。上述内容来自 v3 论文与关键 PDF 公式/图表核对，本次未核作者代码、复现服务或测量质量/性能。
+
 ## 5. 从量化收益定位到系统限制
 
 下面是诊断路径，不是本次实测结果：
@@ -77,6 +107,8 @@ vLLM `calculate_metrics` 对配置中的条件取交集，再用 `good_completed
 本页核对所选 benchmark 的定义与处理分支，没有启动服务、产生请求或测得性能曲线。
 
 ## 来源身份
+
+- DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`），`arXiv:2401.09670v3`；§1–6、附录A–C，goodput/attainment、表1–3与图7–14的条件和原件差异，未核作者实现或运行。
 
 - vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），`568afb3a13806beb53bb2e6bd518269357b237c0`；`vllm/benchmarks/serve.py:calculate_metrics`、请求生成与 benchmark 参数。
 - SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；`python/sglang/benchmark/serving.py` 的请求生成、时延与吞吐汇总。本页具体单 token 与 goodput 分支以 vLLM 所列实现为准，不声称两库所有指标处理相同。

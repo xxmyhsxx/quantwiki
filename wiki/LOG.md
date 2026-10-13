@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · DistServe v3 ingest：阶段分离与容量口径
+
+- 完整研读固定arXiv:2401.09670v3主文/附录A–C，PDF/源包哈希与登记一致，16份展开文件对应源包，20份图/徽章保留在原包。在[内存与批处理](implementation/serving-memory-and-batching.md)补两阶段实例/排队/TP-PP/带宽placement与KV pull；在[服务评测](implementation/serving-performance-evaluation.md)补容量goodput/GPU、联合SLO与扫描/实验条件。
+- 保留M/D/1与理想流水条件、经验模拟器、全部GPU分母和LongBench截断，不合并不同任务/基线极值；回查关键PDF原件，保留OPT-66B附录配置、High/Low标签及传输CDF差异。未核作者实现/同步释放、真实传输或运行系统。
+- READING/SELF/计划同步：154条有依据、75条队列，本轮基线88已处理13条；第13批下一项Sarathi-Serve，准备不计完成。
+- 独立Astra正式review通过，无必修问题；关键公式/算法/图表、原件差异及阅读连接已核。全库结构/来源strict检查184知识页、646项登记，0错误/待核；4个受影响Wiki页链接strict通过。保留Obsidian改动，不纳入本项提交；未核作者实现或运行系统。
+
 ## 2026-10-14 · FlashInfer v0.6.17发布说明 ingest与第12批收尾
 
 - 完整研读固定v0.6.17、snapshot-2026-08-20发布文本，哈希与README一致。在[块缩放](implementation/block-scaled-matmul-execution.md)、[专家路由](implementation/moe-routing-and-quantized-expert-execution.md)、[专家并行](implementation/moe-expert-parallel-execution.md)、[MLA](implementation/mla-cache-and-attention-execution.md)与[DCP](implementation/vllm-mla-context-parallel-execution.md)原有机制旁接续相关版本声明，不另建功能摘要页。

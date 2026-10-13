@@ -8,18 +8,19 @@ tags:
   - kv-cache
   - performance
 sources:
+  - raw/papers/2026-09-21/distserve
   - raw/papers/2026-09-21/qserve
   - raw/papers/2026-09-23/disaggregated-quantization
   - raw/papers/2026-09-21/saw-int4
   - raw/papers/2026-09-21/pagedattention
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # 推理服务的内存管理与批处理
 
 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。同一个量化模型接进不同的引擎，有效批量不同，吞吐就不同——这也是为什么「量化之后快了多少」不能只由模型和内核决定。本页整理部署侧第一层知识：KV cache 的内存管理、批处理与调度。
 
-本页依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留原始论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。这些源码分析不代表已研读对应服务论文。
+本页的分页机制与相应实验依据 Efficient Memory Management for Large Language Model Serving with PagedAttention（arXiv:2309.06180，SOSP 2023，下称论文，vLLM 的原始论文，全文研读；抽取文本缺表格，数值按正文与图注记录）；第 5.1 节另接续 DistServe v3 的阶段分离。本 Wiki 中 KV cache 作为量化对象的结构见 [KV cache 量化的对象与粒度](../theory/kv-cache-quantization-objects-and-granularity.md)，后端与格式支持面见 [量化模型的部署框架与后端支持](quantized-llm-deployment-backends.md)。本页保留各论文的机制与实验口径。固定源码中的 token 调度、chunked prefill、前缀复用和批次准备另见 [vLLM 推理执行](vllm-inference-execution.md)；Radix 前缀树的保护、淘汰与批次映射见 [SGLang 推理执行](sglang-inference-execution.md)。这些源码分析不代表已研读对应服务论文。
 
 ## 1. KV 容量怎样限制可用批量
 
@@ -67,6 +68,45 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 分布式方面，论文采用张量并行的 SPMD 执行：注意力按 head 切分，各 worker 处理同一批 token 的不同 head，因此共享同一个中心化的 KV cache 管理器与块表映射；worker 只在每轮开始时接收控制消息，运行中通过 all-reduce 同步，不在内存管理上互相协调。
 
+### 5.1 DistServe：两阶段实例与 KV 转移
+
+DistServe v3 把 prefill 和 decode 放在不同实例上；每个实例持有同一模型的一份完整权重，实例内部仍可用 TP 拆算子、PP 拆层。它解除的是两阶段的执行与资源耦合，不要求为两阶段训练不同权重。本页第 6 节的阶段独立权重/SSD 流式方案另有生命周期。（DistServe §2.3、§4，图6；并行轴见[张量并行](tensor-parallel-quantization.md)。）
+
+#### 阶段干扰与各自的批处理目标
+
+混合批次中的 decode 要等待长 prefill 所在轮次结束，生成间隔随之变长；decode 行也占用本来用于 prompt 的资源，可能增加 TTFT。分轮执行或改变优先级仍会让另一阶段排队。Chunked prefill 可以缩短单次占用，但小 chunk 可能利用率不足，并须反复读取前面 chunk 的 KV；这些是作者在 v3 设置下讨论的代价，不能据此判断所有现代混合调度都较慢。（§2.3，图2。）
+
+分离后，prefill 按目标模型/GPU profile 饱和长度 $L_m$：短 prompt 可以拼成接近该长度的批次，已经饱和的长 prompt 再加请求通常只延长批时间。Decode 则聚合请求摊销权重读取；但有效 batch 仍受 KV 容量与 TPOT 限制，batch 很大时也可能接近计算受限。这解释了两阶段为什么可能需要不同的 TP/PP 与实例数量。（§3.1–3.2、§4.3，图3–5。）
+
+#### 执行时间与排队决定 TP/PP 的取舍
+
+作者用固定 prompt 长度、泊松到达、FCFS、单请求已饱和且不批处理的简化模型说明取舍。设 R 为 requests/s，D 为串行服务时间，稳定条件 $RD<1$ 下的 M/D/1 平均 TTFT 为
+
+$$\overline T=D+\frac{RD^2}{2(1-RD)}.$$
+
+第一项是执行时间，第二项是排队。在理想两段 PP 中，总执行时间近似 D、最慢阶段近似 D/2；两路 TP 的加速系数为 $1<K<2$，执行时间为 D/K。作者式2–3改写为
+
+$$\overline T_{PP}\approx D+\frac{RD^2}{4(2-RD)},\qquad
+\overline T_{TP}=\frac D K+\frac{RD^2}{2K(K-RD)}.$$
+
+按这两式的分母，分别需 $RD<2$、$RD<K$ 才处于对应稳定区间。低到达率时 TP 缩短执行时间有利；到达率较高时，PP 的流水服务容量可能更有利于减少排队。这是论文的固定服务时间/理想流水近似，变长请求会产生气泡，通信又影响 K，不能用它直接选择真实部署配置。（§3.1，式1–3与图4。）
+
+#### 带宽约束怎样进入配置搜索
+
+算法1面向高跨节点带宽：先枚举 TP/PP，按权重容量筛选候选，用历史请求长度与到达分布驱动模拟器，二分搜索各阶段满足 SLO 的最大 rate；分别选 goodput/GPU 最佳配置，再按总目标 rate 向上取整所需副本数。它依赖有限候选集与延迟估计，不是任意负载下的最优性证明；权重能装入也不代替 KV/工作区预算。（§4.1，算法1。）
+
+跨节点带宽有限时，算法2利用“KV 只需交给对应层”这一结构：为两阶段枚举共同 PP 阶段，把对应层段放在同一节点，让 KV 走节点内 NVLink；再枚举各段的节点内资源组合，限制配对资源不超过节点 GPU 数，联合模拟并复制配置。两阶段的 TP 与资源量仍可不同。作者的 OPT-66B、512-token 例子中 KV 约1.13GB，10 requests/s 对应约11.3GB/s（约90Gbps）；这是平均流量量级，不能单凭它证明某个请求的传输已隐藏。（§3.3、§4.2，算法2。）
+
+附录A的模拟器延迟模型以 profile/interpolation 拟合系数：prefill 区分总 token 数 $\sum l_i$ 与长度平方和 $\sum l_i^2$，decode 区分权重读取项与历史 KV 项。这些是该模型/硬件与内核下的近似，量化、GQA 或新的 kernel 改变流量和计算时需要重新核模型，不能沿用系数当通用规律。
+
+#### 首 token、KV 缓冲与 decode 的接纳节奏
+
+控制器按 FCFS 将请求送到最短 prefill 队列，再交给负载最低的 decode 实例。Prefill 产生首 token 和 prompt KV；decode 消费该 token 及已传入的 KV，继续生成。被采样的首 token 尚未形成自己的 KV，阶段交接仍遵循[自回归步骤](../fundamentals/model/transformer-autoregressive-inference.md#3.%20Prefill%E3%80%81decode%20%E4%B8%8E%20teacher%20forcing)。
+
+遇到突发流量，decode 按自身接纳节奏 **pull** KV；等待转移的 KV 暂留在 prefill GPU，作为队列缓冲。这避免立即把突发状态压入 decode 显存，却仍占用 prefill 的容量。论文报告节点内异步 CudaMemcpy、跨节点 NCCL，但没有在本次阅读中核到真实释放、同步、格式重分片或失败恢复协议。负载模式显著变化时重新搜索 placement；抢占与容错仍是论文未来工作。（§4.3–5，图6。）
+
+这些机制针对有延迟目标且有资源分配余地的服务。离线吞吐优先、单卡/资源受限部署未必适合；百万上下文收益只属 §7 讨论。该论文的实验口径和版本内差异见[DistServe 的评测条件](serving-performance-evaluation.md#4.1%20DistServe%20%E7%9A%84%E5%AE%B9%E9%87%8F%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%AE%9E%E9%AA%8C%E6%9D%A1%E4%BB%B6)，不以当前 vLLM/SGLang 源码代替其历史基线。
+
 ## 6. 与量化研究的接口
 
 这四点决定了量化收益如何被服务系统放大或抵消：
@@ -95,12 +135,13 @@ $$A_{ij}=\frac{\exp(q_i^{\mathsf T}K_j/\sqrt d)}{\sum_{t=1}^{\lceil i/B\rceil}\e
 
 ## 8. 局限与未验证
 
-SGLang、Sarathi-Serve 与 DistServe 的服务论文尚未研读。本页数值均为论文报告，未运行服务或基准；现代实现的行为以各执行页的固定源码为准。
+SGLang、Sarathi-Serve 的服务论文尚未接续；DistServe v3 的选定论文范围已补，作者实现与运行仍未核。本页数值均为论文报告，未运行服务或基准；现代实现的行为以各执行页的固定源码为准。
 
 ## 来源身份
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`） | `arXiv:2401.09670v3` | §2–5与附录A，两阶段/队列/并行/placement及KV pull；实验和版本差异由评测页承接，未核实现或运行 |
 | Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`） | `arXiv:2309.06180v1` | — |
 | QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | 分页量化元数据布局 |
 | SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（`https://arxiv.org/abs/2604.19157v1`） | `arXiv:2604.19157v1` | — |
