@@ -154,7 +154,34 @@ $$\Lambda=\operatorname{logsumexp}_s\lambda_s,\qquad O'=\sum_s e^{\lambda_s-\Lam
 
 ## 8. 来源定位与未覆盖范围
 
-正文的 `[n]` 对应frontmatter第n个文件；runtime代码路径以下均相对 `sglang-research/python/sglang/`：
+正文的 `[n]` 对应下表的固定源码文件编号；`[n:行号]` 进一步定位该文件中的代码。表内路径相对 OSCAR 固定仓库根目录。
+
+| 编号 | 固定源码文件 |
+| --- | --- |
+| [1] | `README.md` |
+| [2] | `rotation/eval_oscar_gpqa.sh` |
+| [3] | `rotation/compute_kv_rotation.py` |
+| [4] | `rotation/qwen3-8B/compute_rotation.sh` |
+| [5] | `sglang-research/python/sglang/srt/environ.py` |
+| [6] | `sglang-research/python/sglang/srt/server_args.py` |
+| [7] | `sglang-research/python/sglang/srt/model_executor/pool_configurator.py` |
+| [8] | `sglang-research/python/sglang/srt/model_executor/model_runner_kv_cache_mixin.py` |
+| [9] | `sglang-research/python/sglang/srt/mem_cache/memory_pool.py` |
+| [10] | `sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py` |
+| [11] | `sglang-research/python/sglang/srt/mem_cache/unified_kv_allocator.py` |
+| [12] | `sglang-research/python/sglang/srt/mem_cache/common.py` |
+| [13] | `sglang-research/python/sglang/srt/managers/schedule_batch.py` |
+| [14] | `sglang-research/python/sglang/srt/managers/scheduler.py` |
+| [15] | `sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py` |
+| [16] | `sglang-research/python/sglang/QuantKernel/gpu_flush_int2.py` |
+| [17] | `sglang-research/python/sglang/srt/layers/attention/triton_backend.py` |
+| [18] | `sglang-research/python/sglang/srt/layers/attention/triton_ops/decode_attention.py` |
+| [19] | `sglang-research/python/sglang/srt/layers/attention/quantized_kv_prefill.py` |
+| [20] | `sglang-research/python/sglang/srt/layers/attention/flashattention_backend.py` |
+| [21] | `sglang-research/python/sglang/srt/models/utils.py` |
+| [22] | `sglang-research/python/sglang/srt/models/qwen3.py` |
+
+下表的 runtime 代码使用文件名或局部路径简写，完整路径以上方编号表为准；`rotation/` 路径相对仓库根目录。
 
 | 主张 | 固定源码落点 |
 | --- | --- |
@@ -172,4 +199,4 @@ WUSH-KV仍需匹配其作者实现，核对每KV head一般可逆T、Query的逆
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
-| OSCAR: Offline Spectral Covariance-Aware Rotation for 2-bit KV Cache Quantization — 官方代码（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437`，提交日期2026-06-28，归档日期2026-10-08 | README、离线旋转/评测配置及vendored SGLang中的固定writer/window/Attention；使用文件与位置见正文及frontmatter。未以整仓归档替代整仓研读，也未据其作者测速报告本地性能 |
+| OSCAR: Offline Spectral Covariance-Aware Rotation for 2-bit KV Cache Quantization — 官方代码（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437`，提交日期2026-06-28，归档日期2026-10-08 | README、离线旋转/评测配置及vendored SGLang中的固定writer/window/Attention；使用文件与位置见第 8 节正文定位表。未以整仓归档替代整仓研读，也未据其作者测速报告本地性能 |
