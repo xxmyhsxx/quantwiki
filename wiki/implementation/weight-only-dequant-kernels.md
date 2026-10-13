@@ -323,8 +323,6 @@ AWQ 的全部同步/尾块/错误处理、SGLang非对称AWQ Marlin，以及浮�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | mit-han-lab/llm-awq（`https://github.com/mit-han-lab/llm-awq/tree/d6e797a42b9ef7778de8ee2352116e0f48a78d61`） | `d6e797a42b9ef7778de8ee2352116e0f48a78d61` | — |

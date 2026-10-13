@@ -153,8 +153,6 @@ $$U_*=P_m^{-1}U_r,\qquad V_*=\Sigma_rG_*V_r^\mathsf T,$$
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |

@@ -144,10 +144,8 @@ Q/K 的风险可用代数表达：若行向量在位置 $t$ 经过旋转 $R_t$�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` | — |
-| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
-| bytedance/AffineQuant（`https://github.com/bytedance/AffineQuant/tree/0f3ba9392bb0037f30750c4b2dbdd38469a2d7da`） | `0f3ba9392bb0037f30750c4b2dbdd38469a2d7da` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` |
+| OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` |
+| bytedance/AffineQuant（`https://github.com/bytedance/AffineQuant/tree/0f3ba9392bb0037f30750c4b2dbdd38469a2d7da`） | `0f3ba9392bb0037f30750c4b2dbdd38469a2d7da` |

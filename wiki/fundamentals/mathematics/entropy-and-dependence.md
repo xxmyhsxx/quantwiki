@@ -60,8 +60,6 @@ $$
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |

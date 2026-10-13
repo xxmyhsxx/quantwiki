@@ -125,8 +125,6 @@ $$\mathcal L_{\mathrm{LKD},k}=\mathrm{MSE}\left(L_k\cdots L_1(\mathbf X)-\wideha
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale（`https://arxiv.org/abs/2208.07339v2`） | `arXiv:2208.07339v2` | 附录 E–F，训练／微调与推理场景的区分 |

@@ -244,8 +244,6 @@ VidKV算法1的prefill返回原始K/V，压缩状态用于后续decode；decode�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | OSCAR 官方实现（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437` | INT2通道布局、FP32元数据/所选GQA decode BF16读取、保护窗口及更新次序 |

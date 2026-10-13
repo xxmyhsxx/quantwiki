@@ -367,8 +367,6 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 
 - Scale Sensitivity in Low-Bit Post-Training Quantization: Curvature of the Quantization Error Landscape（`https://arxiv.org/abs/2609.37416v1`），arXiv:2609.37416v1；§3–5、定理 1、命题 1、定义 1、表 1–2/5，以及附录 A.4/A.5.2/B.1/B.4。第 10 节采用作者条件和报告，矩阵改写及变量关系为整理者展开。
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | CentriQ（`https://arxiv.org/abs/2610.06260v1`） | arXiv:2610.06260v1 | 免校准与在线分位数、分布假设和开发集的区别 |

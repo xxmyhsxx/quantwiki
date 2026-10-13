@@ -153,8 +153,6 @@ LLM.int8() 走的是「保留少数维度为高精度」的路线；[SmoothQuant
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale（`https://arxiv.org/abs/2208.07339v2`） | `arXiv:2208.07339v2` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale（`https://arxiv.org/abs/2208.07339v2`） | `arXiv:2208.07339v2` |

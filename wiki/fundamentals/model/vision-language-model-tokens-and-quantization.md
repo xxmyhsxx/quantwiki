@@ -155,17 +155,15 @@ $$
 [AKVQ-VL](../../methods/akvq-vl.md) 则保留 token 集合，按 attention 层模式保护文本或 pivot 的 KV 精度：TSA 层的文本主要 4 bit，PSA 层的 pivot 与 recent 用 16 bit，其余历史主要 2 bit。它的早层文本显著、后层枢纽显著是特定模型观测，原文中也有不出现 TSA 的骨干。模态标签、attention 代理、激活幅值、可删除性和量化敏感度应各自说明证据，不能共用一个“重要性”标签便认为可以直接交换策略。
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |
-| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`） | `arXiv:2603.04800v1` | — |
-| Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |
-| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
-| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
-| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
-| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`） | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` |
+| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`） | `arXiv:2603.04800v1` |
+| Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` |
+| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`） | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` |
 
 - CoRePrune（`https://arxiv.org/abs/2609.26484v1`），v1；删除集合与深度条件。
 - Layer-Aware Position Embeddings（`https://arxiv.org/abs/2609.23715v1`），v1；剪枝后的位置策略。

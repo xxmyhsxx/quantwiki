@@ -137,8 +137,6 @@ $$J(\delta)=\sum_t\lambda_t(x_t^\mathsf T\delta)^2
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients，来源 `https://arxiv.org/abs/2603.17809v1` | `arXiv:2603.17809v1` | — |

@@ -156,9 +156,7 @@ $$
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
-| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`） | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` |
+| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`） | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` |

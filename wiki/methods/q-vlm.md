@@ -129,8 +129,6 @@ $X^v$ 是视觉输出，$X^{(n)}$ 是最终输出，$q/r$ 区分量化和浮点�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | Q-VLM: Post-training Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2410.08119v3`） | `arXiv:2410.08119v3` | — |

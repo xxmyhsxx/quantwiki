@@ -122,12 +122,10 @@ prefill 也要固定整段或 chunked 协议、chunk 大小及写入时机。错
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` | — |
-| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| A White Paper on Neural Network Quantization（`https://arxiv.org/abs/2106.08295v1`） | `arXiv:2106.08295v1` |
+| Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference（`https://arxiv.org/abs/1712.05877v1`） | `arXiv:1712.05877v1` |
 
 - Kitty 官方实现（`https://github.com/Summer-Summer/Kitty/tree/dfd2c07b407d6b407179359207c612ab631f3ed1`），固定 commit `dfd2c07b407d6b407179359207c612ab631f3ed1`；本页引用的文件与函数见正文，静态核对不代表实际运行。
 

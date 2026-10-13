@@ -231,8 +231,6 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 
 - QSLAW v1（`https://arxiv.org/abs/2408.03735v1`）及所选实现（`https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802`）；§3.5比较尺度位置/整数码更新与STE，导数和算例为整理者展开。
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | 权重分解初始化与固定基座的适配器训练 |

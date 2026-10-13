@@ -314,8 +314,6 @@ $$XW-\widehat Y=X(W-W_{dn})+E_RW_{dn}
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | LoftQ: LoRA-Fine-Tuning-Aware Quantization for Large Language Models（`https://arxiv.org/abs/2310.08659v4`） | `arXiv:2310.08659v4` | 冻结主体训练、单矩阵初始化计时与存储口径 |

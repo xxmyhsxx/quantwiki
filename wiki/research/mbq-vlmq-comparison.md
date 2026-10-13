@@ -112,8 +112,6 @@ VLMQ 表 6 在无分组 INT3、Qwen2-VL-7B 上报告：常数权重 69.03，Fast
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | Calibrate the Decisions That Change the Future（`https://arxiv.org/abs/2609.36828v1`） | `arXiv:2609.36828v1` | 生成状态、边界与后果的校准，更新变量及比较协议 |

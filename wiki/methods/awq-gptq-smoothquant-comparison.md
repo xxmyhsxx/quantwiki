@@ -63,10 +63,8 @@ W8A8 一侧的两个常被引用基线现在有独立主页面：[LLM.int8()](ll
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration（`https://arxiv.org/abs/2306.00978v6`） | `arXiv:2306.00978v6` | — |
-| GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers（`https://arxiv.org/abs/2210.17323v2`） | `arXiv:2210.17323v2` | — |
-| SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration（`https://arxiv.org/abs/2306.00978v6`） | `arXiv:2306.00978v6` |
+| GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers（`https://arxiv.org/abs/2210.17323v2`） | `arXiv:2210.17323v2` |
+| SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` |

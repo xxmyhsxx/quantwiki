@@ -104,8 +104,6 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |

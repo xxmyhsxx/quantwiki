@@ -233,8 +233,6 @@ M 奇异时仍有平方根，但没有普通逆矩阵。可以明确限制在受
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | QERA: an Analytical Framework for Quantization Error Reconstruction（`https://arxiv.org/abs/2410.06040v2`） | `arXiv:2410.06040v2` | 二阶矩目标、exact 与对角近似条件 |

@@ -163,8 +163,6 @@ $$\min_{\widehat{\mathbf w}}\ \mathbb E\left[\Delta\vec z^{(\ell),\mathsf T}\mat
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| BRECQ: Pushing the Limit of Post-Training Quantization by Block Reconstruction（`https://arxiv.org/abs/2102.05426v2`） | `arXiv:2102.05426v2` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| BRECQ: Pushing the Limit of Post-Training Quantization by Block Reconstruction（`https://arxiv.org/abs/2102.05426v2`） | `arXiv:2102.05426v2` |

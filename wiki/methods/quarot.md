@@ -142,9 +142,7 @@ KV 一侧的粒度与布局选择另有专门讨论：本页在 RoPE 后按 head
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
-| spcl/QuaRot（`https://github.com/spcl/QuaRot/tree/5008669b08c1f11f9b64d52d16fddd47ca754c5a`） | `5008669b08c1f11f9b64d52d16fddd47ca754c5a` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` |
+| spcl/QuaRot（`https://github.com/spcl/QuaRot/tree/5008669b08c1f11f9b64d52d16fddd47ca754c5a`） | `5008669b08c1f11f9b64d52d16fddd47ca754c5a` |

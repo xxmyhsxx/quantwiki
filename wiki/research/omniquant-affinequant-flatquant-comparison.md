@@ -90,8 +90,6 @@ OmniQuant 主要学习可融合的通道尺度；AffineQuant 在 W4A4 的 Norm �
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |

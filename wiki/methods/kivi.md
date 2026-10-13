@@ -148,9 +148,7 @@ $$\mathbf A_g=\vec q\,Q(\mathbf X_{K_g}^{\mathsf T}),\qquad \mathbf A_r=\vec q\,
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache（`https://arxiv.org/abs/2402.02750v2`） | `arXiv:2402.02750v2` | — |
-| jy-yuan/KIVI（`https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6`） | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache（`https://arxiv.org/abs/2402.02750v2`） | `arXiv:2402.02750v2` |
+| jy-yuan/KIVI（`https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6`） | `876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6` |

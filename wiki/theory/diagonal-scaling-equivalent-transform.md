@@ -191,8 +191,6 @@ RoPE 定义来自 RoFormer，上述交换条件与反例是本页推导。[正�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting（`https://arxiv.org/abs/2501.13987v1`） | `arXiv:2501.13987v1` | 正交与尺度位置、RoPE 融合条件 |

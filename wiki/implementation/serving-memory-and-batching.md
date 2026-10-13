@@ -99,8 +99,6 @@ SGLang、Sarathi-Serve 与 DistServe 的服务论文尚未研读。本页数值�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`） | `arXiv:2309.06180v1` | — |

@@ -119,8 +119,6 @@ Double quantization 再压缩第一层尺度，而非把权重位宽再次减半
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | §2–3 局部研读 |

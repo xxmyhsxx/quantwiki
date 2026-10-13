@@ -236,8 +236,6 @@ fast-rotation 子模块已核所选 BF16/GQA4/D128/Hadamard128/K-only/FUSE1 的 
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | SAW-INT4: System-Aware 4-Bit KV-Cache Quantization for Real-World LLM Serving（`https://arxiv.org/abs/2604.19157v1`） | `arXiv:2604.19157v1` | — |

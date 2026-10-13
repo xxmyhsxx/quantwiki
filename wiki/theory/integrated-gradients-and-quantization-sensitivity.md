@@ -68,13 +68,11 @@ $E_{bt}=\operatorname{mean}_h|f_{\rm fp}(X)-f_{\rm q}(X)|_{bth}$，再用全 1 �
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| Axiomatic Attribution for Deep Networks（`https://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf`） | `2017 PMLR 70, pp.3319–3328` | — |
-| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` | — |
-| ucas-xiang/QIG（`https://github.com/ucas-xiang/QIG/tree/06fa88134671647827dea08dc37c50c81e4eeac7`） | `06fa88134671647827dea08dc37c50c81e4eeac7` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| Axiomatic Attribution for Deep Networks（`https://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf`） | `2017 PMLR 70, pp.3319–3328` |
+| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` |
+| ucas-xiang/QIG（`https://github.com/ucas-xiang/QIG/tree/06fa88134671647827dea08dc37c50c81e4eeac7`） | `06fa88134671647827dea08dc37c50c81e4eeac7` |
 
 ## 教学计算材料
 

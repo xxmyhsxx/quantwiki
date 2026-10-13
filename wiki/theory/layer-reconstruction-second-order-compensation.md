@@ -546,8 +546,6 @@ $$L_{\rm moment}=\frac1C\sum_c\left(|\mu_F^c-\mu_Q^c|+|v_F^c-v_Q^c|\right),\qqua
 
 - The Devil Is in the Reconstruction Loss Scale: Rethinking Optimization in LLM Quantization（`https://arxiv.org/abs/2610.00983v1`），arXiv:2610.00983v1；§2–3、式 (2)–(8)、§4 表 1–5 与附录 A/D/E/F。第 11 节的链式法则、分组梯度与最小点关系为整理者展开，作者实验与本地验证分开。
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | EfficientQAT: Efficient Quantization-Aware Training for Large Language Models（`https://arxiv.org/abs/2407.11062v3`） | `arXiv:2407.11062v3` | 局部重构与整网尺度训练 |

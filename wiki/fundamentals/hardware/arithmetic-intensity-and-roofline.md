@@ -93,10 +93,8 @@ $$I\approx\frac{2b}{w/8}=\frac{16b}{w},\qquad \text{受内存限制当且仅当}
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |
-| MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`） | `arXiv:2408.11743v1` | — |
-| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` |
+| MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`） | `arXiv:2408.11743v1` |
+| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` |

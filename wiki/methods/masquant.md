@@ -137,8 +137,6 @@ $$Y-\widehat Y=A(D-L)+(A-Q_a(A))B.$$
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models，来源 `https://arxiv.org/abs/2603.04800v1` | `arXiv:2603.04800v1` | — |

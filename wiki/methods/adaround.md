@@ -171,8 +171,6 @@ x 是全精度网络产生的层输入，$\hat x$ 是前面各层已经量化后
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| Up or Down? Adaptive Rounding for Post-Training Quantization（`https://arxiv.org/abs/2004.10568v2`） | `arXiv:2004.10568v2` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| Up or Down? Adaptive Rounding for Post-Training Quantization（`https://arxiv.org/abs/2004.10568v2`） | `arXiv:2004.10568v2` |

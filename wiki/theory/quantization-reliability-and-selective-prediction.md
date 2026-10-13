@@ -127,8 +127,6 @@ Selector 在所列表格中提高了同位宽 MaxProb 的 $C@$1%，且不修改�
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs（`https://arxiv.org/abs/2602.13289v1`） | `arXiv:2602.13289v1` | — |
+| 来源 | 版本或快照 |
+| --- | --- |
+| Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs（`https://arxiv.org/abs/2602.13289v1`） | `arXiv:2602.13289v1` |

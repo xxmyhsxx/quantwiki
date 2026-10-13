@@ -286,8 +286,6 @@ $$
 
 ## 来源身份
 
-下表用于在没有本地资料库时辨识来源；具体论述的章节、公式、图表或代码位置见正文。
-
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
 | AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` | — |
