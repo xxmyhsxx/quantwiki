@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · FlexRound ingest：除法选码与共同网格
+
+- 按用户确认恢复逐项 ingest，先处理第10批FlexRound固定v2。核读正文问题/方法/实验主线、附录B，定向回查消融与语言模型条件、反例；主要公式/命题/表号对照固定PDF。PDF和TeX源包校验值与条目记录一致。
+- 新增[FlexRound](methods/flexround.md)，解释共同步长、同形逐元素除数、通道乘积、非对称重构输入、STE梯度和固化整数码；保留共享参数冗余的整理者分析、ImageNet/LLaMA反例、逐通道/逐张量及LoRA适配条件。公共[尺度位置](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.5%20%E5%AD%A6%E4%B9%A0%E5%B0%BA%E5%BA%A6%E5%89%8D%EF%BC%8C%E5%85%88%E7%A1%AE%E5%AE%9A%E5%AE%83%E8%BF%9B%E5%85%A5%E5%93%AA%E4%B8%80%E4%BE%A7)已有同型推导，只补方法连接，不另建重复机制页。INDEX、READING、SELF和计划同步；有依据记录135条，队列94条，知识页175个。
+- 独立内容review与阅读路径复核完成，补齐复合除数到实际参数的乘积链，以及W4A16反例的格式条件。严格结构/来源/导航检查和受影响页面链接检查通过，0错误、0警告；未核全部附表、作者实现、有限位宽裁剪/零点/正约束、导出/打包/内核及模型/性能复现，没有将数学固化方向写成真实部署证据。
+
 ## 2026-10-13 · 重复性审查：第 5 批，全库收尾
 
 - 核读README/INDEX、READING规范与相关记录、LOG本轮条目及覆盖清单。沿均匀量化→AWQ→实现、对角缩放→SmoothQuant→实现、重构/AdaRound→GPTQ→实现及码本第9→12节复读，删改承接、局部解释与条件连贯；这不表示逐条核验全库存量关系。

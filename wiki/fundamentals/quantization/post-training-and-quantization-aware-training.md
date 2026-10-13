@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/flexround
   - raw/papers/2026-09-21/quasar
   - raw/papers/2026-09-21/lc-qat
   - raw/repositories/2026-09-21/aqlm
@@ -197,6 +198,8 @@ $$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
 
 中间行按该简化零点抵消和不含裁剪边界的图展开；实际有clip、尺度参数化、整数码更新或梯度归一化时必须回到相应图。前两行分别对应固定码尺度优化和常见步长学习的区别；[QSLAW所选uniform](../../implementation/qslaw-scale-learning-and-float-export.md#3.%20%E5%89%8D%E5%90%91%E4%B8%8E%E5%8F%8D%E5%90%91%E7%9A%84%E9%87%8F%E4%B8%8D%E5%90%8C)采用第三种：除以Δa，最后只乘Δ，码在每次前向重算。
 
+[FlexRound](../../methods/flexround.md)将这一除法参数化用于固定预训练权重的局部重构，联合学习共享步长与逐元素除法参数：$\hat w=s_1\operatorname{round}(w/(s_1a))$。外侧没有乘回$a$，因此$a$改变选码坐标，$s_1$决定恢复网格。QSLAW所选路径固定基础Δ；二者的目标、共享粒度与可训练变量仍需分别说明。（FlexRound v2 §3.2、命题3.1、附录B。）
+
 第三种硬前向在码不变时真实导数为0，−w/a²来自STE链式法则，不能用有限差分把两者认成一致。整理者例w=1.2、Δ=0.5、z=2，a在1附近的小范围内给d=1，硬函数不变；STE在a=1给−1.2。a=2则给d=0.5，而不是把原恢复值再乘2。它也没有成对的输入补偿，不是自动保持WX的等价通道变换。
 
 学习目标决定这些自由度是否有用；参数数目减少并不免除整网反向或浮点基座成本。若导出只写恢复浮点值到Linear，质量模拟与低位驻留/执行仍是两个验证目标。（QSLAW v1（`https://arxiv.org/abs/2408.03735v1`）式7–8；固定代码quantizer.py、utils.py、replace.py；计算图导数和算例为整理者展开。）
@@ -228,6 +231,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- FlexRound: Learnable Rounding based on Element-wise Division for Post-Training Quantization（`https://arxiv.org/abs/2306.00317v2`），arXiv:2306.00317v2；本页§3.5连接逐元素除法参数与共享步长，原文机制见§3.2、附录B。
 
 - QSLAW v1（`https://arxiv.org/abs/2408.03735v1`）及所选实现（`https://github.com/xjjxmu/QSLAW/tree/264dfb081c210a8bab6a3fb5707d827ade7b6802`）；§3.5比较尺度位置/整数码更新与STE，导数和算例为整理者展开。
 

@@ -42,6 +42,8 @@ sources: []
 - **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [LSQ 的步长学习](methods/lsq.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
 - **理解低秩误差修正**：[激活加权低秩近似](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6.%20%E6%BF%80%E6%B4%BB%E5%8A%A0%E6%9D%83%E7%9A%84%E4%BD%8E%E7%A7%A9%E8%BF%91%E4%BC%BC) → [LoftQ 的交替初始化](methods/loftq.md) → [QERA 的解析补偿](methods/qera.md) → [MASQuant 的模态残差](methods/masquant.md) / [SplitQ 的双补偿](methods/splitq.md) → [低秩分支的执行成本](implementation/quantized-matmul-scaling-execution.md#12.%20%E4%BD%8E%E7%A7%A9%E8%BE%85%E5%8A%A9%E5%88%86%E6%94%AF%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E6%88%96%E7%BB%9F%E4%B8%80%E4%BD%8D%E5%AE%BD)。
 - **理解量化方法**：[AWQ](methods/awq.md) → [GPTQ](methods/gptq.md) → [SmoothQuant](methods/smoothquant.md) → [AWQ、GPTQ 与 SmoothQuant](methods/awq-gptq-smoothquant-comparison.md)。
+- **比较局部舍入优化**：[AdaRound 的固定相邻候选](methods/adaround.md) → [FlexRound 的除法选码与共同网格](methods/flexround.md) → [尺度位置与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.5%20%E5%AD%A6%E4%B9%A0%E5%B0%BA%E5%BA%A6%E5%89%8D%EF%BC%8C%E5%85%88%E7%A1%AE%E5%AE%9A%E5%AE%83%E8%BF%9B%E5%85%A5%E5%93%AA%E4%B8%80%E4%BE%A7)。
+
 - **理解变换与研究抽象**：[对角缩放与等价变换](theory/diagonal-scaling-equivalent-transform.md) → [OmniQuant](methods/omniquant.md) → [AffineQuant](methods/affinequant.md) → [FlatQuant](methods/flatquant.md) → [OmniQuant、AffineQuant 与 FlatQuant](research/omniquant-affinequant-flatquant-comparison.md) → [QuaRot](methods/quarot.md) → [SpinQuant](methods/spinquant.md) → [OSTQuant 的正交与缩放联合学习](methods/ostquant.md)。
 - **理解极低比特表示**：[二阶重构](theory/layer-reconstruction-second-order-compensation.md) → [QuIP](methods/quip.md) → [码本量化](theory/codebook-quantization-and-bit-budget.md) → [QuIP#](methods/quip-sharp.md) → [AQLM](methods/aqlm.md) → [SpQR](methods/spqr.md) / [SqueezeLLM](methods/squeezellm.md) → [坐标、码本与例外预算](research/low-bit-representation-design.md)。
 - **研究多模态量化**：[视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) → [MBQ](methods/mbq.md) → [VLMQ](methods/vlmq.md) → [MBQ 与 VLMQ](research/mbq-vlmq-comparison.md) → [QIG](methods/qig.md) → [LUQ](methods/luq.md)。
@@ -177,6 +179,7 @@ sources: []
 | [SpQR：敏感权重与两级元数据](methods/spqr.md) | 动态例外选择、小组网格和稀疏修正怎样计账。 |
 | [SqueezeLLM：加权非均匀量化](methods/squeezellm.md) | 任务 Fisher、标量 LUT 与稠密稀疏分解如何配合。 |
 | [AdaRound：面向任务损失的自适应舍入](methods/adaround.md) | 固定网格下，怎样学习向上或向下舍入以减少激活重构误差。 |
+| [FlexRound：逐元素除法选码与共同网格学习](methods/flexround.md) | 逐权重除数怎样改变整数选择，共享网格如何联合学习，实验支持到哪里。 |
 | [BRECQ：块级重构与二阶误差的粒度选择](methods/brecq.md) | 怎样用二阶代理与少样本实验比较重构粒度，并优化块级舍入。 |
 | [AffineQuant：可学习仿射变换与渐进掩码](methods/affinequant.md) | AffineQuant 把量化前的可学习逐通道缩放扩展为可逆矩阵，使一个通道可以与其他通道混合；与逆矩阵配对后，浮点线性计算不变，量化后的网格适配可能更好。 |
 | [AWQ、GPTQ 与 SmoothQuant：对象、机制与证据比较](methods/awq-gptq-smoothquant-comparison.md) | 这三种方法都利用少量校准数据改善模型量化，但量化对象、可调整变量与实现路线并不相同。 |
