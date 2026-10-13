@@ -198,7 +198,7 @@ $$
 
 C0 `pre_quant.py:102`、quantizer.py:106。C0 在当前 block 的缩放／裁剪前就缓存下一 block 输入，因此不能把它写成自动用前面所有量化误差重新传播校准数据的流程。
 
-当前实际量化路径要求 zero-point 配置，`WQLinear` 只实现 4 bit，并有输入分组、输出通道和打包对齐约束。模块保存 `qweight`、`scales`、`scaled_zeros` 和可选 bias；`qweight` 的 int16 是打包容器，不代表每个原始权重仍占 16 bit。forward 按展平 token 数是否小于 8 分派到 GEMV／GEMM CUDA 入口。quantizer.py:125、qmodule.py:78。新版 GEMV 只分派 g128，GEMM 主机分支也固定 `G=128`；模拟量化支持的其他分组不能直接用于此真实路径。新旧内核的布局与反量化机制见实现页。
+当前 real 路径要求 zero-point 配置和 4 bit，并受输入分组、输出通道及打包对齐约束；已读新版 GEMV/GEMM 固定 g128，不能把模拟量化的其他组长直接用于真实内核。C0 `quantizer.py:125`、`qmodule.py:78`。存储缓冲与打包见[实现页的权重产物与打包约定](../implementation/awq-implementation.md#3.%20%E6%9D%83%E9%87%8D%E4%BA%A7%E7%89%A9%E4%B8%8E%E6%89%93%E5%8C%85%E7%BA%A6%E5%AE%9A)，GEMV/GEMM 分派见[内核入口](../implementation/awq-implementation.md#4.%20%E5%86%85%E6%A0%B8%E5%85%A5%E5%8F%A3)。
 
 ### 5.4 校准数据不是一个默认数字
 

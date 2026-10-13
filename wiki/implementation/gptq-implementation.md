@@ -163,8 +163,6 @@ SGLang 分别注册 GPTQConfig 与 GPTQMarlinConfig。对尚未标为 Marlin 格
 4. 实际选中哪个后端，发生了哪些 shuffle/repack/padding，token 数是否触发重建？
 5. 再测模型精度、跨引擎输出、prefill/decode 延迟与峰值显存。
 
-量化时的网格范围搜索，与加载时的分组尺度切分、权重重排承担不同职责。
-
 ### CPU 教学核对
 
 4 项检查覆盖跨 int32 的 3-bit 位流与反量化点积、越界编码污染邻位、组排序的坐标一致性、按样本序列计数的 Hessian 归约。教学形状含 N=7，仅测试 CPU 位流，不满足原始 CUDA 的输出维对齐要求，未用于 GPU 调用。

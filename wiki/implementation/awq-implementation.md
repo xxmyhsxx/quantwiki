@@ -16,7 +16,7 @@ updated: 2026-10-07
 
 # AWQ 的实现核对：从量化脚本到 vLLM 与 SGLang
 
-方法页回答 AWQ 为什么这样设计、证据支持什么；本页回答代码层面的事情：**量化脚本产出什么形状的权重、打包约定是什么、内核从哪里进入、同一个 AWQ checkpoint 在 vLLM 与 SGLang 里各走哪条路径**。这些内容决定一份 AWQ 权重能不能被目标引擎加载，以及加载后走的是哪类内核。
+本页解释**量化脚本产出什么形状的权重、打包约定是什么、内核从哪里进入、同一个 AWQ checkpoint 在 vLLM 与 SGLang 里各走哪条路径**。这些内容决定一份 AWQ 权重能不能被目标引擎加载，以及加载后走的是哪类内核。
 
 方法机制、论文数值与证据边界见 [AWQ：激活感知的权重量化](../methods/awq.md)。本页以固定源码核对为主，另用独立教学计算检查位序和轴转换；未运行仓库的量化脚本、模型或 GPU 内核。
 
@@ -75,6 +75,7 @@ flowchart LR
 | 打包因子 | `pack_num = 32 // w_bit`、`int16_pack_num = 16 // w_bit` | 无符号打包口径；同一位宽在 32 位与 16 位容器下的分组数不同 |
 | `scales` | 浮点缓冲，形状 `(G_pad, out_features)`；`G_pad = calculate_zeros_width(in_features, group_size) * 8` | 分组尺度先补齐宽度，再转置；并未按整数位打包 |
 | `scaled_zeros` | 与 scales 同形、同 dtype，实际组处保存 `-zero * scale` | 内核用 `q * scale + scaled_zeros` 还原；该模块没有 `qzeros` 缓冲 |
+| `bias` | 有原始偏置时保存浮点 `(N,)`，否则为 `None` | 由 `from_linear` 复制，在 GEMV/GEMM 输出后相加 |
 
 这里 `scale_zeros = zeros * scales` 只是生成整数码时的临时量；保存到模块的 `scaled_zeros` 带负号，两者不能混用。`interleave=4`、`w_bit=4` 时 qweight 形状化简为 `(N/4, K)` 的 int16；形状约束还来自打包时的 `K//32`、`kstride=64` 重排。
 
@@ -164,8 +165,6 @@ SGLang 的 `AWQLinearScheme.create_weights` 保存 int32 `qweight`（`K × N/8`�
 
 普通 JIT 反量化的设备路径每线程读一个 int32（8 个码），按 `row // group_size` 定位 scale/zero，撤销 nibble 顺序后计算 `(q-z)*s`，写回连续浮点权重。FP16 位技巧构造与减去 1024 得到 0–15，随后才施加零点和尺度；函数名 `s4` 不表示先还原为 −8–7。普通 AWQ backend 每次 apply 都生成完整反量化权重；Marlin 的 repack 则在加载后进行，不能把两者都记成“一次性转换”。
 
-以上核对到固定源码的配置、数据变换与相应设备片段；尚未验证实际模型运行或跨引擎数值一致性。
-
 ## 7. 论文-代码对齐：本页补充的部分
 
 方法页已记录三处论文与实现的差别（分析式与执行式不同、裁剪候选数与默认值、零通道下限）。代码核对再补两条：
@@ -191,7 +190,7 @@ SGLang 的 `AWQLinearScheme.create_weights` 保存 int32 `qweight`（`K × N/8`�
 - 官方 real 路径要求 `zero_point=True`、4 bit；虽然 WQLinear 构造器将 `group_size=-1` 转成输入维，`from_linear` 后续仍将原始 group_size 传入 `calculate_zeros_width`，其 −1 分支未实现。不能由构造器归一化推出完整 real 导出支持 −1。
 - `pseudo_quantize_tensor` 的对称分支在定义 min_val 前执行 `assert min_val is None`；这是所读快照的静态缺陷，不能作为可用对称量化入口。本轮没有修改上游源码。
 - clip 的抽样步长为 `token_count // n_sample_token`，默认 n_sample_token=512；少于 512 个 token 时步长为零。输出通道还需满足代码的 256/64 分批条件。
-- 新版 GEMV 对非 g128 显式报错；GEMM 固定按 g128 解释参数。GEMM 启动沿 N 使用 `N // 128`，故 WQLinear 的 `N % 8 == 0` 检查不足以覆盖全部实际调用要求；非 128 倍数的 N 需单独处理和验证，不能宣称已有通用尾块支持。
+- 新版 GEMM 启动沿 N 使用 `N // 128`，因此 WQLinear 的 `N % 8 == 0` 检查不足以覆盖实际调用要求；非 128 倍数的 N 需单独处理和验证，不能宣称已有通用尾块支持。
 
 **已检查：**代码链、shape/dtype/位序、加载与运行时转换时机；独立教学计算验证 `0x75316420` 例子、AutoAWQ 权重/零点轴转换及 TinyChat 4 行/64 步幅打包的往返关系。教学计算模拟整数布局，不等于运行原 PyTorch pack 或 CUDA 内核。
 

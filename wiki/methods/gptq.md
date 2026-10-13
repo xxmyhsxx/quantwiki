@@ -189,7 +189,7 @@ P 的内核面向量化矩阵乘浮点向量：读取压缩权重后即时反量
 
 ## 8. 论文算法与后来代码的边界
 
-C `quant.py:137`的 `Quant3Linear` 用 3 个 32-bit 容器存放每 32 个 3-bit 权重，保存每输出行的 scale 和已乘 scale 的 zero，并保留 bias。`forward` 检查输入只能是一条向量，否则报错；普通路径转换到 FP32，`faster` 路径到 FP16。本轮没有读取或运行完整 CUDA 内核，不能保证所有形状都能正确执行。该类也没有通用 group 参数布局，不能把支持分组的数值算法等同于这个单独打包路径支持任意 group。
+C 的 `Quant3Linear` 是原始专用 3-bit 打包产物，仅接受一条输入向量，没有通用 group 参数布局；支持分组的数值算法不等于这条保存路径支持任意 group。位流、尺度与零点格式，以及 FP32/FP16 路径和运行形状的条件见 [GPTQ 的实现核对](../implementation/gptq-implementation.md)。
 
 C 相对主论文还包含后续特性：README明确区分更新，核心实现可见 `gptq.py:81`。
 

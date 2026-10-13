@@ -140,7 +140,7 @@ P 表 3 的 OPT-175B 七任务平均准确率与 WikiText PPL：
 
 七任务为 LAMBADA、HellaSwag、PIQA、WinoGrande、OpenBookQA、RTE、COPA。这里保留 P 自行实现/配置的基线结果，不代表这些方法其他版本或所有模型上的能力。比如 P 为 ZeroQuant 尝试保留 self-attention 输入 FP16，仍未解决本表退化。
 
-这两行基线现在有可直接对照的原始来源。[LLM.int8()](llm-int8.md) 的向量级量化与混合精度分解在 175B 以内模型上报告恢复位宽基线，其代价是少数离群维度走 16 bit；[ZeroQuant](zeroquant.md) 用逐组权重、逐 token 动态激活与逐层蒸馏达到 INT8，并在 GPT-NeoX 20B 上把退化的来源定位到自注意力输入激活、因而保留该处为 FP16。P 在本表为 ZeroQuant 保留同一处高精度，与该文的归因一致，但这不表示两个实现的其余配置相同。两篇的零样本指标、模型族与评测协议都不同，因此「SQ 高于该行基线」只能在这张表内部解释。
+[LLM.int8()](llm-int8.md) 的向量级量化与混合精度分解在 175B 以内模型上报告恢复位宽基线，其代价是少数离群维度走 16 bit；[ZeroQuant](zeroquant.md) 用逐组权重、逐 token 动态激活与逐层蒸馏达到 INT8，并在 GPT-NeoX 20B 上把退化的来源定位到自注意力输入激活、因而保留该处为 FP16。P 在本表为 ZeroQuant 保留同一处高精度，与该文的归因一致，但这不表示两个实现的其余配置相同。两篇的零样本指标、模型族与评测协议都不同，因此「SQ 高于该行基线」只能在这张表内部解释。
 
 P 表 4 则使用 **四任务平均**：OPT/BLOOM 为 WinoGrande、HellaSwag、PIQA、LAMBADA，GLM 为 LAMBADA、MMLU、MNLI、QNLI。GLM 改用这些数据集是为避开作者指出的部分训练集重叠。不同列不可直接比较模型能力。
 
@@ -212,13 +212,13 @@ P 表 10 的 MT-NLG 530B 从 16 张 A100 80GB FP16 改为 8 张 INT8。长度 12
 
 ## 8. 局限、跨方法关系与未验证内容
 
-- **等价不是量化无损。** 平滑改变两侧量化误差，且校准最大值不保证覆盖部署分布。静态参数、裁剪、alpha 的适配都影响结果。
+- **校准与参数适配。** 校准最大值不保证覆盖部署分布。静态参数、裁剪、alpha 的适配都影响结果。
 - **对象与后端决定加速。** P 附录 A 明确说明 GPTQ 的当时内核主要面向单 token 生成，SQ 使用 FT；直接比较会混入后端优势。附录关于小 batch/batched 场景优劣主要是分析，未给出统一实现的直接对照。
 - **同族缩放的后续发展。** [QServe](qserve.md) 的 SmoothAttention 把同一思想用到 KV cache 的 Key 上，并给出一条与本文不同的经验：块输出模块的迁移强度应接近 0，而输入模块仍需平滑。这说明缩放公式相同不代表不同图位置的超参数可以通用。
 - **KV cache 有条件。** 附录指出长上下文/大 batch 中 KV 占比会变大；本页给出真实 OPT 路径的 INT8 cache 证据，仍不能把所有激活量化自动等同于 KV cache 量化。
 - **W4A4 组合是未来设想。** 附录提出结合 GPTQ 改善权重量化，未在本篇实现或验证；不能写为 SmoothQuant 已完成的能力。
 - **证据范围。** 基线、训练数据污染处理和支持的模型均按 P 的当时条件解释。LLM.int8() 与 ZeroQuant 已完成全文研读（见 [LLM.int8()](llm-int8.md)、[ZeroQuant](zeroquant.md)），但 P 所使用的仍是其当时实现与配置，本页不据此断言两者之间的精度排序；Outlier Suppression 等其余基线仍未全文研读，也未独立核验其实现。
-- **代码路径与实验身份。** C 的 fake quant、真实 OPT 和 PPL 入口并不共享完全相同的格式/路径；T 的部分量化工具有不同的 clamp/零范围处理。所读 commit 未与 P 的实验环境绑定。
+- **代码路径与实验身份。** T 的部分量化工具有不同的 clamp/零范围处理。所读 commit 未与 P 的实验环境绑定。
 
 三者的统一问题比较见[AWQ、GPTQ 与 SmoothQuant：对象、机制与证据比较](awq-gptq-smoothquant-comparison.md)。
 
