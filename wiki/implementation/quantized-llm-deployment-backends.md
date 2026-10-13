@@ -7,6 +7,7 @@ tags:
   - data-format
   - serving
 sources:
+  - raw/articles/2026-09-24/vllm-v1-architecture
   - raw/articles/2026-09-21/vllm-release-notes
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/tensorrt-llm
@@ -35,6 +36,14 @@ updated: 2026-10-14
 4. **运行场景**：prefill 还是 decode、批量大小、序列长度、是否量化 KV，决定实际收益落在哪里。
 
 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md) 解释第 4 段的通用原理；[GGUF 块量化存储格式](gguf-block-quantization-formats.md) 是第 2 段的一个完整实例；本页关注第 2、3 段在不同框架之间的差异。
+
+### 1.1 统一配置、模块 prefix 与初始化分片
+
+固定官方架构文档用 `VllmConfig` 统一承载engine、executor、worker、runner和模型需要的配置，模型constructor接收 `vllm_config` 与 `prefix`。Prefix标识checkpoint里的模块位置，可以让不同子模块采用不同量化配置；以所选Llama/AutoAWQ为例，prefix传给线性层的 `get_quant_method`，被排除的模块返回非量化方法。共享配置结构不等于不同进程共享同一个Python内存对象。（文档Class Hierarchy；源码 `models/llama.py:LlamaForCausalLM`、`layers/linear.py:LinearBase`、`quantization/auto_awq.py:AutoAWQConfig.get_quant_method`。）
+
+初始化先建立本rank所需的参数表示，避免先在每张GPU构造完整浮点权重再切分。普通列并行的 `ColumnParallelLinear` 先确定输出分片尺寸，再由量化方法 `create_weights` 建立存储；loader根据参数轴加载对应分片，详细码值/尺度/零点分片见[张量并行](tensor-parallel-quantization.md)。这是参数存储设计的理由，不是对全部加载瞬时内存的保证；文档405B/810GB/16卡例子为理想容量说明，并非本轮测量。
+
+这里的“初始化量化”不表示loader重跑AWQ校准搜索，也不表示全部转换都在constructor完成。所选 `model_loader/utils.py:process_weights_after_loading` 仍调用量化方法处理加载后的repack/quantization；具体AWQ格式链见[AWQ实现](awq-implementation.md)。同文件 `initialize_model` 对旧constructor还保留warning和参数猜测兼容分支，文档的keyword-only说明不能推成所有旧签名模型必然被拒收。
 
 ## 2. 各框架的支持面
 
@@ -155,6 +164,7 @@ v0.26.0发布说明列出 `speculative_config` 独立的 `kv_cache_dtype`，以�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`） | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad`；获取于2026-09-24T02:12:20+08:00 | Class Hierarchy的统一配置、prefix及初始化分片理由；实际加载后处理/兼容分支另按568afb源码核对。 |
 | vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | — |
 | NVIDIA/TensorRT-LLM（`https://github.com/NVIDIA/TensorRT-LLM/tree/d567f924b729dc81465f2d2f762cabb893e28602`） | `d567f924b729dc81465f2d2f762cabb893e28602` | — |
 | mlc-ai/mlc-llm（`https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008`） | `6474f7dbfa9bf18fdfd3ef468b227c0706eb9008` | — |

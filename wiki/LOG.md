@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · vLLM V1架构文档 ingest：进程拓扑与初始化接口
+
+- 完整研读官方f9ad9dd6…固定文档300行及五张原图，6文件hash/大小与登记一致；对照现有568afb同名文档，仅旧API启动段与路径有差别。沿[vLLM推理](implementation/vllm-inference-execution.md)补进程拓扑/条件计数与别名-client边界，沿[部署页](implementation/quantized-llm-deployment-backends.md)补统一配置/prefix、初始化分片和加载后处理。
+- 定向核568afb的两份alias、core client、同步/异步入口、serve默认、Llama/Linear/AutoAWQ与loader相关段。保留internal/external/hybrid/multi-port区别、旧包装图和keyword-only兼容、配置共享与跨进程对象区别；理想容量例不作实际峰值。
+- READING/SELF/计划同步：159条有依据、70条队列，本轮基线88已处理18条；第13批下一项KV管理源码解读文章，准备不计完成。
+- 独立Astra正式review通过，无必修问题；文档/原图与所选客户端、CLI/supervisor及模型构造/加载段已对照。全库结构/来源strict检查186知识页、657项登记，0错误/待核；4个受影响Wiki页链接strict通过，TP/AWQ目标及阅读路径已核。仅提交本项6个成果文件；能力包/README和Obsidian改动保留，不混入本项；未启动进程、模型或GPU。
+
 ## 2026-10-14 · vLLM v0.26.0发布说明 ingest：配置对象与组合边界
 
 - 完整研读固定v0.26.0、snapshot-2026-08-20发布正文，137行及SHA与登记一致；现有568afb…源码属于同一tag。仅在[Attention接口](implementation/vllm-attention-operator-design.md)、[部署配置](implementation/quantized-llm-deployment-backends.md)和[DCP边界](implementation/vllm-mla-context-parallel-execution.md)增补相应声明。

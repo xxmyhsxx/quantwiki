@@ -11,7 +11,7 @@ updated: 2026-10-14
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **158 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **159 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -123,6 +123,7 @@ updated: 2026-10-14
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`）<br>vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad | 完整300行保存正文与五张原图，6文件hash/大小对应；核入口/进程计数、类/配置/prefix/初始化；对照568afb同名文档及alias/core-client/serve-default、Llama/Linear/AutoAWQ和loader相关段 | [进程与客户端](implementation/vllm-inference-execution.md)；[构造与分片](implementation/quantized-llm-deployment-backends.md) | 未核f9ad整仓/外链API与配置指南、实际进程/CPU配额/模型或运行；默认A=DP、旧包装图、keyword-only和全局状态分别保留代码边界，容量例非测量，初始化不代替全部加载后处理 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20vLLM%20V1%E6%9E%B6%E6%9E%84%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E8%BF%9B%E7%A8%8B%E6%8B%93%E6%89%91%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8E%A5%E5%8F%A3) |
 | vLLM Release v0.26.0（`https://github.com/vllm-project/vllm/releases/tag/v0.26.0`）<br>v0.26.0；snapshot-2026-08-20 | 完整保存137行发布正文，Highlights及各分类/依赖/移除/贡献者；核同tag源码身份、按KV group后端/滑窗能力、head与sampler精度、target/draft/层级KV、加载峰值及MRV2/PCP/DCP组合声明 | [Attention契约](implementation/vllm-attention-operator-design.md)；[部署配置](implementation/quantized-llm-deployment-backends.md)；[DCP边界](implementation/vllm-mla-context-parallel-execution.md) | PR/完整diff及对应新增组合实现/运行未核；声明不给默认继承/布局/峰值及完整测量，不扩普通V1/整数AWQ；FlashInfer依赖0.6.14与独立0.6.17分开；其他模型/前端/安全条目已读但不据名称补机制 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20vLLM%20v0.26.0%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E%20ingest%EF%BC%9A%E9%85%8D%E7%BD%AE%E5%AF%B9%E8%B1%A1%E4%B8%8E%E7%BB%84%E5%90%88%E8%BE%B9%E7%95%8C) |
 | FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`）<br>v0.6.17；snapshot-2026-08-20 | 完整保存Highlights/What's Changed/贡献者与Changelog入口；核FP4/host global scale、MoELayer/预路由/shared/SiTU、SM90 MoE撤回、MegaMoE graph/weight/workspace/knob/rank mask、Blackwell MLA/MSA与Ulysses声明 | [FP4版本差异](implementation/block-scaled-matmul-execution.md#v0.6.17%20%E7%9A%84%20SM12x%20%E6%9B%B4%E6%96%B0%E4%B8%8E%E5%B0%BA%E5%BA%A6%E5%8F%82%E6%95%B0)；[专家接口](implementation/moe-routing-and-quantized-expert-execution.md#v0.6.17%20%E5%8F%91%E5%B8%83%E5%A3%B0%E6%98%8E%E4%B8%AD%E7%9A%84%20FP4%20%E4%B8%93%E5%AE%B6%E6%8E%A5%E5%8F%A3)；[MegaMoE](implementation/moe-expert-parallel-execution.md#v0.6.17%20%E7%9A%84%20MegaMoE%20%E9%9B%86%E6%88%90%E4%B8%8E%E5%8F%82%E6%95%B0%E7%BC%93%E5%AD%98)；[Blackwell MLA](implementation/mla-cache-and-attention-execution.md#v0.6.17%20%E5%8F%91%E5%B8%83%E5%A3%B0%E6%98%8E%E4%B8%AD%E7%9A%84%20Blackwell%20MLA%20%E4%B8%8E%E7%A8%80%E7%96%8F%E8%B7%AF%E5%BE%84)；[Ulysses/DCP](implementation/vllm-mla-context-parallel-execution.md#Ulysses%20%E7%9A%84%E5%B8%83%E5%B1%80%E4%BA%A4%E6%8D%A2%E4%B8%8E%20DCP%20%E7%9A%84%E7%8A%B6%E6%80%81%E5%90%88%E5%B9%B6) | 仅发布文本，未核所指PR/完整Changelog diff、版本对应实现、打包/尺度/容错/graph协议或运行；不扩展既有0.6.14文档及独立源码范围 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20FlashInfer%20v0.6.17%E5%8F%91%E5%B8%83%E8%AF%B4%E6%98%8E%20ingest%E4%B8%8E%E7%AC%AC12%E6%89%B9%E6%94%B6%E5%B0%BE) |
 | FlashInfer `single_prefill_with_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.prefill.single_prefill_with_kv_cache.html`）<br>页面0.6.14；snapshot-2026-07-02 | 完整保存正文；多query/独立QK与VO宽度、GQA、mask打包/优先级和尾对齐样例、FP8按head尺度/输出、NVFP4线性尺度与fa2限制 | [单请求prefill接口](implementation/flashinfer-paged-kv-write-and-nvfp4.md#7.%20%E5%8D%95%E8%AF%B7%E6%B1%82%20prefill%EF%BC%9Amask%E3%80%81%E5%B0%BA%E5%BA%A6%E4%B8%8E%20NVFP4%20%E8%AF%BB%E5%8F%96) | 未核匹配实现；packed-only与causal完整优先级、尺度叠加/类型差异、LSE底/dtype、尺度精确shape/粒度/码序/尾部及完整设备组合未交代；未验证分页NVFP4互用或运行 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20FlashInfer%20single%20prefill%E6%96%87%E6%A1%A3%20ingest%EF%BC%9Amask%E4%B8%8E%E5%B0%BA%E5%BA%A6) |
@@ -282,9 +283,9 @@ updated: 2026-10-14
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下71个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下70个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；recursive state的完整LSE、子集条件与单位边界已接续；single decode的读取/返回、数值参数及LSE未知边界已接续；single prefill的多query/mask、按head尺度与NVFP4线性读取边界已接续；v0.6.17发布声明的FP4/MoE/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段/并行/placement与KV pull、容量/SLO及原件差异已接续；Sarathi-Serve v3的chunk预算/顺序/历史读取、PP气泡与token级TBT容量/消融已接续；SGLang v2的提示流/fork依赖、Radix/离线DFS、FSM/重新分词、API文本复用及IR/程序评测已接续；nano-vllm固定离线状态、非混合调度/完整历史分块、完整块缓存、Qwen3/采样及TP/Graph边界已接续；vLLM v0.26.0发布声明的配置对象/加载峰值与未展开组合边界已接续；下一项为vLLM V1官方架构文档，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；recursive state的完整LSE、子集条件与单位边界已接续；single decode的读取/返回、数值参数及LSE未知边界已接续；single prefill的多query/mask、按head尺度与NVFP4线性读取边界已接续；v0.6.17发布声明的FP4/MoE/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段/并行/placement与KV pull、容量/SLO及原件差异已接续；Sarathi-Serve v3的chunk预算/顺序/历史读取、PP气泡与token级TBT容量/消融已接续；SGLang v2的提示流/fork依赖、Radix/离线DFS、FSM/重新分词、API文本复用及IR/程序评测已接续；nano-vllm固定离线状态、非混合调度/完整历史分块、完整块缓存、Qwen3/采样及TP/Graph边界已接续；vLLM v0.26.0发布声明的配置对象/加载峰值与未展开组合边界已接续；vLLM V1官方架构的进程计数/客户端与配置/prefix/初始化分片已接续；下一项为KV管理源码解读文章，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
 ### 论文（24条）
 
@@ -315,7 +316,7 @@ updated: 2026-10-14
 | Query Independent Variable Rate Visual Token Coding（`https://arxiv.org/abs/2610.00204v1`） | `arXiv:2610.00204v1` |
 | CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding（`https://arxiv.org/abs/2609.39924v1`） | `arXiv:2609.39924v1` |
 
-### 文章与文档（38条）
+### 文章与文档（37条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -353,7 +354,6 @@ updated: 2026-10-14
 | PyTorch Distributed Tutorials and FSDP2（`https://docs.pytorch.org/tutorials/distributed.html`） | `PyTorch Tutorials 2.14.0+cu130; FSDP tutorial last verified 2024-11-05` |
 | Ray Serve LLM Architecture（`https://docs.ray.io/en/v2.58.0/serve/llm/architecture/index.html`） | `ray-2.58.0-commit-642b00f8c3c5a01cab7c2e2bff8725fa027b23b4` |
 | Quantization — TensorRT-LLM（`https://nvidia.github.io/TensorRT-LLM/latest/features/quantization.html`） | `source-commit-a6f4151497372f14a5261113a12be2b406e9b5fc` |
-| vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`） | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad` |
 | vllm v1 源码精读（三）：KV Cache 管理、Chunked Prefill 与异步架构（`https://zhuanlan.zhihu.com/p/2060408485595050568`） | `snapshot-2026-09-24; article states vLLM ba22152096b2484faa3579624a253d54804d876d (2026-07-06)` |
 | vla.simd model bundle（`https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle`） | `2026-09-28 page snapshot` |
 | TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix（`https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html`） | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |

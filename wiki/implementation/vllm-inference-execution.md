@@ -7,6 +7,7 @@ tags:
   - memory
   - performance
 sources:
+  - raw/articles/2026-09-24/vllm-v1-architecture
   - raw/repositories/2026-09-21/vllm
 updated: 2026-10-14
 ---
@@ -15,7 +16,7 @@ updated: 2026-10-14
 
 vLLM 把持续到达、长度不同的请求组织成一轮轮 GPU 工作。核心联系是：调度器决定本轮计算哪些 token，KV 管理器提供可用的历史状态和写入空间，model runner 把这些决定变成紧凑张量、位置和块表；模型执行后再将输出交回调度器推进请求。
 
-本页研读 raw 固定快照中的 V1 路径，以普通 decoder-only、全注意力、无推测解码的请求为解释主线。多进程职责依据 `docs/design/arch_overview.md`；执行链依据 `EngineCore.step`、`Scheduler.schedule` 和 `GPUModelRunner`。分页原理及原始论文实验复用[内存管理与批处理](serving-memory-and-batching.md)，Attention 接口和设备计算接续到[vLLM 算子设计](vllm-attention-operator-design.md)。
+本页研读 raw 固定快照中的 V1 路径，以普通 decoder-only、全注意力、无推测解码的请求为解释主线。多进程概览另核官方文档快照 `f9ad9dd6` 及其原图，与执行源码 `568afb3a` 分别登记；执行链依据 `EngineCore.step`、`Scheduler.schedule` 和 `GPUModelRunner`。分页原理及原始论文实验复用[内存管理与批处理](serving-memory-and-batching.md)，Attention 接口和设备计算接续到[vLLM 算子设计](vllm-attention-operator-design.md)。
 
 紧凑离线实例见[nano-vllm 的 token/KV 与模型执行](nano-vllm-inference-execution.md)：可先沿其状态、块池和runner建立接口认识，再对照本页的现代V1组织；两份固定实现的调度与batch条件各由对应正文说明。
 
@@ -40,6 +41,24 @@ flowchart TD
 `EngineCore.step` 先 `schedule()`，再通过 executor `execute_model()`；需要时调用 `sample_tokens()`，最后 `update_from_output()`。调度输出携带本轮 token 数和请求/KV 更新信息，而不是为每个请求单独调用整套模型。异步批队列是另一种重叠执行组织，本页不展开其完整时序。
 
 这种划分使算子不必管理“HTTP 请求何时结束”，调度器也不必实现矩阵乘法。但双方通过 token 数、KV 生命周期和元数据契约相互约束：算子更快不代表调度、输入准备和通信都同步加速。
+
+### 1.1 API、EngineCore 与 GPU worker 的进程计数
+
+官方V1架构文档的多进程图把输入/输出与设备工作分开：API server处理HTTP、tokenization和流式返回，经ZMQ向EngineCore提交请求并接收结果；每个DP rank有一个EngineCore，管理调度和KV状态；每个EngineCore再组织PP×TP个GPU workers执行模型。API与EngineCore的多对多连接表达请求路由，不能据此推出不同DP副本共享同一份KV。（文档V1 Process Architecture及TP=4、TP=2/DP=4两张原图。）
+
+在文档所画GPU多进程拓扑中，令A为API server数，DP为数据并行rank数，PP为流水线段数，TP为张量并行数，GPU worker总数N=DP×PP×TP，则
+
+$$N_{\rm proc}=A+DP+N+\mathbf1[DP>1].$$
+
+最后一项是文档的DP coordinator。图例TP=4、DP=PP=A=1时为6个进程；TP=2、DP=A=4、PP=1时为17个。它是图示部署的算术，不是headless、Ray、Rust前端、CPU或in-process客户端的通用计数。API输入处理、调度、IPC和结果处理还消耗CPU线程，进程数或GPU数本身不能确定CPU配额及吞吐。
+
+文档称默认A=DP；所选源码 `entrypoints/cli/serve.py` 则区分负载均衡的初始默认值：internal LB取完整DP数，external LB、multi-port和Rust前端的该配置取1，hybrid LB取local DP数。Rust前端还将显式大于1的配置归为1，Elastic EP也可进一步把大于1的值限制为1。Multi-port由 `entrypoints/openai/dp_supervisor.py:_start_children` 逐local rank启动server，因此配置值1不能直接当作全部署只有一个API进程。应结合实际启动方式计数，不能把文档默认式推广到全部模式。
+
+### 1.2 旧类图与 V1 客户端入口
+
+文档的Entrypoints/LLM Engine图仍写 `AsyncLLMEngine → LLMEngine` 包装关系；当前固定源码的 `engine/async_llm_engine.py`、`engine/llm_engine.py` 分别只是 `AsyncLLM` 与V1 `LLMEngine` 的别名。两类各自通过 `EngineCoreClient` 连接core，同步入口使用 `make_client`，异步入口使用 `make_async_mp_client`；不能照旧图串成异步类包裹同步类再运行模型。（`v1/engine/async_llm.py`、`llm_engine.py`、`core_client.py`。）
+
+`make_client` 区分in-process和多进程同步客户端；多进程异步走相应client，当前factory对异步且非多进程组合报未实现。文档的类关系、实际客户端对象和部署进程是不同层次，后文token/KV主线以所选代码为准。
 
 ## 2. 统一的 token 进度怎样容纳 prefill 与 decode
 
@@ -141,4 +160,5 @@ SGLang 对同类问题的组织见 [Radix 缓存、批次与重叠执行](sglang
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
+| vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`） | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad`；获取于2026-09-24T02:12:20+08:00 | 完整保存正文与五张原图，进程拓扑/计数及旧类图；实际客户端与默认值另按568afb源码定位。 |
 | vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 架构文档、V1 EngineCore/调度、KV 管理及 GPU 输入准备；具体文件和符号见各节。 |
