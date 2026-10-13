@@ -7,13 +7,9 @@ tags:
   - equivalent-transform
   - reconstruction
 sources:
-  - raw/papers/2026-09-21/affinequant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - raw/repositories/2026-09-21/affinequant/source/README.md.txt
-  - raw/repositories/2026-09-21/affinequant/source/quantize/affinequant.py
-  - raw/repositories/2026-09-21/affinequant/source/quantize/affine_norm.py
-  - raw/repositories/2026-09-21/affinequant/source/models/transformation.py
-  - raw/repositories/2026-09-21/affinequant/source/models/int_llama_layer.py
+  - raw/papers/2026-09-21/affinequant
+  - raw/papers/2026-09-21/omniquant
+  - raw/repositories/2026-09-21/affinequant
 updated: 2026-09-15
 ---
 

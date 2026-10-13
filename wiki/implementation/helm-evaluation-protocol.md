@@ -6,7 +6,7 @@ tags:
   - reliability
   - llm
 sources:
-  - raw/papers/2026-09-21/helm/paper.pdf
+  - raw/papers/2026-09-21/helm
 updated: 2026-10-12
 ---
 

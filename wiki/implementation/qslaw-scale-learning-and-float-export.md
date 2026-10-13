@@ -7,20 +7,7 @@ tags:
   - fake-quantization
   - model-export
 sources:
-  - raw/repositories/2026-09-21/qslaw/source/README.md.txt
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/int_linear.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/int_llama_layer.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/train/train.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/train/train_mem.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/train/llava_trainer.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/model/builder.py
-  - raw/repositories/2026-09-21/qslaw/source/modify.py
-  - raw/repositories/2026-09-21/qslaw/source/scripts/pretrain/pretrain.sh
-  - raw/repositories/2026-09-21/qslaw/source/scripts/sft/chat_for_13b_v1_5.sh
-  - raw/repositories/2026-09-21/qslaw/source/scripts/sqa/sqa_for_13b.sh
+  - raw/repositories/2026-09-21/qslaw
 updated: 2026-10-12
 ---
 

@@ -7,44 +7,10 @@ tags:
   - fp8
   - kernels
 sources:
-  - raw/repositories/2026-09-21/sglang/source/docker/Dockerfile
-  - raw/repositories/2026-09-21/sglang/source/scripts/ci/cuda/ci_install_deepep.sh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/token_dispatcher/deepep.py
-  - raw/repositories/2026-09-21/vllm/source/docker/Dockerfile
-  - raw/repositories/2026-09-21/vllm/source/tools/ep_kernels/install_python_libraries.sh
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/device_communicators/all2all.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/deepep_ht.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/deepep_ll.py
-  - raw/repositories/2026-10-07/deepep-sglang/source/deep_ep/buffer.py
-  - raw/repositories/2026-10-07/deepep-sglang/source/deep_ep/utils.py
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/deep_ep.cpp
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/deep_ep.hpp
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/config.hpp
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/event.hpp
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/layout.cu
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/intranode.cu
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/internode.cu
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/internode_ll.cu
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/runtime.cu
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/utils.cuh
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/launch.cuh
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/ibgda_device.cuh
-  - raw/repositories/2026-10-07/deepep-vllm/source/deep_ep/buffer.py
-  - raw/repositories/2026-10-07/deepep-vllm/source/deep_ep/utils.py
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/deep_ep.cpp
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/deep_ep.hpp
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/config.hpp
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/event.hpp
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/layout.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/intranode.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/internode.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/internode_ll.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/runtime.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/utils.cuh
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/launch.cuh
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/ibgda_device.cuh
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/configs.cuh
-  - raw/repositories/2026-10-07/deepep-vllm/source/setup.py
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-10-07/deepep-sglang
+  - raw/repositories/2026-10-07/deepep-vllm
 updated: 2026-10-07
 ---
 

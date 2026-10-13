@@ -6,14 +6,14 @@ tags:
   - equivalent-transform
   - reconstruction
 sources:
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - raw/papers/2026-09-21/affinequant/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/omniquant.py
-  - raw/repositories/2026-09-21/affinequant/source/quantize/affinequant.py
-  - raw/repositories/2026-09-21/flatquant/source/flatquant/train_utils.py
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/omniquant
+  - raw/papers/2026-09-21/affinequant
+  - raw/papers/2026-09-21/flatquant
+  - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
+  - raw/repositories/2026-09-21/affinequant
+  - raw/repositories/2026-09-21/flatquant
 updated: 2026-09-15
 ---
 

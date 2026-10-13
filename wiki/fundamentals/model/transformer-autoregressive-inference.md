@@ -6,8 +6,8 @@ tags:
   - inference
   - kv-cache
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/llama.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/llama.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-10-04
 ---
 

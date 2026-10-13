@@ -7,29 +7,7 @@ tags:
   - data-format
   - gpu-kernel
 sources:
-  - raw/repositories/2026-09-21/quip-sharp/source/README.md.txt
-  - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/hessian_offline_llama.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/quantize_finetune_llama.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/hfize_llama.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/algo/quip.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/algo/finetune.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/__init__.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/fused_quantized_linear.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/utils/data_utils.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/utils/math_utils.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/utils/matmul_had.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/utils/finetune.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/utils/unsafe_import.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/utils/graph_wrapper.py
-  - raw/repositories/2026-09-21/quip-sharp/source/model/llama.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_wrapper.cpp
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/setup.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/test_e8p.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/benchmark_e8p.py
-  - raw/repositories/2026-09-21/quip-sharp/source/eval/eval_speed.py
+  - raw/repositories/2026-09-21/quip-sharp
 updated: 2026-10-12
 ---
 

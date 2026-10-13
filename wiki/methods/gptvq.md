@@ -7,7 +7,7 @@ tags:
   - weight-quantization
   - inference
 sources:
-  - raw/papers/2026-09-22/gptvq/paper.pdf
+  - raw/papers/2026-09-22/gptvq
 updated: 2026-10-08
 ---
 

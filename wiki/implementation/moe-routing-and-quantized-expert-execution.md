@@ -7,49 +7,8 @@ tags:
   - fp8
   - kernels
 sources:
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/topk.py
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/moe/moe_fused_gate.cu
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/ep_moe/layer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/fused_moe_triton/layer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/fp8.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/token_dispatcher/standard.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/runner.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/triton.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/triton_utils/fused_moe.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/triton_utils/moe_align_block_size.py
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/moe/moe_align_kernel.cu
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/triton_utils/fused_moe_triton_kernels.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/triton_utils/fused_moe_triton_config.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/fp8_kernel.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/per_token_group_quant_8bit_v2.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/per_token_group_quant_8bit_v2.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/utils.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/mxfp4_flashinfer_trtllm_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/layer.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/router/gate_linear.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/router/router_factory.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/router/grouped_topk_router.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/runner/moe_runner.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/routed_experts.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/fp8.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/oracle/fp8.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/all2all_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/no_dp_ep.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/modular_kernel.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/experts/triton_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/fp8_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/fused_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/moe_align_block_size.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/_custom_ops.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/fused_kernels/fused_silu_mul_block_quant.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/moe/moe_align_sum_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/w8a8/fp8/per_token_group_quant.cu
-  - raw/repositories/2026-09-21/vllm/source/vllm/utils/deep_gemm.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/topk_weight_and_reduce.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/runner/shared_experts.py
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-10-07
 ---
 

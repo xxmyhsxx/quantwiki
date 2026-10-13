@@ -6,8 +6,8 @@ tags:
   - matmul
   - weight-quantization
 sources:
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/awq/paper.pdf
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/awq
 updated: 2026-09-22
 ---
 

@@ -8,7 +8,7 @@ tags:
   - equivalent-transform
   - evaluation
 sources:
-  - raw/papers/2026-10-03/quantforge/paper.pdf
+  - raw/papers/2026-10-03/quantforge
 updated: 2026-10-08
 ---
 

@@ -7,12 +7,8 @@ tags:
   - rotation
   - second-order
 sources:
-  - raw/papers/2026-09-21/quip/paper.pdf
-  - raw/repositories/2026-09-21/quip/source/opt.py
-  - raw/repositories/2026-09-21/quip/source/method.py
-  - raw/repositories/2026-09-21/quip/source/bal.py
-  - raw/repositories/2026-09-21/quip/source/quant.py
-  - raw/repositories/2026-09-21/quip/source/vector_balance.py
+  - raw/papers/2026-09-21/quip
+  - raw/repositories/2026-09-21/quip
 updated: 2026-10-12
 ---
 

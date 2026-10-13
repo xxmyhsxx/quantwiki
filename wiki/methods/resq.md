@@ -7,8 +7,8 @@ tags:
   - low-rank
   - kv-cache
 sources:
-  - raw/papers/2026-09-21/resq/paper.pdf
-  - raw/repositories/2026-09-21/resq/source/fake_quant/get_basis.py
+  - raw/papers/2026-09-21/resq
+  - raw/repositories/2026-09-21/resq
 updated: 2026-10-12
 ---
 

@@ -8,15 +8,10 @@ tags:
   - rotation
   - activation-quantization
 sources:
-  - raw/papers/2026-09-21/mquant/paper.pdf
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/slicegpt/paper.pdf
-  - raw/repositories/2026-09-21/mquant/source/fake_quant/quant_utils.py
-  - raw/repositories/2026-09-21/mquant/source/fake_quant/gptq/qwen2vl_gptq_plus.py
-  - raw/repositories/2026-09-21/mquant/source/exam/quant_qwen2vl.py
-  - raw/repositories/2026-09-21/mquant/source/evaluation/eval.py
-  - raw/repositories/2026-09-21/mquant/source/fake_quant/observer/minmax.py
-  - raw/repositories/2026-09-21/mquant/source/fake_quant/quantizer/uniform.py
+  - raw/papers/2026-09-21/mquant
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/slicegpt
+  - raw/repositories/2026-09-21/mquant
 updated: 2026-09-14
 ---
 

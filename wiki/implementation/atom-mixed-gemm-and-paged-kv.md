@@ -7,31 +7,8 @@ tags:
   - kv-cache
   - serving
 sources:
-  - raw/repositories/2026-09-21/atom/source/scripts/run_atom_ppl.sh
-  - raw/repositories/2026-09-21/atom/source/model/main.py
-  - raw/repositories/2026-09-21/atom/source/model/outlier.py
-  - raw/repositories/2026-09-21/atom/source/model/modelutils_llama.py
-  - raw/repositories/2026-09-21/atom/source/model/gptq.py
-  - raw/repositories/2026-09-21/atom/source/model/qLinearLayer.py
-  - raw/repositories/2026-09-21/atom/source/model/quant.py
-  - raw/repositories/2026-09-21/atom/source/model/qLlamaLayer.py
-  - raw/repositories/2026-09-21/atom/source/e2e/README.md.txt
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/setup.py
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/models/llama.py
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/utils/kvcache.py
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/__init__.py
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/punica_ops.cc
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/Reorder/Reorder.cu
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/Norm/RMSNorm.cu
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/GEMM/DenseLayerGEMM_i4.cu
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/GEMM/DenseLayerGEMM_i4_o4.cu
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/flashinfer_adapter/flashinfer_impl.cuh
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/flashinfer/page.cuh
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/flashinfer/quantization.cuh
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/flashinfer/decode.cuh
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/benchmarks/bench_textgen.py
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/benchmarks/bench_textgen_all.py
-  - raw/papers/2026-09-21/atom/paper.pdf
+  - raw/repositories/2026-09-21/atom
+  - raw/papers/2026-09-21/atom
 updated: 2026-10-12
 ---
 

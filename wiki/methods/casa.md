@@ -6,7 +6,7 @@ tags:
   - second-order
   - ptq
 sources:
-  - raw/papers/2026-09-26/casa-cross-layer-sensitivity/paper.pdf
+  - raw/papers/2026-09-26/casa-cross-layer-sensitivity
 updated: 2026-09-28
 ---
 

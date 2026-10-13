@@ -7,40 +7,8 @@ tags:
   - tensor-core
   - kernels
 sources:
-  - raw/repositories/2026-10-07/deepgemm-sglang/tag-v0.1.3.json
-  - raw/repositories/2026-10-07/deepgemm-sglang/pypi-0.1.3.json
-  - raw/repositories/2026-10-07/deepgemm-sglang/whl-release-v0.1.3.json
-  - raw/repositories/2026-10-07/deepgemm-sglang/wheel-source-comparison.json
-  - raw/repositories/2026-09-21/sglang/source/python/pyproject.toml
-  - raw/repositories/2026-09-21/sglang/source/docker/Dockerfile
-  - raw/repositories/2026-09-21/sglang/source/scripts/ci/cuda/ci_install_dependency.sh
-  - raw/repositories/2026-09-21/sglang/source/.github/workflows/release-whl-deepgemm.yml
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/environ.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/deep_gemm_wrapper/configurer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/deep_gemm_wrapper/entrypoint.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/deep_gemm_wrapper/compile_utils.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/deep_gemm.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/token_dispatcher/deepep.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/ep_moe/kernels.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/fp8_kernel.py
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/build_sgl_deep_gemm.sh
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/sgl_deep_gemm/__init__.py
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/tvm_ffi_api.cpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/apis/gemm.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/apis/layout.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/utils/layout.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit_kernels/impls/sm90_fp8_gemm_1d2d.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit_kernels/impls/smxx_layout.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit_kernels/impls/runtime_utils.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit_kernels/heuristics/sm90.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit_kernels/heuristics/runtime.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit_kernels/heuristics/common.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit/compiler.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/csrc/jit/kernel_runtime.hpp
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/deep_gemm/include/deep_gemm/scheduler/gemm.cuh
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/deep_gemm/include/deep_gemm/impls/sm90_fp8_gemm_1d2d.cuh
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/deep_gemm/include/deep_gemm/mma/sm90.cuh
-  - raw/repositories/2026-10-07/deepgemm-sglang/source/deep_gemm/include/deep_gemm/impls/smxx_layout.cuh
+  - raw/repositories/2026-10-07/deepgemm-sglang
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-10-07
 ---
 

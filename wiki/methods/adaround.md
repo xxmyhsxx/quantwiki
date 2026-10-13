@@ -7,7 +7,7 @@ tags:
   - rounding
   - reconstruction
 sources:
-  - raw/papers/2026-09-21/adaround/paper.pdf
+  - raw/papers/2026-09-21/adaround
 updated: 2026-10-13
 ---
 

@@ -7,7 +7,7 @@ tags:
   - attention
   - sensitivity
 sources:
-  - raw/papers/2026-09-23/coreprune/paper.pdf
+  - raw/papers/2026-09-23/coreprune
 updated: 2026-09-29
 ---
 

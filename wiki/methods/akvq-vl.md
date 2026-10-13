@@ -7,7 +7,7 @@ tags:
   - mixed-precision
   - rotation
 sources:
-  - raw/papers/2026-09-21/akvq-vl/paper.pdf
+  - raw/papers/2026-09-21/akvq-vl
 updated: 2026-09-29
 ---
 

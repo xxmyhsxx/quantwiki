@@ -7,57 +7,10 @@ tags:
   - fp8
   - serving
 sources:
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/fused_moe_triton/layer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/ep_moe/layer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/token_dispatcher/deepep.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/runner.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/moe_runner/deep_gemm.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/ep_moe/kernels.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/fp8.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/topk.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/eplb/expert_location_dispatch.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/moe/utils.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/deep_gemm_wrapper/configurer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/deep_gemm_wrapper/entrypoint.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/server_args.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/distributed/parallel_state.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/communicator.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/fp8_kernel.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/config/parallel.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/parallel_state.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/config.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/oracle/fp8.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/modular_kernel.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/all2all_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/expert_map_manager.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/routed_experts.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/experts/triton_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/experts/fused_batched_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/runner/moe_runner.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/fp8.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/deepep_ll.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/deepep_ht.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/fp8_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/no_dp_ep.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/moe_align_block_size.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/fused_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/topk_weight_and_reduce.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/device_communicators/cuda_communicator.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/naive_dp_ep.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/device_communicators/all2all.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/layer.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/utils/deep_gemm.py
-  - raw/repositories/2026-10-07/deepep-sglang/source/deep_ep/buffer.py
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/deep_ep.cpp
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/intranode.cu
-  - raw/repositories/2026-10-07/deepep-sglang/source/csrc/kernels/internode_ll.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/deep_ep/buffer.py
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/deep_ep.cpp
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/intranode.cu
-  - raw/repositories/2026-10-07/deepep-vllm/source/csrc/kernels/internode_ll.cu
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-10-07/deepep-sglang
+  - raw/repositories/2026-10-07/deepep-vllm
 updated: 2026-10-07
 ---
 

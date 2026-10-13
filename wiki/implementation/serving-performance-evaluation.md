@@ -6,8 +6,8 @@ tags:
   - evaluation
   - performance
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/benchmarks/serve.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/benchmark/serving.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-09-22
 ---
 

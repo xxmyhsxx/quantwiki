@@ -7,24 +7,22 @@ tags:
   - memory
   - deployment
 sources:
-  - raw/papers/2026-09-26/casa-cross-layer-sensitivity/paper.pdf
-  - raw/papers/2026-09-22/hawq-v2/paper.pdf
-  - raw/papers/2026-09-21/coopq/paper.pdf
-  - raw/papers/2026-09-21/channel-wise-mixed-precision/paper.pdf
-  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
-  - raw/papers/2026-09-28/foldquantvla/paper.pdf
-  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf
-  - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
-  - raw/papers/2026-09-22/loftq/paper.pdf
-  - raw/papers/2026-09-21/spqr/source.eprint
-  - raw/papers/2026-09-21/squeezellm/source.eprint
-  - raw/papers/2026-09-21/luq/paper.pdf
-  - raw/papers/2026-09-21/billm/paper.pdf
-  - raw/papers/2026-10-07/dbw/paper.pdf
-  - raw/repositories/2026-10-07/dbw/source/dbw/block_ap.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
-  - raw/papers/2026-10-07/stagq/paper.pdf
+  - raw/papers/2026-09-26/casa-cross-layer-sensitivity
+  - raw/papers/2026-09-22/hawq-v2
+  - raw/papers/2026-09-21/coopq
+  - raw/papers/2026-09-21/channel-wise-mixed-precision
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes
+  - raw/papers/2026-09-28/foldquantvla
+  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision
+  - raw/papers/2026-09-23/quantization-retrieval-damage
+  - raw/papers/2026-09-22/loftq
+  - raw/papers/2026-09-21/spqr
+  - raw/papers/2026-09-21/squeezellm
+  - raw/papers/2026-09-21/luq
+  - raw/papers/2026-09-21/billm
+  - raw/papers/2026-10-07/dbw
+  - raw/repositories/2026-10-07/dbw
+  - raw/papers/2026-10-07/stagq
 updated: 2026-10-13
 ---
 

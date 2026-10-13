@@ -8,7 +8,7 @@ tags:
   - activation-quantization
   - low-rank
 sources:
-  - raw/papers/2026-10-07/centriq/paper.pdf
+  - raw/papers/2026-10-07/centriq
 updated: 2026-10-08
 ---
 

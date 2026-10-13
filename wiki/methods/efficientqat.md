@@ -7,14 +7,8 @@ tags:
   - weight-quantization
   - reconstruction
 sources:
-  - raw/papers/2026-09-22/efficientqat/paper.pdf
-  - raw/repositories/2026-09-22/efficientqat/source/quantize/block_ap.py
-  - raw/repositories/2026-09-22/efficientqat/source/quantize/quantizer.py
-  - raw/repositories/2026-09-22/efficientqat/source/quantize/int_linear_fake.py
-  - raw/repositories/2026-09-22/efficientqat/source/quantize/int_linear_real.py
-  - raw/repositories/2026-09-22/efficientqat/source/quantize/utils.py
-  - raw/repositories/2026-09-22/efficientqat/source/main_e2e_qp.py
-  - raw/repositories/2026-09-22/efficientqat/source/datautils_e2e.py
+  - raw/papers/2026-09-22/efficientqat
+  - raw/repositories/2026-09-22/efficientqat
 updated: 2026-09-22
 ---
 

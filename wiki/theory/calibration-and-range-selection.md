@@ -6,35 +6,33 @@ tags:
   - clipping
   - sensitivity
 sources:
-  - raw/papers/2026-09-21/norm-tweaking/paper.pdf
-  - raw/papers/2026-09-21/quasar/paper.pdf
-  - raw/repositories/2026-09-21/aqlm/source/finetune.py
-  - raw/repositories/2026-09-21/aqlm/source/src/datautils.py
-  - raw/papers/2026-09-22/pv-tuning/paper.pdf
-  - raw/papers/2026-10-05/onptq/paper.pdf
-  - raw/papers/2026-10-03/scale-sensitivity/paper.pdf
-  - raw/papers/2026-09-22/qera/paper.pdf
-  - raw/papers/2026-09-21/llm-qat/paper.pdf
-  - raw/papers/2026-09-21/luq/paper.pdf
-  - raw/papers/2026-09-21/qig/paper.pdf
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/generate_act_scale_shift.py
-  - raw/papers/2026-09-21/mquant/paper.pdf
-  - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-  - raw/papers/2026-10-07/centriq/paper.pdf
-  - raw/papers/2026-10-07/pivot-q/paper.pdf
-  - raw/repositories/2026-10-07/pivot-q/source/pivot_q/selector.py
-  - raw/repositories/2026-10-07/pivot-q/source/pivot_q/train.py
-  - raw/papers/2026-09-21/smoothquant-plus/paper.pdf
-  - raw/papers/2026-09-21/veq/paper.pdf
+  - raw/papers/2026-09-21/norm-tweaking
+  - raw/papers/2026-09-21/quasar
+  - raw/repositories/2026-09-21/aqlm
+  - raw/papers/2026-09-22/pv-tuning
+  - raw/papers/2026-10-05/onptq
+  - raw/papers/2026-10-03/scale-sensitivity
+  - raw/papers/2026-09-22/qera
+  - raw/papers/2026-09-21/llm-qat
+  - raw/papers/2026-09-21/luq
+  - raw/papers/2026-09-21/qig
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/masquant
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/flatquant
+  - raw/papers/2026-09-21/omniquant
+  - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
+  - raw/papers/2026-09-21/mquant
+  - raw/papers/2026-09-21/vlmq
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/integer-only-quantization
+  - raw/papers/2026-10-07/centriq
+  - raw/papers/2026-10-07/pivot-q
+  - raw/repositories/2026-10-07/pivot-q
+  - raw/papers/2026-09-21/smoothquant-plus
+  - raw/papers/2026-09-21/veq
 updated: 2026-10-12
 ---
 

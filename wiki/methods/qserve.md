@@ -8,8 +8,8 @@ tags:
   - kv-cache
   - serving
 sources:
-  - raw/papers/2026-09-21/qserve/paper.pdf
-  - raw/repositories/2026-09-21/omniserve/source/omniserve/modeling/layers/quantized_linear/w4a8_linear.py
+  - raw/papers/2026-09-21/qserve
+  - raw/repositories/2026-09-21/omniserve
 updated: 2026-10-13
 ---
 

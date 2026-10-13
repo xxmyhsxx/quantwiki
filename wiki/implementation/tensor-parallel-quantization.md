@@ -6,12 +6,8 @@ tags:
   - inference
   - weight-quantization
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/linear.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/llama.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_awq.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/awq/schemes/awq_linear.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/linear.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/llama.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-10-07
 ---
 

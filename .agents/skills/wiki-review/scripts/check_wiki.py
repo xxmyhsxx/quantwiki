@@ -19,7 +19,8 @@ from urllib.parse import unquote
 
 CATEGORIES = {'fundamentals', 'theory', 'methods', 'research', 'implementation'}
 TYPES = {'source', 'concept', 'method', 'implementation', 'comparison', 'recipe', 'question', 'index'}
-PINNED_CODE = re.compile(r'https://github\.com/[^/]+/[^/]+/(?:blob|tree)/[0-9a-f]{40}(?:/[^\s]+)?$')
+PINNED_CODE = re.compile(r'https://github\.com/[^/]+/[^/]+/tree/[0-9a-f]{40}$')
+RAW_ENTRY = re.compile(r'raw/(?:papers|articles|repositories)/[^/]+/[^/]+/?$')
 ARXIV = re.compile(r'(?:arXiv:\s*|arxiv\.org/(?:abs|pdf|src)/)(\d{4}\.\d{4,5})')
 
 
@@ -554,10 +555,10 @@ def check(root, require_raw=False):
     wiki = root / 'wiki'
     errors, warnings, skipped = [], [], []
     counts = Counter()
-    pages, bodies, graph, source_cache, paper_cache = {}, {}, {}, {}, {}
+    pages, bodies, graph, source_cache = {}, {}, {}, {}
     raw_present = (root / 'raw').is_dir()
     if not raw_present:
-        (errors if require_raw else skipped).append('raw absent: local source files and raw metadata not verified')
+        (errors if require_raw else skipped).append('raw absent: local source entries and raw metadata not verified')
 
     def fail(path, message):
         errors.append(str(path.relative_to(root)) + ': ' + message)
@@ -630,7 +631,7 @@ def check(root, require_raw=False):
             fail(path, 'knowledge page needs direct sources')
         if len(sources) != len(set(sources)):
             fail(path, 'duplicate source registration')
-        known_ids, registered_papers = set(), {}
+        known_ids, registered_entries = set(), {}
         for source in sources:
             counts['source_entries'] += 1
             if PINNED_CODE.fullmatch(source):
@@ -639,43 +640,54 @@ def check(root, require_raw=False):
             if not source.startswith(('raw/', 'research/')) or any(c in source for c in ['*', '?', '\\']):
                 fail(path, 'invalid source registration: ' + source)
                 continue
+            is_raw = source.startswith('raw/')
+            if is_raw and not RAW_ENTRY.fullmatch(source):
+                fail(path, 'raw source must name an entry directory: ' + source)
+                continue
             target = (root / source).resolve()
             base = root / source.split('/')[0]
             if not target.is_relative_to(base):
                 fail(path, 'source path escapes its root: ' + source)
                 continue
-            if source.startswith('raw/') and not raw_present:
+            if is_raw and not raw_present:
                 counts['local_sources_skipped'] += 1
                 continue
-            if not target.is_file():
-                fail(path, 'source file missing: ' + source)
+            if not is_raw:
+                if not target.is_file():
+                    fail(path, 'research source file missing: ' + source)
+                    continue
+                counts['local_sources_checked'] += 1
                 continue
-            counts['local_sources_checked'] += 1
+            if not target.is_dir():
+                fail(path, 'source entry missing: ' + source)
+                continue
+            record = target / 'README.md'
+            if not record.resolve().is_relative_to(base):
+                fail(path, 'source record escapes its root: ' + source)
+                continue
+            if not record.is_file():
+                fail(path, 'source entry README missing: ' + source)
+                continue
             if source not in source_cache:
-                found = set()
-                paper_cache[source] = None
-                for parent in target.parents:
-                    if parent == root:
-                        break
-                    record = parent / 'README.md'
-                    if record.is_file():
-                        mt = record.read_text()
-                        if mt.startswith('---\n'):
-                            found = set(ARXIV.findall(mt.split('---', 2)[1]))
-                            record_meta, _, _ = metadata(mt)
-                            if record_meta.get('kind') == 'paper' and record_meta.get('source_id'):
-                                paper_cache[source] = ('paper', record_meta['source_id'])
-                            break
-                source_cache[source] = found
-            known_ids |= source_cache[source]
-            identity = paper_cache[source]
-            if identity:
-                if identity in registered_papers:
-                    counts['duplicate_paper_carriers'] += 1
-                    fail(path, 'duplicate carriers for paper source ' + identity[1] + ': ' +
-                         registered_papers[identity] + ' and ' + source)
-                else:
-                    registered_papers[identity] = source
+                mt = record.read_text()
+                record_meta, _, record_issues = metadata(mt)
+                if record_issues or any(not isinstance(record_meta.get(k), str) or
+                                        not record_meta[k].strip() for k in ('kind', 'source_id')) or (
+                        record_meta.get('version') is not None and
+                        not isinstance(record_meta['version'], str)):
+                    fail(path, 'invalid source entry metadata: ' + source)
+                    continue
+                identity = (record_meta['kind'], record_meta['source_id'], record_meta.get('version'))
+                source_cache[source] = (set(ARXIV.findall(mt.split('---', 2)[1])), identity)
+            found, identity = source_cache[source]
+            counts['local_sources_checked'] += 1
+            known_ids |= found
+            if identity in registered_entries:
+                counts['duplicate_source_entries'] += 1
+                fail(path, 'duplicate source identity ' + identity[1] + ': ' +
+                     registered_entries[identity] + ' and ' + source)
+            else:
+                registered_entries[identity] = source
         if raw_present and not is_index:
             for aid in set(ARXIV.findall(body)) - known_ids:
                 fail(path, 'arXiv ID not present in registered source metadata: ' + aid)

@@ -7,13 +7,13 @@ tags:
   - rounding
   - clipping
 sources:
-  - raw/papers/2026-09-21/qlora/paper.pdf
-  - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/awq/paper.pdf
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/quantizer.py
-  - raw/papers/2026-09-21/gptq/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
+  - raw/papers/2026-09-21/qlora
+  - raw/papers/2026-09-21/integer-only-quantization
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/awq
+  - raw/repositories/2026-09-21/llm-awq
+  - raw/papers/2026-09-21/gptq
+  - raw/papers/2026-09-21/smoothquant
 updated: 2026-10-12
 ---
 

@@ -8,24 +8,7 @@ tags:
   - data-format
   - gpu-kernel
 sources:
-  - raw/repositories/2026-09-21/spqr/source/README.md.txt
-  - raw/repositories/2026-09-21/spqr/source/main.py
-  - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
-  - raw/repositories/2026-09-21/spqr/source/quant_groups.py
-  - raw/repositories/2026-09-21/spqr/source/weight_permutation.py
-  - raw/repositories/2026-09-21/spqr/source/modelutils.py
-  - raw/repositories/2026-09-21/spqr/source/convert_legacy_model_format.py
-  - raw/repositories/2026-09-21/spqr/source/convert_to_hf.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/sparse_util.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/cuda_kernel.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/kernel_selector.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/common.cuh
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda.cpp
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda_kernel.cu
-  - raw/repositories/2026-09-21/spqr/source/inference_demo.py
-  - raw/repositories/2026-09-21/spqr/source/bench_matvec_kernel.py
-  - raw/repositories/2026-09-21/spqr/source/tests/test.py
+  - raw/repositories/2026-09-21/spqr
 updated: 2026-10-12
 ---
 

@@ -7,18 +7,18 @@ tags:
   - weight-quantization
   - activation-quantization
 sources:
-  - raw/papers/2026-10-07/saprune/paper.pdf
-  - raw/papers/2026-09-21/qapruner/paper.pdf
-  - raw/papers/2026-09-21/akvq-vl/paper.pdf
-  - raw/papers/2026-09-23/coreprune/paper.pdf
-  - raw/papers/2026-09-23/layer-aware-position-embeddings/paper.pdf
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/papers/2026-09-21/q-vlm/paper.pdf
-  - raw/papers/2026-09-21/mquant/paper.pdf
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/repositories/2026-09-21/mbq/source/qmllm/models/qwen2_vl/qwen2_vl.py
+  - raw/papers/2026-10-07/saprune
+  - raw/papers/2026-09-21/qapruner
+  - raw/papers/2026-09-21/akvq-vl
+  - raw/papers/2026-09-23/coreprune
+  - raw/papers/2026-09-23/layer-aware-position-embeddings
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/masquant
+  - raw/papers/2026-09-21/q-vlm
+  - raw/papers/2026-09-21/mquant
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/vlmq
+  - raw/repositories/2026-09-21/mbq
 updated: 2026-10-13
 ---
 

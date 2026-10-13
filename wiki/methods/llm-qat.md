@@ -7,7 +7,7 @@ tags:
   - distillation
   - kv-cache
 sources:
-  - raw/papers/2026-09-21/llm-qat/paper.pdf
+  - raw/papers/2026-09-21/llm-qat
 updated: 2026-09-22
 ---
 

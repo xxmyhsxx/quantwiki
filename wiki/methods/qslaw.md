@@ -7,12 +7,8 @@ tags:
   - qat
   - parameter-efficient-adaptation
 sources:
-  - raw/papers/2026-09-21/multimodal-qat/paper.pdf
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py
-  - raw/repositories/2026-09-21/qslaw/source/scripts/pretrain/pretrain.sh
-  - raw/repositories/2026-09-21/qslaw/source/scripts/sft/chat_for_13b_v1_5.sh
+  - raw/papers/2026-09-21/multimodal-qat
+  - raw/repositories/2026-09-21/qslaw
 updated: 2026-10-12
 ---
 

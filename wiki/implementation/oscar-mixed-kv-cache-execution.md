@@ -8,28 +8,7 @@ tags:
   - kernels
   - serving
 sources:
-  - raw/repositories/2026-10-08/oscar/source/README.md.txt
-  - raw/repositories/2026-10-08/oscar/source/rotation/eval_oscar_gpqa.sh
-  - raw/repositories/2026-10-08/oscar/source/rotation/compute_kv_rotation.py
-  - raw/repositories/2026-10-08/oscar/source/rotation/qwen3-8B/compute_rotation.sh
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/environ.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/server_args.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/model_executor/pool_configurator.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/model_executor/model_runner_kv_cache_mixin.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_allocator.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/common.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/managers/schedule_batch.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/managers/scheduler.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/gpu_flush_int2.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_backend.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/quantized_kv_prefill.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/flashattention_backend.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/models/utils.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/models/qwen3.py
+  - raw/repositories/2026-10-08/oscar
 updated: 2026-10-08
 ---
 

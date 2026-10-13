@@ -8,24 +8,12 @@ tags:
   - equivalent-transform
   - reconstruction
 sources:
-  - raw/papers/2026-09-21/affinequant/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
-  - raw/papers/2026-09-21/roformer/paper.pdf
+  - raw/papers/2026-09-21/affinequant
+  - raw/papers/2026-09-21/flatquant
+  - raw/papers/2026-09-21/omniquant
+  - raw/papers/2026-09-21/smoothquant
+  - raw/papers/2026-09-21/roformer
   - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/main.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/datautils.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/generate_act_scale_shift.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/omniquant.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/quantizer.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/utils.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/transformation.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/int_llama_layer.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/int_linear.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/int_matmul.py
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/scripts/llama/llama-7b/w4a4.sh
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/scripts/llama/llama-7b/w3a16.sh
 updated: 2026-09-15
 ---
 

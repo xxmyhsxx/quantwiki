@@ -8,18 +8,8 @@ tags:
   - weight-quantization
   - kernels
 sources:
-  - raw/papers/2026-10-07/dbw/paper.pdf
-  - raw/repositories/2026-10-07/dbw/source/dbw/utils/decompose.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/fake_dbw.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/block_ap.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/utils/quantize.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/triton_kernel/gemm.py
-  - raw/repositories/2026-10-07/dbw/source/train_e2e_qp.py
-  - raw/repositories/2026-10-07/dbw/source/dbw/utils/data_e2e.py
-  - raw/repositories/2026-10-07/dbw/source/script/train/llama-2-7b.sh
-  - raw/repositories/2026-10-07/dbw/source/script/train/common/block.sh
-  - raw/repositories/2026-10-07/dbw/source/script/train/common/e2e.sh
+  - raw/papers/2026-10-07/dbw
+  - raw/repositories/2026-10-07/dbw
 updated: 2026-10-07
 ---
 

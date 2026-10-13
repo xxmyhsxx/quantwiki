@@ -7,19 +7,12 @@ tags:
   - data-format
   - serving
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/__init__.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_awq.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/tensorrt-llm/source/examples/quantization/README.md.txt
-  - raw/repositories/2026-09-21/mlc-llm/source/docs/compilation/configure_quantization.rst
-  - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md.txt
-  - raw/repositories/2026-09-21/omniserve/source/omniserve/modeling/layers/quantized_linear/w4a8_linear.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/qoq.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/w8a8_int8.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/gptq.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_gptq.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/tensorrt-llm
+  - raw/repositories/2026-09-21/mlc-llm
+  - raw/repositories/2026-09-21/llama-cpp
+  - raw/repositories/2026-09-21/omniserve
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-10-13
 ---
 

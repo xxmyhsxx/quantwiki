@@ -7,7 +7,7 @@ tags:
   - codebook
   - sparsity
 sources:
-  - raw/papers/2026-09-22/kvquant/paper.pdf
+  - raw/papers/2026-09-22/kvquant
 updated: 2026-09-28
 ---
 

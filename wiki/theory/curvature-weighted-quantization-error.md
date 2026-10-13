@@ -6,11 +6,11 @@ tags:
   - second-order
   - quantization-error
 sources:
-  - raw/papers/2026-09-21/llm-mq/paper.pdf
-  - raw/papers/2026-09-23/rgsq/paper.pdf
-  - raw/papers/2026-09-26/casa-cross-layer-sensitivity/paper.pdf
-  - raw/papers/2026-09-22/hawq-v2/paper.pdf
-  - raw/papers/2026-09-26/quantization-price-prediction/paper.pdf
+  - raw/papers/2026-09-21/llm-mq
+  - raw/papers/2026-09-23/rgsq
+  - raw/papers/2026-09-26/casa-cross-layer-sensitivity
+  - raw/papers/2026-09-22/hawq-v2
+  - raw/papers/2026-09-26/quantization-price-prediction
 updated: 2026-10-13
 ---
 

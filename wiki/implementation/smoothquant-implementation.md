@@ -8,25 +8,11 @@ tags:
   - kernels
   - deployment
 sources:
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/smooth.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/calibration.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/w8a8_int8.py
-  - raw/repositories/2026-09-21/smoothquant/source/examples/export_int8_model.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/opt.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/fused.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/bmm.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/kernels/linear.cu
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/int8_kernel.py
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/gemm/int8_gemm_kernel.cu
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/compressed_tensors/compressed_tensors.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/compressed_tensors/schemes/compressed_tensors_w8a8_int8.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/__init__.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/scaled_mm/cutlass.py
+  - raw/papers/2026-09-21/smoothquant
+  - raw/repositories/2026-09-21/smoothquant
+  - raw/repositories/2026-09-21/torch-int
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-09-22
 ---
 

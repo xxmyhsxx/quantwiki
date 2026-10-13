@@ -7,7 +7,7 @@ tags:
   - second-order
   - data-format
 sources:
-  - raw/papers/2026-09-22/vptq/paper.pdf
+  - raw/papers/2026-09-22/vptq
 updated: 2026-10-08
 ---
 

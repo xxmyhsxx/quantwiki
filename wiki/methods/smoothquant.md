@@ -8,16 +8,10 @@ tags:
   - equivalent-transform
   - outliers
 sources:
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/smooth.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/calibration.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/opt.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/ppl_eval.py
-  - raw/repositories/2026-09-21/smoothquant/source/examples/export_int8_model.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/functional/quantization.py
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/smoothquant
+  - raw/repositories/2026-09-21/smoothquant
+  - raw/repositories/2026-09-21/torch-int
 paper_version: arXiv:2211.10438v7
 code_commit: c61476d728e42ae0d8a35e7e78494edcac3237b5
 verification: 全文含附录研读与定向代码核对；未运行模型实验

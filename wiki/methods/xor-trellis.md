@@ -7,7 +7,7 @@ tags:
   - second-order
   - data-format
 sources:
-  - raw/papers/2026-10-03/xor-trellis/paper.pdf
+  - raw/papers/2026-10-03/xor-trellis
 updated: 2026-10-08
 ---
 

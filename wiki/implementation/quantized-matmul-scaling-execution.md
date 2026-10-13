@@ -7,42 +7,40 @@ tags:
   - data-format
   - performance
 sources:
-  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
-  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf
-  - raw/papers/2026-09-28/foldquantvla/paper.pdf
-  - raw/papers/2026-09-23/prquant/paper.pdf
-  - raw/papers/2026-09-22/loftq/paper.pdf
-  - raw/papers/2026-09-22/qera/paper.pdf
-  - raw/papers/2026-09-21/billm/paper.pdf
-  - raw/papers/2026-09-21/luq/paper.pdf
-  - raw/papers/2026-09-21/qig/paper.pdf
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/int_llama_layer.py
-  - raw/papers/2026-09-21/qlora/paper.pdf
-  - raw/papers/2026-09-21/mquant/paper.pdf
-  - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
-  - raw/papers/2026-09-21/gptq/paper.pdf
-  - raw/papers/2026-09-21/microscaling-formats/paper.pdf
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/fake_quant.py
-  - raw/repositories/2026-09-21/gptq/source/quant.py
-  - raw/repositories/2026-09-21/torch-int/source/torch_int/nn/linear.py
-  - raw/papers/2026-09-21/atom/source/04_Design.tex
-  - raw/repositories/2026-09-21/atom/source/e2e/punica-atom/punica/ops/csrc/GEMM/DenseLayerGEMM_i4.cu
-  - raw/papers/2026-09-21/flexq/source/text/methodology.tex
-  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/flexq_bmma_kernel.h
-  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/bgemm.cuh
-  - raw/papers/2026-09-21/sharq/source/neurips_2026.tex
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/shared_weight_nvfp4.cu
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/bindings.cpp
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes
+  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision
+  - raw/papers/2026-09-28/foldquantvla
+  - raw/papers/2026-09-23/prquant
+  - raw/papers/2026-09-22/loftq
+  - raw/papers/2026-09-22/qera
+  - raw/papers/2026-09-21/billm
+  - raw/papers/2026-09-21/luq
+  - raw/papers/2026-09-21/qig
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/masquant
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/flatquant
+  - raw/papers/2026-09-21/omniquant
+  - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
+  - raw/papers/2026-09-21/qlora
+  - raw/papers/2026-09-21/mquant
+  - raw/papers/2026-09-21/vlmq
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/integer-only-quantization
+  - raw/papers/2026-09-21/smoothquant
+  - raw/papers/2026-09-21/gptq
+  - raw/papers/2026-09-21/microscaling-formats
+  - raw/repositories/2026-09-21/smoothquant
+  - raw/repositories/2026-09-21/gptq
+  - raw/repositories/2026-09-21/torch-int
+  - raw/papers/2026-09-21/atom
+  - raw/repositories/2026-09-21/atom
+  - raw/papers/2026-09-21/flexq
+  - raw/repositories/2026-09-21/flexq
+  - raw/papers/2026-09-21/sharq
+  - raw/repositories/2026-09-21/sharq
 updated: 2026-10-12
 ---
 

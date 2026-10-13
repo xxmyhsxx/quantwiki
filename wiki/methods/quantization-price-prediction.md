@@ -6,7 +6,7 @@ tags:
   - mixed-precision
   - calibration
 sources:
-  - raw/papers/2026-09-26/quantization-price-prediction/paper.pdf
+  - raw/papers/2026-09-26/quantization-price-prediction
 updated: 2026-09-28
 ---
 

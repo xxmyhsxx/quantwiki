@@ -7,12 +7,8 @@ tags:
   - reconstruction
   - rotation
 sources:
-  - raw/papers/2026-09-23/rgsq/paper.pdf
-  - raw/repositories/2026-09-23/rgsq/source/riemannian_quant/metrics.py
-  - raw/repositories/2026-09-23/rgsq/source/riemannian_quant/whitening.py
-  - raw/repositories/2026-09-23/rgsq/source/riemannian_quant/rotation.py
-  - raw/repositories/2026-09-23/rgsq/source/riemannian_quant/quantizer.py
-  - raw/repositories/2026-09-23/rgsq/source/riemannian_quant/quant_layers.py
+  - raw/papers/2026-09-23/rgsq
+  - raw/repositories/2026-09-23/rgsq
 updated: 2026-09-28
 ---
 

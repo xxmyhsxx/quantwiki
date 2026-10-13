@@ -7,9 +7,9 @@ tags:
   - weight-quantization
   - activation-quantization
 sources:
-  - raw/papers/2026-09-21/awq/paper.pdf
-  - raw/papers/2026-09-21/gptq/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
+  - raw/papers/2026-09-21/awq
+  - raw/papers/2026-09-21/gptq
+  - raw/papers/2026-09-21/smoothquant
 updated: 2026-09-14
 ---
 

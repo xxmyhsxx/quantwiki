@@ -6,11 +6,9 @@ tags:
   - sensitivity
   - quantization-error
 sources:
-  - raw/papers/2026-09-21/integrated-gradients/paper.pdf
-  - raw/papers/2026-09-21/qig/paper.pdf
-  - raw/repositories/2026-09-21/qig/source/qmllm/methods/qig/quantize/auto_scale.py
-  - raw/repositories/2026-09-21/qig/source/qmllm/methods/qig/quantize/auto_scale_wa_distort.py
-  - raw/repositories/2026-09-21/qig/source/qmllm/quantization/qlinear.py
+  - raw/papers/2026-09-21/integrated-gradients
+  - raw/papers/2026-09-21/qig
+  - raw/repositories/2026-09-21/qig
 updated: 2026-09-15
 ---
 

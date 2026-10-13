@@ -8,17 +8,10 @@ tags:
   - calibration
   - reconstruction
 sources:
-  - raw/papers/2026-09-21/q-vlm/paper.pdf
-  - raw/papers/2026-09-21/qlora/paper.pdf
-  - raw/articles/2026-09-21/mit-6441-lecture-1/lecture.pdf
-  - raw/repositories/2026-09-21/qvlm/source/README.md.txt
-  - raw/repositories/2026-09-21/qvlm/source/scripts/generate_sqa_response.sh
-  - raw/repositories/2026-09-21/qvlm/source/llava/eval/model_vqa_science.py
-  - raw/repositories/2026-09-21/qvlm/source/llava/model/builder.py
-  - raw/repositories/2026-09-21/qvlm/source/llava/model/multimodal_encoder/clip_encoder.py
-  - raw/repositories/2026-09-21/qvlm/source/custom_bitsandbytes/bitsandbytes/quantization_utils/quant_modules.py
-  - raw/repositories/2026-09-21/qvlm/source/custom_bitsandbytes/bitsandbytes/nn/modules.py
-  - raw/repositories/2026-09-21/qvlm/source/custom_bitsandbytes/bitsandbytes/autograd/_functions.py
+  - raw/papers/2026-09-21/q-vlm
+  - raw/papers/2026-09-21/qlora
+  - raw/articles/2026-09-21/mit-6441-lecture-1
+  - raw/repositories/2026-09-21/qvlm
 updated: 2026-10-13
 ---
 

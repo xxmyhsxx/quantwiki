@@ -290,46 +290,114 @@ class LinkLintTests(unittest.TestCase):
         (self.root / 'raw/source.md').rename(self.root / 'raw/source.md.txt')
         self.assertEqual(check_raw_links(self.root)['status'], 'passed')
 
-    def test_full_check_rejects_two_carriers_of_same_paper_identity(self):
-        self.write('raw/papers/2026-10-12/paper/README.md',
-                   '---\nsource_id: paper-v1\nkind: paper\n---\n# Source\n')
-        self.write('raw/papers/2026-10-12/paper/paper.pdf', 'pdf')
-        self.write('raw/papers/2026-10-12/paper/source/main.tex', 'tex')
+    def source_page(self, sources, body=''):
         self.write('wiki/methods/page.md',
                    '---\ntitle: page\ntype: method\ntags:\n  - ptq\nsources:\n'
-                   '  - raw/papers/2026-10-12/paper/paper.pdf\n'
-                   '  - raw/papers/2026-10-12/paper/source/main.tex\n---\n# Page\n## 来源身份\n')
-        result = check(self.root)
-        self.assertEqual(result['counts']['duplicate_paper_carriers'], 1)
-        self.assertTrue(any('duplicate carriers for paper source paper-v1' in e for e in result['errors']))
+                   + ''.join('  - ' + source + '\n' for source in sources)
+                   + '---\n# Page\n## 来源身份\n' + body)
 
-    def test_distinct_paper_versions_and_code_files_are_not_merged(self):
+    def test_entry_records_support_papers_articles_and_code(self):
         sources = []
-        for version in ['v1', 'v2']:
-            prefix = 'raw/papers/2026-10-12/paper-' + version
+        for folder, kind in [('papers', 'paper'), ('articles', 'article'), ('repositories', 'repository')]:
+            prefix = 'raw/' + folder + '/2026-10-12/source'
             self.write(prefix + '/README.md',
-                       '---\nsource_id: paper-' + version + '\nkind: paper\n---\n# Source\n')
-            self.write(prefix + '/paper.pdf', 'pdf')
-            sources.append(prefix + '/paper.pdf')
-        prefix = 'raw/repositories/2026-10-12/repo'
-        self.write(prefix + '/README.md', '---\nsource_id: repo-commit\nkind: repository\n---\n# Source\n')
-        for name in ['a.py', 'b.py']:
-            self.write(prefix + '/source/' + name, 'code')
-            sources.append(prefix + '/source/' + name)
-        self.write('wiki/methods/page.md',
-                   '---\ntitle: page\ntype: method\ntags:\n  - ptq\nsources:\n' +
-                   ''.join('  - ' + source + '\n' for source in sources) +
-                   '---\n# Page\n## 来源身份\n')
+                       '---\nsource_id: ' + kind + '-v1\nkind: ' + kind + '\nversion: v1\n'
+                       'url: https://arxiv.org/abs/2306.00978v1\n---\n# Source\n')
+            self.write(prefix + '/original.txt', 'original')
+            self.write(prefix + '/source/a.py', 'code')
+            self.write(prefix + '/source/b.py', 'code')
+            sources.append(prefix)
+        self.source_page(sources, BT + 'arXiv:2306.00978v1' + BT + '\n')
+        self.write('wiki/INDEX.md', '# Index\n[page](methods/page.md)\n')
         result = check(self.root)
-        self.assertNotIn('duplicate_paper_carriers', result['counts'])
+        self.assertEqual(result['counts']['local_sources_checked'], 3)
+        self.assertFalse(any(e.startswith('wiki/methods/page.md:') for e in result['errors']), result)
+        self.source_page(sources, BT + 'arXiv:2405.14852v2' + BT + '\n')
+        self.assertTrue(any('arXiv ID not present in registered source metadata: 2405.14852'
+                            in e for e in check(self.root)['errors']))
+
+    def test_duplicate_entry_identity_is_rejected(self):
+        sources = []
+        for name in ['paper', 'alias']:
+            prefix = 'raw/papers/2026-10-12/' + name
+            self.write(prefix + '/README.md',
+                       '---\nsource_id: paper\nkind: paper\nversion: v1\n---\n# Source\n')
+            sources.append(prefix)
+        self.source_page(sources)
+        result = check(self.root)
+        self.assertEqual(result['counts']['duplicate_source_entries'], 1)
+        self.assertTrue(any('duplicate source identity paper' in e for e in result['errors']))
+
+    def test_distinct_paper_and_code_versions_are_not_merged(self):
+        sources = []
+        for folder, kind in [('papers', 'paper'), ('repositories', 'repository')]:
+            for version in ['v1', 'v2']:
+                prefix = 'raw/' + folder + '/2026-10-12/source-' + version
+                self.write(prefix + '/README.md',
+                           '---\nsource_id: ' + kind + '\nkind: ' + kind + '\nversion: '
+                           + version + '\n---\n# Source\n')
+                sources.append(prefix)
+        self.source_page(sources)
+        result = check(self.root)
+        self.assertEqual(result['counts']['local_sources_checked'], 4)
+        self.assertNotIn('duplicate_source_entries', result['counts'])
+
+    def test_raw_source_files_are_rejected_even_when_present(self):
+        prefix = 'raw/papers/2026-10-12/paper'
+        self.write(prefix + '/README.md', '---\nsource_id: paper\nkind: paper\n---\n# Source\n')
+        self.write(prefix + '/paper.pdf', 'pdf')
+        for source in [prefix + '/paper.pdf', prefix + '/README.md']:
+            with self.subTest(source=source):
+                self.source_page([source])
+                self.assertTrue(any('raw source must name an entry directory' in e
+                                    for e in check(self.root)['errors']))
+
+    def test_missing_entry_record_and_invalid_metadata_are_rejected(self):
+        prefix = 'raw/papers/2026-10-12/paper'
+        self.source_page([prefix])
+        self.assertTrue(any('source entry missing' in e for e in check(self.root)['errors']))
+        (self.root / prefix).mkdir(parents=True)
+        self.assertTrue(any('source entry README missing' in e for e in check(self.root)['errors']))
+        self.write(prefix + '/README.md', '# Source\n')
+        self.assertTrue(any('invalid source entry metadata' in e for e in check(self.root)['errors']))
+
+    def test_source_record_cannot_escape_raw(self):
+        prefix = 'raw/papers/2026-10-12/paper'
+        outside = self.write('outside/README.md', '---\nsource_id: paper\nkind: paper\n---\n')
+        (self.root / prefix).mkdir(parents=True)
+        (self.root / prefix / 'README.md').symlink_to(outside)
+        self.source_page([prefix])
+        self.assertTrue(any('source record escapes its root' in e for e in check(self.root)['errors']))
+
+    def test_absent_raw_is_skipped_or_required(self):
+        (self.root / 'raw/source.md').unlink()
+        (self.root / 'raw').rmdir()
+        self.source_page(['raw/papers/2026-10-12/paper'])
+        result = check(self.root)
+        self.assertEqual(result['counts']['local_sources_skipped'], 1)
+        self.assertTrue(any('raw absent' in e for e in result['skipped']))
+        self.assertTrue(any('raw absent' in e for e in check(self.root, require_raw=True)['errors']))
+
+    def test_historical_code_source_names_a_pinned_repository_root(self):
+        prefix = 'https://github.com/owner/repo/'
+        commit = 'a' * 40
+        self.source_page([prefix + 'tree/' + commit])
+        self.assertEqual(check(self.root)['counts']['pinned_external_sources'], 1)
+        for source in [prefix + 'tree/main', prefix + 'blob/' + commit + '/file.py']:
+            with self.subTest(source=source):
+                self.source_page([source])
+                self.assertTrue(any('invalid source registration' in e for e in check(self.root)['errors']))
 
     def test_full_check_preserves_sources_navigation_and_nonwiki_local_checks(self):
         (self.root / 'raw/source.md').rename(self.root / 'raw/source.md.txt')
-        self.write('raw/paper.pdf', 'source')
+        prefix = 'raw/papers/2026-10-12/paper'
+        self.write(prefix + '/README.md', '---\nsource_id: paper\nkind: paper\nversion: v1\n---\n# Source\n')
+        self.write(prefix + '/paper.pdf', 'source')
+        self.write('research/result.json', '{}')
         for name, peer in [('page', 'target'), ('target', 'page')]:
             self.write('wiki/methods/' + name + '.md',
                        '---\ntitle: ' + name + '\ntype: method\ntags:\n  - ptq\n'
-                       'sources:\n  - raw/paper.pdf\n---\n# ' + name +
+                       'sources:\n  - ' + prefix + '\n  - research/result.json\n---\n# ' + name +
                        '\n[peer](' + peer + '.md)\n## 来源身份\n' + BT + 'https://example.org' + BT + '\n')
         for name in ['INDEX', 'READING']:
             self.write('wiki/' + name + '.md',
@@ -342,7 +410,7 @@ class LinkLintTests(unittest.TestCase):
         result = check(self.root, require_raw=True)
         self.assertEqual(result['status'], 'passed', result)
         self.assertEqual(result['counts']['knowledge_pages'], 2)
-        self.assertEqual(result['counts']['local_sources_checked'], 2)
+        self.assertEqual(result['counts']['local_sources_checked'], 4)
         self.assertEqual(result['counts']['external_references_skipped'], 1)
         self.write('README.md', '[missing](absent.md)\n')
         result = check(self.root)

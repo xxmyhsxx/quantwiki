@@ -6,7 +6,7 @@ tags:
   - random-projection
   - attention
 sources:
-  - raw/papers/2026-09-22/qjl/paper.pdf
+  - raw/papers/2026-09-22/qjl
 updated: 2026-09-28
 ---
 

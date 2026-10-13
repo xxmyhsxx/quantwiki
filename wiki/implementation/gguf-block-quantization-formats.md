@@ -7,14 +7,7 @@ tags:
   - granularity
   - mixed-precision
 sources:
-  - raw/repositories/2026-09-21/llama-cpp/source/gguf-py/gguf/gguf_reader.py
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-quants.c
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml.c
-  - raw/repositories/2026-09-21/llama-cpp/source/src/llama-quant.cpp
-  - raw/repositories/2026-09-21/llama-cpp/source/tools/quantize/README.md.txt
-  - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/README.md.txt
-  - raw/repositories/2026-09-21/llama-cpp/source/tools/imatrix/imatrix.cpp
+  - raw/repositories/2026-09-21/llama-cpp
 updated: 2026-10-13
 ---
 

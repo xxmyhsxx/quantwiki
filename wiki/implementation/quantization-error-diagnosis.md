@@ -7,14 +7,10 @@ tags:
   - equivalent-transform
   - performance
 sources:
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/models/qwen3/modeling_qwen3.py
-  - raw/papers/2026-09-21/nova-kv/paper.pdf
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty_sim/kitty_simulate.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty_sim/utils_quant.py
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
+  - raw/repositories/2026-09-21/kitty
+  - raw/papers/2026-09-21/nova-kv
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/integer-only-quantization
 updated: 2026-09-29
 ---
 

@@ -6,13 +6,10 @@ tags:
   - data-layout
   - gpu
 sources:
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/activation_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/activation.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/activation.cuh
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/03-matrix-multiplication.py
-  - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/kernel_cuda/kernel.cu
-  - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/torch-ext/torch_binding.cpp
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/triton
+  - raw/repositories/2026-09-22/kernels
 updated: 2026-09-22
 ---
 

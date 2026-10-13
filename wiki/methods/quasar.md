@@ -7,7 +7,7 @@ tags:
   - sensitivity
   - weight-quantization
 sources:
-  - raw/papers/2026-09-21/quasar/paper.pdf
+  - raw/papers/2026-09-21/quasar
 updated: 2026-10-11
 ---
 

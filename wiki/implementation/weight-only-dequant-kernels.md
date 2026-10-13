@@ -8,40 +8,9 @@ tags:
   - matmul
   - data-format
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/awq_triton.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/marlin_utils.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/awq_dequantize.cuh
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/dequantize.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin_repack.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/gptq_marlin_repack.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemm/gemm_cuda.cu
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemv/gemv_cuda.cu
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/qmodule.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization/dequantize.cuh
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization/gemv_cuda.cu
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization/gemm_cuda_gen.cu
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/pybind.cpp
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/gptq_marlin.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/awq_marlin_repack.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin_template.h
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/dequant.h
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/marlin_dtypes.cuh
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_awq.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/__init__.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/mixed_precision/marlin.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/marlin_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/quant_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/_custom_ops.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/envs.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/gptq_marlin_repack.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_template.h
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/dequant.h
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_mma.h
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_dtypes.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/generate_kernels.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/llm-awq
 updated: 2026-10-13
 ---
 

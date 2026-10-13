@@ -6,7 +6,7 @@ tags:
   - optimization
   - activation-quantization
 sources:
-  - raw/papers/2026-09-22/lsq/paper.pdf
+  - raw/papers/2026-09-22/lsq
 updated: 2026-09-22
 ---
 

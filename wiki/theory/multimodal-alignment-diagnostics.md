@@ -6,7 +6,7 @@ tags:
   - evaluation
   - sensitivity
 sources:
-  - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
+  - raw/papers/2026-09-26/the-alignment-illusion
 updated: 2026-09-28
 ---
 

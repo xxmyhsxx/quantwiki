@@ -7,7 +7,7 @@ tags:
   - rotation
   - numerical-error
 sources:
-  - raw/papers/2026-09-21/turboquant/paper.pdf
+  - raw/papers/2026-09-21/turboquant
 updated: 2026-09-29
 ---
 

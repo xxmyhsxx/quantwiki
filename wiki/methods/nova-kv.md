@@ -7,7 +7,7 @@ tags:
   - attention
   - calibration
 sources:
-  - raw/papers/2026-09-21/nova-kv/paper.pdf
+  - raw/papers/2026-09-21/nova-kv
 updated: 2026-10-06
 ---
 

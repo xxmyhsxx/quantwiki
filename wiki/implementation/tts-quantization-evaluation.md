@@ -7,12 +7,8 @@ tags:
   - evaluation
   - deployment
 sources:
-  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
-  - raw/repositories/2026-09-28/tts-ptq-map/source/experiments/lib/rtn.py
-  - raw/repositories/2026-09-28/tts-ptq-map/source/experiments/lib/torch_actq.py
-  - raw/repositories/2026-09-28/tts-ptq-map/source/experiments/lib/calib_ptq.py
-  - raw/repositories/2026-09-28/tts-ptq-map/source/experiments/lib/onnx_nbits.py
-  - raw/repositories/2026-09-28/tts-ptq-map/source/experiments/results/bootstrap_ci.py
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes
+  - raw/repositories/2026-09-28/tts-ptq-map
 updated: 2026-09-29
 ---
 

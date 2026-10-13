@@ -8,18 +8,8 @@ tags:
   - reduction
   - numerics
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/llama.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/layernorm.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/kernels/vllm_c.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/ir/ops/layernorm.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/layernorm_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/type_convert.cuh
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/batch_invariant.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/grok.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/elementwise.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/layernorm.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/norm.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/fused_add_rmsnorm.cuh
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-09-22
 ---
 

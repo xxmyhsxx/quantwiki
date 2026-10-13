@@ -7,12 +7,8 @@ tags:
   - deployment
   - mixed-precision
 sources:
-  - raw/papers/2026-09-28/foldquantvla/paper.pdf
-  - raw/repositories/2026-09-28/foldquantvla/source/foldquant/foldq.py
-  - raw/repositories/2026-09-28/foldquantvla/source/foldquant/llm_gptq.py
-  - raw/repositories/2026-09-28/foldquantvla/source/foldquant/kernels/tensorrt/int4_per_row/cuda/per_row_quant_int4_cuda.cu
-  - raw/repositories/2026-09-28/foldquantvla/source/foldquant/kernels/tensorrt/int4_per_row/cuda/dit_int4_rowwise_gemm_fused_cuda.cu
-  - raw/repositories/2026-09-28/foldquantvla/source/foldquant/kernels/tensorrt/int4_per_row/plugin/per_row_int4_linear_residual_plugin.cpp
+  - raw/papers/2026-09-28/foldquantvla
+  - raw/repositories/2026-09-28/foldquantvla
 updated: 2026-09-28
 ---
 

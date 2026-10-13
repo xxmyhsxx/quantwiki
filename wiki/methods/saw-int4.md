@@ -7,18 +7,8 @@ tags:
   - rotation
   - serving
 sources:
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_backend.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/papers/2026-09-21/saw-int4/paper.pdf
-  - raw/repositories/2026-09-21/saw-int4/source/README.md.txt
-  - raw/repositories/2026-09-21/saw-int4/source/docs/bdr_env_vars.md.txt
-  - raw/repositories/2026-09-21/saw-int4/source/SUBMODULE_VERSIONS.md.txt
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/QuantKernel/fused_hadamard_int4_kv.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/kv_quant_kernels.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/model_executor/model_runner.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/flashattention_backend.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
+  - raw/repositories/2026-09-21/saw-int4
+  - raw/papers/2026-09-21/saw-int4
 updated: 2026-10-13
 ---
 

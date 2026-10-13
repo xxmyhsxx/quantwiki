@@ -7,16 +7,7 @@ tags:
   - rotation
   - data-format
 sources:
-  - raw/repositories/2026-09-21/quip/source/README.md.txt
-  - raw/repositories/2026-09-21/quip/source/opt.py
-  - raw/repositories/2026-09-21/quip/source/method.py
-  - raw/repositories/2026-09-21/quip/source/bal.py
-  - raw/repositories/2026-09-21/quip/source/quant.py
-  - raw/repositories/2026-09-21/quip/source/vector_balance.py
-  - raw/repositories/2026-09-21/quip/source/datautils.py
-  - raw/repositories/2026-09-21/quip/source/modelutils.py
-  - raw/repositories/2026-09-21/quip/source/near.py
-  - raw/repositories/2026-09-21/quip/source/optq_ldlq_equiv.py
+  - raw/repositories/2026-09-21/quip
 updated: 2026-10-12
 ---
 

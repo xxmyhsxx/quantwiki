@@ -6,22 +6,21 @@ tags:
   - outliers
   - quantization-error
 sources:
-  - raw/papers/2026-09-22/ostquant/paper.pdf
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/papers/2026-09-21/affinequant/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - raw/papers/2026-09-21/roformer/paper.pdf
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
-  - raw/papers/2026-09-21/awq/paper.pdf
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/auto_scale.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/qmodule.py
-  - raw/repositories/2026-09-21/smoothquant/source/smoothquant/smooth.py
+  - raw/papers/2026-09-22/ostquant
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/masquant
+  - raw/papers/2026-09-21/affinequant
+  - raw/papers/2026-09-21/flatquant
+  - raw/papers/2026-09-21/omniquant
+  - raw/papers/2026-09-21/roformer
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/integer-only-quantization
+  - raw/papers/2026-09-21/smoothquant
+  - raw/papers/2026-09-21/awq
+  - raw/repositories/2026-09-21/llm-awq
+  - raw/repositories/2026-09-21/smoothquant
 updated: 2026-09-22
 ---
 

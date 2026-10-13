@@ -7,32 +7,8 @@ tags:
   - fp8
   - serving
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/registry.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/mla.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/attention/mla_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/attention/sparse_mla_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/sparse_attn_indexer.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backend.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/indexer.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/flashmla_sparse.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/sparse_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/flashmla.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/utils/deep_gemm.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/utils/torch_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/_custom_ops.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/config/attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/kv_cache_interface.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cache_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/sampler.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cooperative_topk.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cooperative_topk.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/torch_bindings.cpp
-  - raw/repositories/2026-09-21/vllm/source/csrc/quantization/w8a8/fp8/nvidia/quant_utils.cuh
-  - raw/repositories/2026-09-21/vllm/source/cmake/external_projects/flashmla.cmake
-  - raw/repositories/2026-10-07/flashmla/source/flash_mla/flash_mla_interface.py
-  - raw/repositories/2026-10-07/flashmla/source/csrc/api/sparse_fwd.h
-  - raw/repositories/2026-09-21/vllm/source/tests/kernels/attention/test_deepgemm_attention.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-10-07/flashmla
 updated: 2026-10-07
 ---
 

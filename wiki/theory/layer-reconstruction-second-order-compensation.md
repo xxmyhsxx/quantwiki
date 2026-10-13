@@ -6,30 +6,29 @@ tags:
   - second-order
   - quantization-error
 sources:
-  - raw/papers/2026-09-21/norm-tweaking/paper.pdf
-  - raw/repositories/2026-09-21/aqlm/source/aq_engine.py
-  - raw/repositories/2026-09-21/aqlm/source/main.py
-  - raw/papers/2026-09-22/gptvq/paper.pdf
-  - raw/papers/2026-09-22/vptq/paper.pdf
-  - raw/papers/2026-10-03/xor-trellis/paper.pdf
-  - raw/papers/2026-10-03/quantforge/paper.pdf
-  - raw/papers/2026-10-03/reconstruction-loss-scale-rmse/paper.pdf
-  - raw/papers/2026-09-22/efficientqat/paper.pdf
-  - raw/repositories/2026-09-22/efficientqat/source/quantize/block_ap.py
-  - raw/papers/2026-09-21/quip/source.eprint
-  - raw/papers/2026-09-21/quip-sharp/source.eprint
-  - raw/papers/2026-09-21/aqlm/source.eprint
-  - raw/papers/2026-09-21/spqr/source.eprint
-  - raw/papers/2026-09-21/squeezellm/source.eprint
-  - raw/papers/2026-09-21/qig/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/repositories/2026-09-21/flatquant/source/flatquant/train_utils.py
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - raw/papers/2026-09-21/q-vlm/paper.pdf
-  - raw/papers/2026-09-21/gptaq/paper.pdf
-  - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/gptq/paper.pdf
+  - raw/papers/2026-09-21/norm-tweaking
+  - raw/repositories/2026-09-21/aqlm
+  - raw/papers/2026-09-22/gptvq
+  - raw/papers/2026-09-22/vptq
+  - raw/papers/2026-10-03/xor-trellis
+  - raw/papers/2026-10-03/quantforge
+  - raw/papers/2026-10-03/reconstruction-loss-scale-rmse
+  - raw/papers/2026-09-22/efficientqat
+  - raw/repositories/2026-09-22/efficientqat
+  - raw/papers/2026-09-21/quip
+  - raw/papers/2026-09-21/quip-sharp
+  - raw/papers/2026-09-21/aqlm
+  - raw/papers/2026-09-21/spqr
+  - raw/papers/2026-09-21/squeezellm
+  - raw/papers/2026-09-21/qig
+  - raw/papers/2026-09-21/flatquant
+  - raw/repositories/2026-09-21/flatquant
+  - raw/papers/2026-09-21/omniquant
+  - raw/papers/2026-09-21/q-vlm
+  - raw/papers/2026-09-21/gptaq
+  - raw/papers/2026-09-21/vlmq
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/gptq
 updated: 2026-10-12
 ---
 

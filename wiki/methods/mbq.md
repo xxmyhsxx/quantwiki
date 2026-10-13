@@ -7,14 +7,8 @@ tags:
   - sensitivity
   - calibration
 sources:
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/pre_quant.py
-  - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale.py
-  - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale_wa.py
-  - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/entry.py
-  - raw/repositories/2026-09-21/mbq/source/qmllm/quantization/quant_funcs.py
-  - raw/repositories/2026-09-21/mbq/source/qmllm/models/qwen2_vl/qwen2_vl.py
-  - raw/repositories/2026-09-21/mbq/source/configs/llava_onevision/MBQ_search/7b_weight_only.yaml
+  - raw/papers/2026-09-21/mbq
+  - raw/repositories/2026-09-21/mbq
 paper_version: arXiv:2412.19509v2
 code_commit: a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1
 verification: 全文与附录研读；定向官方代码核对；未运行模型实验

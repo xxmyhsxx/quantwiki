@@ -7,7 +7,7 @@ tags:
   - calibration
   - evaluation
 sources:
-  - raw/papers/2026-10-07/saprune/paper.pdf
+  - raw/papers/2026-10-07/saprune
 updated: 2026-10-08
 ---
 

@@ -8,10 +8,8 @@ tags:
   - matmul
   - performance
 sources:
-  - raw/papers/2026-09-21/marlin/paper.pdf
-  - raw/repositories/2026-09-21/marlin/source/marlin/__init__.py
-  - raw/repositories/2026-09-21/marlin/source/marlin/marlin_cuda.cpp
-  - raw/repositories/2026-09-21/marlin/source/marlin/marlin_cuda_kernel.cu
+  - raw/papers/2026-09-21/marlin
+  - raw/repositories/2026-09-21/marlin
 updated: 2026-10-13
 ---
 

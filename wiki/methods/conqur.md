@@ -7,7 +7,7 @@ tags:
   - activation-quantization
   - calibration
 sources:
-  - raw/papers/2026-10-03/conqur/paper.pdf
+  - raw/papers/2026-10-03/conqur
 updated: 2026-10-07
 ---
 

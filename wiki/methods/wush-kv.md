@@ -7,13 +7,8 @@ tags:
   - sensitivity
   - calibration
 sources:
-  - raw/papers/2026-10-03/wush-kv/paper.pdf
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/oscar_rotation_clip_int2_kv.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/unified_kv_pool.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_backend.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/QuantKernel/gpu_flush_int2.py
-  - raw/repositories/2026-10-08/oscar/source/sglang-research/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
+  - raw/papers/2026-10-03/wush-kv
+  - raw/repositories/2026-10-08/oscar
 updated: 2026-10-08
 ---
 

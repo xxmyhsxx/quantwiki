@@ -7,24 +7,15 @@ tags:
   - performance
   - numerics
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/batch_invariant.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/activation.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/fused_add_rmsnorm.cuh
-  - raw/repositories/2026-09-21/triton/source/python/triton/runtime/autotuner.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/02-fused-softmax.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/03-matrix-multiplication.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/05-layer-norm.py
-  - raw/repositories/2026-09-21/triton/source/python/triton/testing.py
-  - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/kernel_cuda/kernel.cu
-  - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/torch-ext/torch_binding.cpp
-  - raw/articles/2026-09-22/compute-sanitizer/article.md.txt
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-bench.md.txt
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-event.md.txt
-  - raw/articles/2026-09-22/nsight-compute/pages/ncu-guide.md.txt
-  - raw/articles/2026-09-22/pytorch-performance-tools/pages/torch-profiler.md.txt
-  - raw/articles/2026-09-22/nsight-systems/article.md.txt
-  - raw/articles/2026-09-21/cutlass-profiler/article.md.txt
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/triton
+  - raw/repositories/2026-09-22/kernels
+  - raw/articles/2026-09-22/compute-sanitizer
+  - raw/articles/2026-09-22/pytorch-performance-tools
+  - raw/articles/2026-09-22/nsight-compute
+  - raw/articles/2026-09-22/nsight-systems
+  - raw/articles/2026-09-21/cutlass-profiler
 updated: 2026-09-22
 ---
 

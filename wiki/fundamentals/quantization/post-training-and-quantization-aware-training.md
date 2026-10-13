@@ -6,26 +6,23 @@ tags:
   - qat
   - optimization
 sources:
-  - raw/papers/2026-09-21/quasar/paper.pdf
-  - raw/papers/2026-09-21/lc-qat/paper.pdf
-  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
-  - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
-  - raw/papers/2026-09-22/pv-tuning/paper.pdf
-  - raw/papers/2026-09-22/loftq/paper.pdf
-  - raw/papers/2026-09-22/efficientqat/paper.pdf
-  - raw/papers/2026-09-21/llm-qat/paper.pdf
-  - raw/papers/2026-09-22/lsq/paper.pdf
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/omniquant/paper.pdf
-  - https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/quantizer.py
-  - raw/papers/2026-09-21/qlora/paper.pdf
-  - raw/papers/2026-09-21/q-vlm/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/integer-only-quantization/paper.pdf
-  - raw/papers/2026-09-21/multimodal-qat/paper.pdf
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/quantizer.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/utils.py
-  - raw/repositories/2026-09-21/qslaw/source/llava/quantize/replace.py
+  - raw/papers/2026-09-21/quasar
+  - raw/papers/2026-09-21/lc-qat
+  - raw/repositories/2026-09-21/aqlm
+  - raw/papers/2026-09-22/pv-tuning
+  - raw/papers/2026-09-22/loftq
+  - raw/papers/2026-09-22/efficientqat
+  - raw/papers/2026-09-21/llm-qat
+  - raw/papers/2026-09-22/lsq
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/omniquant
+  - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
+  - raw/papers/2026-09-21/qlora
+  - raw/papers/2026-09-21/q-vlm
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/integer-only-quantization
+  - raw/papers/2026-09-21/multimodal-qat
+  - raw/repositories/2026-09-21/qslaw
 updated: 2026-10-13
 ---
 

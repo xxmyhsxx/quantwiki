@@ -6,7 +6,7 @@ tags:
   - weight-quantization
   - rotation
 sources:
-  - raw/papers/2026-09-22/qtip/paper.pdf
+  - raw/papers/2026-09-22/qtip
 updated: 2026-09-28
 ---
 

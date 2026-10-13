@@ -7,40 +7,9 @@ tags:
   - fp8
   - kernels
 sources:
-  - raw/repositories/2026-09-21/vllm/source/cmake/external_projects/flashmla.cmake
-  - raw/repositories/2026-09-21/vllm/source/cmake/external_projects/deepgemm.cmake
-  - raw/repositories/2026-09-21/vllm/source/vllm/utils/deep_gemm.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/sparse_attn_indexer.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/indexer.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/flashmla_sparse.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/sparse_utils.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cache_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/sampler.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/quantization/w8a8/fp8/nvidia/quant_utils.cuh
-  - raw/repositories/2026-10-07/deepgemm/source/deep_gemm/__init__.py
-  - raw/repositories/2026-10-07/deepgemm/source/csrc/python_api.cpp
-  - raw/repositories/2026-10-07/deepgemm/source/csrc/apis/attention.hpp
-  - raw/repositories/2026-10-07/deepgemm/source/csrc/jit_kernels/impls/smxx_fp8_fp4_mqa_logits.hpp
-  - raw/repositories/2026-10-07/deepgemm/source/csrc/jit_kernels/impls/smxx_fp8_fp4_paged_mqa_logits.hpp
-  - raw/repositories/2026-10-07/deepgemm/source/deep_gemm/include/deep_gemm/impls/sm90_fp8_mqa_logits.cuh
-  - raw/repositories/2026-10-07/deepgemm/source/deep_gemm/include/deep_gemm/impls/sm90_fp8_paged_mqa_logits.cuh
-  - raw/repositories/2026-10-07/deepgemm/source/deep_gemm/include/deep_gemm/impls/smxx_clean_logits.cuh
-  - raw/repositories/2026-10-07/deepgemm/source/deep_gemm/include/deep_gemm/scheduler/paged_mqa_logits.cuh
-  - raw/repositories/2026-10-07/deepgemm/source/deep_gemm/include/deep_gemm/mma/sm90.cuh
-  - raw/repositories/2026-10-07/flashmla/source/flash_mla/flash_mla_interface.py
-  - raw/repositories/2026-10-07/flashmla/source/csrc/api/api.cpp
-  - raw/repositories/2026-10-07/flashmla/source/csrc/api/sparse_fwd.h
-  - raw/repositories/2026-10-07/flashmla/source/csrc/api/sparse_decode.h
-  - raw/repositories/2026-10-07/flashmla/source/csrc/sm90/prefill/sparse/config.h
-  - raw/repositories/2026-10-07/flashmla/source/csrc/sm90/prefill/sparse/phase1.cuh
-  - raw/repositories/2026-10-07/flashmla/source/csrc/sm90/helpers.h
-  - raw/repositories/2026-10-07/flashmla/source/csrc/sm90/decode/sparse_fp8/config.h
-  - raw/repositories/2026-10-07/flashmla/source/csrc/sm90/decode/sparse_fp8/splitkv_mla.cuh
-  - raw/repositories/2026-10-07/flashmla/source/csrc/sm90/decode/sparse_fp8/components/dequant.h
-  - raw/repositories/2026-10-07/flashmla/source/csrc/smxx/decode/get_decoding_sched_meta/get_decoding_sched_meta.cu
-  - raw/repositories/2026-10-07/flashmla/source/csrc/smxx/decode/combine/combine.cu
-  - raw/repositories/2026-10-07/flashmla/source/tests/quant.py
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-10-07/deepgemm
+  - raw/repositories/2026-10-07/flashmla
 updated: 2026-10-07
 ---
 

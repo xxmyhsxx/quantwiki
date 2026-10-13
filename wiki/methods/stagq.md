@@ -7,7 +7,7 @@ tags:
   - bit-planes
   - kernels
 sources:
-  - raw/papers/2026-10-07/stagq/paper.pdf
+  - raw/papers/2026-10-07/stagq
 updated: 2026-10-07
 ---
 

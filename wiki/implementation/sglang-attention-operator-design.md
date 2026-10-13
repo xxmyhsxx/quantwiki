@@ -8,16 +8,7 @@ tags:
   - attention
   - performance
 sources:
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/llama.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/radix_attention.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/base_attn_backend.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/triton_backend.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/triton_ops/kv_indices.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/triton_ops/extend_attention.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/model_runner.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/runner/decode_cuda_graph_runner.py
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-10-07
 ---
 

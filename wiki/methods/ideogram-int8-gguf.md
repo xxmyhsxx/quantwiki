@@ -8,10 +8,8 @@ tags:
   - evaluation
   - data-format
 sources:
-  - raw/papers/2026-09-21/int8-gg/paper.pdf
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-quants.c
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml.c
+  - raw/papers/2026-09-21/int8-gg
+  - raw/repositories/2026-09-21/llama-cpp
 updated: 2026-10-12
 ---
 

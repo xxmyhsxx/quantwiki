@@ -7,9 +7,8 @@ tags:
   - vector-quantization
   - reconstruction
 sources:
-  - raw/repositories/2026-09-21/aqlm/source/finetune.py
-  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
-  - raw/papers/2026-09-21/aqlm/paper.pdf
+  - raw/repositories/2026-09-21/aqlm
+  - raw/papers/2026-09-21/aqlm
 updated: 2026-10-11
 ---
 

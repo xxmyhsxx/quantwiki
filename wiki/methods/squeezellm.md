@@ -7,10 +7,8 @@ tags:
   - sensitivity
   - sparsity
 sources:
-  - raw/papers/2026-09-21/squeezellm/paper.pdf
-  - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
-  - raw/repositories/2026-09-21/squeezellm/source/squeezellm/outliers.py
-  - raw/repositories/2026-09-21/squeezellm/source/quantization/nuq.py
+  - raw/papers/2026-09-21/squeezellm
+  - raw/repositories/2026-09-21/squeezellm
 updated: 2026-09-22
 ---
 

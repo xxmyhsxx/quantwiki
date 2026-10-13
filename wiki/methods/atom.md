@@ -7,7 +7,7 @@ tags:
   - group-quantization
   - serving
 sources:
-  - raw/papers/2026-09-21/atom/paper.pdf
+  - raw/papers/2026-09-21/atom
 updated: 2026-10-12
 ---
 

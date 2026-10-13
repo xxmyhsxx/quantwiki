@@ -6,8 +6,8 @@ tags:
   - reasoning
   - llm
 sources:
-  - raw/papers/2026-09-21/mmlu-pro/paper.pdf
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_default_template_yaml
+  - raw/papers/2026-09-21/mmlu-pro
+  - raw/repositories/2026-09-21/lm-evaluation-harness
 updated: 2026-10-12
 ---
 

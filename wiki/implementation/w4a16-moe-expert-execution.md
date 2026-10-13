@@ -8,34 +8,7 @@ tags:
   - kernels
   - data-format
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_awq.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/oracle/int_wna16.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/experts/marlin_moe.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/marlin_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/config.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/all2all_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/prepare_finalize/no_dp_ep.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/modular_kernel.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/routed_experts.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/expert_map_manager.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/moe_align_block_size.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/activation.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/fused_moe/topk_weight_and_reduce.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/_custom_ops.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/awq_marlin_repack.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/moe/marlin_moe_wna16/ops.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/moe/marlin_moe_wna16/marlin_template.h
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/moe/marlin_moe_wna16/generate_kernels.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/moe/moe_align_sum_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/moe/torch_bindings.cpp
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/activation_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cuda_vec_utils.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/dequant.h
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_dtypes.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/marlin/marlin_mma.h
-  - raw/repositories/2026-09-21/vllm/source/vllm/envs.py
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-10-07
 ---
 

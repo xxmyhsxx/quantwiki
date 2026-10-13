@@ -10,7 +10,7 @@ aliases:
   - mixture-of-experts
   - DeepSeekMoE
 sources:
-  - raw/papers/2026-09-21/deepseek-v2/paper.pdf
+  - raw/papers/2026-09-21/deepseek-v2
 updated: 2026-10-07
 ---
 

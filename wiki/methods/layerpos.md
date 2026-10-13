@@ -7,12 +7,8 @@ tags:
   - attention
   - positional-encoding
 sources:
-  - raw/papers/2026-09-23/layer-aware-position-embeddings/paper.pdf
-  - raw/repositories/2026-09-24/layerpos/source/scripts/llava15/pos_emb.sh
-  - raw/repositories/2026-09-24/layerpos/source/scripts/llava15-13b/pos_emb.sh
-  - raw/repositories/2026-09-24/layerpos/source/scripts/internvl35/pos_emb.sh
-  - raw/repositories/2026-09-24/layerpos/source/single_layer_rate_llava.py
-  - raw/repositories/2026-09-24/layerpos/source/vlmeval/vlm/llava/llava_pkg/model/language_model/modeling_llama_self.py
+  - raw/papers/2026-09-23/layer-aware-position-embeddings
+  - raw/repositories/2026-09-24/layerpos
 updated: 2026-09-29
 ---
 

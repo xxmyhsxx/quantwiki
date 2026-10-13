@@ -7,27 +7,8 @@ tags:
   - group-quantization
   - performance
 sources:
-  - raw/repositories/2026-09-21/flexq/source/algorithm/main.py
-  - raw/repositories/2026-09-21/flexq/source/algorithm/models/int_llama_layer.py
-  - raw/repositories/2026-09-21/flexq/source/algorithm/flexq_quantize/flexqllm.py
-  - raw/repositories/2026-09-21/flexq/source/algorithm/flexq_quantize/utils.py
-  - raw/repositories/2026-09-21/flexq/source/algorithm/flexq_quantize/int_linear.py
-  - raw/repositories/2026-09-21/flexq/source/algorithm/flexq_quantize/quantizer.py
-  - raw/repositories/2026-09-21/flexq/source/engine/common/base.h
-  - raw/repositories/2026-09-21/flexq/source/engine/CMakeLists.txt
-  - raw/repositories/2026-09-21/flexq/source/engine/src/pack/bit_packing.cu
-  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/bgemm.cuh
-  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/flexq_bmma_kernel.h
-  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/flexq_bmma_op.h
-  - raw/repositories/2026-09-21/flexq/source/engine/src/bgemm/flexq_bmma_library.h
-  - raw/repositories/2026-09-21/flexq/source/engine/test/test_kernel.h
-  - raw/repositories/2026-09-21/flexq/source/engine/test/test_w6a6_kernel.cu
-  - raw/repositories/2026-09-21/flexq/source/engine/test_bgemm_kernel.cu
-  - raw/repositories/2026-09-21/flexq/source/e2e/src/fastertransformer/kernels/flexqgemm/flexq_gemm_wrapper.cu
-  - raw/repositories/2026-09-21/flexq/source/e2e/src/fastertransformer/kernels/flexqgemm/src/pack/bit_packing.cu
-  - raw/repositories/2026-09-21/flexq/source/e2e/src/fastertransformer/layers/FfnLayer.cc
-  - raw/repositories/2026-09-21/flexq/source/e2e/src/fastertransformer/models/llama/LlamaDecoderLayerWeight.cc
-  - raw/papers/2026-09-21/flexq/paper.pdf
+  - raw/repositories/2026-09-21/flexq
+  - raw/papers/2026-09-21/flexq
 updated: 2026-10-12
 ---
 

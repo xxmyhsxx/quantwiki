@@ -7,10 +7,9 @@ tags:
   - memory
   - synchronization
 sources:
-  - raw/repositories/2026-09-22/kernel-skills/source/skills/cuda/optimize-shared-memory-tiling/SKILL.md.txt
-  - raw/articles/2026-09-21/cuda-async-copies/article.md.txt
-  - raw/repositories/2026-09-21/cutlass/source/include/cute/arch/copy_sm80.hpp
-  - raw/repositories/2026-09-21/cutlass/source/examples/cute/tutorial/sgemm_sm80.cu
+  - raw/repositories/2026-09-22/kernel-skills
+  - raw/articles/2026-09-21/cuda-async-copies
+  - raw/repositories/2026-09-21/cutlass
 updated: 2026-09-22
 ---
 

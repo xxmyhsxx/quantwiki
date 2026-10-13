@@ -8,12 +8,8 @@ tags:
   - activation-quantization
   - kv-cache
 sources:
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/repositories/2026-09-21/quarot/source/fake_quant/rotation_utils.py
-  - raw/repositories/2026-09-21/quarot/source/fake_quant/main.py
-  - raw/repositories/2026-09-21/quarot/source/quarot/nn/linear.py
-  - raw/repositories/2026-09-21/quarot/source/quarot/transformers/kv_cache.py
-  - raw/repositories/2026-09-21/quarot/source/e2e/quantized_llama/modeling_llama.py
+  - raw/papers/2026-09-21/quarot
+  - raw/repositories/2026-09-21/quarot
 updated: 2026-10-13
 ---
 

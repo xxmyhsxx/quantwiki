@@ -8,25 +8,9 @@ tags:
   - kernels
   - serving
 sources:
-  - raw/repositories/2026-09-21/gptq/source/gptq.py
-  - raw/repositories/2026-09-21/gptq/source/quant.py
-  - raw/repositories/2026-09-21/gptq/source/llama.py
-  - raw/repositories/2026-09-21/gptq/source/quant_cuda.cpp
-  - raw/repositories/2026-09-21/gptq/source/quant_cuda_kernel.cu
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/auto_gptq.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/gptq_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/__init__.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/kernels/linear/mixed_precision/marlin.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/gptq.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/schemes/gptq_linear.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/gptq/schemes/gptq_marlin.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/hardware_backend/gpu/quantization/gptq_kernels.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/marlin_utils.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/gptq_marlin_repack.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/gemm/marlin/gptq_marlin_repack.cuh
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/gemm/gptq/gptq_kernel.cu
+  - raw/repositories/2026-09-21/gptq
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-09-22
 ---
 

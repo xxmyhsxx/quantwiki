@@ -7,25 +7,8 @@ tags:
   - kernels
   - activation-quantization
 sources:
-  - raw/repositories/2026-09-21/sharq/source/model/main.py
-  - raw/repositories/2026-09-21/sharq/source/model/model_utils.py
-  - raw/repositories/2026-09-21/sharq/source/model/qLinearLayer.py
-  - raw/repositories/2026-09-21/sharq/source/model/qLlamaLayer.py
-  - raw/repositories/2026-09-21/sharq/source/model/quantize.py
-  - raw/repositories/2026-09-21/sharq/source/kernels/CMakeLists.txt
-  - raw/repositories/2026-09-21/sharq/source/kernels/include/sparse_nvfp4.h
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/bindings.cpp
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/fused_sparse_prepare.cu
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/fused_rmsnorm_sparse_prepare.cu
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/shared_weight_nvfp4.cu
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/sparse_nvfp4.cu
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/nvfp4.cu
-  - raw/repositories/2026-09-21/sharq/source/benchmarks/vllm/sharq_quant.py
-  - raw/repositories/2026-09-21/sharq/source/benchmarks/vllm/run_exp.py
-  - raw/repositories/2026-09-21/sharq/source/third-party/cutlass/include/cutlass/exmy_base.h
-  - raw/repositories/2026-09-21/sharq/source/third-party/cutlass/include/cutlass/float_subbyte.h
-  - raw/repositories/2026-09-21/sharq/source/third-party/cutlass/include/cutlass/numeric_conversion.h
-  - raw/papers/2026-09-21/sharq/paper.pdf
+  - raw/repositories/2026-09-21/sharq
+  - raw/papers/2026-09-21/sharq
 updated: 2026-10-12
 ---
 

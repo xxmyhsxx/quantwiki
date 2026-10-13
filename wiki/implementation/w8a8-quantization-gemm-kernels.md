@@ -7,20 +7,11 @@ tags:
   - matmul
   - deployment
 sources:
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/int8_kernel.py
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/gemm/int8_gemm_kernel.cu
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/cutlass_extensions/gemm/gemm_with_epilogue_visitor.h
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/cutlass_extensions/epilogue/epilogue_per_row_per_col_scale.h
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/CMakeLists.txt
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/w8a8/int8/scaled_quant.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/quantization/w8a8/cutlass/scaled_mm_c2x.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cutlass_extensions/epilogue/scaled_mm_epilogues_c2x.hpp
-  - raw/repositories/2026-09-21/vllm/source/CMakeLists.txt
-  - raw/repositories/2026-09-21/triton/source/third_party/nvidia/language/cuda/libdevice.py
-  - raw/articles/2026-09-22/cuda-libdevice-round/article.md.txt
-  - https://github.com/NVIDIA/cutlass/blob/57e3cfb47a2d9e0d46eb6335c3dc411498efa198/include/cutlass/gemm/kernel/default_gemm.h
-  - https://github.com/NVIDIA/cutlass/blob/57e3cfb47a2d9e0d46eb6335c3dc411498efa198/include/cutlass/gemm/threadblock/default_mma.h
-  - https://github.com/NVIDIA/cutlass/blob/57e3cfb47a2d9e0d46eb6335c3dc411498efa198/include/cutlass/gemm/threadblock/mma_multistage.h
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/triton
+  - raw/articles/2026-09-22/cuda-libdevice-round
+  - https://github.com/NVIDIA/cutlass/tree/57e3cfb47a2d9e0d46eb6335c3dc411498efa198
 updated: 2026-09-22
 ---
 

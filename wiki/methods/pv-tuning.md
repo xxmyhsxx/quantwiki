@@ -6,9 +6,8 @@ tags:
   - optimization
   - qat
 sources:
-  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
-  - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
-  - raw/papers/2026-09-22/pv-tuning/paper.pdf
+  - raw/repositories/2026-09-21/aqlm
+  - raw/papers/2026-09-22/pv-tuning
 updated: 2026-10-11
 ---
 

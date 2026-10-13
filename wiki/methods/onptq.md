@@ -7,7 +7,7 @@ tags:
   - calibration
   - autoregressive-generation
 sources:
-  - raw/papers/2026-10-05/onptq/paper.pdf
+  - raw/papers/2026-10-05/onptq
 updated: 2026-10-07
 ---
 

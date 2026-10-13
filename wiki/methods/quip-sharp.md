@@ -7,13 +7,8 @@ tags:
   - rotation
   - vector-quantization
 sources:
-  - raw/papers/2026-09-21/quip-sharp/paper.pdf
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/algo/quip.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/algo/finetune.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quantize_llama/hfize_llama.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu
+  - raw/papers/2026-09-21/quip-sharp
+  - raw/repositories/2026-09-21/quip-sharp
 updated: 2026-10-12
 ---
 

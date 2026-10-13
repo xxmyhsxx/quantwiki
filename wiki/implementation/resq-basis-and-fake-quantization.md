@@ -7,19 +7,8 @@ tags:
   - fake-quantization
   - kv-cache
 sources:
-  - raw/repositories/2026-09-21/resq/source/fake_quant/0_get_basis.sh
-  - raw/repositories/2026-09-21/resq/source/fake_quant/2_eval_ptq.sh
-  - raw/repositories/2026-09-21/resq/source/fake_quant/get_basis.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/ptq.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/utils/data_utils.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/utils/process_args.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/utils/fuse_norm_utils.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/utils/quant_utils.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/eval_utils/main.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/eval_utils/rotation_utils.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/eval_utils/gptq_utils.py
-  - raw/repositories/2026-09-21/resq/source/fake_quant/eval_utils/modeling_llama_2.py
-  - raw/papers/2026-09-21/resq/paper.pdf
+  - raw/repositories/2026-09-21/resq
+  - raw/papers/2026-09-21/resq
 updated: 2026-10-12
 ---
 

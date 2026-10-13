@@ -6,7 +6,7 @@ tags:
   - second-order
   - qat
 sources:
-  - raw/papers/2026-09-22/hawq-v2/paper.pdf
+  - raw/papers/2026-09-22/hawq-v2
 updated: 2026-09-28
 ---
 

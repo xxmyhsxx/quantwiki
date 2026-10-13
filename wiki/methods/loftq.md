@@ -7,8 +7,8 @@ tags:
   - reconstruction
   - optimization
 sources:
-  - raw/papers/2026-09-22/loftq/paper.pdf
-  - raw/papers/2026-09-22/qera/paper.pdf
+  - raw/papers/2026-09-22/loftq
+  - raw/papers/2026-09-22/qera
 updated: 2026-09-22
 ---
 

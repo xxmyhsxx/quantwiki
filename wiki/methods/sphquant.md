@@ -7,7 +7,7 @@ tags:
   - weight-quantization
   - kernels
 sources:
-  - raw/papers/2026-09-23/sphquant/paper.pdf
+  - raw/papers/2026-09-23/sphquant
 updated: 2026-10-13
 ---
 

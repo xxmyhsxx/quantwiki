@@ -7,7 +7,7 @@ tags:
   - calibration
   - serving
 sources:
-  - raw/papers/2026-09-21/smoothquant-plus/paper.pdf
+  - raw/papers/2026-09-21/smoothquant-plus
 updated: 2026-10-12
 ---
 

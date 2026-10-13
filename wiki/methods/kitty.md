@@ -7,16 +7,8 @@ tags:
   - packing
   - triton
 sources:
-  - raw/papers/2026-09-21/kitty/paper.pdf
-  - raw/repositories/2026-09-21/kitty/source/README.md.txt
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kitty.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/utils_kv_per_layer.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_quant_pack.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/kvcache/kernels/kitty_attention.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty/models/qwen3/modeling_qwen3.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty_sim/kitty_simulate.py
-  - raw/repositories/2026-09-21/kitty/source/src/kitty_sim/utils_quant.py
-  - raw/repositories/2026-09-21/kitty/source/latency_benchmarking/benchmark_kitty.py
+  - raw/papers/2026-09-21/kitty
+  - raw/repositories/2026-09-21/kitty
 updated: 2026-09-29
 ---
 

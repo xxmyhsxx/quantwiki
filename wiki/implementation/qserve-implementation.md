@@ -8,14 +8,9 @@ tags:
   - kernels
   - serving
 sources:
-  - raw/repositories/2026-09-21/omniserve/source/scripts/ckpt_converter/checkpoint_converter.py
-  - raw/repositories/2026-09-21/omniserve/source/omniserve/modeling/layers/quantized_linear/w4a8_linear.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/__init__.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/qoq.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/int8_kernel.py
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/gemm/qserve_w4a8_per_chn_gemm.cu
-  - raw/repositories/2026-09-21/sglang/source/sgl-kernel/csrc/gemm/qserve_w4a8_per_group_gemm.cu
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/__init__.py
+  - raw/repositories/2026-09-21/omniserve
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-09-22
 ---
 

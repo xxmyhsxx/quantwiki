@@ -7,16 +7,12 @@ tags:
   - reconstruction
   - second-order
 sources:
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/gptaq/paper.pdf
-  - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/papers/2026-09-21/gptq/paper.pdf
-  - raw/repositories/2026-09-21/gptq/source/gptq.py
-  - raw/repositories/2026-09-21/gptq/source/quant.py
-  - raw/repositories/2026-09-21/gptq/source/opt.py
-  - raw/repositories/2026-09-21/gptq/source/datautils.py
-  - raw/repositories/2026-09-21/gptq/source/README.md.txt
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/gptaq
+  - raw/papers/2026-09-21/vlmq
+  - raw/papers/2026-09-21/gptq
+  - raw/repositories/2026-09-21/gptq
 paper_version: arXiv:2210.17323v2
 code_commit: 2d65066eeb06a5c9ff5184d8cebdf33662c67faf
 verification: 全文含附录研读与定向代码核对；未运行模型实验

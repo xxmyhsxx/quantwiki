@@ -6,28 +6,23 @@ tags:
   - equivalent-transform
   - outliers
 sources:
-  - raw/papers/2026-09-21/resq/paper.pdf
-  - raw/repositories/2026-09-21/resq/source/fake_quant/get_basis.py
-  - raw/papers/2026-09-21/turboquant/paper.pdf
-  - raw/papers/2026-09-21/nova-kv/paper.pdf
-  - raw/papers/2026-09-22/ostquant/paper.pdf
-  - raw/papers/2026-09-21/quip/source.eprint
-  - raw/papers/2026-09-21/quip-sharp/source.eprint
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/slicegpt/paper.pdf
-  - raw/papers/2026-09-21/mquant/paper.pdf
-  - raw/papers/2026-10-03/conqur/paper.pdf
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/QuantKernel/fused_hadamard_int4_kv.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/triton_ops/decode_attention.py
-  - raw/papers/2026-09-21/saw-int4/paper.pdf
-  - raw/repositories/2026-09-21/saw-int4/source/third_party/sglang-fast-rotation/python/sglang/srt/layers/attention/kernels/flatten_kv_cache.py
-  - raw/papers/2026-10-07/centriq/paper.pdf
-  - raw/repositories/2026-09-21/quip/source/method.py
-  - raw/repositories/2026-09-21/quip/source/bal.py
-  - raw/repositories/2026-09-21/quip/source/opt.py
+  - raw/papers/2026-09-21/resq
+  - raw/repositories/2026-09-21/resq
+  - raw/papers/2026-09-21/turboquant
+  - raw/papers/2026-09-21/nova-kv
+  - raw/papers/2026-09-22/ostquant
+  - raw/papers/2026-09-21/quip
+  - raw/papers/2026-09-21/quip-sharp
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/flatquant
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/slicegpt
+  - raw/papers/2026-09-21/mquant
+  - raw/papers/2026-10-03/conqur
+  - raw/repositories/2026-09-21/saw-int4
+  - raw/papers/2026-09-21/saw-int4
+  - raw/papers/2026-10-07/centriq
+  - raw/repositories/2026-09-21/quip
 updated: 2026-10-13
 ---
 

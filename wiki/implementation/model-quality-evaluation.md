@@ -6,22 +6,21 @@ tags:
   - numerical-error
   - reliability
 sources:
-  - raw/papers/2026-10-03/quantforge/paper.pdf
-  - raw/papers/2026-09-28/same-bit-width-different-outcomes/paper.pdf
-  - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
-  - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
-  - raw/articles/2026-09-22/perplexity/article.md.txt
-  - raw/papers/2026-09-21/quantization-reliable-vqa/paper.pdf
-  - raw/papers/2026-10-03/decision-flips/paper.pdf
-  - raw/papers/2026-10-07/pivot-q/paper.pdf
-  - raw/repositories/2026-10-07/pivot-q/source/docs/experiment_protocol.md.txt
-  - raw/papers/2026-09-21/int8-gg/paper.pdf
-  - raw/papers/2026-09-21/helm/paper.pdf
-  - raw/papers/2026-09-21/longbench-v2/paper.pdf
-  - raw/papers/2026-09-21/mmlu-pro/paper.pdf
-  - raw/papers/2026-09-21/ruler/paper.pdf
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_default_template_yaml
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_mmlu_pro.yaml
+  - raw/papers/2026-10-03/quantforge
+  - raw/papers/2026-09-28/same-bit-width-different-outcomes
+  - raw/papers/2026-09-26/the-alignment-illusion
+  - raw/papers/2026-09-23/quantization-retrieval-damage
+  - raw/articles/2026-09-22/perplexity
+  - raw/papers/2026-09-21/quantization-reliable-vqa
+  - raw/papers/2026-10-03/decision-flips
+  - raw/papers/2026-10-07/pivot-q
+  - raw/repositories/2026-10-07/pivot-q
+  - raw/papers/2026-09-21/int8-gg
+  - raw/papers/2026-09-21/helm
+  - raw/papers/2026-09-21/longbench-v2
+  - raw/papers/2026-09-21/mmlu-pro
+  - raw/papers/2026-09-21/ruler
+  - raw/repositories/2026-09-21/lm-evaluation-harness
 updated: 2026-10-12
 ---
 

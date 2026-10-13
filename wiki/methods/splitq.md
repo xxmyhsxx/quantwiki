@@ -8,8 +8,8 @@ tags:
   - low-rank
   - quantization-error
 sources:
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/flatquant
   - https://github.com/EMVision-NK/SplitQ/tree/7480f129bb5150287bb65864228d6e675e5040aa
 updated: 2026-09-15
 ---

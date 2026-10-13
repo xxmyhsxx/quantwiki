@@ -7,7 +7,7 @@ tags:
   - ptq
   - sensitivity
 sources:
-  - raw/papers/2026-09-21/qapruner/paper.pdf
+  - raw/papers/2026-09-21/qapruner
 updated: 2026-09-29
 ---
 

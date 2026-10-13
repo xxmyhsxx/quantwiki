@@ -6,7 +6,7 @@ tags:
   - calibration
   - reliability
 sources:
-  - raw/papers/2026-09-23/bos-sink-topology/paper.pdf
+  - raw/papers/2026-09-23/bos-sink-topology
 updated: 2026-09-29
 ---
 

@@ -6,9 +6,9 @@ tags:
   - performance
   - matmul
 sources:
-  - raw/repositories/2026-09-21/cs336-lectures/source/lecture_02.py
-  - raw/papers/2026-09-21/marlin/paper.pdf
-  - raw/papers/2026-09-21/qserve/paper.pdf
+  - raw/repositories/2026-09-21/cs336-lectures
+  - raw/papers/2026-09-21/marlin
+  - raw/papers/2026-09-21/qserve
 updated: 2026-10-06
 ---
 

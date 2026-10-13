@@ -7,42 +7,7 @@ tags:
   - serving
   - low-rank
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/config/parallel.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/config/vllm.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/envs.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/parallel_state.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/communication_op.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/device_communicators/cuda_communicator.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/distributed/device_communicators/pynccl.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/mla.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/linear.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/attention/mla_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/kv_cache_interface.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_coordinator.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/single_type_kv_cache_manager.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_manager.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_worker.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_model_runner.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/block_table.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/cp_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backend.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/triton_mla.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/prefill/selector.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/prefill/base.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/prefill/flash_attn.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/fa_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/vllm_flash_attn/flash_attn_interface.py
-  - raw/repositories/2026-09-21/vllm/source/cmake/external_projects/vllm_flash_attn.cmake
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_decode_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/common.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/dcp_alltoall.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/merge_attn_states.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_merge_attn_states.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cache_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/attention/merge_attn_states.cu
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-10-07
 ---
 

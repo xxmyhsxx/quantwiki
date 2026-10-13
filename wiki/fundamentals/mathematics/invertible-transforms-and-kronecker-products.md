@@ -6,14 +6,14 @@ tags:
   - equivalent-transform
   - low-rank
 sources:
-  - raw/papers/2026-09-21/nova-kv/paper.pdf
-  - raw/papers/2026-09-22/qera/paper.pdf
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/papers/2026-09-21/cayley-stiefel/paper.pdf
-  - raw/papers/2026-09-21/affinequant/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/articles/2026-09-21/pytorch-orthogonal/article.md.txt
+  - raw/papers/2026-09-21/nova-kv
+  - raw/papers/2026-09-22/qera
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/masquant
+  - raw/papers/2026-09-21/cayley-stiefel
+  - raw/papers/2026-09-21/affinequant
+  - raw/papers/2026-09-21/flatquant
+  - raw/articles/2026-09-21/pytorch-orthogonal
 updated: 2026-09-29
 ---
 

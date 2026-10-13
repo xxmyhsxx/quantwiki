@@ -8,10 +8,10 @@ tags:
   - kv-cache
   - performance
 sources:
-  - raw/papers/2026-09-21/qserve/source.eprint
-  - raw/papers/2026-09-23/disaggregated-quantization/paper.pdf
-  - raw/papers/2026-09-21/saw-int4/source.eprint
-  - raw/papers/2026-09-21/pagedattention/paper.pdf
+  - raw/papers/2026-09-21/qserve
+  - raw/papers/2026-09-23/disaggregated-quantization
+  - raw/papers/2026-09-21/saw-int4
+  - raw/papers/2026-09-21/pagedattention
 updated: 2026-10-13
 ---
 

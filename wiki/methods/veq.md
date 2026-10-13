@@ -7,7 +7,7 @@ tags:
   - post-training-quantization
   - weighted-reconstruction
 sources:
-  - raw/papers/2026-09-21/veq/paper.pdf
+  - raw/papers/2026-09-21/veq
 updated: 2026-10-12
 ---
 

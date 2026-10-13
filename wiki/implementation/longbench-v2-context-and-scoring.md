@@ -6,7 +6,7 @@ tags:
   - long-context
   - llm
 sources:
-  - raw/papers/2026-09-21/longbench-v2/paper.pdf
+  - raw/papers/2026-09-21/longbench-v2
 updated: 2026-10-12
 ---
 

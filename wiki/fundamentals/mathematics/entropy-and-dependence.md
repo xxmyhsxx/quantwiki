@@ -5,9 +5,9 @@ tags:
   - information-theory
   - sensitivity
 sources:
-  - raw/papers/2026-09-21/luq/paper.pdf
-  - raw/articles/2026-09-21/mit-6441-lecture-1/lecture.pdf
-  - raw/papers/2026-09-21/q-vlm/paper.pdf
+  - raw/papers/2026-09-21/luq
+  - raw/articles/2026-09-21/mit-6441-lecture-1
+  - raw/papers/2026-09-21/q-vlm
 updated: 2026-09-15
 ---
 

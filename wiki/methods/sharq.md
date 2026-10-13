@@ -7,11 +7,8 @@ tags:
   - data-format
   - kernels
 sources:
-  - raw/papers/2026-09-21/sharq/paper.pdf
-  - raw/repositories/2026-09-21/sharq/source/model/quantize.py
-  - raw/repositories/2026-09-21/sharq/source/kernels/src/fused_sparse_prepare.cu
-  - raw/repositories/2026-09-21/sharq/source/third-party/cutlass/include/cutlass/exmy_base.h
-  - raw/repositories/2026-09-21/sharq/source/third-party/cutlass/include/cutlass/float_subbyte.h
+  - raw/papers/2026-09-21/sharq
+  - raw/repositories/2026-09-21/sharq
 updated: 2026-10-12
 ---
 

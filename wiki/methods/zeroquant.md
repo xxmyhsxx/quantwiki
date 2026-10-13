@@ -8,8 +8,8 @@ tags:
   - distillation
   - kernels
 sources:
-  - raw/papers/2026-09-21/llm-int8/paper.pdf
-  - raw/papers/2026-09-21/zeroquant/paper.pdf
+  - raw/papers/2026-09-21/llm-int8
+  - raw/papers/2026-09-21/zeroquant
 updated: 2026-10-13
 ---
 

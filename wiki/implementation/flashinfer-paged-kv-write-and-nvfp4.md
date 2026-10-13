@@ -6,13 +6,9 @@ tags:
   - data-layout
   - fp4
 sources:
-  - raw/articles/2026-09-21/flashinfer-append-paged-kv-cache/article.md.txt
-  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/article.md.txt
-  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-efc4f5e9d414.png
-  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-93515341110b.png
-  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-76c22bd22ebb.png
-  - raw/articles/2026-09-21/flashinfer-kv-cache-layout/assets/image-de541b138748.png
-  - raw/articles/2026-09-21/flashinfer-nvfp4-kv-cache/article.md.txt
+  - raw/articles/2026-09-21/flashinfer-append-paged-kv-cache
+  - raw/articles/2026-09-21/flashinfer-kv-cache-layout
+  - raw/articles/2026-09-21/flashinfer-nvfp4-kv-cache
 updated: 2026-10-12
 ---
 

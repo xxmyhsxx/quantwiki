@@ -8,16 +8,7 @@ tags:
   - attention
   - performance
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/llama.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/attention/attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backend.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/flash_attn.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/triton_attn.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_unified_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_attention_helpers.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_model_runner.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/cudagraph_dispatcher.py
-  - raw/repositories/2026-09-21/vllm/source/docs/design/cuda_graphs.md.txt
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-10-07
 ---
 

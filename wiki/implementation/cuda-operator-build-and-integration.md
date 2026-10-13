@@ -6,11 +6,9 @@ tags:
   - cuda
   - deployment
 sources:
-  - raw/articles/2026-10-04/pytorch-cpp-cuda-operators/pages/cpp-extension.md.txt
-  - raw/articles/2026-10-04/pytorch-cpp-cuda-operators/pages/cpp-custom-ops.md.txt
-  - raw/articles/2026-09-21/cuda-simt-kernels/article.md.txt
-  - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/kernel_cuda/kernel.cu
-  - raw/repositories/2026-09-22/kernels/source/kernel-builder/src/init/templates/torch-ext/torch_binding.cpp
+  - raw/articles/2026-10-04/pytorch-cpp-cuda-operators
+  - raw/articles/2026-09-21/cuda-simt-kernels
+  - raw/repositories/2026-09-22/kernels
 updated: 2026-10-04
 ---
 

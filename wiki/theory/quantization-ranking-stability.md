@@ -6,9 +6,9 @@ tags:
   - reliability
   - mixed-precision
 sources:
-  - raw/papers/2026-09-23/bos-sink-topology/paper.pdf
-  - raw/papers/2026-09-23/quantization-retrieval-damage/paper.pdf
-  - raw/papers/2026-10-03/decision-flips/paper.pdf
+  - raw/papers/2026-09-23/bos-sink-topology
+  - raw/papers/2026-09-23/quantization-retrieval-damage
+  - raw/papers/2026-10-03/decision-flips
 updated: 2026-10-13
 ---
 

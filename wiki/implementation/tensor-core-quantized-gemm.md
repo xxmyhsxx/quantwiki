@@ -8,12 +8,11 @@ tags:
   - triton
   - weight-quantization
 sources:
-  - raw/articles/2026-09-22/ptx-mma-layout/article.md.txt
-  - raw/repositories/2026-09-21/marlin/source/marlin/marlin_cuda_kernel.cu
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/awq_triton.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/quantization/awq/awq_triton.py
-  - raw/repositories/2026-09-21/triton/source/python/triton/compiler/compiler.py
-  - raw/repositories/2026-09-21/triton/source/third_party/nvidia/backend/compiler.py
+  - raw/articles/2026-09-22/ptx-mma-layout
+  - raw/repositories/2026-09-21/marlin
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/triton
 updated: 2026-09-22
 ---
 

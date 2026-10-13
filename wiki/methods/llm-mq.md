@@ -8,7 +8,7 @@ tags:
   - weight-only
   - gemv
 sources:
-  - raw/papers/2026-09-21/llm-mq/paper.pdf
+  - raw/papers/2026-09-21/llm-mq
 updated: 2026-10-12
 ---
 

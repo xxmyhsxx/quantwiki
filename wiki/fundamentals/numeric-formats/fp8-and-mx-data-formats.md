@@ -6,9 +6,9 @@ tags:
   - floating-point
   - mixed-precision
 sources:
-  - raw/papers/2026-09-21/fp8-formats/paper.pdf
-  - raw/papers/2026-09-21/microscaling-formats/paper.pdf
-  - raw/repositories/2026-09-21/llama-cpp/source/ggml/src/ggml-common.h
+  - raw/papers/2026-09-21/fp8-formats
+  - raw/papers/2026-09-21/microscaling-formats
+  - raw/repositories/2026-09-21/llama-cpp
 updated: 2026-10-06
 ---
 

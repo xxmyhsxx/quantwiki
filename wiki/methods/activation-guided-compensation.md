@@ -7,7 +7,7 @@ tags:
   - reconstruction
   - rotation
 sources:
-  - raw/papers/2026-09-23/activation-guided-compensation/paper.pdf
+  - raw/papers/2026-09-23/activation-guided-compensation
 updated: 2026-09-28
 ---
 

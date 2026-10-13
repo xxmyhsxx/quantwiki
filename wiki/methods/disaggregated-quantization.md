@@ -7,12 +7,9 @@ tags:
   - weight-quantization
   - data-format
 sources:
-  - raw/papers/2026-09-23/disaggregated-quantization/paper.pdf
-  - raw/repositories/2026-09-24/disaggregated-quantization/source/qad/quantizers/dual.py
-  - raw/repositories/2026-09-24/disaggregated-quantization/source/qad/quantizers/frozen_decode.py
-  - raw/repositories/2026-09-24/disaggregated-quantization/source/qad/training/qad.py
-  - raw/repositories/2026-09-24/disaggregated-llama-cpp/source/src/llama-odp.cpp
-  - raw/repositories/2026-09-24/disaggregated-llama-cpp/source/src/llama-context.cpp
+  - raw/papers/2026-09-23/disaggregated-quantization
+  - raw/repositories/2026-09-24/disaggregated-quantization
+  - raw/repositories/2026-09-24/disaggregated-llama-cpp
 updated: 2026-10-06
 ---
 

@@ -6,7 +6,7 @@ tags:
   - vlm
   - mixed-precision
 sources:
-  - raw/papers/2026-09-21/plug-and-play-kv-quantization/paper.pdf
+  - raw/papers/2026-09-21/plug-and-play-kv-quantization
 updated: 2026-10-12
 ---
 

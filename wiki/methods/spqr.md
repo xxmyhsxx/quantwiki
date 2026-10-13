@@ -7,14 +7,8 @@ tags:
   - second-order
   - sparsity
 sources:
-  - raw/papers/2026-09-21/spqr/paper.pdf
-  - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
-  - raw/repositories/2026-09-21/spqr/source/quant_groups.py
-  - raw/repositories/2026-09-21/spqr/source/modelutils.py
-  - raw/repositories/2026-09-21/spqr/source/convert_legacy_model_format.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda.cpp
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda_kernel.cu
+  - raw/papers/2026-09-21/spqr
+  - raw/repositories/2026-09-21/spqr
 updated: 2026-10-12
 ---
 

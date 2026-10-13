@@ -7,13 +7,10 @@ tags:
   - matmul
   - reduction
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/batch_invariant.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/fused_add_rmsnorm.cuh
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/02-fused-softmax.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/03-matrix-multiplication.py
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/05-layer-norm.py
-  - raw/repositories/2026-09-21/cuda-samples/source/cpp/0_Introduction/matrixMul/matrixMul.cu
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/triton
+  - raw/repositories/2026-09-21/cuda-samples
 updated: 2026-09-22
 ---
 

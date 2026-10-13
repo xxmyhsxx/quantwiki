@@ -7,7 +7,7 @@ tags:
   - data-layout
   - microscaling
 sources:
-  - raw/papers/2026-09-23/prquant/paper.pdf
+  - raw/papers/2026-09-23/prquant
 updated: 2026-09-28
 ---
 

@@ -7,17 +7,16 @@ tags:
   - reconstruction
   - calibration
 sources:
-  - raw/papers/2026-10-05/onptq/paper.pdf
-  - raw/papers/2026-09-26/the-alignment-illusion/paper.pdf
-  - raw/papers/2026-09-21/luq/paper.pdf
-  - raw/papers/2026-09-21/qig/paper.pdf
-  - raw/papers/2026-09-21/splitq/paper.pdf
-  - raw/papers/2026-09-21/masquant/paper.pdf
-  - raw/papers/2026-09-21/mquant/paper.pdf
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/vlmq/paper.pdf
-  - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/auto_scale.py
-  - raw/repositories/2026-09-21/mbq/source/qmllm/methods/mbq/quantize/pre_quant.py
+  - raw/papers/2026-10-05/onptq
+  - raw/papers/2026-09-26/the-alignment-illusion
+  - raw/papers/2026-09-21/luq
+  - raw/papers/2026-09-21/qig
+  - raw/papers/2026-09-21/splitq
+  - raw/papers/2026-09-21/masquant
+  - raw/papers/2026-09-21/mquant
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/vlmq
+  - raw/repositories/2026-09-21/mbq
 updated: 2026-10-07
 ---
 

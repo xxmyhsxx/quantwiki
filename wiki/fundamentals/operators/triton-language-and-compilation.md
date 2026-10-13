@@ -7,12 +7,7 @@ tags:
   - data-layout
   - floating-point
 sources:
-  - raw/repositories/2026-09-21/triton/source/python/tutorials/01-vector-add.py
-  - raw/repositories/2026-09-21/triton/source/docs/python-api/triton-semantics.rst
-  - raw/repositories/2026-09-21/triton/source/docs/programming-guide/chapter-3/debugging.rst
-  - raw/repositories/2026-09-21/triton/source/python/triton/language/core.py
-  - raw/repositories/2026-09-21/triton/source/python/triton/language/semantic.py
-  - raw/repositories/2026-09-21/triton/source/python/triton/runtime/jit.py
+  - raw/repositories/2026-09-21/triton
 updated: 2026-10-04
 ---
 

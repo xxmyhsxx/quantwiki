@@ -7,7 +7,7 @@ tags:
   - reconstruction
   - second-order
 sources:
-  - raw/papers/2026-09-21/brecq/paper.pdf
+  - raw/papers/2026-09-21/brecq
 updated: 2026-10-13
 ---
 

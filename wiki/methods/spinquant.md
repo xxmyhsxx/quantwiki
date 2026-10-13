@@ -7,24 +7,12 @@ tags:
   - rotation
   - optimization
 sources:
-  - raw/papers/2026-09-22/ostquant/paper.pdf
-  - raw/repositories/2026-09-21/spinquant/source/scripts/10_optimize_rotation.sh
-  - raw/repositories/2026-09-21/spinquant/source/scripts/2_eval_ptq.sh
-  - raw/papers/2026-09-21/spinquant/paper.pdf
-  - raw/papers/2026-09-21/quarot/paper.pdf
-  - raw/papers/2026-09-21/flatquant/paper.pdf
-  - raw/papers/2026-09-21/cayley-stiefel/paper.pdf
-  - raw/repositories/2026-09-21/spinquant/source/README.md.txt
-  - raw/repositories/2026-09-21/spinquant/source/optimize_rotation.py
-  - raw/repositories/2026-09-21/spinquant/source/train_utils/optimizer.py
-  - raw/repositories/2026-09-21/spinquant/source/train_utils/main.py
-  - raw/repositories/2026-09-21/spinquant/source/train_utils/quant_linear.py
-  - raw/repositories/2026-09-21/spinquant/source/train_utils/modeling_llama_quant.py
-  - raw/repositories/2026-09-21/spinquant/source/train_utils/apply_r3_r4.py
-  - raw/repositories/2026-09-21/spinquant/source/eval_utils/rotation_utils.py
-  - raw/repositories/2026-09-21/spinquant/source/utils/data_utils.py
-  - raw/repositories/2026-09-21/spinquant/source/utils/quant_utils.py
-  - raw/repositories/2026-09-21/spinquant/source/utils/process_args.py
+  - raw/papers/2026-09-22/ostquant
+  - raw/repositories/2026-09-21/spinquant
+  - raw/papers/2026-09-21/spinquant
+  - raw/papers/2026-09-21/quarot
+  - raw/papers/2026-09-21/flatquant
+  - raw/papers/2026-09-21/cayley-stiefel
 updated: 2026-10-13
 ---
 

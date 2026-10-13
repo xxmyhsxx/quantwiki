@@ -7,28 +7,22 @@ tags:
   - data-format
   - memory
 sources:
-  - raw/papers/2026-09-21/lc-qat/paper.pdf
-  - raw/papers/2026-09-22/gptvq/paper.pdf
-  - raw/papers/2026-09-22/vptq/paper.pdf
-  - raw/papers/2026-10-03/xor-trellis/paper.pdf
-  - raw/papers/2026-09-21/turboquant/paper.pdf
-  - raw/papers/2026-09-21/nova-kv/paper.pdf
-  - raw/papers/2026-09-21/quip-sharp/source.eprint
-  - raw/papers/2026-09-22/qtip/paper.pdf
-  - raw/papers/2026-09-23/sphquant/paper.pdf
-  - raw/papers/2026-09-21/aqlm/source.eprint
-  - raw/papers/2026-09-21/squeezellm/source.eprint
-  - raw/papers/2026-09-21/spqr/source.eprint
-  - raw/repositories/2026-09-21/squeezellm/source/squeezellm/quant.py
-  - raw/papers/2026-09-21/fluxbin/source/sections/4_methodology.tex
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/codebook/latticee8_padded12.py
-  - raw/repositories/2026-09-21/quip-sharp/source/lib/linear/quantized_linear.py
-  - raw/repositories/2026-09-21/quip-sharp/source/quiptools/quiptools_e8p_gemv.cu
-  - raw/repositories/2026-09-21/spqr/source/spqr_engine.py
-  - raw/repositories/2026-09-21/spqr/source/modelutils.py
-  - raw/repositories/2026-09-21/spqr/source/convert_legacy_model_format.py
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/common.cuh
-  - raw/repositories/2026-09-21/spqr/source/inference_lib/src/spqr_quant/inference_kernels/spqr_cuda.cpp
+  - raw/papers/2026-09-21/lc-qat
+  - raw/papers/2026-09-22/gptvq
+  - raw/papers/2026-09-22/vptq
+  - raw/papers/2026-10-03/xor-trellis
+  - raw/papers/2026-09-21/turboquant
+  - raw/papers/2026-09-21/nova-kv
+  - raw/papers/2026-09-21/quip-sharp
+  - raw/papers/2026-09-22/qtip
+  - raw/papers/2026-09-23/sphquant
+  - raw/papers/2026-09-21/aqlm
+  - raw/papers/2026-09-21/squeezellm
+  - raw/papers/2026-09-21/spqr
+  - raw/repositories/2026-09-21/squeezellm
+  - raw/papers/2026-09-21/fluxbin
+  - raw/repositories/2026-09-21/quip-sharp
+  - raw/repositories/2026-09-21/spqr
 updated: 2026-10-13
 ---
 

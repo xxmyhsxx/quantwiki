@@ -7,7 +7,7 @@ tags:
   - reliability
   - kv-cache
 sources:
-  - raw/papers/2026-09-21/lvlm-compress-bench/paper.pdf
+  - raw/papers/2026-09-21/lvlm-compress-bench
 updated: 2026-10-13
 ---
 

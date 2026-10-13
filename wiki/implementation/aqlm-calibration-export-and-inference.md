@@ -7,21 +7,7 @@ tags:
   - vector-quantization
   - kernels
 sources:
-  - raw/repositories/2026-09-21/aqlm/source/main.py
-  - raw/repositories/2026-09-21/aqlm/source/aq_engine.py
-  - raw/repositories/2026-09-21/aqlm/source/src/aq.py
-  - raw/repositories/2026-09-21/aqlm/source/src/beam_search_xtx.py
-  - raw/repositories/2026-09-21/aqlm/source/src/finetune.py
-  - raw/repositories/2026-09-21/aqlm/source/src/modelutils.py
-  - raw/repositories/2026-09-21/aqlm/source/finetune.py
-  - raw/repositories/2026-09-21/aqlm/source/convert_legacy_model_format.py
-  - raw/repositories/2026-09-21/aqlm/source/convert_to_hf.py
-  - raw/repositories/2026-09-21/aqlm/source/inference_lib/src/aqlm/inference.py
-  - raw/repositories/2026-09-21/aqlm/source/inference_lib/src/aqlm/utils.py
-  - raw/repositories/2026-09-21/aqlm/source/inference_lib/src/aqlm/inference_kernels/kernel_selector.py
-  - raw/repositories/2026-09-21/aqlm/source/inference_lib/src/aqlm/inference_kernels/dequantization.py
-  - raw/repositories/2026-09-21/aqlm/source/inference_lib/src/aqlm/inference_kernels/cuda_kernel.cpp
-  - raw/repositories/2026-09-21/aqlm/source/inference_lib/src/aqlm/inference_kernels/cuda_kernel.cu
+  - raw/repositories/2026-09-21/aqlm
 updated: 2026-10-11
 ---
 

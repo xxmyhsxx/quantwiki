@@ -7,14 +7,14 @@ tags:
   - vector-quantization
   - sparsity
 sources:
-  - raw/papers/2026-09-21/quip/source.eprint
-  - raw/papers/2026-09-21/quip-sharp/source.eprint
-  - raw/papers/2026-09-21/aqlm/source.eprint
-  - raw/papers/2026-09-21/spqr/source.eprint
-  - raw/papers/2026-09-21/squeezellm/source.eprint
-  - raw/papers/2026-10-07/dbw/paper.pdf
-  - raw/repositories/2026-10-07/dbw/source/dbw/real_dbw.py
-  - raw/papers/2026-10-07/stagq/paper.pdf
+  - raw/papers/2026-09-21/quip
+  - raw/papers/2026-09-21/quip-sharp
+  - raw/papers/2026-09-21/aqlm
+  - raw/papers/2026-09-21/spqr
+  - raw/papers/2026-09-21/squeezellm
+  - raw/papers/2026-10-07/dbw
+  - raw/repositories/2026-10-07/dbw
+  - raw/papers/2026-10-07/stagq
 updated: 2026-10-07
 ---
 

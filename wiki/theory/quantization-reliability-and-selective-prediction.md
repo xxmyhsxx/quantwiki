@@ -6,7 +6,7 @@ tags:
   - reliability
   - ptq
 sources:
-  - raw/papers/2026-09-21/quantization-reliable-vqa/paper.pdf
+  - raw/papers/2026-09-21/quantization-reliable-vqa
 updated: 2026-10-13
 ---
 

@@ -6,7 +6,7 @@ tags:
   - long-context
   - kv-cache
 sources:
-  - raw/papers/2026-09-21/ruler/paper.pdf
+  - raw/papers/2026-09-21/ruler
 updated: 2026-10-12
 ---
 

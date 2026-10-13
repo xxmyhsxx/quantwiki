@@ -8,14 +8,8 @@ tags:
   - data-layout
   - fusion
 sources:
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/llama.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/activation.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/activation_kernels.cu
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/llama.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/activation.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/activation.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/csrc/elementwise/activation.cuh
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/jit_kernel/include/sgl_kernel/utils.cuh
+  - raw/repositories/2026-09-21/vllm
+  - raw/repositories/2026-09-21/sglang
 updated: 2026-09-22
 ---
 

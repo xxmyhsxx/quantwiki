@@ -7,54 +7,9 @@ tags:
   - serving
   - low-rank
 sources:
-  - raw/repositories/2026-09-21/sglang/source/python/pyproject.toml
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_common/attention_backend_handler.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_common/attention_forward_methods/forward_mla.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_common/attention_forward_methods/forward_mha.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_common/deepseek_weight_loader.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/models/deepseek_common/utils.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/mem_cache/memory_pool.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/mem_cache/triton_ops/mla_buffer.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/radix_attention.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/base_attn_backend.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/flashinfer_mla_backend.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/layers/attention/triton_ops/kv_indices.py
-  - raw/repositories/2026-09-21/sglang/source/python/sglang/srt/model_executor/model_runner.py
-  - raw/repositories/2026-09-21/flashinfer/source/flashinfer/mla/_core.py
-  - raw/repositories/2026-09-21/flashinfer/source/flashinfer/utils.py
-  - raw/repositories/2026-09-21/flashinfer/source/flashinfer/jit/attention/modules.py
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_config.jinja
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_plan.cu
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_run.cu
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_binding.cu
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_sm90_plan.cu
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_sm90_run.cu
-  - raw/repositories/2026-09-21/flashinfer/source/csrc/batch_mla_sm90_binding.cu
-  - raw/repositories/2026-09-21/flashinfer/source/include/flashinfer/attention/scheduler.cuh
-  - raw/repositories/2026-09-21/flashinfer/source/include/flashinfer/attention/mla.cuh
-  - raw/repositories/2026-09-21/flashinfer/source/include/flashinfer/attention/mla_hopper.cuh
-  - raw/repositories/2026-09-21/flashinfer/source/include/flashinfer/attention/mla_params.cuh
-  - raw/repositories/2026-09-21/flashinfer/source/include/flashinfer/attention/state.cuh
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/models/deepseek_v2.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/mla.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/attention/mla_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/attention/attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/model_executor/layers/quantization/utils/quant_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/kv_cache_interface.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backend.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/selector.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/platforms/cuda.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/triton_mla.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_decode_attention.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/prefill/selector.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/prefill/base.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/backends/mla/prefill/flash_attn.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/merge_attn_states.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/attention/ops/triton_merge_attn_states.py
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/cache_kernels.cu
-  - raw/repositories/2026-09-21/vllm/source/csrc/quantization/w8a8/fp8/nvidia/quant_utils.cuh
-  - raw/repositories/2026-09-21/vllm/source/csrc/libtorch_stable/attention/merge_attn_states.cu
+  - raw/repositories/2026-09-21/sglang
+  - raw/repositories/2026-09-21/flashinfer
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-10-07
 ---
 

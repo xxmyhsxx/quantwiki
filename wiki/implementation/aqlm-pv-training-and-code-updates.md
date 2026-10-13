@@ -7,17 +7,8 @@ tags:
   - vector-quantization
   - training
 sources:
-  - raw/repositories/2026-09-21/aqlm/source/README.md.txt
-  - raw/repositories/2026-09-21/aqlm/source/finetune.py
-  - raw/repositories/2026-09-21/aqlm/source/src/pv_optimizer.py
-  - raw/repositories/2026-09-21/aqlm/source/src/pv_utils.py
-  - raw/repositories/2026-09-21/aqlm/source/src/configurable_adam.py
-  - raw/repositories/2026-09-21/aqlm/source/src/aq.py
-  - raw/repositories/2026-09-21/aqlm/source/src/beam_search_l2.py
-  - raw/repositories/2026-09-21/aqlm/source/src/utils.py
-  - raw/repositories/2026-09-21/aqlm/source/src/datautils.py
-  - raw/repositories/2026-09-21/aqlm/source/src/memory_efficient_loss.py
-  - raw/papers/2026-09-22/pv-tuning/paper.pdf
+  - raw/repositories/2026-09-21/aqlm
+  - raw/papers/2026-09-22/pv-tuning
 updated: 2026-10-12
 ---
 

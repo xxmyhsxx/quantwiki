@@ -7,12 +7,12 @@ tags:
   - quantization-error
   - sensitivity
 sources:
-  - raw/papers/2026-09-21/nova-kv/paper.pdf
-  - raw/papers/2026-09-22/qjl/paper.pdf
-  - raw/papers/2026-09-21/turboquant/paper.pdf
-  - raw/papers/2026-09-21/kivi/paper.pdf
-  - raw/papers/2026-10-03/wush-kv/paper.pdf
-  - raw/papers/2026-09-21/calibquant/paper.pdf
+  - raw/papers/2026-09-21/nova-kv
+  - raw/papers/2026-09-22/qjl
+  - raw/papers/2026-09-21/turboquant
+  - raw/papers/2026-09-21/kivi
+  - raw/papers/2026-10-03/wush-kv
+  - raw/papers/2026-09-21/calibquant
 updated: 2026-10-12
 ---
 

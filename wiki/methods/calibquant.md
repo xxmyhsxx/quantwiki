@@ -6,7 +6,7 @@ tags:
   - vlm
   - ptq
 sources:
-  - raw/papers/2026-09-21/calibquant/paper.pdf
+  - raw/papers/2026-09-21/calibquant
 updated: 2026-10-12
 ---
 

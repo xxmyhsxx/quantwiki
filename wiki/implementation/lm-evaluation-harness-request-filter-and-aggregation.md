@@ -6,21 +6,7 @@ tags:
   - implementation
   - reproducibility
 sources:
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_default_template_yaml
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/_mmlu_pro.yaml
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/tasks/mmlu_pro/utils.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/evaluator.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/evaluator_utils.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/task.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/model.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/instance.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/filter.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/samplers.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/metrics.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/registry.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/api/group.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/filters/extraction.py
-  - raw/repositories/2026-09-21/lm-evaluation-harness/source/lm_eval/filters/selection.py
+  - raw/repositories/2026-09-21/lm-evaluation-harness
 updated: 2026-10-12
 ---
 

@@ -7,15 +7,7 @@ tags:
   - memory
   - performance
 sources:
-  - raw/repositories/2026-09-21/vllm/source/docs/design/arch_overview.md.txt
-  - raw/repositories/2026-09-21/vllm/source/docs/design/prefix_caching.md.txt
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/engine/core.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/sched/scheduler.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_manager.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/block_pool.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/core/kv_cache_utils.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/gpu_model_runner.py
-  - raw/repositories/2026-09-21/vllm/source/vllm/v1/worker/block_table.py
+  - raw/repositories/2026-09-21/vllm
 updated: 2026-10-07
 ---
 

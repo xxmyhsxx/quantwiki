@@ -7,20 +7,12 @@ tags:
   - equivalent-transform
   - calibration
 sources:
-  - raw/repositories/2026-09-21/llm-awq/source/awq/entry.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemm/gemm_cuda.cu
-  - raw/repositories/2026-09-21/llm-awq/source/awq/kernels/csrc/quantization_new/gemv/gemv_cuda.cu
-  - raw/papers/2026-09-21/mbq/paper.pdf
-  - raw/papers/2026-09-21/awq/paper.pdf
-  - raw/papers/2026-09-21/quantization-white-paper/paper.pdf
-  - raw/papers/2026-09-21/smoothquant/paper.pdf
-  - raw/papers/2026-09-21/gptq/paper.pdf
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/auto_scale.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/auto_clip.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/quantizer.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/pre_quant.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/quantize/qmodule.py
-  - raw/repositories/2026-09-21/llm-awq/source/awq/utils/calib_data.py
+  - raw/repositories/2026-09-21/llm-awq
+  - raw/papers/2026-09-21/mbq
+  - raw/papers/2026-09-21/awq
+  - raw/papers/2026-09-21/quantization-white-paper
+  - raw/papers/2026-09-21/smoothquant
+  - raw/papers/2026-09-21/gptq
 paper_version: arXiv:2306.00978v6
 code_commit: d6e797a42b9ef7778de8ee2352116e0f48a78d61
 verification: 原文研读与定向代码核对；补充材料缺件；未运行模型实验

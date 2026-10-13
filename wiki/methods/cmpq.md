@@ -7,7 +7,7 @@ tags:
   - codebook
   - outlier
 sources:
-  - raw/papers/2026-09-21/channel-wise-mixed-precision/paper.pdf
+  - raw/papers/2026-09-21/channel-wise-mixed-precision
 updated: 2026-10-11
 ---
 

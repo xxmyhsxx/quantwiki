@@ -6,7 +6,7 @@ tags:
   - sensitivity
   - deployment
 sources:
-  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/paper.pdf
+  - raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision
 updated: 2026-09-28
 ---
 
