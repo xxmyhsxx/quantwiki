@@ -81,7 +81,7 @@ $$I\approx\frac{2b}{w/8}=\frac{16b}{w},\qquad \text{受内存限制当且仅当}
 - **峰值不等于实测。** 加速比需要相同任务和计时范围下的基线延迟；若另报告利用率，须说明 FLOPs 与峰值口径，不能从规格直接推定。
 - **必须绑定数据类型。** 峰值算力随 dtype 变化（BF16／INT8／INT4 不同），带宽通常不变，因此加速器强度也随精度改变；跨精度的 FLOP/s 不能直接比较。
 - **必须绑定批量与阶段。** 记录实际线性层的 $M$，即本轮合并处理的 token 行数，而不只记录 prefill/decode 名称。多请求 decode 与分段 prefill 都可能形成 GEMM；[模型计算基础](../model/transformer-autoregressive-inference.md)与 [vLLM 调度](../../implementation/vllm-inference-execution.md)解释阶段和形状的关系。
-- **roofline 是上界模型。** 它忽略启动延迟、内存局部性、调度与内核融合，因此能判断瓶颈方向，不能替代实测；量化工作里频频出现的「理论 4 倍、实测要打折扣」都发生在这些被忽略的项上。
+- **roofline 是上界模型。** 它忽略启动延迟、内存局部性、调度与内核融合，因此能判断瓶颈方向，不能替代实测。
 
 块内复用怎样改变流量见 [分块矩阵乘与融合](../operators/gpu-kernel-computation-patterns.md)；异步执行、缓存策略和有效带宽怎样测量见 [算子正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md)。
 

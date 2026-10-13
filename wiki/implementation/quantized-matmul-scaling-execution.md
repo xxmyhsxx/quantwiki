@@ -230,7 +230,7 @@ KV 还需核对缓存写入位置。官方 commit `feffe8ea87d80f7bb57b6e25e7cff
 
 在线变换必须计入所在执行阶段。QuaRot 表 15 的单次追加/attention（RTX 3090，32 个宽度 128 的头、已有 2047 token），batch 1 的 INT4 cache 加 FP32 Hadamard 比 FP16 慢，batch 32 则更快；表 16 的约 3.33 倍是 LLaMA-2-70B 形状、2048 token、batch 32 的单 Transformer block prefill，不能当作整模型解码延迟。
 
-[SpinQuant](../methods/spinquant.md) 的 R1/R2 可离线融合，但 R3/R4 仍在线。其 v4 表 6 测量的是 M1 Pro CPU 上 W4A8，表 14 则是 H100 上 FP8 权重/激活的 Hadamard 附加成本，二者都不能直接配上 W4A4KV4 精度结果声称同一配置达到该速度。比较方法应把位宽、粒度、硬件、模型版本、batch、序列长度、阶段和测量单位一并固定。
+[SpinQuant](../methods/spinquant.md) 的 R1/R2 可离线融合，但 R3/R4 仍在线。其 v4 表 6 测量的是 M1 Pro CPU 上 W4A8，表 14 则是 H100 上 FP8 权重/激活的 Hadamard 附加成本，二者都不能直接配上 W4A4KV4 精度结果声称同一配置达到该速度。
 
 ## 12. 低秩辅助分支不是免费或统一位宽
 

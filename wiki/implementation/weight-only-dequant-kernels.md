@@ -66,7 +66,7 @@ _scaling_factors: half  [OC, IC // G]
 
 新版 GEMV 主机端只有 g128 分支，按 M=1–7 实例化；每 block 256 线程，输出通道按 `N_PER_BLOCK=2`、`K_INTERLEAVE=4` 组织。新版 GEMM 在已读主机分支固定 `G=128`，按 token 数选择 CTA/SPLITK 配置。上层构造器允许某个 group size，不保证这条执行路径支持它：必须沿实际调用检查分派，而不能从旧文件的 g64 分支推断新版可运行。新版 GEMV 文件头仍有旧布局注释，判断应以 qmodule 的缓冲、主机端 dtype 检查和实际指针访问为准。
 
-这补齐了 [AWQ 实现页](awq-implementation.md) 中“打包产物 → 导出名 → 内核”的关系。本轮只做静态核对，没有编译或运行新版内核。
+这补齐了 [AWQ 实现页](awq-implementation.md) 中“打包产物 → 导出名 → 内核”的关系。
 
 ### 新版 GEMV：加载、反量化与归约
 
