@@ -11,7 +11,7 @@ updated: 2026-10-13
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **142 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **143 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -32,6 +32,7 @@ updated: 2026-10-13
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning（`https://arxiv.org/abs/2307.08691v1`）<br>arXiv:2307.08691v1 | 正文§1–5，算法1–2、图2–7和表1；14页PDF及同版TeX核累计/循环与warp分工、反向共享梯度、因果/GQA、原件公式和性能口径 | [累计、序列并行与warp分工](theory/flash-attention-2-work-partitioning.md) | 保留逆缩放/归一化/因果方向/形状/缩放脚注及性能文字差异；未逐点重建曲线，作者代码/原子确定性/RNG/全部接口/设备及模型性能未核 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashAttention-2%20ingest%EF%BC%9A%E7%B4%AF%E8%AE%A1%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%88%86%E9%85%8D) |
 | FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness（`https://arxiv.org/abs/2205.14135v2`）<br>arXiv:2205.14135v2 | 正文§1–5、附录B/C，定向核D/E实现与实验条件；算法0–2/4、定理1–2/5与命题3、式3–6、图2及表1/2/4/7/11/21回查34页PDF和同版TeX | [精确分块、IO与反向重计算](theory/flash-attention-tiling-and-recomputation.md)；[GPU融合连接](fundamentals/operators/gpu-kernel-computation-patterns.md) | 未逐点重建全部图表；作者CUDA、具体RNG/空mask处理、现代FA2/FA3/分页/GQA接口及设备/模型/性能未核，保留原文下界与性能口径边界 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashAttention%20ingest%EF%BC%9A%E7%B2%BE%E7%A1%AE%E5%88%86%E5%9D%97%E3%80%81IO%E4%B8%8E%E5%8F%8D%E5%90%91%E9%87%8D%E8%AE%A1%E7%AE%97) |
 | LQ-Nets: Learned Quantization for Highly Accurate and Compact Deep Neural Networks（`https://arxiv.org/abs/1807.10029v1`）<br>arXiv:1807.10029v1 | 正文§1–5与补充§1–2；式2–8、算法1、表1–4/6–7，核标签域/选码/最小二乘/STE、预算及训练协议；关键公式/图表编号回查21页PDF | [基码值、交替拟合与任务训练](methods/lq-nets.md)；[结构化标量码本](theory/codebook-quantization-and-bit-budget.md#1.%20%E4%BB%8E%E5%9D%87%E5%8C%80%E6%A0%87%E9%87%8F%E8%B5%B0%E5%88%B0%E5%90%91%E9%87%8F%E7%A0%81%E6%9C%AC) | 源包仅PDF合并包装；基/码碰撞与秩处理、EMA与本次重构时序、完整dtype/作者代码/packing/kernel未核，图与全部比较未逐点重建，无训练/部署实测 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20LQ-Nets%20ingest%EF%BC%9A%E5%9F%BA%E7%A0%81%E5%80%BC%E3%80%81QEM%E4%B8%8E%E4%BD%8D%E8%BF%90%E7%AE%97) |
 | LSQ+: Improving low-bit quantization through learnable offsets and better initialization（`https://arxiv.org/abs/2004.09576v1`）<br>arXiv:2004.09576v1 | 正文§1–6及同版有效TeX；式1–8、图1–2、表1–6，核偏移/STE、两类初始化、配置和统计口径；公式/图表编号回查8页PDF | [偏移、初始化与有符号激活](methods/lsq-plus.md)；[实数偏移与零点](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.%20%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%20STE) | 保留均值/4位初值例/1.8与1.9百分点/偏移零梯度推论的差异；Δacc定义、优化超参/正约束/具体缩放、模块与端层完整配置、作者代码及训练/导出/性能未核 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20LSQ%2B%20ingest%EF%BC%9A%E5%81%8F%E7%A7%BB%E3%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E6%9C%89%E7%AC%A6%E5%8F%B7%E6%BF%80%E6%B4%BB) |
@@ -266,11 +267,11 @@ updated: 2026-10-13
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下87个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下86个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；下一项FlashAttention-2，随后核固定flash-attention实现及9份FlashInfer文档，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；下一项核固定flash-attention实现，再处理9份FlashInfer文档，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
-### 论文（28条）
+### 论文（27条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -280,7 +281,6 @@ updated: 2026-10-13
 | DeepSeek-V3 Technical Report（`https://arxiv.org/abs/2412.19437v2`） | `arXiv:2412.19437v2` |
 | DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving（`https://arxiv.org/abs/2401.09670v3`） | `arXiv:2401.09670v3` |
 | FastKernels: Benchmarking GPU Kernel Generation in Production（`https://arxiv.org/abs/2605.23215v1`） | `arXiv:2605.23215v1` |
-| FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning（`https://arxiv.org/abs/2307.08691v1`） | `arXiv:2307.08691v1` |
 | FlashInfer-Bench: Building the Virtuous Cycle for AI-driven LLM Systems（`https://arxiv.org/abs/2601.00227v1`） | `arXiv:2601.00227v1` |
 | Formal Algorithms for Transformers（`https://arxiv.org/abs/2207.09238v1`） | `arXiv:2207.09238v1` |
 | GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints（`https://arxiv.org/abs/2305.13245v3`） | `arXiv:2305.13245v3` |

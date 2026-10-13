@@ -7,6 +7,7 @@ tags:
   - kernels
   - performance
 sources:
+  - raw/papers/2026-09-21/flashattention-2
   - raw/papers/2026-09-21/flashattention
 updated: 2026-10-13
 ---
@@ -133,6 +134,10 @@ $$dV=(P\odot Z)^{\mathsf T}dO,\qquad dP=(dOV^{\mathsf T})\odot Z.$$
 
 §5承认新attention变体与硬件需要CUDA工程适配。历史实现讨论Turing/Ampere及head dim 16/32/64/128，不代表当前FA2/FA3或任意dtype、异长Q/K/V、GQA、分页、分布式attention已覆盖。现代固定实现的接口和在线状态见[vLLM Attention](../implementation/vllm-attention-operator-design.md)与[MLA执行](../implementation/mla-cache-and-attention-execution.md)；这两页保留各自源码版本与所选分支，原论文不替代库内部核验。量化后的Q/K/V、概率舍入与尺度位置还会改变数值路径，不能由原浮点算法等价性推出无损低位实现。
 
+[FlashAttention-2](flash-attention-2-work-partitioning.md)进一步把未归一化累计实际留在片上，沿query块并行并调整warp分工。它承接这里的精确归一化与反向数学，但执行组织与性能计数需要按其固定v1分别核对；本页的$A$等价改写不代表FA1伪码已采用FA2的状态与分工。
+
 ## 来源身份
+
+- FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning（`https://arxiv.org/abs/2307.08691v1`），arXiv:2307.08691v1；末段后续连接，原文§3.1–3.3的累计状态与工作分配；具体原件差异见对应方法页。
 
 - FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness（`https://arxiv.org/abs/2205.14135v2`），arXiv:2205.14135v2；正文§1–5、算法0–1、定理1–2/命题3，附录B算法2/4与式3–6、定理5，附录C证明，D/E必要实现和实验条件、图2与表1/2/4/7/11/21。PDF与同版TeX核对；归一化累计改写、dropout梯度展开和教学例为整理者分析。未逐点重建全部曲线/对照，未核作者CUDA代码或运行模型、设备与性能。
