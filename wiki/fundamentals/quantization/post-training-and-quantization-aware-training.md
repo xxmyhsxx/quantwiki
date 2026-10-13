@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/lsq-plus
   - raw/papers/2026-09-22/pact
   - raw/papers/2026-09-21/lora
   - raw/papers/2026-09-22/lrq
@@ -115,6 +116,8 @@ p,&x/\Delta>p.
 $$
 
 内部项来自外部乘以 $\Delta$ 的导数与内部除以 $\Delta$ 的导数相减；饱和处只剩端点倍数。若仿射零点用连续潜变量、反向近似其舍入导数，则零点的代理导数在非饱和区为 0，在饱和区为 $-\Delta$。改变参数化、裁剪次序或梯度缩放后，公式也可能变化。（W 式 (36)–(40)。）
+
+[LSQ+](../../methods/lsq-plus.md)的连续实数偏移$\beta$采用$\widehat x=sq+\beta$，内部偏移代理为0、两端及饱和区域为1；它与上述整数零点协议不同。若令$z=-\beta/s$，零点坐标还与$s$耦合，且一般不是合法整数；精确零和部署接口必须另核。完整网格、初始化与任务梯度由方法页承接。（LSQ+ v1 §3.1，式2–4。）
 
 步长必须保持正值，零点与部署编码范围也要满足约束。[LSQ](../../methods/lsq.md) 将这种步长代理与专门的梯度缩放组合：每层共享尺度的梯度汇聚多个元素，因而用 $1/\sqrt{NQ_P}$ 调整尺度梯度，前向网格保持不变。其推导依赖梯度相关性、饱和比例等启发式假设，激活侧还讨论了前置 BN；不能只把 scale 设为可训练，就认为复现了完整 LSQ，也不能把此缩放当成任意模型的最优规则。（LSQ v3 §2、附录 A/B。）
 
@@ -241,6 +244,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- LSQ+: Improving low-bit quantization through learnable offsets and better initialization（`https://arxiv.org/abs/2004.09576v1`），arXiv:2004.09576v1；本页§3区分实数偏移、步长与整数零点，原文§3.1式2–4。
 
 - PACT: Parameterized Clipping Activation for Quantized Neural Networks（`https://arxiv.org/abs/1805.06085v2`），arXiv:1805.06085v2；本页§3连接方法特定阈值代理与前向网格的区别，原文§4式1–3。
 

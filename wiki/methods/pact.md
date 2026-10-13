@@ -8,6 +8,7 @@ tags:
 sources:
   - raw/papers/2026-09-22/pact
   - raw/papers/2026-09-22/lsq
+  - raw/papers/2026-09-22/lsq-plus
 updated: 2026-10-13
 ---
 
@@ -99,6 +100,8 @@ ImageNet的ResNet18/50采用full pre-activation结构，训练为SGD、momentum 
 
 原定义将负输入归零，适合该论文替换ReLU的场景。GELU/SiLU输出、有符号隐藏态或KV可能需要保留负值，直接套$[0,\alpha]$会改变激活语义；有符号扩展、粒度、目标和反向须单独定义与验证。LLM中的[OmniQuant裁剪](omniquant.md)学习随当前权重极值变化的相对强度、优化块重构；其替换PACT/LSQ的组件实验不等于复现二者原始任务训练或证明普遍优劣。
 
+[LSQ+](lsq-plus.md)给出适应偏斜正负激活的另一种定义：固定整数端点，学习步长与实数网格偏移，而不是把激活截成非负。其Swish CNN结果和MSE初始化条件由方法页承接，不改写PACT原有的阈值代理或移植为任意有符号模型的效果保证。（LSQ+ v1 §3–5。）
+
 ## 5. 质量证据与首末层条件
 
 表1报告下列top-1准确率，权重用DoReFa、激活用PACT；按§4.2，首末层未量化，W/A标签只代表所选中间层。差值是百分点。
@@ -127,3 +130,4 @@ W4A4可接近这些浮点基线；W2A2的ResNet18/50却分别下降5.8/4.7个百
 
 - PACT: Parameterized Clipping Activation for Quantized Neural Networks（`https://arxiv.org/abs/1805.06085v2`），arXiv:1805.06085v2；正文§1–7、式1–3、图2–3/6–8、表1，附录A–C及表2/5的条件核对。源包仅为PDF包装；图像主要用于定性核查，未逐点重建曲线，未核作者代码或复现训练/硬件。
 - Learned Step Size Quantization（`https://arxiv.org/abs/1902.08153v3`），arXiv:1902.08153v3；本轮定向回查§2.1–2.3、式3、图2与已有方法页的步长代理/缩放，完整既有范围见LSQ页。任务梯度聚合、损失记号及同前向的梯度换算为整理者解释。
+- LSQ+: Improving low-bit quantization through learnable offsets and better initialization（`https://arxiv.org/abs/2004.09576v1`），arXiv:2004.09576v1；本页第4节仅连接正负激活的网格平移，原文§3–5，完整研读范围见LSQ+页。

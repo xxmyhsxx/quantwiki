@@ -39,7 +39,7 @@ sources: []
 - **理解模型与数值**：[Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) → [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md)。
 - **理解 MoE/MLA 与量化对象**：[稠密 decoder 主干](fundamentals/model/transformer-autoregressive-inference.md) → [MoE 的专家选择与容量](fundamentals/model/mixture-of-experts-and-routing.md) / [MLA 的联合缓存与位置分支](fundamentals/model/multi-head-latent-attention.md) → [排序稳定性](theory/quantization-ranking-stability.md) / [KV cache 量化](theory/kv-cache-quantization-objects-and-granularity.md)。
 - **建立共同基础**：[线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) → [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [校准数据与量化范围选择](theory/calibration-and-range-selection.md)。
-- **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [PACT的激活裁剪](methods/pact.md) → [LSQ 的步长学习](methods/lsq.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
+- **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [PACT的激活裁剪](methods/pact.md) → [LSQ 的步长学习](methods/lsq.md) → [LSQ+的偏移与初始化](methods/lsq-plus.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
 - **理解低秩误差修正**：[激活加权低秩近似](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6.%20%E6%BF%80%E6%B4%BB%E5%8A%A0%E6%9D%83%E7%9A%84%E4%BD%8E%E7%A7%A9%E8%BF%91%E4%BC%BC) → [LoftQ 的交替初始化](methods/loftq.md) → [QERA 的解析补偿](methods/qera.md) → [MASQuant 的模态残差](methods/masquant.md) / [SplitQ 的双补偿](methods/splitq.md) → [低秩分支的执行成本](implementation/quantized-matmul-scaling-execution.md#12.%20%E4%BD%8E%E7%A7%A9%E8%BE%85%E5%8A%A9%E5%88%86%E6%94%AF%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E6%88%96%E7%BB%9F%E4%B8%80%E4%BD%8D%E5%AE%BD)。
 - **区分低秩任务适配与选码缩放**：[LoRA的任务增量、目标与预算](methods/lora.md) → [LoftQ的量化适配初始化](methods/loftq.md)；对照[LRQ的对数缩放](methods/lrq.md)，两者因子形状相似，优化对象与推理去向不同。
 - **理解量化方法**：[AWQ](methods/awq.md) → [GPTQ](methods/gptq.md) → [SmoothQuant](methods/smoothquant.md) → [AWQ、GPTQ 与 SmoothQuant](methods/awq-gptq-smoothquant-comparison.md)。
@@ -176,6 +176,7 @@ sources: []
 | [EfficientQAT：逐块全参数训练与整网尺度微调](methods/efficientqat.md) | 局部自由度、固定整数编码与整网目标怎样降低训练成本。 |
 | [LSQ：任务驱动的步长学习与梯度缩放](methods/lsq.md) | 舍入位置、共享尺度梯度与训练协议怎样共同决定网格。 |
 | [PACT：任务驱动的激活裁剪与代理梯度](methods/pact.md) | 裁剪上界怎样由任务和正则调整，同前向网格为何不等于LSQ反向。 |
+| [LSQ+：可学习偏移、初始化与有符号激活](methods/lsq-plus.md) | 实数网格平移、局部MSE初始化与任务微调的分工，整数零点和部署条件。 |
 | [QuIP：非相干处理与 LDLQ](methods/quip.md) | 谱方向、线性反馈与有限网格的保证边界。 |
 | [QuIP#：RHT、BlockLDLQ 与 E8P](methods/quip-sharp.md) | 快速变换、格编码与微调如何兼顾质量和解码成本。 |
 | [AQLM：激活感知加性量化](methods/aqlm.md) | 多个学习码本、联合索引和块内微调怎样工作。 |

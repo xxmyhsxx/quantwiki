@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · LSQ+ ingest：偏移、初始化与有符号激活
+
+- 固定LSQ+ arXiv:2004.09576v1；核读8页PDF正文§1–6及有效TeX，式1–8、图1–2、表1–6回查PDF；原件/源包SHA-256与条目记录一致，TeX注释里的旧设置不作证据。
+- 新增[LSQ+](methods/lsq-plus.md)，解释实数偏移/整数零点、四种编码配置、共享任务代理、权重高斯初值/激活MSE初值及任务微调分工。连接[LSQ](methods/lsq.md)、[PACT](methods/pact.md)和公共[代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.%20%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%20STE)，保留各自变量、反向与原实验条件。
+- 保留均值括注和4位初值例差异、原偏移零梯度推论的上饱和反例、已刊1.8/1.9百分点差异、best/mean/Δacc口径、SE/bottleneck例外与静态bias折叠条件。导航、READING、SELF和计划同步：有依据记录140条，待核队列89条，知识页180个；第11批下一项LQ-Nets。
+- 独立Astra内容review与阅读路径复核通过，明确代数换写与合法整数零点的条件；167组局部代理、18组网格重编号、静态bias展开及初始化/百分点计算一致。严格结构/来源/导航及七个受影响Wiki页面的链接检查通过，0错误、0警告。未逐点重建图，未核作者实现、确切训练/初始化/缩放协议、正约束、端层与导出/packing/kernel，未做模型/性能复现。
+
 ## 2026-10-13 · PACT ingest：激活裁剪与任务梯度
 
 - 固定PACT arXiv:1805.06085v2；核读15页PDF正文及附录A–C，回查式1–3、图2–3/6–8、表1/2/5的阈值、正则、训练和硬件条件。PDF与源包SHA-256匹配来源记录；源包TeX仅为PDF包装，公式和编号依据原PDF核对。
