@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · SignRound ingest：阈值搜索与符号更新
+
+- 先按用户最新授权检查并单独保存既有两份Markdown表格格式及五个Obsidian JSON快照；表格单元格/来源/链接未变，JSON合法且未发现凭据，保留客户端历史内容。
+- 核读SignRound固定v5正文主线、限制与必要成本证据，式1–6、算法1、表1/3–9回查PDF。新增[方法页](methods/signround.md)，解释加法舍入偏移、端点收缩、阈值区间/移动预算、块输出和当前batch最佳候选；与AdaRound/FlexRound/GPTQ分清参数化及更新规则。公共[代理梯度页](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.%20%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%20STE)只补sign更新与反向规则的连接。
+- 标准仿射恢复和条件性STE梯度均标为整理者展开；保留原式未减回零点、学习率措辞与耗时步数差异，以及联合裁剪/更多迭代/方法比较反例。独立内容及阅读路径review完成，修正式1不含V、式3才加入V的定位表达；严格结构/来源/导航与链接检查通过，0错误、0警告。未核作者实现、全部附表、导出/内核或模型/性能复现。INDEX、READING、SELF和计划同步：有依据记录136条、队列93条、知识页176个。
+
 ## 2026-10-13 · FlexRound ingest：除法选码与共同网格
 
 - 按用户确认恢复逐项 ingest，先处理第10批FlexRound固定v2。核读正文问题/方法/实验主线、附录B，定向回查消融与语言模型条件、反例；主要公式/命题/表号对照固定PDF。PDF和TeX源包校验值与条目记录一致。

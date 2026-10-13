@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/signround
   - raw/papers/2026-09-22/flexround
   - raw/papers/2026-09-21/quasar
   - raw/papers/2026-09-21/lc-qat
@@ -117,6 +118,8 @@ $$
 代理规则应核对到具体计算节点。OmniQuant 官方 commit `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` 的 `quantize/quantizer.py:round_ste` 使用 `(round(x)-x).detach()+x`，前向仍取整，反向近似为恒等；权重零点却使用普通 `.round()`，其梯度为零。其学习步长来自 sigmoid 强度与当前权重极值的组合，不是直接套用一个独立可训练步长。不能把“使用 STE”扩写成所有离散节点都使用同一种反向规则。
 
 代理梯度的选择并非无关紧要。[AdaRound](../../methods/adaround.md) 在同一局部重构目标上比较过直通估计器与带显式正则的软松弛，前者精度为 66.63、后者为 68.60（ResNet18，ImageNet），作者把差距归因于 STE 的有偏梯度限制了受限空间中的优化；[BRECQ](../../methods/brecq.md) 则指出激活无法使用舍入式参数化，因为它们随输入变化，只能学习步长。两处都说明：代理规则要与被代理的离散结构匹配，不能只看反向是否可计算。
+
+[SignRound](../../methods/signround.md)则把梯度的sign用于舍入偏移与裁剪参数的有限步更新：离散节点怎样产生代理梯度，与优化器怎样使用该梯度，是两层选择。其v5算法1给出 `loss.backward()` 和SignSGD更新，未展开round/裁剪/零点的反向规则，不能从“梯度取符号”推出硬round可微或作者使用了某个确定STE实现。（§3，式3–6、算法1。）
 
 ### 固定整数编码时，不要继续套舍入代理
 
@@ -231,6 +234,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- Optimize Weight Rounding via Signed Gradient Descent for the Quantization of LLMs（`https://arxiv.org/abs/2309.05516v5`），arXiv:2309.05516v5；区分代理反向与符号梯度更新，原文§3、算法1。
 
 - FlexRound: Learnable Rounding based on Element-wise Division for Post-Training Quantization（`https://arxiv.org/abs/2306.00317v2`），arXiv:2306.00317v2；本页§3.5连接逐元素除法参数与共享步长，原文机制见§3.2、附录B。
 
