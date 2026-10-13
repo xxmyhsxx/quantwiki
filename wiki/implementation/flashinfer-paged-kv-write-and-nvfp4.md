@@ -7,6 +7,7 @@ tags:
   - data-layout
   - fp4
 sources:
+  - raw/articles/2026-09-21/flashinfer-single-prefill
   - raw/articles/2026-09-21/flashinfer-single-decode
   - raw/articles/2026-09-21/flashinfer-append-paged-kv-cache
   - raw/articles/2026-09-21/flashinfer-kv-cache-layout
@@ -95,11 +96,47 @@ Hq 必须是 Hkv 的倍数，二者不等时使用 GQA，即多个 query heads �
 
 若返回 O 与 LSE 后还要分段合并，先核 LSE 单位、shape/dtype 和 value scale 的施加位置，再按[递归状态的条件](sglang-attention-operator-design.md#Attention%20state%20%E7%9A%84%E9%80%92%E5%BD%92%E5%90%88%E5%B9%B6%E4%B8%8E%E6%8E%A5%E5%8F%A3%E5%85%BC%E5%AE%B9)组织。这份接口文档不证明它的实际 LSE 是自然底，也没有给上述 NVFP4 分页产物的兼容读取契约。本次未核匹配实现或运行。（页面标识 0.6.14，snapshot-2026-07-02。）
 
+## 7. 单请求 prefill：mask、尺度与 NVFP4 读取
+
+`single_prefill_with_kv_cache` 一次接收 Q 个 query，输出每个 query/head 的 attention 结果。签名同样没有页表、追加位置或持久缓存写入参数；文档称它为 Prefill/Append attention，不能据此认定调用会执行第 2 节的原位追加。
+
+令 Q/L 为 query/KV 长度，Dqk/Dvo 为 QK 点积宽度与 value/输出宽度：
+
+| 对象 | 文档形状 | 使用关系 |
+| --- | --- | --- |
+| q | `[Q,Hq,Dqk]` | 每个 query 分别读取可见 KV |
+| k | NHD `[L,Hkv,Dqk]`，HND `[Hkv,L,Dqk]` | 与 q 共享点积宽度 |
+| v | NHD `[L,Hkv,Dvo]`，HND `[Hkv,L,Dvo]` | 决定输出最后一维 |
+| O / 可选 LSE | `[Q,Hq,Dvo]` / `[Q,Hq]` | `return_lse=True` 才返回二者；LSE 底与 dtype 仍未说明 |
+
+Hq 必须为 Hkv 的倍数，GQA 的 head 关系沿用第 6 节。这里的文档明确区分 Dqk/Dvo，但没有提供任意宽度组合的支持矩阵。`o_dtype` 省略时取 q 的 dtype；量化输入的格式不替代输出类型选择。（来源 Parameters、Returns、Note。）
+
+### mask 决定每个 query 可以读取哪些位置
+
+`causal` 默认 False。布尔 `custom_mask:[Q,L]` 中 False 表示屏蔽；只有未提供 `custom_mask` 时，文档才说 causal 生效。只给布尔 mask 时接口先打包，产生额外开销；给 `packed_custom_mask` 时，它是 1D uint8，布尔 mask 被忽略。来源指向 `packbits`，却没有在本页展开位序、尾部处理及“只给 packed mask”时与 causal 的完整优先级；不能将第 4 节的分段图直接当成本 wrapper 的全部协议。
+
+原例取 `Q=128,L=4096,Hq=32,Hkv=4,Dqk=Dvo=128`，用 `tril(diagonal=L-Q)` 构造与 causal 调用比较的 mask。按这个例子的对角线，query i 可见 key j 的条件为 $j\le L-Q+i$：首个 query 可读到位置 3968，最后一个可读到 4095。它展示 query 与 KV 尾部对齐的因果范围，不能用普通 Q×L 主对角线替代。来源报告两次 FP16 调用在 `rtol=atol=1e-3` 下 allclose；其中 causal 调用启用了 `use_fp16_qk_reduction=True`，本次未复现，也不把这个容差推广到其他输入。
+
+### FP8 按 head 的尺度与额外校准参数
+
+`scale_q:[Hq]`、`scale_k/scale_v:[Hkv]` 用于 FP8 按 head 量化，省略时为 1；它们不同于 decode 的三个标量参数。另有 `k_scale/v_scale`，描述为 FP8/NVFP4 校准尺度，省略时也为 1。签名将后两者写为 Optional[float]，参数说明则允许 float 或 Tensor；与前一组尺度叠加、优先级和实际运算位置未说明，不能把名字相近的参数当成别名。
+
+`sm_scale` 默认 $1/\sqrt{Dqk}$，控制 softmax 分数；位置编码、RoPE、左窗口和 soft cap 的可选值/缺省规则与第 6 节相同，实际施加顺序仍未核。`use_fp16_qk_reduction` 默认 False，来源称启用后可更快但有精度损失，未给通用性能/误差界。普通 backend 可选 auto/fa2/fa3；auto 按设备架构与 kernel 可用性选择，不表示每个组合都支持三种路径。
+
+### NVFP4 reader 与分页量化产物的衔接
+
+提供 `kv_cache_sf=(k_scales,v_scales)` 时，K/V 应为 uint8 打包 FP4，最后一维按相应逻辑宽度减半；两份块尺度均为 `torch.float8_e4m3fn`，且均要求**线性 row-major 布局**。该文档限定 NVFP4 KV 只支持 fa2。它没有展开精确尺度 shape、共享粒度、字节内码序、尾块及全部设备条件。
+
+第 5 节的分页量化器面向 SM100 trtllm-gen MHA，产生四维页数据，V 尺度采用 4-token 交织；本节 reader 声明的是单请求三维 KV 和两份线性尺度。衔接时须按页表收集本请求数据、核对或重排 V 尺度，再核 FP4 码序和全局恢复因子如何进入 `k_scale/v_scale`；改 `kv_layout` 字符串不能完成这些转换。两份固定文档没有闭合这个转换协议，本次没有实现或验证直接互用。
+
+返回 LSE 后的分段合并继续受第 6 节所述单位及递归状态条件约束。以上为页面标识 0.6.14、snapshot-2026-07-02 的接口阅读；未核匹配实现、完整 dtype/stride/空输入与 mask 全屏蔽行为，未执行 FlashInfer/CUDA。
+
 ## 来源身份
 
+- FlashInfer `single_prefill_with_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.prefill.single_prefill_with_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02，获取于2026-07-02T02:41:08+08:00；多query/输出、mask与FP8参数、NVFP4线性尺度和fa2限制。
 - FlashInfer `single_decode_with_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.decode.single_decode_with_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02，获取于2026-07-02T02:41:08+08:00；单请求输入/返回、GQA与数值参数，文档返回差异和未核实现保留。
 - FlashInfer `append_paged_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02；写入契约与追加示例。
 - FlashInfer KV-Cache Layout（`https://docs.flashinfer.ai/tutorials/kv_layout.html`），页面标识0.6.14；snapshot-2026-07-02；布局正文的两处数学表达与4张2026-09-21补采图。
 - FlashInfer `nvfp4_quantize_paged_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02；SM100 trtllm-gen MHA的产物、尺度及全局恢复因子。
 
-分页写入、布局与NVFP4转换这三份来源保留2026-10-12的既有核读范围，本轮接续single decode。未取得历史HTML或匹配0.6.14源码；完整wrapper/分段打包协议及FlashInfer/CUDA运行仍未核，具体限制由正文与READING分别记录。
+分页写入、布局与NVFP4转换这三份来源保留2026-10-12的既有核读范围，2026-10-14接续single decode与prefill。未取得历史HTML或匹配0.6.14源码；完整wrapper/分段打包协议及FlashInfer/CUDA运行仍未核，具体限制由正文与READING分别记录。

@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · FlashInfer single prefill文档 ingest：mask与尺度
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。在[KV接口页](implementation/flashinfer-paged-kv-write-and-nvfp4.md)接续多query/输出、尾对齐mask与打包选择、FP8按head尺度、NVFP4线性尺度/fa2；复用decode参数和递归状态解释。
+- 区分页内NVFP4 writer的V交织与single reader的两份线性尺度，不推定页数据/全局因子能直接互用；保留packed-only与causal、尺度参数叠加及签名类型差异。READING/SELF/计划同步：152条有依据、77条队列；本轮88已处理11条，第12批尚余发布说明。
+- 独立Astra内容review通过，无必修问题；分页NVFP4来源与reader声明已对照。全库结构/来源strict检查184知识页、639项登记，0错误/待核；3个受影响Wiki页链接strict通过，mask尾对齐与前文/递归状态的承接已核。本项仅为固定接口阅读，未核匹配实现、实现转换或运行GPU。
+
 ## 2026-10-14 · FlashInfer single decode文档 ingest：读取与返回
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。在[KV接口页](implementation/flashinfer-paged-kv-write-and-nvfp4.md)接续单query/3D KV、GQA/数值参数、输出与LSE；原分页写入、索引及NVFP4范围保留，来源身份按条分行。
