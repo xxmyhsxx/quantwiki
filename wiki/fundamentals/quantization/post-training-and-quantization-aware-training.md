@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-21/lora
   - raw/papers/2026-09-22/lrq
   - raw/papers/2026-09-22/signround
   - raw/papers/2026-09-22/flexround
@@ -50,7 +51,7 @@ W §3.4 将通过软舍入变量优化局部重构的 AdaRound 归入 PTQ。[GPT
 
 [OmniQuant](../../methods/omniquant.md) 是完整的可学习 PTQ 实例：冻结基座权重，逐 Transformer block 学习裁剪强度和等价变换参数，用浮点参考输出与量化路径输出的 MSE 校准，不需要回答标签。优化时的变换权重和最终导出权重会变化，冻结的是基座优化变量；需要反向传播，也不能据此称为全模型 QAT。作者在 LLaMA 纯权重量化中只启用裁剪，而权重激活量化中联合优化两类参数，说明可训练变量应服务具体量化问题。（OmniQuant v3 §3、§4.1、算法 1、表 A3。）
 
-[Q-VLM](../../methods/q-vlm.md) 进一步说明，应区分论文中“优化视觉编码器”的意图和实际可训练变量：其 §3.3 主要描述视觉量化函数及联合损失，固定公开入口却是无梯度校准，不能直接说已完成视觉权重微调。另一项 QLoRA v1 §2–3 则明确冻结量化基座并更新 LoRA 适配器，不能仅凭使用 NF4 就把一次量化加载称为 QLoRA 微调。
+[Q-VLM](../../methods/q-vlm.md) 进一步说明，应区分论文中“优化视觉编码器”的意图和实际可训练变量：其 §3.3 主要描述视觉量化函数及联合损失，固定公开入口却是无梯度校准，不能直接说已完成视觉权重微调。另一项 QLoRA v1 §2–3 则明确冻结量化基座并更新 LoRA 适配器，不能仅凭使用 NF4 就把一次量化加载称为 QLoRA 微调。原始[LoRA](../../methods/lora.md)在固定浮点基座上以任务损失学习加法低秩增量，参数减少本身不构成量化；它的固定$\alpha/r$控制增量幅度，也不同于LRQ的选码除数或量化恢复步长。（LoRA v2 §2、§4.1。）
 
 
 [SpinQuant](../../methods/spinquant.md) 把“冻结原权重”和“整网反向”组合在一起：学习残差与 Value 的正交旋转，目标是最终 next-token 交叉熵；主流程学习时使用 W16 与低比特激活，之后才以 GPTQ 量化权重。它仍被作者归为 PTQ，但明显超出了仅做局部层重构的成本模型。这说明记录优化变量、梯度传播范围、目标和前向位宽，比只标 PTQ/QAT 更能解释方法。（SpinQuant v4 §3.2、§4.2、表 3。）
@@ -237,6 +238,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- LoRA: Low-Rank Adaptation of Large Language Models（`https://arxiv.org/abs/2106.09685v2`），arXiv:2106.09685v2；本页§1连接任务适配、加法增量与固定缩放，原文§2、§4.1。
 
 - LRQ: Optimizing Post-Training Quantization for Large Language Models by Learning Low-Rank Weight-Scaling Matrices（`https://arxiv.org/abs/2407.11534v2`），arXiv:2407.11534v2；本页§3.5连接结构化选码参数，原文式2、附录G/J/M。
 

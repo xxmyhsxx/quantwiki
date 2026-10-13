@@ -200,6 +200,7 @@
   },
   "active": "5a912df1522255da",
   "lastOpenFiles": [
+    "wiki/methods/lora.md",
     "wiki/methods/lrq.md",
     "wiki/methods/signround.md",
     "wiki/methods/flexround.md",
@@ -235,7 +236,6 @@
     "wiki/fundamentals/model/vision-language-model-tokens-and-quantization.md",
     "wiki/methods/veq.md",
     "wiki/methods/smoothquant-plus.md",
-    "wiki/implementation/qslaw-scale-learning-and-float-export.md",
     "raw/papers/2026-10-07/centriq/source/figures/fig_collapse.png",
     "raw/papers/2026-10-07/centriq/assets/figures/002-sorted_magnitudes.png",
     "raw/papers/2026-10-07/centriq/assets/figures/001-dc_energy_fraction.png"

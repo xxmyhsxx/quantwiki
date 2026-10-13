@@ -41,6 +41,7 @@ sources: []
 - **建立共同基础**：[线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) → [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [校准数据与量化范围选择](theory/calibration-and-range-selection.md)。
 - **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [LSQ 的步长学习](methods/lsq.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
 - **理解低秩误差修正**：[激活加权低秩近似](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md#6.%20%E6%BF%80%E6%B4%BB%E5%8A%A0%E6%9D%83%E7%9A%84%E4%BD%8E%E7%A7%A9%E8%BF%91%E4%BC%BC) → [LoftQ 的交替初始化](methods/loftq.md) → [QERA 的解析补偿](methods/qera.md) → [MASQuant 的模态残差](methods/masquant.md) / [SplitQ 的双补偿](methods/splitq.md) → [低秩分支的执行成本](implementation/quantized-matmul-scaling-execution.md#12.%20%E4%BD%8E%E7%A7%A9%E8%BE%85%E5%8A%A9%E5%88%86%E6%94%AF%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E6%88%96%E7%BB%9F%E4%B8%80%E4%BD%8D%E5%AE%BD)。
+- **区分低秩任务适配与选码缩放**：[LoRA的任务增量、目标与预算](methods/lora.md) → [LoftQ的量化适配初始化](methods/loftq.md)；对照[LRQ的对数缩放](methods/lrq.md)，两者因子形状相似，优化对象与推理去向不同。
 - **理解量化方法**：[AWQ](methods/awq.md) → [GPTQ](methods/gptq.md) → [SmoothQuant](methods/smoothquant.md) → [AWQ、GPTQ 与 SmoothQuant](methods/awq-gptq-smoothquant-comparison.md)。
 - **比较局部舍入优化**：[AdaRound 的固定相邻候选](methods/adaround.md) → [FlexRound 的除法选码与共同网格](methods/flexround.md) → [SignRound 的偏移与符号更新](methods/signround.md) → [LRQ 的对数因子与参数预算](methods/lrq.md) → [尺度位置与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md#3.5%20%E5%AD%A6%E4%B9%A0%E5%B0%BA%E5%BA%A6%E5%89%8D%EF%BC%8C%E5%85%88%E7%A1%AE%E5%AE%9A%E5%AE%83%E8%BF%9B%E5%85%A5%E5%93%AA%E4%B8%80%E4%BE%A7)。
 
@@ -169,6 +170,7 @@ sources: []
 | [Disaggregated Quantization：分阶段格式与权重](methods/disaggregated-quantization.md) | QADD、两阶段状态衔接、ODP借用恢复及真实计时边界。 |
 | [LLM-QAT：生成数据蒸馏与联合量化](methods/llm-qat.md) | 前缀覆盖、软标签与 W/A/KV 量化怎样共同进入训练。 |
 | [QERA：激活二阶矩加权的低秩量化误差修正](methods/qera.md) | 固定量化主体下的最佳低秩修正、对角近似条件与初始化／推理成本。 |
+| [LoRA：低秩任务适配、训练目标与参数预算](methods/lora.md) | 任务增量的低秩约束、固定缩放、目标矩阵预算与合并条件；区别于LRQ选码。 |
 | [LoftQ：量化主体与低秩适配器的交替初始化](methods/loftq.md) | 先减去旧补偿再量化、重算残差 SVD，最后冻结主体做任务适配。 |
 | [OSTQuant：正交与缩放联合学习、QSUR 与 KL-Top](methods/ostquant.md) | 哪些变换可以学习与融合，分布体积指标、教师损失和量化效果怎样区分。 |
 | [EfficientQAT：逐块全参数训练与整网尺度微调](methods/efficientqat.md) | 局部自由度、固定整数编码与整网目标怎样降低训练成本。 |
