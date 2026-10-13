@@ -7,6 +7,7 @@ tags:
   - data-format
   - memory
 sources:
+  - raw/papers/2026-09-22/lq-nets
   - raw/papers/2026-09-21/lc-qat
   - raw/papers/2026-09-22/gptvq
   - raw/papers/2026-09-22/vptq
@@ -38,10 +39,13 @@ updated: 2026-10-13
 | --- | --- | --- |
 | 均匀标量 | 一个等间距数值 | GPTQ 等方法的常见网格 |
 | 非均匀标量 | 一个可学习代表值 | SqueezeLLM 每输出行 LUT |
+| 结构化标量 | 多个二进制标签组合成一个数值 | LQ-Nets 的可学习二进制基 |
 | 固定结构向量 | 一组有相关结构的数值 | QuIP# 的 8 维 E8P |
 | 可学习加性向量 | 多个码本向量的和 | AQLM |
 
 教学例子：预算为 1 bit/weight、两个数一组。标量方案各选两个值，其四种组合构成矩形；向量方案可把四个码字放在任意四个二维位置，更好覆盖斜向分布。这是更多表示自由度，不是任意任务上的必然优势；向量码本还要付出存储和搜索代价。
+
+[LQ-Nets](../methods/lq-nets.md)提供另一种结构约束：一个标量由$k$个基系数与二进制标签内积生成，最多$2^k$个不同值，不能任意独立设置全部中心；标签组合还可能生成重复值。每输出filter一套基、每filter含$D$个权重、基以$p_v$ bit保存时，理想预算为$k+p_vk/D$ bit/weight，不含未量化层、对齐或运行状态。非均匀值、低码本存储和位运算兼容来自同一表示约束，实际计算仍要按标签域和基系数恢复。（LQ-Nets v1 §3.2–3.3，式5–8；预算为形状展开。）
 
 ## 2. 选最近码字时，“距离”是什么
 
@@ -267,6 +271,7 @@ $$b_\ell=\bar b+\tfrac12\log_2\frac{a_\ell}{(\prod_m a_m)^{1/L}}.$$
 - QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`），arXiv:2402.04396v2；BlockLDLQ、E8P 与高位宽残差编码。
 - Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`），arXiv:2401.06118v4；§3、位宽核算与推理章节。
 - SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`），arXiv:2306.07629v4；非均匀量化与逐行 LUT。
+- LQ-Nets: Learned Quantization for Highly Accurate and Compact Deep Neural Networks（`https://arxiv.org/abs/1807.10029v1`），arXiv:1807.10029v1；本页§1的结构化标量码值和基共享预算，原文§3.2–3.3式5–8。
 - SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`），arXiv:2306.03078v1；两级元数据与例外存储。
 - SqueezeAILab/SqueezeLLM（`https://github.com/SqueezeAILab/SqueezeLLM/tree/a5fd71f353bf569feb7b55737c1c1493e78e8f31`），commit `a5fd71f353bf569feb7b55737c1c1493e78e8f31`；`quant.py` 中 LUT、稀疏值和索引的 dtype。
 

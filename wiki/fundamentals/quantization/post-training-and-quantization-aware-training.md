@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/lq-nets
   - raw/papers/2026-09-22/lsq-plus
   - raw/papers/2026-09-22/pact
   - raw/papers/2026-09-21/lora
@@ -129,6 +130,8 @@ $$
 
 [SignRound](../../methods/signround.md)则把梯度的sign用于舍入偏移与裁剪参数的有限步更新：离散节点怎样产生代理梯度，与优化器怎样使用该梯度，是两层选择。其v5算法1给出 `loss.backward()` 和SignSGD更新，未展开round/裁剪/零点的反向规则，不能从“梯度取符号”推出硬round可微或作者使用了某个确定STE实现。（§3，式3–6、算法1。）
 
+[LQ-Nets](../../methods/lq-nets.md)的主方案又将变量更新分开：前向用当前张量的局部量化误差交替选二进制码、最小二乘拟合基系数，外层任务反传经STE更新浮点潜在网络权重，基在反向中不变。它在每次训练前向拟合量化器，区别于LSQ+的激活MSE初始化，也说明“可学习量化器”不保证所有参数都直接按任务梯度更新。（LQ-Nets v1 §3.3，式7–8、算法1。）
+
 ### 固定整数编码时，不要继续套舍入代理
 
 如果训练直接保留整数 $q,z$，只更新 $s$，前向为 $\widehat w=(q-z)s$，于是 $\partial\widehat w/\partial s=q-z$。这里是精确的连续导数，不再出现重新计算整数编码的 $\operatorname{round}(w/s)-w/s$ 代理项。同组所有权重的梯度共同汇聚到一个尺度，尺度更新会改变恢复权重，但不能重新选择组内整数索引。EfficientQAT v3 §3.3 的 E2E-QP 就是这一参数化；它说明“学习步长”尚不足以确定训练规则，必须同时记录哪些量固定、哪些节点仍在前向中。
@@ -244,6 +247,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- LQ-Nets: Learned Quantization for Highly Accurate and Compact Deep Neural Networks（`https://arxiv.org/abs/1807.10029v1`），arXiv:1807.10029v1；本页§3区分前向QEM与任务STE，原文§3.3式7–8、算法1。
 
 - LSQ+: Improving low-bit quantization through learnable offsets and better initialization（`https://arxiv.org/abs/2004.09576v1`），arXiv:2004.09576v1；本页§3区分实数偏移、步长与整数零点，原文§3.1式2–4。
 
