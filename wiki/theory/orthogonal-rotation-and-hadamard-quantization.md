@@ -237,8 +237,8 @@ $$J(P_h)=a\|XP_l\|_F^2+b\|XP_h\|_F^2
 | ConQuR: Corner Aligned Activation Quantization via Optimized Rotations for LLMs（`https://arxiv.org/abs/2605.10793v2`） | `arXiv:2605.10793v2` | 顶点距离、正交 Procrustes 与逐批校准；几何代理的适用边界 |
 | OstQuant: Refining Large Language Model Quantization with Orthogonal and Scaling Transformations for Better Distribution Fitting（`https://arxiv.org/abs/2501.13987v1`） | `arXiv:2501.13987v1` | QSUR 动机及需修正的椭球范围推导 |
 | 固定QuIP实现（`https://github.com/Cornell-RelaxML/QuIP/tree/ac92cfc7a22f6100009e2caf53bb72257d3f3184`） | `ac92cfc7a22f6100009e2caf53bb72257d3f3184` | 所选预处理/postproc、误差统计与默认浮点保存；§4.1等式为教学展开 |
-| QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`） | `arXiv:2307.13304v2` | 量化机制与适用条件 |
-| QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`） | `arXiv:2402.04396v2` | 量化机制与适用条件 |
+| QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`） | `arXiv:2307.13304v2` | — |
+| QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`） | `arXiv:2402.04396v2` | — |
 | SpinQuant: LLM quantization with learned rotations（`https://arxiv.org/abs/2405.16406v4`） | `arXiv:2405.16406v4` | — |
 | FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
 | QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |

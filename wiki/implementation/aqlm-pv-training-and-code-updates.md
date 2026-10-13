@@ -131,7 +131,7 @@ $$
 D_{\mathrm{KL}}\bigl(p_T(\cdot\mid x_{b,\leq t})\,\|\,p_S(\cdot\mid x_{b,\leq t})\bigr).
 $$
 
-此式中的 $B$ 是当前损失 microbatch 的序列数，$L$ 是每条序列的长度；$p_T$、$p_S$ 分别是教师、学生的词表概率。§3 的 $B$ 表示 STE 缓冲张量，入口的全局 `batch_size` 则统计所有 rank 合计的序列数。
+此式中的 $B$ 是当前损失 microbatch 的序列数，$L$ 是每条序列的长度；$p_T$、$p_S$ 分别是教师、学生的词表概率。§3 的 $B$ 表示 STE 缓冲张量。
 
 普通分支把序列位置展平成batch再做 `batchmean`；分块分支对各位置KL求均值。这里没有用next-token硬标签做shift，也没有在损失处额外按mask筛位置；模型接收attention mask不等于损失mask。定长完整块与带padding的外部预分词数据应分别判断。评测PPL另在 `evaluate_perplexity` 里对logits/标签移位，以真实后继token的交叉熵计算。
 

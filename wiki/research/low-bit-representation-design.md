@@ -83,7 +83,7 @@ B_{\rm codes}+B_{\rm metadata}+B_{\rm exceptions}+B_{\rm transform}\le B.$$
 
 执行上先验证完整解码一致性，尤其是尺度、码字和稀疏修正是否重复相加；再区分 batch 1 decode、prefill 和批处理。查表或稀疏分支的微基准不能代替整段生成或服务收益。质量与服务指标由 [模型质量评测](../implementation/model-quality-evaluation.md) 和 [服务性能评测](../implementation/serving-performance-evaluation.md) 承接。
 
-这里给出的是后续研究的可检验设计，不报告已经执行组合实验。五篇论文支持各自的组件和配置，尚不能替代这些组合的实证。
+这里给出的是后续研究的可检验设计，不报告已经执行组合实验。
 
 ## 6. 主体也可以改变因子宽度
 

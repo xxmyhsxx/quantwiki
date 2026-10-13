@@ -550,12 +550,12 @@ $$L_{\rm moment}=\frac1C\sum_c\left(|\mu_F^c-\mu_Q^c|+|v_F^c-v_Q^c|\right),\qqua
 | --- | --- | --- |
 | EfficientQAT: Efficient Quantization-Aware Training for Large Language Models（`https://arxiv.org/abs/2407.11062v3`） | `arXiv:2407.11062v3` | 局部重构与整网尺度训练 |
 | OpenGVLab/EfficientQAT（`https://github.com/OpenGVLab/EfficientQAT/tree/39175493b2d14617d342a0a7956875e6ac16221b`） | `39175493b2d14617d342a0a7956875e6ac16221b` | `block_ap.py` 的输入、目标与 MSE；2026-09-22 获取 |
-| QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`） | `arXiv:2307.13304v2` | 量化机制与适用条件 |
-| QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`） | `arXiv:2402.04396v2` | 量化机制与适用条件 |
-| Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`） | `arXiv:2401.06118v4` | 量化机制与适用条件 |
+| QuIP: 2-Bit Quantization of Large Language Models With Guarantees（`https://arxiv.org/abs/2307.13304v2`） | `arXiv:2307.13304v2` | — |
+| QuIP#: Even Better LLM Quantization with Hadamard Incoherence and Lattice Codebooks（`https://arxiv.org/abs/2402.04396v2`） | `arXiv:2402.04396v2` | — |
+| Extreme Compression of Large Language Models via Additive Quantization（`https://arxiv.org/abs/2401.06118v4`） | `arXiv:2401.06118v4` | — |
 | Vahe1994/AQLM（`https://github.com/Vahe1994/AQLM/tree/e79a896ed6656fe4ed06193d42d004e7d0bbdbb2`） | `e79a896ed6656fe4ed06193d42d004e7d0bbdbb2` | `AQEngine.add_batch` 与 `init_aq_engines_parallel` 的均值累积和合并 |
-| SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`） | `arXiv:2306.03078v1` | 量化机制与适用条件 |
-| SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`） | `arXiv:2306.07629v4` | 量化机制与适用条件 |
+| SpQR: A Sparse-Quantized Representation for Near-Lossless LLM Weight Compression（`https://arxiv.org/abs/2306.03078v1`） | `arXiv:2306.03078v1` | — |
+| SqueezeLLM: Dense-and-Sparse Quantization（`https://arxiv.org/abs/2306.07629v4`） | `arXiv:2306.07629v4` | — |
 | Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` | — |
 | FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
 | ruikangliu/FlatQuant（`https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1`） | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
