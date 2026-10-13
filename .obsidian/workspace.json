@@ -200,6 +200,7 @@
   },
   "active": "5a912df1522255da",
   "lastOpenFiles": [
+    "wiki/methods/lrq.md",
     "wiki/methods/signround.md",
     "wiki/methods/flexround.md",
     "research/reviews/2026-10-13-wiki-repetition-review.md",
@@ -235,7 +236,6 @@
     "wiki/methods/veq.md",
     "wiki/methods/smoothquant-plus.md",
     "wiki/implementation/qslaw-scale-learning-and-float-export.md",
-    "wiki/methods/qslaw.md",
     "raw/papers/2026-10-07/centriq/source/figures/fig_collapse.png",
     "raw/papers/2026-10-07/centriq/assets/figures/002-sorted_magnitudes.png",
     "raw/papers/2026-10-07/centriq/assets/figures/001-dc_energy_fraction.png"

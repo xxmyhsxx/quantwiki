@@ -6,6 +6,7 @@ tags:
   - qat
   - optimization
 sources:
+  - raw/papers/2026-09-22/lrq
   - raw/papers/2026-09-22/signround
   - raw/papers/2026-09-22/flexround
   - raw/papers/2026-09-21/quasar
@@ -207,6 +208,8 @@ $$e=\int_0^1\nabla^2\mathcal L(w+u\Delta)\Delta\,du$$
 
 学习目标决定这些自由度是否有用；参数数目减少并不免除整网反向或浮点基座成本。若导出只写恢复浮点值到Linear，质量模拟与低位驻留/执行仍是两个验证目标。（QSLAW v1（`https://arxiv.org/abs/2408.03735v1`）式7–8；固定代码quantizer.py、utils.py、replace.py；计算图导数和算例为整理者展开。）
 
+[LRQ](../../methods/lrq.md)进一步用低秩乘积和广播偏置约束对数除数，仍由外侧步长决定恢复网格。低秩约束不传递到逐元素指数后的矩阵或量化权重；完整辅助参数还要计偏置与步长，不能把论文只计两因子的比例当作推理存储减幅。具体目标、预算条件和导出边界见方法页。（LRQ v2 §2.3式2、附录G/J/M。）
+
 ## 4. 初始化与训练过程为什么仍然重要
 
 W 图 8、12 的 PTQ/QAT 流程都先考虑部署量化配置、范围初始化和可行的图变换。更好的初始化可以减少训练需要恢复的损失，也可能防止低位宽下训练失败。
@@ -234,6 +237,8 @@ W 表 6（PTQ）与表 10（QAT）包含不同训练、量化和重复次数：P
 模型质量、低比特存储与实际后端性能分别验证。[误差诊断与验证](../../implementation/quantization-error-diagnosis.md)给出从图一致性到任务评价的检查顺序。本页完成文献解释，没有运行 QAT 或 PTQ 模型复现。
 
 ## 来源身份
+
+- LRQ: Optimizing Post-Training Quantization for Large Language Models by Learning Low-Rank Weight-Scaling Matrices（`https://arxiv.org/abs/2407.11534v2`），arXiv:2407.11534v2；本页§3.5连接结构化选码参数，原文式2、附录G/J/M。
 
 - Optimize Weight Rounding via Signed Gradient Descent for the Quantization of LLMs（`https://arxiv.org/abs/2309.05516v5`），arXiv:2309.05516v5；区分代理反向与符号梯度更新，原文§3、算法1。
 
