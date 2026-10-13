@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-13 · FlashInfer计时文档 ingest：后端与样本口径
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致；未保存原HTML。现有[正确性与计时页](implementation/kernel-correctness-and-benchmarking.md)补CUPTI/Graph/Event优先级、返回毫秒列表、调用方median及次数/时间预算区别，不新增摘要页。
+- 保留Cold-L2策略正文缺失、弃用版本截断、迭代参数优先关系与多kernel/stream聚合未交代；不把文档描述推成已核源码或实际测量。READING145条有依据、84条队列；本轮88已处理4条，8份FlashInfer文档待接续。
+- 独立Astra内容review通过，无必修问题；全库结构/来源strict检查184知识页、632项登记，0错误/待核，3个受影响Wiki页链接strict通过，新增入口与上下文已核。未核匹配计时实现、GPU缓存/采集行为或运行性能。
+
 ## 2026-10-13 · FlashAttention代码 ingest：分派、精度与反向
 
 - 固定Dao-AILab/flash-attention `73c992c8ca746935548df620ef3c1b6238fe6e68`，包声明2.8.4；15个相关源码文件与固定Git对象字节一致，不重验全部25846项档案。静态研读普通Python/C++入口、SM80 FP16/d64/causal/dropout0标准前向及seqK反向，必要补GQA/deterministic。

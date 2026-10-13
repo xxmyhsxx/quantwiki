@@ -7,6 +7,7 @@ tags:
   - performance
   - numerics
 sources:
+  - raw/articles/2026-09-21/flashinfer-bench-gpu-time
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/triton
@@ -16,7 +17,7 @@ sources:
   - raw/articles/2026-09-22/nsight-compute
   - raw/articles/2026-09-22/nsight-systems
   - raw/articles/2026-09-21/cutlass-profiler
-updated: 2026-09-22
+updated: 2026-10-13
 ---
 
 # 算子正确性与性能测量：参考结果、误差和计时边界
@@ -80,7 +81,7 @@ Triton 向量加法教程明确指出：主机函数返回张量时，GPU 工作
 
 多个 stream 协同的调用还需显式建立依赖并等待所有相关工作；只在一个流上夹两个 event，不会自动包含其他流里无依赖的工作。首调与稳态都可能有实际价值，应分别报告。
 
-## 5. `do_bench` 实际测了什么
+## 5. 基准工具的计时与汇总口径
 
 本次读取的 Triton `81a46fa0` 中，`do_bench` 的流程是：先调用 fn 并同步，再估计运行时间，据此将 warmup、rep 的毫秒预算换成次数；预热后，每次测量先调用驱动的 cache 清理，再在 fn 两侧记录设备 event，最后同步并汇总。默认汇总为 mean；显式 quantiles 则按调用者指定的分位数返回。
 
@@ -92,6 +93,22 @@ Triton 向量加法教程明确指出：主机函数返回张量时，GPU 工作
 - 教程变量 `min_ms/max_ms` 接收的是指定的 20%/80% 分位数，不是样本最小/最大值。
 
 `do_bench_cudagraph` 则捕获多次 fn，重放 graph 并按调用数平均，固定版本中没有相同的逐次清缓存步骤。它用于降低主机提交开销，不能与普通调用的测量混作同一种口径；需确认目标场景实际使用 graph，以及 fn 的状态修改是否允许重复重放。
+
+### FlashInfer 的计时后端与返回样本
+
+FlashInfer 0.6.14 文档快照中的 `bench_gpu_time` 接收待测函数 fn 及 `input_args/input_kwargs`，按以下优先级选择计时后端：
+
+| 条件 | 文档声明的后端 | 解释结果时需要保留什么 |
+| --- | --- | --- |
+| `enable_cupti=True` | CUPTI，要求 `cupti-python>=13` | 文档称其测量 GPU kernel 时间；本轮未核其采集实现或实际精度 |
+| 未启用 CUPTI，且 `use_cuda_graph=True` | CUDA Graph | 捕获、重放多次调用以摊薄提交开销；与普通调用分别报告 |
+| 两者均关闭 | CUDA Events | 设备计时间隔可能受主机提交间隙影响，不能等同于完整 Python 调用墙钟 |
+
+返回值是**逐次执行时间的列表，单位为毫秒**。示例中的 `np.median(times)` 是调用者对返回样本的汇总，不是该接口默认直接返回中位数。
+
+`dry_run_iters/repeat_iters` 表达迭代次数；`dry_run_time_ms=25/repeat_time_ms=100` 表达时间预算，不能把 25/100 读成次数。Graph 内迭代参数 `num_iters_within_graph` 默认 10。文档没有交代同时提供次数与时间预算时的优先关系，也没有说明所有后端如何生成与归约样本，不能由参数名补出执行流程。
+
+该快照默认 `cold_l2_cache=True`、`aggregate_op=max`，旧 `l2_flush` 系列参数已标为弃用；弃用版本字段不完整。正文保留了“Cold-L2 Strategy”标题，却缺少具体策略。缓存冲刷发生在何处、是否达到冷 L2、`aggregate_op=max` 的聚合对象与层级、跨 stream 怎样同步，均未从这份文档确认。这里不能沿用前述 Triton helper 的清缓存顺序或将 max 当作整段调用延迟。文档把 Event 描述为包含 CPU 开销，应结合第 4 节的设备间隔与主机墙钟边界理解。（来源 `bench_gpu_time` 的签名、Timing Backends、Returns、示例及弃用说明；snapshot-2026-07-02，未核匹配版本代码或执行基准。）
 
 
 ### 调优会重复执行，性能候选也需要语义检查
@@ -204,6 +221,7 @@ SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| FlashInfer `bench_gpu_time`（`https://docs.flashinfer.ai/generated/flashinfer.testing.bench_gpu_time.html`） | 页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00 | 保存正文的后端优先级、参数单位、样本返回与缺失边界；未核匹配实现或运行。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`） | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
 | vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | batch-invariant RMSNorm 在有无 residual 时的路径选择。 |
