@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · vLLM KV管理文章 ingest：容量接纳与空闲队列
+
+- 完整研读snapshot-2026-09-24文章506行及六图，7文件hash/大小与登记一致；作者自述ba221历史代码未核。沿[vLLM推理](implementation/vllm-inference-execution.md)补watermark条件/两次容量检查、CPU块元数据与空闲链表/归零分组顺序，复用已有token进度和紧凑批次解释。
+- 定向对照568afb配置、waiting caller、allocate_slots、块池/队列及slot dtype/core client/cache注册；保留bool(running)、检查时空闲数变化、单块O(1)/整批O(n)与预留区别。文章图3超预算、累计KV长度502/755、异步socket图文与布局/dtype/登记时序差异不迁成当前实现结论。
+- READING/SELF/计划同步：160条有依据、69条队列，本轮基线88已处理19条；第13批下一项Dynamo、随后Ray，准备不计完成。
+- 独立Astra正式review通过，READING下一项状态遗漏修正后已回读闭环，无剩余必修项；完整文章/六图及所选配置、容量/队列代码已核。全库结构/来源strict检查186知识页、658项登记，0错误/待核；3个受影响Wiki页的779条链接strict通过，160/69实际记录和预算/长度/余量教学算术已核。仅提交本项5文件，Obsidian改动保留；未运行框架、模型或GPU。
+
 ## 2026-10-14 · vLLM V1架构文档 ingest：进程拓扑与初始化接口
 
 - 完整研读官方f9ad9dd6…固定文档300行及五张原图，6文件hash/大小与登记一致；对照现有568afb同名文档，仅旧API启动段与路径有差别。沿[vLLM推理](implementation/vllm-inference-execution.md)补进程拓扑/条件计数与别名-client边界，沿[部署页](implementation/quantized-llm-deployment-backends.md)补统一配置/prefix、初始化分片和加载后处理。

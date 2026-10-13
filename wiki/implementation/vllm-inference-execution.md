@@ -8,6 +8,7 @@ tags:
   - performance
 sources:
   - raw/articles/2026-09-24/vllm-v1-architecture
+  - raw/articles/2026-09-24/vllm-v1-zhihu-source-reading
   - raw/repositories/2026-09-21/vllm
 updated: 2026-10-14
 ---
@@ -91,6 +92,12 @@ $$\Delta B=\left\lceil\frac{c+q}{b}\right\rceil-\left\lceil\frac{c}{b}\right\rce
 
 例如 b=4，c=7 时追加 1 个 token 不必新分块；c=8 时再追加 1 个则需要新块。真实分配还要计入缓存命中、多个 KV 组、lookahead、预留空间与 watermark，不能直接用这个简式替代管理器。
 
+watermark 为接纳请求留下块余量。配置比例 $w\in[0,1)$，管理池共 N 个块时，余量为 $W=\lfloor wN\rfloor$；默认 w=0。所选 `allocate_slots` 仅在 `has_scheduled_reqs` 为真且请求处于 WAITING/PREEMPTED 时加入 W，其余情况取 W=0。waiting 接纳路径实际传入 `bool(self.running)`，因此判断依据是 running 队列非空，不能仅按参数名解释为本轮已安排了 GPU 工作。（`config/scheduler.py`；`v1/core/sched/scheduler.py:Scheduler.schedule`。）
+
+令 D 为 coordinator 算出的本次空闲块需求（含将移出空闲队列的命中块）、F 为检查时空闲块数、R 为 `reserved_blocks`，本轮容量检查要求 $D+W\le F-R$；相等可通过，只有 $F>W$ 并不足够。异步 KV 接收可传入其他在途请求的预留块；本页普通无远程接收的路径取 R=0。
+
+另在 `full_sequence_must_fit=True` 时，管理器先按完整已知序列（`min(request.num_tokens, max_model_len)`）计算 $D_{\rm full}$，检查 $D_{\rm full}+W\le F$，之后仍要通过本轮检查。预检查只判断容量，不会分配整段序列。两次 F 各取检查时的值，中间释放不再参与 Attention 的块可改变 F；前一个检查不在该处扣 R，两个条件不能混成一条公式。waiting 路径默认启用全输入预检查。（`v1/core/kv_cache_manager.py:allocate_slots`。）
+
 这解释了两个限制为何独立：有 token 预算的请求仍可能没有 KV 空间；有 KV 空间也不代表适合无限增大本轮计算量。内存容量、每轮时间和调度公平性需要共同考虑。
 
 ## 4. 前缀复用的身份与生命周期
@@ -106,6 +113,10 @@ $$\Delta B=\left\lceil\frac{c+q}{b}\right\rceil-\left\lceil\frac{c}{b}\right\rce
 | `get_new_blocks` | 取可用块，并移除旧缓存哈希 | 同一物理空间被覆盖前，旧前缀身份必须失效 |
 
 这里的“free”主要是块池的可分配状态，不是每次请求结束就向 CUDA 释放底层显存。可复用的哈希缓存块也可能处于引用数为零的状态；它在被重新占用前仍有命中价值。
+
+`KVCacheBlock` 是 CPU 侧的块元数据，保存物理块 ID、引用数、缓存身份和空闲队列的前后指针；GPU 中的 K/V 数值由对应 backend 的 tensor 布局保存。`FreeKVCacheBlockQueue` 将这些指针直接放在块对象上，形成带头尾哨兵的双向链表。命中一个引用数为零的普通块时，`touch` 可按其前后指针以 O(1) 将它移出空闲队列，无须搜索或再创建队列节点。（`kv_cache_utils.py:KVCacheBlock/FreeKVCacheBlockQueue`；`block_pool.py:touch`。）
+
+`free_blocks` 遍历待释放块、减少引用数；仅把归零且非 null 的块加入队列，其中无哈希块放队首、有哈希块放队尾。再次分配从队首取块，这种释放顺序有利于优先复用不能命中前缀的空间，保留有复用身份的块。这是所选实现的释放入队策略；处理 n 个块及连接批量链表仍需 O(n)，单块摘除的 O(1) 不表示整批释放没有随块数增长的工作。（`block_pool.py:free_blocks/get_new_blocks`；`kv_cache_utils.py:prepend_n/append_n`。）
 
 命中 prompt 的所有 KV 也不直接提供下一 token 的 logits。`get_computed_blocks` 将最大命中长度限制为 `request.num_tokens - 1`，保留末 token 的前向；完整块对齐可能使重算范围大于一个 token。这来自 KV 所保存的信息范围，并不表示前缀缓存失效。
 
@@ -161,4 +172,5 @@ SGLang 对同类问题的组织见 [Radix 缓存、批次与重叠执行](sglang
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
 | vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`） | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad`；获取于2026-09-24T02:12:20+08:00 | 完整保存正文与五张原图，进程拓扑/计数及旧类图；实际客户端与默认值另按568afb源码定位。 |
+| marsggbo：vllm v1 源码精读（三）：KV Cache 管理、Chunked Prefill 与异步架构（`https://zhuanlan.zhihu.com/p/2060408485595050568`） | `snapshot-2026-09-24`；获取于2026-09-24T02:20:33+08:00；文章自述依据 `ba22152096b2484faa3579624a253d54804d876d`（2026-07-06） | 完整正文与六图；空闲队列、容量接纳和混合批次解释定向对照568afb源码。未核ba221历史代码；文章预算/累计长度、布局/dtype和异步图文差异见READING，本页条件以所选执行源码为准。 |
 | vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | 架构文档、V1 EngineCore/调度、KV 管理及 GPU 输入准备；具体文件和符号见各节。 |
