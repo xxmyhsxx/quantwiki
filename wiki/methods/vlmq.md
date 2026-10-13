@@ -167,7 +167,7 @@ INT2 的“16.45”来自表 3 的一个任务：Qwen2.5-VL-7B 在 MME-RealWorld
 
 表 11 在 RTX 5090 上采用 GPTQ W3 内核：四种线性层形状报告约 9.20–9.49 倍加速，单位为 μs。例如输入/输出维度 $(3584,4608)$ 的 Q/K/V 投影，FP16 为 38.97 μs，W3 为 4.17 μs。它是单算子结果，未给出完整图像到回答的时延；形状、batch、测量方法和基线实现仍需补齐。
 
-最终权重表示不需要推理时的梯度计算，这是校准方法的性质；具体位宽、group、zero-point、布局及后端是否支持仍决定能否运行。不能把“GPTQ 兼容”理解为所有后端、所有低位宽都自动可用。执行条件见 [量化矩阵乘法的缩放与执行路径](../implementation/quantized-matmul-scaling-execution.md)。
+具体位宽、group、zero-point、布局及后端是否支持仍决定能否运行。不能把“GPTQ 兼容”理解为所有后端、所有低位宽都自动可用。执行条件见 [量化矩阵乘法的缩放与执行路径](../implementation/quantized-matmul-scaling-execution.md)。
 
 ## 8. 与 MBQ 的关系
 

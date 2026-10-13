@@ -102,7 +102,7 @@ $X^v$ 是视觉输出，$X^{(n)}$ 是最终输出，$q/r$ 区分量化和浮点�
 
 **实际计算路径也要独立说明。**`builder.py` 的 4-bit 配置为 NF4 权重、double quantization、FP16 compute；`Linear4bit` 对激活做量化再反量化后调用 `matmul_4bit`。多 token 的 `MatMul4Bit.forward` 明确先反量化权重，再用浮点 `linear`；单向量且尺寸满足条件时另走 `gemv_4bit`。这不是统一的原生 INT4×INT4 GEMM，不能从 W4A4 标签推导硬件整数加速。[执行路径](../implementation/quantized-matmul-scaling-execution.md) 对存储、模拟和真实计算作共同解释。
 
-这些差别限制从当前快照重现实验，但不能据此断言作者没有其他实验实现。原代码保持原样，本轮不修复或补写算法。
+这些差别限制从当前快照重现实验，但不能据此断言作者没有其他实验实现。
 
 ## 6. 有解释价值的证据
 
