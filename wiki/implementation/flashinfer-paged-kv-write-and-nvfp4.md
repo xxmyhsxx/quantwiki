@@ -1,20 +1,22 @@
 ---
-title: FlashInfer 分页 KV：写入契约、布局与 NVFP4 尺度
+title: FlashInfer KV 接口：分页写入、单请求 attention 与 NVFP4 尺度
 type: implementation
 tags:
+  - attention
   - kv-cache
   - data-layout
   - fp4
 sources:
+  - raw/articles/2026-09-21/flashinfer-single-decode
   - raw/articles/2026-09-21/flashinfer-append-paged-kv-cache
   - raw/articles/2026-09-21/flashinfer-kv-cache-layout
   - raw/articles/2026-09-21/flashinfer-nvfp4-kv-cache
-updated: 2026-10-12
+updated: 2026-10-14
 ---
 
-# FlashInfer 分页 KV：写入契约、布局与 NVFP4 尺度
+# FlashInfer KV 接口：分页写入、单请求 attention 与 NVFP4 尺度
 
-这三份0.6.14文档快照把“如何写入已有页”“如何解释索引/张量轴”“NVFP4产物如何交给专用reader”分开。它们是接口参照，没有实现[CalibQuant](../methods/calibquant.md)或[VidKV](../methods/vidkv.md)的编码、保护和校准；本文未运行FlashInfer或核当前版本。
+这些0.6.14固定文档分别说明分页写入、索引/张量轴、单请求attention读取与NVFP4产物的尺度契约。页缓存的存储、数值写入和reader的输入准备各有职责，衔接时须核对具体接口。它们是接口参照，没有实现[CalibQuant](../methods/calibquant.md)或[VidKV](../methods/vidkv.md)的编码、保护和校准；本文未运行FlashInfer或核当前版本。
 
 ## 1. 长度指针分别计 token、页与 mask 元素
 
@@ -72,6 +74,32 @@ MLA缓存存latent `ckv`与位置分量`kpe`，可共用[pages,P,Dckv+Dkpe]再�
 
 教学账取D=128、两份K/V：码128字节，块尺度16字节，共144字节/页内token/head，相对BF16的512字节约3.56倍；两全局恢复因子、完整页/尾块、页表与工作缓冲另计。此接口转换分配新产物时还可能与原BF16缓存同时存在，不能用持久记录比代替峰值内存或实时加速。相同NVFP4名称也不保证能直接读取[GGUF块记录](gguf-block-quantization-formats.md)；[块尺度格式](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md#5.%20%E4%BB%8E%E6%A0%87%E5%87%86%E5%88%B0%E5%AE%9E%E9%99%85%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F)说明元素码、存储块与尺度共享组的区别。
 
+## 6. 单请求 decode 的输入、输出与数值参数
+
+`single_decode_with_kv_cache` 接收一个 query 及该请求的 K/V 张量，计算各 query head 的 attention 输出。它的签名没有页表、页分配或追加位置参数；从页缓存取值的调用方须先准备本入口声明的张量，不能仅凭 `kv_cache` 名称代替第 2 节的 writer 或分页读取协议。
+
+令 L 为本请求提供的 KV 长度，Hq/Hkv 为 query/KV head 数，D 为文档输入的 head 宽度：
+
+| 对象 | 文档形状或所选样例 | 含义 |
+| --- | --- | --- |
+| q | `[Hq,D]` | 单个 query 的各个 head，没有独立 query 长度轴 |
+| k、v | NHD `[L,Hkv,D]`，或 HND `[Hkv,L,D]` | 本请求的 KV；布局选择不能把四维页缓存自动变成这份三维输入 |
+| O | 来源等宽样例为 `[Hq,D]` | 交给后续网络层的结果 |
+| 可选 LSE | `return_lse=True` 时为 `[Hq]` | 每 head 的归一化统计；底与 dtype 未在保存正文中声明 |
+
+Hq 必须是 Hkv 的倍数，二者不等时使用 GQA，即多个 query heads 共享 KV heads。文档的 FP16 样例取 `L=4096,Hq=Hkv=32,D=128`，默认调用返回 `[32,128]`。但 Returns 的 False 分支另写了 `[qo_len,Hq,head_dim_vo]`，与 True 分支及该样例不一致；正文按二维样例说明使用方式，将三维描述保留为待核差异。V 输入仍写 D，因此也不能只凭返回中的 `head_dim_vo` 名称推定任意独立 value 宽度均受支持。（来源 Parameters、Returns、Examples 与 Note。）
+
+`q_scale/k_scale/v_scale` 是 FP8 输入的可选**标量**校准参数，缺省为 1；`sm_scale` 则控制 softmax 分数，缺省为 $1/\sqrt D$。两类参数的对象不同，不能混成同一个默认因子。`pos_encoding_mode` 默认 NONE，可选 ROPE_LLAMA/ALIBI；RoPE 的 `rope_scale/rope_theta` 默认 1/1e4。`window_left=-1` 表示全长左窗口，正的 soft cap c 将相应 logits x 变为 $c\tanh(x/c)$，未提供时 cap 为 0。具体施加顺序与精度路径仍须核实现。（来源对应参数。）
+
+`use_tensor_cores=False` 为默认值。文档称较大的 GQA 组使用 Tensor Core 可更快，但没有在本条给完整硬件/shape/测量条件，本次不将其当通用速度结论。本签名没有 causal/custom mask 参数，调用方须准备正确的可见 KV 范围并核窗口及位置编码约定；完整 dtype/宽度/stride、空 KV 行为和设备分派未从此页确认。
+
+若返回 O 与 LSE 后还要分段合并，先核 LSE 单位、shape/dtype 和 value scale 的施加位置，再按[递归状态的条件](sglang-attention-operator-design.md#Attention%20state%20%E7%9A%84%E9%80%92%E5%BD%92%E5%90%88%E5%B9%B6%E4%B8%8E%E6%8E%A5%E5%8F%A3%E5%85%BC%E5%AE%B9)组织。这份接口文档不证明它的实际 LSE 是自然底，也没有给上述 NVFP4 分页产物的兼容读取契约。本次未核匹配实现或运行。（页面标识 0.6.14，snapshot-2026-07-02。）
+
 ## 来源身份
 
-三份FlashInfer 0.6.14官方文档，正文`snapshot-2026-07-02`：`https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html`、`https://docs.flashinfer.ai/tutorials/kv_layout.html`、`https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html`。本次读完整保存正文/例子、布局正文的两处数学表达与4张2026-09-21补采图；未取得历史HTML、匹配0.6.14源码/现行网页，未核三接口之外的完整wrapper/分段打包协议或运行FlashInfer/CUDA/SM100。
+- FlashInfer `single_decode_with_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.decode.single_decode_with_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02，获取于2026-07-02T02:41:08+08:00；单请求输入/返回、GQA与数值参数，文档返回差异和未核实现保留。
+- FlashInfer `append_paged_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.page.append_paged_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02；写入契约与追加示例。
+- FlashInfer KV-Cache Layout（`https://docs.flashinfer.ai/tutorials/kv_layout.html`），页面标识0.6.14；snapshot-2026-07-02；布局正文的两处数学表达与4张2026-09-21补采图。
+- FlashInfer `nvfp4_quantize_paged_kv_cache`（`https://docs.flashinfer.ai/generated/flashinfer.quantization.nvfp4_quantize_paged_kv_cache.html`），页面标识0.6.14；snapshot-2026-07-02；SM100 trtllm-gen MHA的产物、尺度及全局恢复因子。
+
+分页写入、布局与NVFP4转换这三份来源保留2026-10-12的既有核读范围，本轮接续single decode。未取得历史HTML或匹配0.6.14源码；完整wrapper/分段打包协议及FlashInfer/CUDA运行仍未核，具体限制由正文与READING分别记录。

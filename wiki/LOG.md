@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · FlashInfer single decode文档 ingest：读取与返回
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。在[KV接口页](implementation/flashinfer-paged-kv-write-and-nvfp4.md)接续单query/3D KV、GQA/数值参数、输出与LSE；原分页写入、索引及NVFP4范围保留，来源身份按条分行。
+- 保留Returns的qo_len/二维样例差异、未声明的LSE底/dtype和输入宽度/精度/设备范围，不推成分页或NVFP4reader。INDEX/READING/SELF/计划同步：151条有依据、78条队列；本轮88已处理10条，2份FlashInfer文档待接续。
+- 独立Astra内容review完成，修复来源拆分后的旧条目指代并复核通过，无剩余必修问题。全库结构/来源strict检查184知识页、638项登记，0错误/待核；4个受影响Wiki页链接strict通过，新增关系及递归状态目标上下文已核。未核匹配实现或运行GPU；已有能力包设计/说明改动留在工作区，不属于本项提交。
+
 ## 2026-10-14 · FlashInfer状态文档 ingest：递归合并与条件
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，全文及2026-09-21补采合并树图核读，两文件哈希与登记一致。在[SGLang归约页](implementation/sglang-attention-operator-design.md)复用已有输出加权公式/例子，只补完整自然LSE与递归state、同query/score/mask及互不重叠条件，保留浮点和实际接口单位边界。
