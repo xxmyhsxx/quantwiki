@@ -277,6 +277,122 @@ class PackageLifecycleTests(unittest.TestCase):
         (self.source / "package.json").write_text(json.dumps(manifest))
         self.assertEqual(self.call("verify", expected=2)["state"], "invalid_manifest")
 
+    def test_prepare_source_returns_one_ready_snapshot_without_installing(self):
+        output = self.base / "tasks/source-task/package"
+        result = self.call("prepare", "--output", str(output), default_tool=True)
+        self.assertEqual(result["state"], "ready")
+        self.assertEqual(result["snapshot"], str(output))
+        self.assertEqual(result["freshness"], "current")
+        self.assertTrue(result["source_checked"])
+        self.assertFalse(result["updated"])
+        self.assertEqual(result["limitations"], [])
+        self.assertTrue((output / "skills/wiki-query/SKILL.md").is_file())
+        self.assertFalse((self.source / ".installation.json").exists())
+        self.assertFalse(self.project.exists())
+
+    def test_prepare_updates_only_with_permission_and_keeps_old_task(self):
+        self.install()
+        old_task = self.base / "tasks/old/package"
+        initial = self.call("prepare", "--output", str(old_task), package=self.installation)
+        (self.source / "SKILL.md").write_text("New published entry\n")
+        self.publish(2)
+        output = self.base / "tasks/new/package"
+        refusal = self.call("prepare", "--output", str(output), package=self.installation, expected=2)
+        self.assertFalse(refusal["ok"])
+        self.assertEqual(refusal["state"], "update_required")
+        self.assertFalse(output.exists())
+        self.assertEqual(json.loads((self.installation / "package.json").read_text())["version"], 1)
+        result = self.call("prepare", "--output", str(output), "--allow-update", package=self.installation, default_tool=True)
+        self.assertEqual(result["state"], "ready")
+        self.assertEqual(result["version"], 2)
+        self.assertEqual(result["freshness"], "current")
+        self.assertTrue(result["updated"])
+        self.assertEqual(json.loads((old_task / "package.json").read_text())["version"], 1)
+        self.assertEqual(initial["content_sha256"], json.loads((old_task / "package.json").read_text())["content_sha256"])
+
+    def test_prepare_valid_mirror_when_source_is_unavailable_or_draft(self):
+        self.install()
+        (self.source / "SKILL.md").write_text("Unpublished work\n")
+        draft = self.call("prepare", "--output", str(self.base / "draft-task/package"), package=self.installation)
+        self.assertEqual(draft["state"], "ready")
+        self.assertEqual(draft["freshness"], "source_unpublished")
+        self.assertTrue(draft["source_checked"])
+        self.assertFalse(draft["updated"])
+        self.assertTrue(draft["limitations"])
+        self.source.rename(self.base / "offline-source")
+        offline = self.call("prepare", "--output", str(self.base / "offline-task/package"), package=self.installation)
+        self.assertEqual(offline["state"], "ready")
+        self.assertEqual(offline["freshness"], "source_unavailable")
+        self.assertFalse(offline["source_checked"])
+        self.assertEqual(offline["version"], 1)
+        self.assertTrue(offline["limitations"])
+
+    def test_prepare_fixed_snapshot_reuses_it_without_source_access(self):
+        output = self.base / "fixed-task/package"
+        self.call("prepare", "--output", str(output))
+        unused_output = self.base / "must-not-create/package"
+        with mock.patch.object(self.module, "inspect", side_effect=AssertionError("Fixed task must not query source")):
+            result = self.module.prepare(output, unused_output, allow_update=True)
+        self.assertEqual(result["state"], "ready")
+        self.assertEqual(result["snapshot"], str(output))
+        self.assertEqual(result["freshness"], "fixed_snapshot")
+        self.assertFalse(result["source_checked"])
+        self.assertFalse(unused_output.exists())
+
+    def test_prepare_refuses_customization_conflicts_and_source_downgrade(self):
+        self.install()
+        entry = self.installation / "SKILL.md"
+        original = entry.read_bytes()
+        entry.write_text("Local task method\n")
+        output = self.base / "refused-task/package"
+        refusal = self.call("prepare", "--output", str(output), "--allow-update", package=self.installation, expected=2)
+        self.assertEqual(refusal["state"], "customized")
+        self.assertFalse(output.exists())
+        self.assertEqual(entry.read_text(), "Local task method\n")
+        entry.write_bytes(original)
+        manifest_path = self.source / "package.json"
+        original_manifest = manifest_path.read_bytes()
+        other_origin = json.loads(original_manifest)
+        other_origin["bindings"]["wiki_root"] = str(self.base / "other-wiki")
+        other_origin["bindings"]["feedback_root"] = str(self.base / "other-wiki/query-feedback")
+        other_origin["content_sha256"] = self.module.sha256(self.module.canonical({key: value for key, value in other_origin.items() if key != "content_sha256"}))
+        manifest_path.write_text(json.dumps(other_origin))
+        other = self.call("prepare", "--output", str(output), "--allow-update", package=self.installation, expected=2)
+        self.assertEqual(other["state"], "different_source")
+        self.assertFalse(output.exists())
+        manifest_path.write_bytes(original_manifest)
+        (self.source / "SKILL.md").write_text("Same-version conflicting publication\n")
+        current = json.loads(original_manifest)
+        current["files"] = self.module.payload_files(self.source)
+        current["content_sha256"] = self.module.sha256(self.module.canonical({key: value for key, value in current.items() if key != "content_sha256"}))
+        manifest_path.write_text(json.dumps(current))
+        conflict = self.call("prepare", "--output", str(output), "--allow-update", package=self.installation, expected=2)
+        self.assertEqual(conflict["state"], "release_conflict")
+        self.assertFalse(output.exists())
+        (self.source / "SKILL.md").write_bytes(original)
+        manifest_path.write_bytes(original_manifest)
+        self.publish(2)
+        self.call("install", "--project", str(self.project), "--allow-update")
+        manifest_path.write_bytes(original_manifest)
+        ahead = self.call("prepare", "--output", str(output), "--allow-update", package=self.installation, expected=2)
+        self.assertEqual(ahead["state"], "ahead")
+        self.assertFalse(output.exists())
+        self.assertEqual(json.loads((self.installation / "package.json").read_text())["version"], 2)
+
+    def test_prepare_reuses_checks_without_rescanning_stage_payload(self):
+        output = self.base / "single-pass-task/package"
+        real_scan = self.module.payload_files
+        scans = []
+        def track_scan(path):
+            scans.append(path)
+            return real_scan(path)
+        with mock.patch.object(self.module, "payload_files", side_effect=track_scan):
+            self.module.prepare(self.source, output)
+        # Each scan serves a distinct boundary: source, prepared copy, final output.
+        self.assertEqual(len(scans), 3)
+        self.assertEqual(scans.count(self.source), 1)
+        self.assertEqual(scans.count(output), 1)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
