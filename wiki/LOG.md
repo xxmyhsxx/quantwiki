@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · FlashInfer状态文档 ingest：递归合并与条件
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，全文及2026-09-21补采合并树图核读，两文件哈希与登记一致。在[SGLang归约页](implementation/sglang-attention-operator-design.md)复用已有输出加权公式/例子，只补完整自然LSE与递归state、同query/score/mask及互不重叠条件，保留浮点和实际接口单位边界。
+- 区分共享KV与复用query相关输出；关联MLA底转换解释，保留原文30×缺完整测量/博客未读。未核merge API/设备实现，不把数学合并写成所选SGLangstage2已导出完整state。READING150条有依据、79条队列；本轮88已处理9条，3份FlashInfer文档待接续。
+- 独立Astra内容review通过，无必修问题；定向回核SGLangstage2及调用链，明确它只写O、不导出合并LSE。全库结构/来源strict检查184知识页、637项登记，0错误/待核；3个受影响Wiki页链接strict通过，新增关系与MLA目标上下文已核。未执行FlashInfer/SGLang或GPU。
+
 ## 2026-10-14 · FlashInfer FP4 GEMM文档 ingest：布局与恢复
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。[块缩放页](implementation/block-scaled-matmul-execution.md)接续NV/MX FP4两侧数据/尺度、各backend的128×4/8×4与shuffle、TRTLLM原例的B/sf配套转置和全局恢复、auto/PDL及输出范围。

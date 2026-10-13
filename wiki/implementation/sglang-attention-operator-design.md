@@ -8,8 +8,9 @@ tags:
   - attention
   - performance
 sources:
+  - raw/articles/2026-09-21/flashinfer-recursive-attention
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # SGLang 算子设计：索引化 KV、Extend 与 Decode 归约
@@ -84,6 +85,22 @@ $$o=\frac{\sum_s e^{z_s-z_{\max}}o_s}{\sum_s e^{z_s-z_{\max}}}.$$
 
 空 segment 不应带入未初始化结果，源码通过实际 segment 起止范围跳过它们。数值等价是实数运算下的解释；段边界、浮点累计顺序和类型转换改变时，不保证逐位一致。
 
+### Attention state 的递归合并与接口兼容
+
+FlashInfer 0.6.14 的 recursive attention 教程将局部归一化输出与 LSE 合称 attention state。沿用本节的记号，完整状态是 $(o,z)$：前述公式产生合并后的 o，合并后的自然对数 LSE 则为
+
+$$z=z_{\max}+\log\sum_s e^{z_s-z_{\max}}.$$
+
+因此，合并得到的 $(o,z)$ 可以继续参加下一层合并，不必回到原始 KV。不同线程块或设备可分别处理历史子集；共享 prefix 与各请求的独有 suffix 也可先分别计算，再恢复同一个 query 的完整归一化。这是在实数下重组未归一化加权和与分母，教程配图展示了同一组 key 的不同合并树；它不保证浮点结果逐位相同。（来源状态定义、二元/多元 merge 与 Applications。）
+
+这个 z 是教程完整 state 的数学组成。本页所选 SGLang `_fwd_kernel_stage2`只写最终 O，没有导出这个合并后的 LSE；数学状态与实际返回接口要分别看。（`triton_ops/decode_attention.py:667–738,794–839`。）
+
+按这些公式表示集合并集，需要各段对应**同一 query/head、相同 score 定义和全局可见性规则，并覆盖互不重叠的 KV 子集**。若 I、J 重叠，公共 key 的未归一化权重会被计两次，结果不再是集合并集的 attention；这是对原文 $I\cup J$ 写法补充的必要条件。共享 prefix 可复用 KV 数据与读取，却不能给不同 query 直接复用同一份 prefix 输出/state。
+
+跨接口合并还要核 LSE 的底、shape/dtype 和 value scale 是否已经施加。上述教程公式用自然 exp/log；若收到 base-2 LSE，应按 $2^z$恢复权重，或先乘 $\ln2$换成自然底，不能直接塞入 $e^z$。具体库侧不同约定可对照[MLA 的 LSE 与合并](mla-cache-and-attention-execution.md#12.%20%E5%9C%A8%E7%BA%BF%E5%BD%92%E4%B8%80%E5%8C%96%E3%80%81split%20%E5%90%88%E5%B9%B6%E5%92%8C%20LSE%20%E7%9A%84%E5%BA%95)；教程的数学单位不能代替各实际 API 的返回契约。空段、全屏蔽行及特殊值也须按具体接口处理，不能作为普通有效状态直接参加公式。
+
+教程报告长上下文、大 batch 的共享 prefix 路径有 30× 算子加速，但保存正文没有完整硬件、长度、batch、基线和计时协议，关联博客未读。本页只承接上述分解机制和这项报告的范围，不把数字作为一般收益或本地性能证据。
+
 ## 5. GQA 复用与分段各自解决什么问题
 
 如果 r 个 query heads 共享一个 KV head，普通 head 映射为 $h_{KV}=\lfloor h_Q/r\rfloor$。grouped decode 内核把同一组中的若干 query heads 放在一个 tile 内，共享加载的 K/V；组较大时还需将 heads 切成多个 tile，并屏蔽尾部无效行。其 grid 同时组织请求、head 组和历史 segment。
@@ -120,4 +137,5 @@ extend 的 piecewise 分支在 `RadixAttention` 中通过注册的 custom op 暴
 
 | 来源 | 固定版本 | 使用范围 |
 | --- | --- | --- |
+| FlashInfer Recursive Attention（`https://docs.flashinfer.ai/tutorials/recursive_attention.html`） | 页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；合并树配图于2026-09-21补采 | 完整保存正文与配图；状态/merge/应用，补不重叠条件与接口单位边界；未核merge API、关联博客或设备实现。 |
 | sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | Llama/RadixAttention、backend 接口、Triton metadata/extend/decode、MHA KV 写入和普通 decode 图准备；具体符号见各节。 |
