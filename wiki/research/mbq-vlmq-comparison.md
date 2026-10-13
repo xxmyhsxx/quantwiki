@@ -112,17 +112,17 @@ VLMQ 表 6 在无分组 INT3、Qwen2-VL-7B 上报告：常数权重 69.03，Fast
 
 ## 来源身份
 
-| 来源 | 版本或快照 | 说明 |
-| --- | --- | --- |
-| Calibrate the Decisions That Change the Future（`https://arxiv.org/abs/2609.36828v1`） | `arXiv:2609.36828v1` | 生成状态、边界与后果的校准，更新变量及比较协议 |
-| LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`） | `arXiv:2509.23729v3` | — |
-| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1` | — |
-| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`） | `arXiv:2605.19929v1` | — |
-| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`） | `arXiv:2603.04800v1` | — |
-| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
-| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`） | `arXiv:2412.19509v2` | — |
-| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |
-| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`） | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | — |
+| 来源                                                                                                                                                          | 版本或快照                                      | 说明                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------- |
+| Calibrate the Decisions That Change the Future（`https://arxiv.org/abs/2609.36828v1`）                                                                        | `arXiv:2609.36828v1`                       | 生成状态、边界与后果的校准，更新变量及比较协议 |
+| LUQ: Layerwise Ultra-Low Bit Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2509.23729v3`）                                        | `arXiv:2509.23729v3`                       | —                       |
+| Fine-Grained Post-Training Quantization for Large Vision Language Models with Quantization-Aware Integrated Gradients（`https://arxiv.org/abs/2603.17809v1`） | `arXiv:2603.17809v1`                       | —                       |
+| Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`）                              | `arXiv:2605.19929v1`                       | —                       |
+| MASQuant: Modality-Aware Smoothing Quantization for Multimodal Large Language Models（`https://arxiv.org/abs/2603.04800v1`）                                  | `arXiv:2603.04800v1`                       | —                       |
+| MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`）           | `arXiv:2502.00425v2`                       | —                       |
+| MBQ: Modality-Balanced Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2412.19509v2`）                                                  | `arXiv:2412.19509v2`                       | —                       |
+| VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`）                                     | `arXiv:2508.03351v2`                       | —                       |
+| thu-nics/MBQ（`https://github.com/thu-nics/MBQ/tree/a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1`）                                                               | `a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1` | —                       |
 
 - The Alignment Illusion in Multimodal Large Language Models（`https://arxiv.org/abs/2609.30210v1`），arXiv:2609.30210v1；主角度诊断与视觉干预。
 

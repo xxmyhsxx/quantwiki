@@ -216,150 +216,150 @@ Floating Point and IEEE 754 本地材料（`../../raw/articles/2026-09-22/floati
 
 142 篇论文的 PDF 可解析，页图可解码，页数、页序和主读本引用均一致。下表“字符信号”依次为替换字符、非字符、控制字符数量；0 不表示公式语义已获认证。TeX 文件数来自所保存源码包，未编译认证。校验列仅统计本条目顶层 README 对应的文件。
 
-| 条目 | 版本 | PDF 页数 | TeX 原包 | 文件校验一致/登记 | 字符信号 |
-| --- | --- | ---: | --- | --- | --- |
-| [2026-09-21/adaround](../../raw/papers/2026-09-21/adaround/README.md) | arXiv:2004.10568v2 | 12 | 19 个 TeX 文件 | 3/3 | 0 / 125 / 30 |
-| [2026-09-21/affinequant](../../raw/papers/2026-09-21/affinequant/README.md) | arXiv:2403.12544v1 | 19 | 未保存（允许） | 2/2 | 0 / 87 / 7 |
-| [2026-09-21/akvq-vl](../../raw/papers/2026-09-21/akvq-vl/README.md) | arXiv:2501.15021v1 | 7 | 4 个 TeX 文件 | 3/3 | 0 / 38 / 8 |
-| [2026-09-21/aqlm](../../raw/papers/2026-09-21/aqlm/README.md) | arXiv:2401.06118v4 | 20 | 24 个 TeX 文件 | 3/3 | 0 / 135 / 2 |
-| [2026-09-21/atom](../../raw/papers/2026-09-21/atom/README.md) | arXiv:2310.19102v3 | 14 | 15 个 TeX 文件 | 3/3 | 0 / 180 / 0 |
-| [2026-09-21/attention-is-all-you-need](../../raw/papers/2026-09-21/attention-is-all-you-need/README.md) | arXiv:1706.03762v7 | 15 | 10 个 TeX 文件 | 3/3 | 0 / 16 / 0 |
-| [2026-09-21/awq](../../raw/papers/2026-09-21/awq/README.md) | arXiv:2306.00978v6 | 15 | 31 个 TeX 文件 | 3/3 | 0 / 162 / 0 |
-| [2026-09-21/billm](../../raw/papers/2026-09-21/billm/README.md) | arXiv:2402.04291v2 | 20 | 未保存（允许） | 2/2 | 17 / 152 / 0 |
-| [2026-09-21/brecq](../../raw/papers/2026-09-21/brecq/README.md) | arXiv:2102.05426v2 | 16 | 3 个 TeX 文件 | 3/3 | 0 / 81 / 15 |
-| [2026-09-21/calibquant](../../raw/papers/2026-09-21/calibquant/README.md) | arXiv:2502.14882v2 | 12 | 2 个 TeX 文件 | 3/3 | 0 / 134 / 15 |
-| [2026-09-21/cayley-stiefel](../../raw/papers/2026-09-21/cayley-stiefel/README.md) | arXiv:2002.01113v1 | 16 | 未保存（允许） | 2/2 | 0 / 42 / 8 |
-| [2026-09-21/channel-wise-mixed-precision](../../raw/papers/2026-09-21/channel-wise-mixed-precision/README.md) | arXiv:2410.13056v4 | 23 | 2 个 TeX 文件 | 3/3 | 0 / 69 / 2 |
-| [2026-09-21/coopq](../../raw/papers/2026-09-21/coopq/README.md) | arXiv:2509.15455v2 | 13 | 1 个 TeX 文件 | 3/3 | 0 / 235 / 8 |
-| [2026-09-21/cudaforge](../../raw/papers/2026-09-21/cudaforge/README.md) | arXiv:2511.01884v2 | 33 | 9 个 TeX 文件 | 3/3 | 0 / 14 / 0 |
-| [2026-09-21/deepseek-r1](../../raw/papers/2026-09-21/deepseek-r1/README.md) | arXiv:2501.12948v2 | 86 | 15 个 TeX 文件 | 3/3 | 0 / 112 / 18 |
-| [2026-09-21/deepseek-v2](../../raw/papers/2026-09-21/deepseek-v2/README.md) | arXiv:2405.04434v5 | 52 | 7 个 TeX 文件 | 3/3 | 0 / 41 / 9 |
-| [2026-09-21/deepseek-v3](../../raw/papers/2026-09-21/deepseek-v3/README.md) | arXiv:2412.19437v2 | 53 | 5 个 TeX 文件 | 3/3 | 0 / 93 / 10 |
-| [2026-09-21/distserve](../../raw/papers/2026-09-21/distserve/README.md) | arXiv:2401.09670v3 | 18 | 12 个 TeX 文件 | 3/3 | 0 / 279 / 0 |
-| [2026-09-21/fastkernels](../../raw/papers/2026-09-21/fastkernels/README.md) | arXiv:2605.23215v1 | 67 | 12 个 TeX 文件 | 3/3 | 0 / 146 / 2 |
-| [2026-09-21/flashattention](../../raw/papers/2026-09-21/flashattention/README.md) | arXiv:2205.14135v2 | 34 | 32 个 TeX 文件 | 3/3 | 0 / 19 / 68 |
-| [2026-09-21/flashattention-2](../../raw/papers/2026-09-21/flashattention-2/README.md) | arXiv:2307.08691v1 | 14 | 8 个 TeX 文件 | 3/3 | 0 / 4 / 4 |
-| [2026-09-21/flashinfer-bench](../../raw/papers/2026-09-21/flashinfer-bench/README.md) | arXiv:2601.00227v1 | 39 | 14 个 TeX 文件 | 3/3 | 0 / 178 / 0 |
-| [2026-09-21/flatquant](../../raw/papers/2026-09-21/flatquant/README.md) | arXiv:2410.09426v4 | 27 | 47 个 TeX 文件 | 3/3 | 0 / 139 / 2 |
-| [2026-09-21/flexq](../../raw/papers/2026-09-21/flexq/README.md) | arXiv:2508.04405v2 | 17 | 7 个 TeX 文件 | 3/3 | 0 / 424 / 4 |
-| [2026-09-21/fluxbin](../../raw/papers/2026-09-21/fluxbin/README.md) | arXiv:2608.15602v1 | 24 | 19 个 TeX 文件 | 3/3 | 0 / 327 / 46 |
-| [2026-09-21/formal-transformer-algorithms](../../raw/papers/2026-09-21/formal-transformer-algorithms/README.md) | arXiv:2207.09238v1 | 16 | 1 个 TeX 文件 | 3/3 | 0 / 171 / 100 |
-| [2026-09-21/fp8-formats](../../raw/papers/2026-09-21/fp8-formats/README.md) | arXiv:2209.05433v2 | 9 | 2 个 TeX 文件 | 3/3 | 0 / 6 / 0 |
-| [2026-09-21/gptaq](../../raw/papers/2026-09-21/gptaq/README.md) | arXiv:2504.02692v3 | 17 | 未保存（允许） | 2/2 | 0 / 143 / 232 |
-| [2026-09-21/gptq](../../raw/papers/2026-09-21/gptq/README.md) | arXiv:2210.17323v2 | 16 | 3 个 TeX 文件 | 3/3 | 0 / 52 / 4 |
-| [2026-09-21/gqa](../../raw/papers/2026-09-21/gqa/README.md) | arXiv:2305.13245v3 | 7 | 9 个 TeX 文件 | 3/3 | 0 / 100 / 0 |
-| [2026-09-21/helm](../../raw/papers/2026-09-21/helm/README.md) | arXiv:2211.09110v2 | 162 | 72 个 TeX 文件 | 3/3 | 0 / 360 / 151 |
-| [2026-09-21/int8-gg](../../raw/papers/2026-09-21/int8-gg/README.md) | arXiv:2606.12280v2 | 11 | 1 个 TeX 文件 | 3/3 | 0 / 9 / 0 |
-| [2026-09-21/integer-only-quantization](../../raw/papers/2026-09-21/integer-only-quantization/README.md) | arXiv:1712.05877v1 | 14 | 2 个 TeX 文件 | 3/3 | 0 / 202 / 2 |
-| [2026-09-21/integrated-gradients](../../raw/papers/2026-09-21/integrated-gradients/README.md) | 2017 PMLR 70, pp.3319–3328 | 10 | 未保存（允许） | 2/2 | 0 / 190 / 0 |
-| [2026-09-21/kernelbench](../../raw/papers/2026-09-21/kernelbench/README.md) | arXiv:2502.10517v1 | 37 | 28 个 TeX 文件 | 3/3 | 0 / 32 / 0 |
-| [2026-09-21/kernelbenchx](../../raw/papers/2026-09-21/kernelbenchx/README.md) | arXiv:2605.04956v2 | 17 | 9 个 TeX 文件 | 3/3 | 0 / 19 / 0 |
-| [2026-09-21/kitty](../../raw/papers/2026-09-21/kitty/README.md) | arXiv:2511.18643v1 | 12 | 8 个 TeX 文件 | 3/3 | 0 / 144 / 2 |
-| [2026-09-21/kivi](../../raw/papers/2026-09-21/kivi/README.md) | arXiv:2402.02750v2 | 15 | 10 个 TeX 文件 | 3/3 | 0 / 101 / 0 |
-| [2026-09-21/lc-qat](../../raw/papers/2026-09-21/lc-qat/README.md) | arXiv:2606.10531v1 | 14 | 1 个 TeX 文件 | 3/3 | 0 / 125 / 19 |
-| [2026-09-21/llama-3](../../raw/papers/2026-09-21/llama-3/README.md) | arXiv:2407.21783v3 | 92 | 80 个 TeX 文件 | 3/3 | 0 / 59 / 0 |
-| [2026-09-21/llm-int8](../../raw/papers/2026-09-21/llm-int8/README.md) | arXiv:2208.07339v2 | 20 | 1 个 TeX 文件 | 3/3 | 0 / 30 / 4 |
-| [2026-09-21/llm-mq](../../raw/papers/2026-09-21/llm-mq/README.md) | snapshot-sha256-9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0 | 5 | 未保存（允许） | 3/3 | 0 / 6 / 0 |
-| [2026-09-21/llm-qat](../../raw/papers/2026-09-21/llm-qat/README.md) | arXiv:2305.17888v1 | 15 | 13 个 TeX 文件 | 3/3 | 0 / 11 / 0 |
-| [2026-09-21/longbench-v2](../../raw/papers/2026-09-21/longbench-v2/README.md) | arXiv:2412.15204v2 | 26 | 10 个 TeX 文件 | 3/3 | 0 / 229 / 0 |
-| [2026-09-21/lora](../../raw/papers/2026-09-21/lora/README.md) | arXiv:2106.09685v2 | 26 | 3 个 TeX 文件 | 3/3 | 0 / 86 / 6 |
-| [2026-09-21/luq](../../raw/papers/2026-09-21/luq/README.md) | arXiv:2509.23729v3 | 20 | 7 个 TeX 文件 | 3/3 | 0 / 43 / 0 |
-| [2026-09-21/lvlm-compress-bench](../../raw/papers/2026-09-21/lvlm-compress-bench/README.md) | arXiv:2503.04982v1 | 17 | 2 个 TeX 文件 | 3/3 | 0 / 263 / 0 |
-| [2026-09-21/marlin](../../raw/papers/2026-09-21/marlin/README.md) | arXiv:2408.11743v1 | 14 | 1 个 TeX 文件 | 3/3 | 0 / 174 / 5 |
-| [2026-09-21/masquant](../../raw/papers/2026-09-21/masquant/README.md) | arXiv:2603.04800v1 | 10 | 9 个 TeX 文件 | 3/3 | 0 / 146 / 20 |
-| [2026-09-21/mbq](../../raw/papers/2026-09-21/mbq/README.md) | arXiv:2412.19509v2 | 21 | 50 个 TeX 文件 | 3/3 | 0 / 229 / 4 |
-| [2026-09-21/medical-mllm-compression](../../raw/papers/2026-09-21/medical-mllm-compression/README.md) | arXiv:2507.21976v3 | 16 | 1 个 TeX 文件 | 3/3 | 0 / 44 / 7 |
-| [2026-09-21/microscaling-formats](../../raw/papers/2026-09-21/microscaling-formats/README.md) | arXiv:2310.10537v3 | 9 | 8 个 TeX 文件 | 3/3 | 0 / 6 / 0 |
-| [2026-09-21/mmlu-pro](../../raw/papers/2026-09-21/mmlu-pro/README.md) | arXiv:2406.01574v6 | 24 | 2 个 TeX 文件 | 3/3 | 0 / 34 / 31 |
-| [2026-09-21/mquant](../../raw/papers/2026-09-21/mquant/README.md) | arXiv:2502.00425v2 | 18 | 8 个 TeX 文件 | 3/3 | 0 / 197 / 20 |
-| [2026-09-21/multi-query-attention](../../raw/papers/2026-09-21/multi-query-attention/README.md) | arXiv:1911.02150v1 | 9 | 1 个 TeX 文件 | 3/3 | 0 / 10 / 0 |
-| [2026-09-21/multimodal-qat](../../raw/papers/2026-09-21/multimodal-qat/README.md) | arXiv:2408.03735v1 | 10 | 1 个 TeX 文件 | 3/3 | 0 / 130 / 0 |
-| [2026-09-21/norm-tweaking](../../raw/papers/2026-09-21/norm-tweaking/README.md) | arXiv:2309.02784v2 | 10 | 1 个 TeX 文件 | 3/3 | 0 / 182 / 0 |
-| [2026-09-21/nova-kv](../../raw/papers/2026-09-21/nova-kv/README.md) | arXiv:2608.04074v1 | 42 | 2 个 TeX 文件 | 3/3 | 0 / 7 / 59 |
-| [2026-09-21/omniquant](../../raw/papers/2026-09-21/omniquant/README.md) | arXiv:2308.13137v3 | 25 | 2 个 TeX 文件 | 3/3 | 0 / 124 / 1 |
-| [2026-09-21/pagedattention](../../raw/papers/2026-09-21/pagedattention/README.md) | arXiv:2309.06180v1 | 16 | 6 个 TeX 文件 | 3/3 | 0 / 215 / 0 |
-| [2026-09-21/plug-and-play-kv-quantization](../../raw/papers/2026-09-21/plug-and-play-kv-quantization/README.md) | arXiv:2503.16257v2 | 18 | 13 个 TeX 文件 | 3/3 | 0 / 48 / 6 |
-| [2026-09-21/q-vlm](../../raw/papers/2026-09-21/q-vlm/README.md) | arXiv:2410.08119v3 | 15 | 8 个 TeX 文件 | 3/3 | 0 / 24 / 0 |
-| [2026-09-21/qapruner](../../raw/papers/2026-09-21/qapruner/README.md) | arXiv:2604.02816v1 | 12 | 4 个 TeX 文件 | 3/3 | 0 / 80 / 4 |
-| [2026-09-21/qig](../../raw/papers/2026-09-21/qig/README.md) | arXiv:2603.17809v1 | 18 | 2 个 TeX 文件 | 3/3 | 0 / 268 / 11 |
-| [2026-09-21/qlora](../../raw/papers/2026-09-21/qlora/README.md) | arXiv:2305.14314v1 | 26 | 1 个 TeX 文件 | 3/3 | 0 / 43 / 8 |
-| [2026-09-21/qserve](../../raw/papers/2026-09-21/qserve/README.md) | arXiv:2405.04532v3 | 19 | 35 个 TeX 文件 | 3/3 | 0 / 203 / 12 |
-| [2026-09-21/quantization-reliable-vqa](../../raw/papers/2026-09-21/quantization-reliable-vqa/README.md) | arXiv:2602.13289v1 | 6 | 1 个 TeX 文件 | 3/3 | 0 / 44 / 0 |
-| [2026-09-21/quantization-white-paper](../../raw/papers/2026-09-21/quantization-white-paper/README.md) | arXiv:2106.08295v1 | 27 | 22 个 TeX 文件 | 3/3 | 0 / 29 / 52 |
-| [2026-09-21/quarot](../../raw/papers/2026-09-21/quarot/README.md) | arXiv:2404.00456v2 | 21 | 18 个 TeX 文件 | 3/3 | 0 / 12 / 3 |
-| [2026-09-21/quasar](../../raw/papers/2026-09-21/quasar/README.md) | arXiv:2608.13966v1 | 39 | 16 个 TeX 文件 | 3/3 | 0 / 78 / 18 |
-| [2026-09-21/quip](../../raw/papers/2026-09-21/quip/README.md) | arXiv:2307.13304v2 | 34 | 14 个 TeX 文件 | 3/3 | 0 / 34 / 314 |
-| [2026-09-21/quip-sharp](../../raw/papers/2026-09-21/quip-sharp/README.md) | arXiv:2402.04396v2 | 27 | 23 个 TeX 文件 | 3/3 | 0 / 160 / 141 |
-| [2026-09-21/qwen2-5-omni](../../raw/papers/2026-09-21/qwen2-5-omni/README.md) | arXiv:2503.20215v1 | 20 | 10 个 TeX 文件 | 3/3 | 0 / 21 / 4 |
-| [2026-09-21/qwen2-5-vl](../../raw/papers/2026-09-21/qwen2-5-vl/README.md) | arXiv:2502.13923v1 | 23 | 8 个 TeX 文件 | 3/3 | 0 / 35 / 0 |
-| [2026-09-21/qwen3](../../raw/papers/2026-09-21/qwen3/README.md) | arXiv:2505.09388v1 | 35 | 10 个 TeX 文件 | 3/3 | 0 / 41 / 0 |
-| [2026-09-21/qwen3-vl](../../raw/papers/2026-09-21/qwen3-vl/README.md) | arXiv:2511.21631v2 | 42 | 15 个 TeX 文件 | 3/3 | 0 / 84 / 0 |
-| [2026-09-21/resq](../../raw/papers/2026-09-21/resq/README.md) | arXiv:2412.14363v2 | 18 | 14 个 TeX 文件 | 3/3 | 0 / 159 / 2 |
-| [2026-09-21/rmsnorm](../../raw/papers/2026-09-21/rmsnorm/README.md) | arXiv:1910.07467v1 | 14 | 1 个 TeX 文件 | 3/3 | 0 / 40 / 22 |
-| [2026-09-21/roformer](../../raw/papers/2026-09-21/roformer/README.md) | arXiv:2104.09864v5 | 14 | 1 个 TeX 文件 | 3/3 | 0 / 3 / 24 |
-| [2026-09-21/ruler](../../raw/papers/2026-09-21/ruler/README.md) | arXiv:2404.06654v3 | 27 | 41 个 TeX 文件 | 3/3 | 0 / 34 / 0 |
-| [2026-09-21/sarathi-serve](../../raw/papers/2026-09-21/sarathi-serve/README.md) | arXiv:2403.02310v3 | 18 | 32 个 TeX 文件 | 3/3 | 0 / 260 / 0 |
-| [2026-09-21/saw-int4](../../raw/papers/2026-09-21/saw-int4/README.md) | arXiv:2604.19157v1 | 24 | 7 个 TeX 文件 | 3/3 | 0 / 60 / 6 |
-| [2026-09-21/sglang](../../raw/papers/2026-09-21/sglang/README.md) | arXiv:2312.07104v2 | 20 | 10 个 TeX 文件 | 3/3 | 0 / 22 / 0 |
-| [2026-09-21/sharq](../../raw/papers/2026-09-21/sharq/README.md) | arXiv:2606.26587v1 | 20 | 2 个 TeX 文件 | 3/3 | 0 / 25 / 2 |
-| [2026-09-21/slicegpt](../../raw/papers/2026-09-21/slicegpt/README.md) | arXiv:2401.15024v2 | 22 | 未保存（允许） | 2/2 | 0 / 36 / 2 |
-| [2026-09-21/smoothquant](../../raw/papers/2026-09-21/smoothquant/README.md) | arXiv:2211.10438v7 | 13 | 30 个 TeX 文件 | 3/3 | 0 / 150 / 0 |
-| [2026-09-21/smoothquant-plus](../../raw/papers/2026-09-21/smoothquant-plus/README.md) | arXiv:2312.03788v1 | 12 | 1 个 TeX 文件 | 3/3 | 0 / 185 / 27 |
-| [2026-09-21/spikemllm](../../raw/papers/2026-09-21/spikemllm/README.md) | arXiv:2604.18610v1 | 20 | 1 个 TeX 文件 | 3/3 | 0 / 217 / 14 |
-| [2026-09-21/spinquant](../../raw/papers/2026-09-21/spinquant/README.md) | arXiv:2405.16406v4 | 24 | 37 个 TeX 文件 | 3/3 | 0 / 21 / 5 |
-| [2026-09-21/splitq](../../raw/papers/2026-09-21/splitq/README.md) | arXiv:2605.19929v1 | 24 | 1 个 TeX 文件 | 3/3 | 21 / 45 / 13 |
-| [2026-09-21/spqr](../../raw/papers/2026-09-21/spqr/README.md) | arXiv:2306.03078v1 | 26 | 4 个 TeX 文件 | 3/3 | 0 / 29 / 0 |
-| [2026-09-21/squeezellm](../../raw/papers/2026-09-21/squeezellm/README.md) | arXiv:2306.07629v4 | 23 | 10 个 TeX 文件 | 3/3 | 0 / 160 / 1 |
-| [2026-09-21/tritonbench](../../raw/papers/2026-09-21/tritonbench/README.md) | arXiv:2502.14752v1 | 13 | 22 个 TeX 文件 | 3/3 | 0 / 234 / 0 |
-| [2026-09-21/turboquant](../../raw/papers/2026-09-21/turboquant/README.md) | arXiv:2504.19874v1 | 25 | 3 个 TeX 文件 | 3/3 | 0 / 45 / 83 |
-| [2026-09-21/veq](../../raw/papers/2026-09-21/veq/README.md) | arXiv:2602.01037v1 | 10 | 1 个 TeX 文件 | 3/3 | 0 / 148 / 0 |
-| [2026-09-21/vlmq](../../raw/papers/2026-09-21/vlmq/README.md) | arXiv:2508.03351v2 | 28 | 19 个 TeX 文件 | 3/3 | 0 / 208 / 2 |
-| [2026-09-21/zeroquant](../../raw/papers/2026-09-21/zeroquant/README.md) | arXiv:2206.01861v1 | 24 | 14 个 TeX 文件 | 3/3 | 0 / 10 / 4 |
-| [2026-09-22/efficientqat](../../raw/papers/2026-09-22/efficientqat/README.md) | arXiv:2407.11062v3 | 20 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-22/flexround](../../raw/papers/2026-09-22/flexround/README.md) | arXiv:2306.00317v2 | 27 | 未保存（允许） | 2/2 | 0 / 0 / 46 |
-| [2026-09-22/gptvq](../../raw/papers/2026-09-22/gptvq/README.md) | arXiv:2402.15319v2 | 21 | 未保存（允许） | 2/2 | 0 / 0 / 32 |
-| [2026-09-22/hawq-v2](../../raw/papers/2026-09-22/hawq-v2/README.md) | arXiv:1911.03852v1 | 13 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-22/kvquant](../../raw/papers/2026-09-22/kvquant/README.md) | arXiv:2401.18079v6 | 27 | 未保存（允许） | 2/2 | 0 / 0 / 18 |
-| [2026-09-22/loftq](../../raw/papers/2026-09-22/loftq/README.md) | arXiv:2310.08659v4 | 23 | 未保存（允许） | 2/2 | 0 / 0 / 6 |
-| [2026-09-22/lq-nets](../../raw/papers/2026-09-22/lq-nets/README.md) | arXiv:1807.10029v1 | 21 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-22/lrq](../../raw/papers/2026-09-22/lrq/README.md) | arXiv:2407.11534v2 | 36 | 未保存（允许） | 2/2 | 0 / 0 / 2 |
-| [2026-09-22/lsq](../../raw/papers/2026-09-22/lsq/README.md) | arXiv:1902.08153v3 | 12 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-22/lsq-plus](../../raw/papers/2026-09-22/lsq-plus/README.md) | arXiv:2004.09576v1 | 8 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-22/ostquant](../../raw/papers/2026-09-22/ostquant/README.md) | arXiv:2501.13987v1 | 27 | 未保存（允许） | 2/2 | 0 / 0 / 36 |
-| [2026-09-22/pact](../../raw/papers/2026-09-22/pact/README.md) | arXiv:1805.06085v2 | 15 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-22/pv-tuning](../../raw/papers/2026-09-22/pv-tuning/README.md) | arXiv:2405.14852v2 | 42 | 未保存（允许） | 2/2 | 0 / 0 / 54 |
-| [2026-09-22/qera](../../raw/papers/2026-09-22/qera/README.md) | arXiv:2410.06040v2 | 30 | 未保存（允许） | 2/2 | 0 / 0 / 29 |
-| [2026-09-22/qjl](../../raw/papers/2026-09-22/qjl/README.md) | arXiv:2406.03482v2 | 13 | 未保存（允许） | 2/2 | 0 / 0 / 36 |
-| [2026-09-22/qtip](../../raw/papers/2026-09-22/qtip/README.md) | arXiv:2406.11235v4 | 25 | 未保存（允许） | 2/2 | 0 / 0 / 9 |
-| [2026-09-22/signround](../../raw/papers/2026-09-22/signround/README.md) | arXiv:2309.05516v5 | 19 | 未保存（允许） | 2/2 | 0 / 0 / 6 |
-| [2026-09-22/vptq](../../raw/papers/2026-09-22/vptq/README.md) | arXiv:2409.17066v2 | 16 | 未保存（允许） | 2/2 | 0 / 0 / 4 |
-| [2026-09-23/activation-guided-compensation](../../raw/papers/2026-09-23/activation-guided-compensation/README.md) | arXiv:2609.21450v1 | 19 | 未保存（允许） | 2/2 | 0 / 0 / 70 |
-| [2026-09-23/bos-sink-topology](../../raw/papers/2026-09-23/bos-sink-topology/README.md) | arXiv:2609.23585v1 | 6 | 未保存（允许） | 2/2 | 0 / 0 / 8 |
-| [2026-09-23/coreprune](../../raw/papers/2026-09-23/coreprune/README.md) | arXiv:2609.26484v1 | 24 | 未保存（允许） | 2/2 | 0 / 0 / 25 |
-| [2026-09-23/disaggregated-quantization](../../raw/papers/2026-09-23/disaggregated-quantization/README.md) | arXiv:2609.26333v1 | 29 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-23/layer-aware-position-embeddings](../../raw/papers/2026-09-23/layer-aware-position-embeddings/README.md) | arXiv:2609.23715v1 | 10 | 未保存（允许） | 2/2 | 0 / 0 / 3 |
-| [2026-09-23/prquant](../../raw/papers/2026-09-23/prquant/README.md) | arXiv:2609.22106v1 | 12 | 未保存（允许） | 2/2 | 0 / 0 / 13 |
-| [2026-09-23/quantization-retrieval-damage](../../raw/papers/2026-09-23/quantization-retrieval-damage/README.md) | arXiv:2609.24322v1 | 33 | 未保存（允许） | 2/2 | 0 / 0 / 8 |
-| [2026-09-23/rgsq](../../raw/papers/2026-09-23/rgsq/README.md) | arXiv:2609.25492v1 | 14 | 未保存（允许） | 2/2 | 0 / 0 / 32 |
-| [2026-09-23/sphquant](../../raw/papers/2026-09-23/sphquant/README.md) | arXiv:2609.24875v1 | 16 | 未保存（允许） | 2/2 | 0 / 0 / 10 |
-| [2026-09-26/casa-cross-layer-sensitivity](../../raw/papers/2026-09-26/casa-cross-layer-sensitivity/README.md) | arXiv:2609.25916v1 | 33 | 未保存（允许） | 2/2 | 0 / 0 / 192 |
-| [2026-09-26/quantization-price-prediction](../../raw/papers/2026-09-26/quantization-price-prediction/README.md) | arXiv:2609.28270v1 | 21 | 未保存（允许） | 2/2 | 0 / 0 / 36 |
-| [2026-09-26/ramp-edge-cpu-mixed-precision](../../raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/README.md) | arXiv:2609.28262v1 | 13 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-26/the-alignment-illusion](../../raw/papers/2026-09-26/the-alignment-illusion/README.md) | arXiv:2609.30210v1 | 26 | 未保存（允许） | 2/2 | 0 / 0 / 14 |
-| [2026-09-28/foldquantvla](../../raw/papers/2026-09-28/foldquantvla/README.md) | arXiv:2609.24433v1 | 8 | 未保存（允许） | 2/2 | 0 / 0 / 5 |
-| [2026-09-28/same-bit-width-different-outcomes](../../raw/papers/2026-09-28/same-bit-width-different-outcomes/README.md) | arXiv:2609.28974v1 | 5 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-09-28/vla-simd](../../raw/papers/2026-09-28/vla-simd/README.md) | arXiv:2609.24274v1 | 8 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-10-03/conqur](../../raw/papers/2026-10-03/conqur/README.md) | arXiv:2605.10793v2 | 21 | 未保存（允许） | 2/2 | 0 / 0 / 8 |
-| [2026-10-03/decision-flips](../../raw/papers/2026-10-03/decision-flips/README.md) | arXiv:2610.00694v1 | 20 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-10-03/mwop](../../raw/papers/2026-10-03/mwop/README.md) | arXiv:2610.01434v1 | 37 | 未保存（允许） | 2/2 | 0 / 0 / 0 |
-| [2026-10-03/quantforge](../../raw/papers/2026-10-03/quantforge/README.md) | arXiv:2609.34680v1 | 41 | 未保存（允许） | 2/2 | 0 / 0 / 16 |
-| [2026-10-03/rdtok](../../raw/papers/2026-10-03/rdtok/README.md) | arXiv:2610.00204v1 | 5 | 未保存（允许） | 2/2 | 0 / 0 / 4 |
-| [2026-10-03/reconstruction-loss-scale-rmse](../../raw/papers/2026-10-03/reconstruction-loss-scale-rmse/README.md) | arXiv:2610.00983v1 | 20 | 未保存（允许） | 2/2 | 0 / 0 / 2 |
-| [2026-10-03/scale-sensitivity](../../raw/papers/2026-10-03/scale-sensitivity/README.md) | arXiv:2609.37416v1 | 56 | 未保存（允许） | 2/2 | 0 / 0 / 755 |
-| [2026-10-03/wush-kv](../../raw/papers/2026-10-03/wush-kv/README.md) | arXiv:2609.38121v1 | 30 | 未保存（允许） | 2/2 | 0 / 0 / 199 |
-| [2026-10-03/xor-trellis](../../raw/papers/2026-10-03/xor-trellis/README.md) | arXiv:2610.00432v1 | 23 | 未保存（允许） | 2/2 | 0 / 0 / 16 |
-| [2026-10-05/covisco](../../raw/papers/2026-10-05/covisco/README.md) | arXiv:2609.39924v1 | 26 | 1 个 TeX 文件 | 3/3 | 0 / 0 / 18 |
-| [2026-10-05/onptq](../../raw/papers/2026-10-05/onptq/README.md) | arXiv:2609.36828v1 | 20 | 2 个 TeX 文件 | 3/3 | 0 / 0 / 33 |
+| 条目                                                                                                                      | 版本                                                                               | PDF 页数 | TeX 原包      | 文件校验一致/登记 | 字符信号          |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -----: | ----------- | --------- | ------------- |
+| [2026-09-21/adaround](../../raw/papers/2026-09-21/adaround/README.md)                                                   | arXiv:2004.10568v2                                                               |     12 | 19 个 TeX 文件 | 3/3       | 0 / 125 / 30  |
+| [2026-09-21/affinequant](../../raw/papers/2026-09-21/affinequant/README.md)                                             | arXiv:2403.12544v1                                                               |     19 | 未保存（允许）     | 2/2       | 0 / 87 / 7    |
+| [2026-09-21/akvq-vl](../../raw/papers/2026-09-21/akvq-vl/README.md)                                                     | arXiv:2501.15021v1                                                               |      7 | 4 个 TeX 文件  | 3/3       | 0 / 38 / 8    |
+| [2026-09-21/aqlm](../../raw/papers/2026-09-21/aqlm/README.md)                                                           | arXiv:2401.06118v4                                                               |     20 | 24 个 TeX 文件 | 3/3       | 0 / 135 / 2   |
+| [2026-09-21/atom](../../raw/papers/2026-09-21/atom/README.md)                                                           | arXiv:2310.19102v3                                                               |     14 | 15 个 TeX 文件 | 3/3       | 0 / 180 / 0   |
+| [2026-09-21/attention-is-all-you-need](../../raw/papers/2026-09-21/attention-is-all-you-need/README.md)                 | arXiv:1706.03762v7                                                               |     15 | 10 个 TeX 文件 | 3/3       | 0 / 16 / 0    |
+| [2026-09-21/awq](../../raw/papers/2026-09-21/awq/README.md)                                                             | arXiv:2306.00978v6                                                               |     15 | 31 个 TeX 文件 | 3/3       | 0 / 162 / 0   |
+| [2026-09-21/billm](../../raw/papers/2026-09-21/billm/README.md)                                                         | arXiv:2402.04291v2                                                               |     20 | 未保存（允许）     | 2/2       | 17 / 152 / 0  |
+| [2026-09-21/brecq](../../raw/papers/2026-09-21/brecq/README.md)                                                         | arXiv:2102.05426v2                                                               |     16 | 3 个 TeX 文件  | 3/3       | 0 / 81 / 15   |
+| [2026-09-21/calibquant](../../raw/papers/2026-09-21/calibquant/README.md)                                               | arXiv:2502.14882v2                                                               |     12 | 2 个 TeX 文件  | 3/3       | 0 / 134 / 15  |
+| [2026-09-21/cayley-stiefel](../../raw/papers/2026-09-21/cayley-stiefel/README.md)                                       | arXiv:2002.01113v1                                                               |     16 | 未保存（允许）     | 2/2       | 0 / 42 / 8    |
+| [2026-09-21/channel-wise-mixed-precision](../../raw/papers/2026-09-21/channel-wise-mixed-precision/README.md)           | arXiv:2410.13056v4                                                               |     23 | 2 个 TeX 文件  | 3/3       | 0 / 69 / 2    |
+| [2026-09-21/coopq](../../raw/papers/2026-09-21/coopq/README.md)                                                         | arXiv:2509.15455v2                                                               |     13 | 1 个 TeX 文件  | 3/3       | 0 / 235 / 8   |
+| [2026-09-21/cudaforge](../../raw/papers/2026-09-21/cudaforge/README.md)                                                 | arXiv:2511.01884v2                                                               |     33 | 9 个 TeX 文件  | 3/3       | 0 / 14 / 0    |
+| [2026-09-21/deepseek-r1](../../raw/papers/2026-09-21/deepseek-r1/README.md)                                             | arXiv:2501.12948v2                                                               |     86 | 15 个 TeX 文件 | 3/3       | 0 / 112 / 18  |
+| [2026-09-21/deepseek-v2](../../raw/papers/2026-09-21/deepseek-v2/README.md)                                             | arXiv:2405.04434v5                                                               |     52 | 7 个 TeX 文件  | 3/3       | 0 / 41 / 9    |
+| [2026-09-21/deepseek-v3](../../raw/papers/2026-09-21/deepseek-v3/README.md)                                             | arXiv:2412.19437v2                                                               |     53 | 5 个 TeX 文件  | 3/3       | 0 / 93 / 10   |
+| [2026-09-21/distserve](../../raw/papers/2026-09-21/distserve/README.md)                                                 | arXiv:2401.09670v3                                                               |     18 | 12 个 TeX 文件 | 3/3       | 0 / 279 / 0   |
+| [2026-09-21/fastkernels](../../raw/papers/2026-09-21/fastkernels/README.md)                                             | arXiv:2605.23215v1                                                               |     67 | 12 个 TeX 文件 | 3/3       | 0 / 146 / 2   |
+| [2026-09-21/flashattention](../../raw/papers/2026-09-21/flashattention/README.md)                                       | arXiv:2205.14135v2                                                               |     34 | 32 个 TeX 文件 | 3/3       | 0 / 19 / 68   |
+| [2026-09-21/flashattention-2](../../raw/papers/2026-09-21/flashattention-2/README.md)                                   | arXiv:2307.08691v1                                                               |     14 | 8 个 TeX 文件  | 3/3       | 0 / 4 / 4     |
+| [2026-09-21/flashinfer-bench](../../raw/papers/2026-09-21/flashinfer-bench/README.md)                                   | arXiv:2601.00227v1                                                               |     39 | 14 个 TeX 文件 | 3/3       | 0 / 178 / 0   |
+| [2026-09-21/flatquant](../../raw/papers/2026-09-21/flatquant/README.md)                                                 | arXiv:2410.09426v4                                                               |     27 | 47 个 TeX 文件 | 3/3       | 0 / 139 / 2   |
+| [2026-09-21/flexq](../../raw/papers/2026-09-21/flexq/README.md)                                                         | arXiv:2508.04405v2                                                               |     17 | 7 个 TeX 文件  | 3/3       | 0 / 424 / 4   |
+| [2026-09-21/fluxbin](../../raw/papers/2026-09-21/fluxbin/README.md)                                                     | arXiv:2608.15602v1                                                               |     24 | 19 个 TeX 文件 | 3/3       | 0 / 327 / 46  |
+| [2026-09-21/formal-transformer-algorithms](../../raw/papers/2026-09-21/formal-transformer-algorithms/README.md)         | arXiv:2207.09238v1                                                               |     16 | 1 个 TeX 文件  | 3/3       | 0 / 171 / 100 |
+| [2026-09-21/fp8-formats](../../raw/papers/2026-09-21/fp8-formats/README.md)                                             | arXiv:2209.05433v2                                                               |      9 | 2 个 TeX 文件  | 3/3       | 0 / 6 / 0     |
+| [2026-09-21/gptaq](../../raw/papers/2026-09-21/gptaq/README.md)                                                         | arXiv:2504.02692v3                                                               |     17 | 未保存（允许）     | 2/2       | 0 / 143 / 232 |
+| [2026-09-21/gptq](../../raw/papers/2026-09-21/gptq/README.md)                                                           | arXiv:2210.17323v2                                                               |     16 | 3 个 TeX 文件  | 3/3       | 0 / 52 / 4    |
+| [2026-09-21/gqa](../../raw/papers/2026-09-21/gqa/README.md)                                                             | arXiv:2305.13245v3                                                               |      7 | 9 个 TeX 文件  | 3/3       | 0 / 100 / 0   |
+| [2026-09-21/helm](../../raw/papers/2026-09-21/helm/README.md)                                                           | arXiv:2211.09110v2                                                               |    162 | 72 个 TeX 文件 | 3/3       | 0 / 360 / 151 |
+| [2026-09-21/int8-gg](../../raw/papers/2026-09-21/int8-gg/README.md)                                                     | arXiv:2606.12280v2                                                               |     11 | 1 个 TeX 文件  | 3/3       | 0 / 9 / 0     |
+| [2026-09-21/integer-only-quantization](../../raw/papers/2026-09-21/integer-only-quantization/README.md)                 | arXiv:1712.05877v1                                                               |     14 | 2 个 TeX 文件  | 3/3       | 0 / 202 / 2   |
+| [2026-09-21/integrated-gradients](../../raw/papers/2026-09-21/integrated-gradients/README.md)                           | 2017 PMLR 70, pp.3319–3328                                                       |     10 | 未保存（允许）     | 2/2       | 0 / 190 / 0   |
+| [2026-09-21/kernelbench](../../raw/papers/2026-09-21/kernelbench/README.md)                                             | arXiv:2502.10517v1                                                               |     37 | 28 个 TeX 文件 | 3/3       | 0 / 32 / 0    |
+| [2026-09-21/kernelbenchx](../../raw/papers/2026-09-21/kernelbenchx/README.md)                                           | arXiv:2605.04956v2                                                               |     17 | 9 个 TeX 文件  | 3/3       | 0 / 19 / 0    |
+| [2026-09-21/kitty](../../raw/papers/2026-09-21/kitty/README.md)                                                         | arXiv:2511.18643v1                                                               |     12 | 8 个 TeX 文件  | 3/3       | 0 / 144 / 2   |
+| [2026-09-21/kivi](../../raw/papers/2026-09-21/kivi/README.md)                                                           | arXiv:2402.02750v2                                                               |     15 | 10 个 TeX 文件 | 3/3       | 0 / 101 / 0   |
+| [2026-09-21/lc-qat](../../raw/papers/2026-09-21/lc-qat/README.md)                                                       | arXiv:2606.10531v1                                                               |     14 | 1 个 TeX 文件  | 3/3       | 0 / 125 / 19  |
+| [2026-09-21/llama-3](../../raw/papers/2026-09-21/llama-3/README.md)                                                     | arXiv:2407.21783v3                                                               |     92 | 80 个 TeX 文件 | 3/3       | 0 / 59 / 0    |
+| [2026-09-21/llm-int8](../../raw/papers/2026-09-21/llm-int8/README.md)                                                   | arXiv:2208.07339v2                                                               |     20 | 1 个 TeX 文件  | 3/3       | 0 / 30 / 4    |
+| [2026-09-21/llm-mq](../../raw/papers/2026-09-21/llm-mq/README.md)                                                       | snapshot-sha256-9a2101ae6befaff5566fc1ed1bd78cbf10ccb4a7e2c3ae2b985e9c3845562dc0 |      5 | 未保存（允许）     | 3/3       | 0 / 6 / 0     |
+| [2026-09-21/llm-qat](../../raw/papers/2026-09-21/llm-qat/README.md)                                                     | arXiv:2305.17888v1                                                               |     15 | 13 个 TeX 文件 | 3/3       | 0 / 11 / 0    |
+| [2026-09-21/longbench-v2](../../raw/papers/2026-09-21/longbench-v2/README.md)                                           | arXiv:2412.15204v2                                                               |     26 | 10 个 TeX 文件 | 3/3       | 0 / 229 / 0   |
+| [2026-09-21/lora](../../raw/papers/2026-09-21/lora/README.md)                                                           | arXiv:2106.09685v2                                                               |     26 | 3 个 TeX 文件  | 3/3       | 0 / 86 / 6    |
+| [2026-09-21/luq](../../raw/papers/2026-09-21/luq/README.md)                                                             | arXiv:2509.23729v3                                                               |     20 | 7 个 TeX 文件  | 3/3       | 0 / 43 / 0    |
+| [2026-09-21/lvlm-compress-bench](../../raw/papers/2026-09-21/lvlm-compress-bench/README.md)                             | arXiv:2503.04982v1                                                               |     17 | 2 个 TeX 文件  | 3/3       | 0 / 263 / 0   |
+| [2026-09-21/marlin](../../raw/papers/2026-09-21/marlin/README.md)                                                       | arXiv:2408.11743v1                                                               |     14 | 1 个 TeX 文件  | 3/3       | 0 / 174 / 5   |
+| [2026-09-21/masquant](../../raw/papers/2026-09-21/masquant/README.md)                                                   | arXiv:2603.04800v1                                                               |     10 | 9 个 TeX 文件  | 3/3       | 0 / 146 / 20  |
+| [2026-09-21/mbq](../../raw/papers/2026-09-21/mbq/README.md)                                                             | arXiv:2412.19509v2                                                               |     21 | 50 个 TeX 文件 | 3/3       | 0 / 229 / 4   |
+| [2026-09-21/medical-mllm-compression](../../raw/papers/2026-09-21/medical-mllm-compression/README.md)                   | arXiv:2507.21976v3                                                               |     16 | 1 个 TeX 文件  | 3/3       | 0 / 44 / 7    |
+| [2026-09-21/microscaling-formats](../../raw/papers/2026-09-21/microscaling-formats/README.md)                           | arXiv:2310.10537v3                                                               |      9 | 8 个 TeX 文件  | 3/3       | 0 / 6 / 0     |
+| [2026-09-21/mmlu-pro](../../raw/papers/2026-09-21/mmlu-pro/README.md)                                                   | arXiv:2406.01574v6                                                               |     24 | 2 个 TeX 文件  | 3/3       | 0 / 34 / 31   |
+| [2026-09-21/mquant](../../raw/papers/2026-09-21/mquant/README.md)                                                       | arXiv:2502.00425v2                                                               |     18 | 8 个 TeX 文件  | 3/3       | 0 / 197 / 20  |
+| [2026-09-21/multi-query-attention](../../raw/papers/2026-09-21/multi-query-attention/README.md)                         | arXiv:1911.02150v1                                                               |      9 | 1 个 TeX 文件  | 3/3       | 0 / 10 / 0    |
+| [2026-09-21/multimodal-qat](../../raw/papers/2026-09-21/multimodal-qat/README.md)                                       | arXiv:2408.03735v1                                                               |     10 | 1 个 TeX 文件  | 3/3       | 0 / 130 / 0   |
+| [2026-09-21/norm-tweaking](../../raw/papers/2026-09-21/norm-tweaking/README.md)                                         | arXiv:2309.02784v2                                                               |     10 | 1 个 TeX 文件  | 3/3       | 0 / 182 / 0   |
+| [2026-09-21/nova-kv](../../raw/papers/2026-09-21/nova-kv/README.md)                                                     | arXiv:2608.04074v1                                                               |     42 | 2 个 TeX 文件  | 3/3       | 0 / 7 / 59    |
+| [2026-09-21/omniquant](../../raw/papers/2026-09-21/omniquant/README.md)                                                 | arXiv:2308.13137v3                                                               |     25 | 2 个 TeX 文件  | 3/3       | 0 / 124 / 1   |
+| [2026-09-21/pagedattention](../../raw/papers/2026-09-21/pagedattention/README.md)                                       | arXiv:2309.06180v1                                                               |     16 | 6 个 TeX 文件  | 3/3       | 0 / 215 / 0   |
+| [2026-09-21/plug-and-play-kv-quantization](../../raw/papers/2026-09-21/plug-and-play-kv-quantization/README.md)         | arXiv:2503.16257v2                                                               |     18 | 13 个 TeX 文件 | 3/3       | 0 / 48 / 6    |
+| [2026-09-21/q-vlm](../../raw/papers/2026-09-21/q-vlm/README.md)                                                         | arXiv:2410.08119v3                                                               |     15 | 8 个 TeX 文件  | 3/3       | 0 / 24 / 0    |
+| [2026-09-21/qapruner](../../raw/papers/2026-09-21/qapruner/README.md)                                                   | arXiv:2604.02816v1                                                               |     12 | 4 个 TeX 文件  | 3/3       | 0 / 80 / 4    |
+| [2026-09-21/qig](../../raw/papers/2026-09-21/qig/README.md)                                                             | arXiv:2603.17809v1                                                               |     18 | 2 个 TeX 文件  | 3/3       | 0 / 268 / 11  |
+| [2026-09-21/qlora](../../raw/papers/2026-09-21/qlora/README.md)                                                         | arXiv:2305.14314v1                                                               |     26 | 1 个 TeX 文件  | 3/3       | 0 / 43 / 8    |
+| [2026-09-21/qserve](../../raw/papers/2026-09-21/qserve/README.md)                                                       | arXiv:2405.04532v3                                                               |     19 | 35 个 TeX 文件 | 3/3       | 0 / 203 / 12  |
+| [2026-09-21/quantization-reliable-vqa](../../raw/papers/2026-09-21/quantization-reliable-vqa/README.md)                 | arXiv:2602.13289v1                                                               |      6 | 1 个 TeX 文件  | 3/3       | 0 / 44 / 0    |
+| [2026-09-21/quantization-white-paper](../../raw/papers/2026-09-21/quantization-white-paper/README.md)                   | arXiv:2106.08295v1                                                               |     27 | 22 个 TeX 文件 | 3/3       | 0 / 29 / 52   |
+| [2026-09-21/quarot](../../raw/papers/2026-09-21/quarot/README.md)                                                       | arXiv:2404.00456v2                                                               |     21 | 18 个 TeX 文件 | 3/3       | 0 / 12 / 3    |
+| [2026-09-21/quasar](../../raw/papers/2026-09-21/quasar/README.md)                                                       | arXiv:2608.13966v1                                                               |     39 | 16 个 TeX 文件 | 3/3       | 0 / 78 / 18   |
+| [2026-09-21/quip](../../raw/papers/2026-09-21/quip/README.md)                                                           | arXiv:2307.13304v2                                                               |     34 | 14 个 TeX 文件 | 3/3       | 0 / 34 / 314  |
+| [2026-09-21/quip-sharp](../../raw/papers/2026-09-21/quip-sharp/README.md)                                               | arXiv:2402.04396v2                                                               |     27 | 23 个 TeX 文件 | 3/3       | 0 / 160 / 141 |
+| [2026-09-21/qwen2-5-omni](../../raw/papers/2026-09-21/qwen2-5-omni/README.md)                                           | arXiv:2503.20215v1                                                               |     20 | 10 个 TeX 文件 | 3/3       | 0 / 21 / 4    |
+| [2026-09-21/qwen2-5-vl](../../raw/papers/2026-09-21/qwen2-5-vl/README.md)                                               | arXiv:2502.13923v1                                                               |     23 | 8 个 TeX 文件  | 3/3       | 0 / 35 / 0    |
+| [2026-09-21/qwen3](../../raw/papers/2026-09-21/qwen3/README.md)                                                         | arXiv:2505.09388v1                                                               |     35 | 10 个 TeX 文件 | 3/3       | 0 / 41 / 0    |
+| [2026-09-21/qwen3-vl](../../raw/papers/2026-09-21/qwen3-vl/README.md)                                                   | arXiv:2511.21631v2                                                               |     42 | 15 个 TeX 文件 | 3/3       | 0 / 84 / 0    |
+| [2026-09-21/resq](../../raw/papers/2026-09-21/resq/README.md)                                                           | arXiv:2412.14363v2                                                               |     18 | 14 个 TeX 文件 | 3/3       | 0 / 159 / 2   |
+| [2026-09-21/rmsnorm](../../raw/papers/2026-09-21/rmsnorm/README.md)                                                     | arXiv:1910.07467v1                                                               |     14 | 1 个 TeX 文件  | 3/3       | 0 / 40 / 22   |
+| [2026-09-21/roformer](../../raw/papers/2026-09-21/roformer/README.md)                                                   | arXiv:2104.09864v5                                                               |     14 | 1 个 TeX 文件  | 3/3       | 0 / 3 / 24    |
+| [2026-09-21/ruler](../../raw/papers/2026-09-21/ruler/README.md)                                                         | arXiv:2404.06654v3                                                               |     27 | 41 个 TeX 文件 | 3/3       | 0 / 34 / 0    |
+| [2026-09-21/sarathi-serve](../../raw/papers/2026-09-21/sarathi-serve/README.md)                                         | arXiv:2403.02310v3                                                               |     18 | 32 个 TeX 文件 | 3/3       | 0 / 260 / 0   |
+| [2026-09-21/saw-int4](../../raw/papers/2026-09-21/saw-int4/README.md)                                                   | arXiv:2604.19157v1                                                               |     24 | 7 个 TeX 文件  | 3/3       | 0 / 60 / 6    |
+| [2026-09-21/sglang](../../raw/papers/2026-09-21/sglang/README.md)                                                       | arXiv:2312.07104v2                                                               |     20 | 10 个 TeX 文件 | 3/3       | 0 / 22 / 0    |
+| [2026-09-21/sharq](../../raw/papers/2026-09-21/sharq/README.md)                                                         | arXiv:2606.26587v1                                                               |     20 | 2 个 TeX 文件  | 3/3       | 0 / 25 / 2    |
+| [2026-09-21/slicegpt](../../raw/papers/2026-09-21/slicegpt/README.md)                                                   | arXiv:2401.15024v2                                                               |     22 | 未保存（允许）     | 2/2       | 0 / 36 / 2    |
+| [2026-09-21/smoothquant](../../raw/papers/2026-09-21/smoothquant/README.md)                                             | arXiv:2211.10438v7                                                               |     13 | 30 个 TeX 文件 | 3/3       | 0 / 150 / 0   |
+| [2026-09-21/smoothquant-plus](../../raw/papers/2026-09-21/smoothquant-plus/README.md)                                   | arXiv:2312.03788v1                                                               |     12 | 1 个 TeX 文件  | 3/3       | 0 / 185 / 27  |
+| [2026-09-21/spikemllm](../../raw/papers/2026-09-21/spikemllm/README.md)                                                 | arXiv:2604.18610v1                                                               |     20 | 1 个 TeX 文件  | 3/3       | 0 / 217 / 14  |
+| [2026-09-21/spinquant](../../raw/papers/2026-09-21/spinquant/README.md)                                                 | arXiv:2405.16406v4                                                               |     24 | 37 个 TeX 文件 | 3/3       | 0 / 21 / 5    |
+| [2026-09-21/splitq](../../raw/papers/2026-09-21/splitq/README.md)                                                       | arXiv:2605.19929v1                                                               |     24 | 1 个 TeX 文件  | 3/3       | 21 / 45 / 13  |
+| [2026-09-21/spqr](../../raw/papers/2026-09-21/spqr/README.md)                                                           | arXiv:2306.03078v1                                                               |     26 | 4 个 TeX 文件  | 3/3       | 0 / 29 / 0    |
+| [2026-09-21/squeezellm](../../raw/papers/2026-09-21/squeezellm/README.md)                                               | arXiv:2306.07629v4                                                               |     23 | 10 个 TeX 文件 | 3/3       | 0 / 160 / 1   |
+| [2026-09-21/tritonbench](../../raw/papers/2026-09-21/tritonbench/README.md)                                             | arXiv:2502.14752v1                                                               |     13 | 22 个 TeX 文件 | 3/3       | 0 / 234 / 0   |
+| [2026-09-21/turboquant](../../raw/papers/2026-09-21/turboquant/README.md)                                               | arXiv:2504.19874v1                                                               |     25 | 3 个 TeX 文件  | 3/3       | 0 / 45 / 83   |
+| [2026-09-21/veq](../../raw/papers/2026-09-21/veq/README.md)                                                             | arXiv:2602.01037v1                                                               |     10 | 1 个 TeX 文件  | 3/3       | 0 / 148 / 0   |
+| [2026-09-21/vlmq](../../raw/papers/2026-09-21/vlmq/README.md)                                                           | arXiv:2508.03351v2                                                               |     28 | 19 个 TeX 文件 | 3/3       | 0 / 208 / 2   |
+| [2026-09-21/zeroquant](../../raw/papers/2026-09-21/zeroquant/README.md)                                                 | arXiv:2206.01861v1                                                               |     24 | 14 个 TeX 文件 | 3/3       | 0 / 10 / 4    |
+| [2026-09-22/efficientqat](../../raw/papers/2026-09-22/efficientqat/README.md)                                           | arXiv:2407.11062v3                                                               |     20 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-22/flexround](../../raw/papers/2026-09-22/flexround/README.md)                                                 | arXiv:2306.00317v2                                                               |     27 | 未保存（允许）     | 2/2       | 0 / 0 / 46    |
+| [2026-09-22/gptvq](../../raw/papers/2026-09-22/gptvq/README.md)                                                         | arXiv:2402.15319v2                                                               |     21 | 未保存（允许）     | 2/2       | 0 / 0 / 32    |
+| [2026-09-22/hawq-v2](../../raw/papers/2026-09-22/hawq-v2/README.md)                                                     | arXiv:1911.03852v1                                                               |     13 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-22/kvquant](../../raw/papers/2026-09-22/kvquant/README.md)                                                     | arXiv:2401.18079v6                                                               |     27 | 未保存（允许）     | 2/2       | 0 / 0 / 18    |
+| [2026-09-22/loftq](../../raw/papers/2026-09-22/loftq/README.md)                                                         | arXiv:2310.08659v4                                                               |     23 | 未保存（允许）     | 2/2       | 0 / 0 / 6     |
+| [2026-09-22/lq-nets](../../raw/papers/2026-09-22/lq-nets/README.md)                                                     | arXiv:1807.10029v1                                                               |     21 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-22/lrq](../../raw/papers/2026-09-22/lrq/README.md)                                                             | arXiv:2407.11534v2                                                               |     36 | 未保存（允许）     | 2/2       | 0 / 0 / 2     |
+| [2026-09-22/lsq](../../raw/papers/2026-09-22/lsq/README.md)                                                             | arXiv:1902.08153v3                                                               |     12 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-22/lsq-plus](../../raw/papers/2026-09-22/lsq-plus/README.md)                                                   | arXiv:2004.09576v1                                                               |      8 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-22/ostquant](../../raw/papers/2026-09-22/ostquant/README.md)                                                   | arXiv:2501.13987v1                                                               |     27 | 未保存（允许）     | 2/2       | 0 / 0 / 36    |
+| [2026-09-22/pact](../../raw/papers/2026-09-22/pact/README.md)                                                           | arXiv:1805.06085v2                                                               |     15 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-22/pv-tuning](../../raw/papers/2026-09-22/pv-tuning/README.md)                                                 | arXiv:2405.14852v2                                                               |     42 | 未保存（允许）     | 2/2       | 0 / 0 / 54    |
+| [2026-09-22/qera](../../raw/papers/2026-09-22/qera/README.md)                                                           | arXiv:2410.06040v2                                                               |     30 | 未保存（允许）     | 2/2       | 0 / 0 / 29    |
+| [2026-09-22/qjl](../../raw/papers/2026-09-22/qjl/README.md)                                                             | arXiv:2406.03482v2                                                               |     13 | 未保存（允许）     | 2/2       | 0 / 0 / 36    |
+| [2026-09-22/qtip](../../raw/papers/2026-09-22/qtip/README.md)                                                           | arXiv:2406.11235v4                                                               |     25 | 未保存（允许）     | 2/2       | 0 / 0 / 9     |
+| [2026-09-22/signround](../../raw/papers/2026-09-22/signround/README.md)                                                 | arXiv:2309.05516v5                                                               |     19 | 未保存（允许）     | 2/2       | 0 / 0 / 6     |
+| [2026-09-22/vptq](../../raw/papers/2026-09-22/vptq/README.md)                                                           | arXiv:2409.17066v2                                                               |     16 | 未保存（允许）     | 2/2       | 0 / 0 / 4     |
+| [2026-09-23/activation-guided-compensation](../../raw/papers/2026-09-23/activation-guided-compensation/README.md)       | arXiv:2609.21450v1                                                               |     19 | 未保存（允许）     | 2/2       | 0 / 0 / 70    |
+| [2026-09-23/bos-sink-topology](../../raw/papers/2026-09-23/bos-sink-topology/README.md)                                 | arXiv:2609.23585v1                                                               |      6 | 未保存（允许）     | 2/2       | 0 / 0 / 8     |
+| [2026-09-23/coreprune](../../raw/papers/2026-09-23/coreprune/README.md)                                                 | arXiv:2609.26484v1                                                               |     24 | 未保存（允许）     | 2/2       | 0 / 0 / 25    |
+| [2026-09-23/disaggregated-quantization](../../raw/papers/2026-09-23/disaggregated-quantization/README.md)               | arXiv:2609.26333v1                                                               |     29 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-23/layer-aware-position-embeddings](../../raw/papers/2026-09-23/layer-aware-position-embeddings/README.md)     | arXiv:2609.23715v1                                                               |     10 | 未保存（允许）     | 2/2       | 0 / 0 / 3     |
+| [2026-09-23/prquant](../../raw/papers/2026-09-23/prquant/README.md)                                                     | arXiv:2609.22106v1                                                               |     12 | 未保存（允许）     | 2/2       | 0 / 0 / 13    |
+| [2026-09-23/quantization-retrieval-damage](../../raw/papers/2026-09-23/quantization-retrieval-damage/README.md)         | arXiv:2609.24322v1                                                               |     33 | 未保存（允许）     | 2/2       | 0 / 0 / 8     |
+| [2026-09-23/rgsq](../../raw/papers/2026-09-23/rgsq/README.md)                                                           | arXiv:2609.25492v1                                                               |     14 | 未保存（允许）     | 2/2       | 0 / 0 / 32    |
+| [2026-09-23/sphquant](../../raw/papers/2026-09-23/sphquant/README.md)                                                   | arXiv:2609.24875v1                                                               |     16 | 未保存（允许）     | 2/2       | 0 / 0 / 10    |
+| [2026-09-26/casa-cross-layer-sensitivity](../../raw/papers/2026-09-26/casa-cross-layer-sensitivity/README.md)           | arXiv:2609.25916v1                                                               |     33 | 未保存（允许）     | 2/2       | 0 / 0 / 192   |
+| [2026-09-26/quantization-price-prediction](../../raw/papers/2026-09-26/quantization-price-prediction/README.md)         | arXiv:2609.28270v1                                                               |     21 | 未保存（允许）     | 2/2       | 0 / 0 / 36    |
+| [2026-09-26/ramp-edge-cpu-mixed-precision](../../raw/papers/2026-09-26/ramp-edge-cpu-mixed-precision/README.md)         | arXiv:2609.28262v1                                                               |     13 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-26/the-alignment-illusion](../../raw/papers/2026-09-26/the-alignment-illusion/README.md)                       | arXiv:2609.30210v1                                                               |     26 | 未保存（允许）     | 2/2       | 0 / 0 / 14    |
+| [2026-09-28/foldquantvla](../../raw/papers/2026-09-28/foldquantvla/README.md)                                           | arXiv:2609.24433v1                                                               |      8 | 未保存（允许）     | 2/2       | 0 / 0 / 5     |
+| [2026-09-28/same-bit-width-different-outcomes](../../raw/papers/2026-09-28/same-bit-width-different-outcomes/README.md) | arXiv:2609.28974v1                                                               |      5 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-09-28/vla-simd](../../raw/papers/2026-09-28/vla-simd/README.md)                                                   | arXiv:2609.24274v1                                                               |      8 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-10-03/conqur](../../raw/papers/2026-10-03/conqur/README.md)                                                       | arXiv:2605.10793v2                                                               |     21 | 未保存（允许）     | 2/2       | 0 / 0 / 8     |
+| [2026-10-03/decision-flips](../../raw/papers/2026-10-03/decision-flips/README.md)                                       | arXiv:2610.00694v1                                                               |     20 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-10-03/mwop](../../raw/papers/2026-10-03/mwop/README.md)                                                           | arXiv:2610.01434v1                                                               |     37 | 未保存（允许）     | 2/2       | 0 / 0 / 0     |
+| [2026-10-03/quantforge](../../raw/papers/2026-10-03/quantforge/README.md)                                               | arXiv:2609.34680v1                                                               |     41 | 未保存（允许）     | 2/2       | 0 / 0 / 16    |
+| [2026-10-03/rdtok](../../raw/papers/2026-10-03/rdtok/README.md)                                                         | arXiv:2610.00204v1                                                               |      5 | 未保存（允许）     | 2/2       | 0 / 0 / 4     |
+| [2026-10-03/reconstruction-loss-scale-rmse](../../raw/papers/2026-10-03/reconstruction-loss-scale-rmse/README.md)       | arXiv:2610.00983v1                                                               |     20 | 未保存（允许）     | 2/2       | 0 / 0 / 2     |
+| [2026-10-03/scale-sensitivity](../../raw/papers/2026-10-03/scale-sensitivity/README.md)                                 | arXiv:2609.37416v1                                                               |     56 | 未保存（允许）     | 2/2       | 0 / 0 / 755   |
+| [2026-10-03/wush-kv](../../raw/papers/2026-10-03/wush-kv/README.md)                                                     | arXiv:2609.38121v1                                                               |     30 | 未保存（允许）     | 2/2       | 0 / 0 / 199   |
+| [2026-10-03/xor-trellis](../../raw/papers/2026-10-03/xor-trellis/README.md)                                             | arXiv:2610.00432v1                                                               |     23 | 未保存（允许）     | 2/2       | 0 / 0 / 16    |
+| [2026-10-05/covisco](../../raw/papers/2026-10-05/covisco/README.md)                                                     | arXiv:2609.39924v1                                                               |     26 | 1 个 TeX 文件  | 3/3       | 0 / 0 / 18    |
+| [2026-10-05/onptq](../../raw/papers/2026-10-05/onptq/README.md)                                                         | arXiv:2609.36828v1                                                               |     20 | 2 个 TeX 文件  | 3/3       | 0 / 0 / 33    |
 
 GPTQ 的公开评议另核对 3 个附件，均一致；19 条快照记录的 ID 和字符串正文均完整导出。公开评议不被等同于 arXiv v2 PDF 的逐字版本。
 

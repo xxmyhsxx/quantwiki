@@ -1,0 +1,243 @@
+{
+  "main": {
+    "id": "c55ec989030d9e39",
+    "type": "split",
+    "children": [
+      {
+        "id": "0b72c6cb7f23988f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5a912df1522255da",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "wiki/methods/saprune.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "saprune"
+            }
+          },
+          {
+            "id": "88b6e846a0e470db",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e9f75f2d71e2a2aa",
+    "type": "split",
+    "children": [
+      {
+        "id": "e5e11a8e9d8b8bd0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "99220aa610a4c53d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "3ded5e9c448168e4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "b29febf2c2dee431",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b605f977b7f3a73e",
+    "type": "split",
+    "children": [
+      {
+        "id": "b655a8807ac75e9f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c244fc2c893ab47c",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "wiki/methods/saprune.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "反向链接"
+            }
+          },
+          {
+            "id": "a3e2d308af6a6358",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "wiki/methods/saprune.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "出链"
+            }
+          },
+          {
+            "id": "431ba80386113fad",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "449b1795d632e85a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "6b090f97d48c69e8",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "wiki/methods/saprune.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "5a912df1522255da",
+  "lastOpenFiles": [
+    "wiki/methods/flexround.md",
+    "research/reviews/2026-10-13-wiki-repetition-review.md",
+    "research/plans/2026-10-13-wiki-review-batches.md",
+    "wiki/implementation/lm-evaluation-harness-request-filter-and-aggregation.md",
+    "wiki/implementation/ruler-task-complexity-and-effective-context.md",
+    "wiki/implementation/mmlu-pro-options-and-answer-extraction.md",
+    "wiki/implementation/longbench-v2-context-and-scoring.md",
+    "wiki/implementation/helm-evaluation-protocol.md",
+    "wiki/implementation/flashinfer-paged-kv-write-and-nvfp4.md",
+    "wiki/research/mbq-vlmq-comparison.md",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/teleoperators/so_leader/so101.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/teleoperators/so_leader/so100.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/robots/so_follower/so101.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/robots/so_follower/so100.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/policies/wall_x/README.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/policies/vqbet/README.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/policies/vla_jepa/README.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/policies/tdmpc/README.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/policies/smolvla/README.md.symlink.txt",
+    "raw/repositories/2026-10-07/pivot-q/source/third_party/lerobot/src/lerobot/policies/rtc/README.md.symlink.txt",
+    "wiki/methods/vidkv.md",
+    "wiki/implementation/quantized-matmul-scaling-execution.md",
+    "raw/repositories/2026-09-21/mlc-llm/source/3rdparty/tvm/3rdparty/libflash_attn/cutlass/CHANGELOG.md",
+    "raw/repositories/2026-09-21/torch-int/source/submodules/cutlass/CHANGELOG.md",
+    "research/reviews/2026-10-05-raw-review.md",
+    "raw/repositories/2026-09-21/cuda-samples/source/cpp/0_Introduction/README.md",
+    "raw/repositories/2026-10-05/tensorrt-edge-llm/source/3rdParty/googletest/docs/gmock_for_dummies.md",
+    "wiki/methods/calibquant.md",
+    "raw/repositories/2026-09-21/flash-attention/source/third_party/aiter/3rdparty/composable_kernel/CHANGELOG.md",
+    "raw/repositories/2026-09-21/flash-attention/source/csrc/cutlass/examples/README.md",
+    "wiki/fundamentals/model/vision-language-model-tokens-and-quantization.md",
+    "wiki/methods/veq.md",
+    "wiki/methods/smoothquant-plus.md",
+    "wiki/implementation/qslaw-scale-learning-and-float-export.md",
+    "wiki/methods/qslaw.md",
+    "wiki/methods/saprune.md",
+    "raw/papers/2026-10-07/centriq/source/figures/fig_collapse.png",
+    "raw/papers/2026-10-07/centriq/assets/figures/002-sorted_magnitudes.png",
+    "raw/papers/2026-10-07/centriq/assets/figures/001-dc_energy_fraction.png"
+  ]
+}
