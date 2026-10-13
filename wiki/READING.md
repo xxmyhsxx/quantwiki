@@ -11,7 +11,7 @@ updated: 2026-10-14
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **148 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **149 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -120,6 +120,7 @@ updated: 2026-10-14
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| FlashInfer `mm_fp4`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_fp4.html`）<br>页面0.6.14；snapshot-2026-07-02 | 完整保存正文；核NV/MX block16/32、后端scale布局/shuffle、TRTLLM样例B与sf转置/global alpha、auto与PDL范围 | [两侧FP4准备与恢复](implementation/block-scaled-matmul-execution.md#%E4%B8%A4%E4%BE%A7%20FP4%EF%BC%9A%E5%B0%BA%E5%BA%A6%E5%B8%83%E5%B1%80%E3%80%81shuffle%20%E4%B8%8E%E5%85%A8%E5%B1%80%E6%81%A2%E5%A4%8D%E5%9B%A0%E5%AD%90) | 参数表逻辑/存储K与b_descale映射未交代；helper/物理shape/stride/packing、b12x准备/完整设备能力未核；未执行GEMM或GPU | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20FlashInfer%20FP4%20GEMM%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E5%B8%83%E5%B1%80%E4%B8%8E%E6%81%A2%E5%A4%8D) |
 | FlashInfer `mm_bf16_fp4`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_bf16_fp4.html`）<br>页面0.6.14；snapshot-2026-07-02 | 完整保存正文；核BF16/NVFP4、模型加载prepare到同backend消费、alpha折叠/None、block16及输出契约 | [BF16×FP4准备与消费](implementation/block-scaled-matmul-execution.md#BF16%C3%97FP4%EF%BC%9A%E6%9D%83%E9%87%8D%E5%87%86%E5%A4%87%E4%B8%8E%E5%90%8C%E5%90%8E%E7%AB%AF%E6%B6%88%E8%B4%B9) | 未核prepare函数页/匹配实现；prepared布局/shape/dtype、折叠算法、尾部/对齐、累计精度及设备支持未交代；未运行 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20FlashInfer%20BF16%C3%97FP4%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E5%87%86%E5%A4%87%E4%B8%8E%E6%B6%88%E8%B4%B9) |
 | FlashInfer `gemm_fp8_nt_blockscaled`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.gemm_fp8_nt_blockscaled.html`）<br>页面0.6.14；snapshot-2026-07-02 | 完整保存正文；核NT输入/输出轴、FP32尺度、granularity声明、MN/K存储模式、mma_sm及out契约 | [FP8块缩放接口](implementation/block-scaled-matmul-execution.md#FP8%20%E5%9D%97%E7%BC%A9%E6%94%BE%20GEMM%EF%BC%9ANT%20%E8%BE%93%E5%85%A5%E4%B8%8E%E5%B0%BA%E5%BA%A6%E5%AD%98%E5%82%A8%E6%96%B9%E5%90%91) | 未核所引groupwise页/匹配实现；尺度精确shape/stride/粒度索引、尾块、FP8编码、累计精度/硬件分派未交代；未运行 | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashInfer%20FP8%20GEMM%E6%96%87%E6%A1%A3%20ingest%EF%BC%9ANT%E4%B8%8E%E5%B0%BA%E5%BA%A6%E5%AD%98%E5%82%A8) |
 | FlashInfer `fp4_quantize`（`https://docs.flashinfer.ai/generated/flashinfer.quantization.fp4_quantize.html`）<br>页面0.6.14；snapshot-2026-07-02 | 完整保存正文；核[M,K]到packed数据/sf、global_scale逆解释开关、尺度粒度/编码/布局默认值、CUDA/CuTe声明及组合 | [FP4产物与尺度](implementation/block-scaled-matmul-execution.md#FP4%20%E9%87%8F%E5%8C%96%E4%BA%A7%E7%89%A9%EF%BC%9A%E6%89%93%E5%8C%85%E6%95%B0%E6%8D%AE%E3%80%81%E5%9D%97%E5%B0%BA%E5%BA%A6%E4%B8%8E%E5%85%A8%E5%B1%80%E5%B0%BA%E5%BA%A6) | 无原HTML/匹配实现；sf精确shape/dtype、swizzle/packing、padding、算法及全局/块尺度代数关系未核；未运行/GPU | [2026-10-13](LOG.md#2026-10-13%20%C2%B7%20FlashInfer%20FP4%E9%87%8F%E5%8C%96%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%B0%BA%E5%BA%A6%E4%BA%A7%E7%89%A9) |
@@ -272,9 +273,9 @@ updated: 2026-10-14
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下81个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下80个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM、attention及发布说明等5份文档待接续，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；attention及发布说明4份文档待接续，整批未完成。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
 ### 论文（27条）
 
@@ -308,7 +309,7 @@ updated: 2026-10-14
 | Query Independent Variable Rate Visual Token Coding（`https://arxiv.org/abs/2610.00204v1`） | `arXiv:2610.00204v1` |
 | CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding（`https://arxiv.org/abs/2609.39924v1`） | `arXiv:2609.39924v1` |
 
-### 文章与文档（44条）
+### 文章与文档（43条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -324,7 +325,6 @@ updated: 2026-10-14
 | Quickstart — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/quickstart.html`） | `snapshot-2026-07-02` |
 | Synchronization primitives — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/pipeline.html`） | `snapshot-2026-07-02` |
 | Tile Iterator Concepts — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/tile_iterator_concept.html`） | `snapshot-2026-07-02` |
-| flashinfer.gemm.mm_fp4 - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_fp4.html`） | `snapshot-2026-07-02` |
 | Attention States and Recursive Attention - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/tutorials/recursive_attention.html`） | `snapshot-2026-07-02` |
 | Release Release v0.6.17 · flashinfer-ai/flashinfer · GitHub（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`） | `snapshot-2026-08-20` |
 | flashinfer.decode.single_decode_with_kv_cache - FlashInfer 0.6.14 documentation（`https://docs.flashinfer.ai/generated/flashinfer.decode.single_decode_with_kv_cache.html`） | `snapshot-2026-07-02` |

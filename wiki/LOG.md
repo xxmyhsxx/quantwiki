@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · FlashInfer FP4 GEMM文档 ingest：布局与恢复
+
+- 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。[块缩放页](implementation/block-scaled-matmul-execution.md)接续NV/MX FP4两侧数据/尺度、各backend的128×4/8×4与shuffle、TRTLLM原例的B/sf配套转置和全局恢复、auto/PDL及输出范围。
+- 保留逻辑K/packed存储K和b_descale描述缺口，不用Triton格式或其他量化入口补helper行为；例子不是通用scale算法/设备能力或性能结论。READING149条有依据、80条队列；本轮88已处理8条，4份FlashInfer文档待接续。
+- 独立Astra内容review完成，补回原例先FP32计算globalsf的步骤并收紧非有限输入边界，修复闭环后无必修问题。全库结构/来源strict检查184知识页、636项登记，0错误/待核；3个受影响Wiki页链接strict通过，新增入口与上下文已核。未核匹配实现、编译或运行GPU。
+
 ## 2026-10-14 · FlashInfer BF16×FP4文档 ingest：准备与消费
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。[块缩放页](implementation/block-scaled-matmul-execution.md)补BF16×NVFP4的加载时准备、同backend消费、alpha折叠/None与block16/输出；BF16支持和未知设备/布局条件分别保留。

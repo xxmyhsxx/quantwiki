@@ -8,6 +8,7 @@ tags:
   - data-format
   - floating-point
 sources:
+  - raw/articles/2026-09-21/flashinfer-mm-fp4
   - raw/articles/2026-09-21/flashinfer-mm-bf16-fp4
   - raw/articles/2026-09-21/flashinfer-gemm-fp8-blockscaled
   - raw/articles/2026-09-21/flashinfer-fp4-quantize
@@ -191,7 +192,45 @@ out = flashinfer.mm_bf16_fp4(
 
 本接口 `block_size` 为 16，可传预分配 `[M,N]` 的 out，并提供 `out_dtype` 参数；`enable_pdl` 默认 True，与前述量化入口的 None 默认值分别保留。文档没有展开准备函数的布局转换、b_p/sf_p 的物理 shape/dtype、折叠算法、尾部/对齐、累加精度或后端设备支持矩阵。第 2–4 节的 Triton 布局和上一量化入口的硬件条件均不能补成此 GEMM 的事实。此处核的是**加载时准备 → 同后端消费 → 输出**的接口契约，未核准备函数页面、匹配实现或执行。（来源 Parameters 与 Returns；页面标识 0.6.14，snapshot-2026-07-02。）
 
+### 两侧 FP4：尺度布局、shuffle 与全局恢复因子
+
+`mm_fp4` 同时消费两侧 FP4 数据、两侧块尺度 `a_descale/b_descale`和可选全局因子 alpha。文档将 NVFP4 的 `block_size` 定为 16、MXFP4 定为 32；默认 `use_nvfp4=True, block_size=16`。输出 `[M,N]` 默认 BF16，可选 FP16，但 `trtllm` 仅声明 BF16 输出。输入格式和尺度粒度确定之后，还须匹配消费后端要求的排列。
+
+文档 Notes 用专门的 `nvfp4_quantize/mxfp4_quantize` 入口说明准备条件，不能仅按名称把它们与前述 `fp4_quantize` 的产物视为可互换：
+
+| 消费后端 | A 的准备条件 | B 的准备条件 |
+| --- | --- | --- |
+| cudnn/cutlass 的所述 NVFP4 路径 | 128×4 尺度布局，`do_shuffle=False` | 128×4 尺度布局，`do_shuffle=False` |
+| trtllm | 128×4 或 8×4，由 `use_8x4_sf_layout` 匹配，`do_shuffle=False` | 128×4，`do_shuffle=True` |
+| cute-dsl | 128×4；NVFP4 用 `nvfp4_quantize(..., do_shuffle=False)`，MXFP4 用 `mxfp4_quantize` | 同 A 所述的 recipe 与尺度布局 |
+
+来源的 TRTLLM 样例用原始 A `[48,128]`、原始 B `[256,128]`。两者分别量化，B 在量化时 shuffle，再把 B 的数据与尺度一起转置传给 GEMM：
+
+```python
+# 来源示例的准备与消费关系；a_global_sf/b_global_sf 为量化乘数。
+a_fp4, a_sf = nvfp4_quantize(
+    a, a_global_sf, sfLayout=SfLayout.layout_128x4, do_shuffle=False,
+)
+b_fp4, b_sf = nvfp4_quantize(
+    b, b_global_sf, sfLayout=SfLayout.layout_128x4, do_shuffle=True,
+)
+out = mm_fp4(
+    a_fp4, b_fp4.T, a_sf, b_sf.T,
+    alpha=1.0 / (a_global_sf * b_global_sf),
+    out_dtype=torch.bfloat16, backend="trtllm",
+)
+# 文档示例输出 shape 为 [48,256]。
+```
+
+这条关系说明：局部尺度留在两份 sf 中，全局恢复因子通过 alpha 传入，且 B 的数据转置与尺度转置须配套。示例的量化乘数取 `(448*6)/input.float().abs().nan_to_num().max()`，先升为 FP32 再计算；这是样例的选择，不是由本条文档核定的通用最优尺度算法。示例虽在求最大值前调用 `nan_to_num`，但未给出全零输入的保护及量化 helper 对非有限输入的完整行为。不能把量化乘数直接当恢复乘数，或只转置 B 而沿用未经对应准备的尺度。（来源 Notes 与 Examples。）
+
+`backend='auto'`的分派声明也有范围：SM120 上优先 NVFP4 的 b12x，再考虑 cutlass、cudnn；其他架构在 cudnn/cutlass 间按 CUDA/cuDNN 版本选择。trtllm、cute-dsl 因准备要求不同，不会自动选择。`enable_pdl=True` 默认只作用于 cute-dsl，其他后端忽略。文档没有给 b12x 的完整准备要求，以上规则也不是所有 dtype/尺寸/设备组合的可用性证明。（来源 backend 与 enable_pdl 参数。）
+
+参数表把 A/B 的 shape 写成 `(m,k)/(k,n)`，同时 dtype 已是 packed FP4 或 uint8，却没有注明 k 是逻辑维还是存储维；`b_descale` 的 `(k,n//block_size)` 也未给出与上述量化/转置样例间的映射。因此这里保留样例明确的**原始逻辑尺寸和调用关系**，不猜 packed buffer 的精确 shape、stride、scale swizzle 或尾部要求，也不借 Triton 的布局补空白。本次未核这些量化 helper、匹配 GEMM 实现或运行。（来源 Parameters、Notes 与 Examples；页面标识 0.6.14，snapshot-2026-07-02。）
+
 ## 来源身份
+
+- FlashInfer `mm_fp4`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_fp4.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的后端准备、样例数据/尺度转置、全局恢复与分派声明，物理 shape 歧义及未核实现保留。
 
 - FlashInfer `mm_bf16_fp4`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_bf16_fp4.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的 BF16/NVFP4 输入、权重准备/同后端消费、alpha 折叠与输出，未核匹配实现或运行。
 
