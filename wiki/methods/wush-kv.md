@@ -177,4 +177,4 @@ H 基线只使用归一化 Hadamard 变换，同一实验内匹配当前量化�
 | 来源 | 固定版本 | 本页用途 |
 | --- | --- | --- |
 | WUSH-KV: KV Cache Quantization with Data-Adaptive Transforms（`https://arxiv.org/abs/2609.38121v1`） | arXiv:2609.38121v1 | §3–4 与附录 A–C：构造、位置、量化与理论；§5–6、表 1–2、附录 D.1–D.2 及长上下文说明：协议与证据边界 |
-| OSCAR 官方实现（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437` | 公开前置量化器、池与读取接口；具体文件见frontmatter，不表示核读WUSH-KV集成 |
+| OSCAR 官方实现（`https://github.com/FutureMLS-Lab/OSCAR/tree/41ebcdba3db5f0ce1339c3727caea80df575d437`） | `41ebcdba3db5f0ce1339c3727caea80df575d437` | 公开前置量化器、池与读取接口；具体文件定位见 OSCAR 实现页第 8 节，不表示核读 WUSH-KV 集成 |
