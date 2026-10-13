@@ -8,6 +8,7 @@ tags:
   - data-format
   - floating-point
 sources:
+  - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/articles/2026-09-21/flashinfer-mm-fp4
   - raw/articles/2026-09-21/flashinfer-mm-bf16-fp4
   - raw/articles/2026-09-21/flashinfer-gemm-fp8-blockscaled
@@ -228,7 +229,13 @@ out = mm_fp4(
 
 参数表把 A/B 的 shape 写成 `(m,k)/(k,n)`，同时 dtype 已是 packed FP4 或 uint8，却没有注明 k 是逻辑维还是存储维；`b_descale` 的 `(k,n//block_size)` 也未给出与上述量化/转置样例间的映射。因此这里保留样例明确的**原始逻辑尺寸和调用关系**，不猜 packed buffer 的精确 shape、stride、scale swizzle 或尾部要求，也不借 Triton 的布局补空白。本次未核这些量化 helper、匹配 GEMM 实现或运行。（来源 Parameters、Notes 与 Examples；页面标识 0.6.14，snapshot-2026-07-02。）
 
+### v0.6.17 的 SM12x 更新与尺度参数
+
+后续固定发布说明 v0.6.17（snapshot-2026-08-20）报告：`mm_fp4` 的 SM120 NVFP4 dense GEMM 同步到 b12x HEAD（#4253）；CuTe-DSL NVFP4 量化修复 host global scale 支持（#4138）。SM12x fused-MoE 的 FP4 数值修复另增加 `input_global_scale`，用于解耦权重与激活的尺度（#3932）。这些是不同入口的版本变化，发布说明没有给修复前后的完整运算式或尺度叠加协议，不能将 MoE 参数补进上文 0.6.14 的量化/GEMM 签名，也不能据修复标题确定旧快照的具体错误范围。本次仅核发布声明，未核对应 PR 或新版 kernel、精度和运行。
+
 ## 来源身份
+
+- FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`），snapshot-2026-08-20，获取于2026-08-20T02:38:02+08:00；Highlights/What's Changed 中 SM12x、FP4 数值/全局尺度及 dense GEMM 条目，未核所指 PR 或运行。
 
 - FlashInfer `mm_fp4`（`https://docs.flashinfer.ai/generated/flashinfer.gemm.mm_fp4.html`），页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00；完整保存正文的后端准备、样例数据/尺度转置、全局恢复与分派声明，物理 shape 歧义及未核实现保留。
 

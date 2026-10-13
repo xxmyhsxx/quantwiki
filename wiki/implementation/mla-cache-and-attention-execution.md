@@ -7,10 +7,11 @@ tags:
   - serving
   - low-rank
 sources:
+  - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/flashinfer
   - raw/repositories/2026-09-21/vllm
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # MLA 缓存与 Attention 执行：SGLang、FlashInfer 与 vLLM
@@ -319,6 +320,12 @@ z_{t,i}=\sum_j a_{t,j,i}(s_c\widetilde c_j).$$
 同一 Python 模块还包含 CUTLASS/Blackwell、TRTLLM、CuteDSL 与稀疏 MLA 入口，本节没有核读这些设备路径。`backend="auto"` 是基于设备条件的选择：该标准 wrapper 在满足 SM90/CUDA 条件时选 fa3，否则 fa2；不能等同于所有架构和 decode 形状都已选择最优后端。其他入口采用不同输入布局、scale、能力限制或输出协议，不能用本节的两个 kernel 覆盖它们。
 
 
+### v0.6.17 发布声明中的 Blackwell MLA 与稀疏路径
+
+同版号的固定发布说明报告了这里未核读的另一组入口：Blackwell Kimi K3 MLA 为 96 个全局 query heads 对 1 个 KV head，TP-local heads 可低至 6，推测 query 长度可到 8，并支持 context parallel。声明将 query-token/head 行组合到 CuTe-DSL tile，加入紧凑变长 Q，同时让 TRTLLM-gen dense/sparse MLA 接受非 2 的幂 head 数。稀疏 MLA 另声明 `kv_lora_rank=512,qk_rope_head_dim=0` 的无 rotary-tail 形状；MiniMax-M3 的 MSA 接受 vLLM packed paged KV 布局，目标 SM120/SM121。（来源 v0.6.17 Highlights，Kimi K3 MLA decode；#4178/#4108/#4039/#4324，仅核发布文本。）
+
+这些支持声明不能扩展前文标准 fa2/fa3 wrapper 的输入和分派范围，也不等于已核普通 MLA cache 或 DSA 的 FlashMLA/DeepGEMM 格式可直接互用。发布说明没有给完整 packed 字节/scale、设备组合、CP 协议和基准条件；本页仍区分发布声明、固定源码实际核读和运行证据。
+
 ## 15. vLLM：同一缓存对象，独立选择 decode 与 prefill 实现
 
 本节核读 vLLM commit `568afb3a13806beb53bb2e6bd518269357b237c0` 的普通非稀疏 DeepSeek V2/V3 MLA、单设备 CUDA 路径。模型层与缓存接口沿公共实现追踪；设备读取选 `TRITON_MLA`，展开 prefill 选 `FlashAttnPrefillBackend`，保留 FP16/BF16 工作 dtype，关闭 prefill query 量化。选择这些路径是为了贯通投影、写入、读取和前缀展开，并不表示本次启动或自动选中了它们。服务端 block table 与 slot mapping 的来历见 [vLLM 推理执行](vllm-inference-execution.md)。
@@ -431,6 +438,8 @@ PCP=1 的普通 vLLM DCP 已在[分布式执行页](vllm-mla-context-parallel-ex
 [vLLM packed 缓存与 DSA](vllm-mla-packed-cache-and-dsa-execution.md)单独接续 V3.2 的 656-byte 主记录、内嵌分组 scale、独立 indexer cache、top-k 逻辑位置与主 cache/workspace 读取。它沿所选单设备 FlashMLA sparse 框架链展开，[DSA 设备执行](dsa-sparse-device-execution.md)再接续匹配 DeepGEMM logits 与 FlashMLA 的 SM90 读取、舍入和归一化；这些专用接口不能套成本页普通连续 FP8 行或 DCP 的恢复/归约。
 
 ## 来源身份
+
+- FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`），snapshot-2026-08-20，获取于2026-08-20T02:38:02+08:00；Kimi K3 MLA 与 MiniMax-M3 MSA 的几何/布局支持声明，未核所指 PR、对应设备路径或运行。
 
 | 来源 | 固定版本 | 实际使用范围 |
 | --- | --- | --- |

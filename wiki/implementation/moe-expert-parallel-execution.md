@@ -7,11 +7,12 @@ tags:
   - fp8
   - serving
 sources:
+  - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-10-07/deepep-sglang
   - raw/repositories/2026-10-07/deepep-vllm
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # MoE 专家并行执行：映射、通信与输出回传
@@ -291,7 +292,15 @@ $$B_{\mathrm{dispatch}}^{\mathrm{logical}}=
 
 没有安装依赖、编译、运行模型/GPU 或测量质量/通信/性能。本页已经完成的是所选分支的静态源码解释；硬件支持与模型配置能否实际运行须由对应运行任务判断。
 
+### v0.6.17 的 MegaMoE 集成与参数缓存
+
+固定 FlashInfer v0.6.17 发布说明报告 `flashinfer.moe_ep` 的 MegaMoE 路径支持完整 CUDA graph capture/replay、单次 launch 的 quantize-and-stage、预量化 weight packs，以及跨层共用的 symmetric-buffer workspace。它还报告持久 knob cache：生产会话按查找取得已调参数，避免在引擎内 autotuning。这种 cache 存的是调优参数，不是单设备页的 `intermediate_cache1/2/3` 激活缓冲，也不等于 DeepGEMM 的 JIT/编译产物缓存；三者不能用同一生命周期或容量预算。（来源 v0.6.17 Highlights，MoE expert parallelism；#4079，仅核发布声明。）
+
+发布说明另称可选 fault-tolerance rank mask 在 NCCL-EP/NIXL-EP 上跳过 dispatch/combine 超时的 peer，以维持作业运行（#4183）。它没有解释缺失专家贡献、gate/归一化、恢复和数值完整性，因此不能将“继续运行”改写为结果与无故障路径相同。knob 的 key/失效规则、缓冲复用同步与 graph 执行顺序也未在材料中展开。CuTe-DSL 最低运行版本回到 4.5.2、对应 vLLM 0.25.1 的说明（#4101）不替代本页两个框架、DeepEP 和 DeepGEMM 的固定版本；以上新路径未沿源码或运行闭合。
+
 ## 来源身份与定位
+
+- FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`），snapshot-2026-08-20，获取于2026-08-20T02:38:02+08:00；MegaMoE graph/量化/weight/workspace/knob 与可选 rank mask、依赖声明，未核对应 PR、完整协议或运行。
 
 - SGLang 固定源码（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），完整 commit `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`；下表 S 编号的路径相对该快照。
 - vLLM 固定源码（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`），完整 commit `568afb3a13806beb53bb2e6bd518269357b237c0`；下表 VEP 编号的路径相对该快照。两个框架版本分别核读，不声明在同一运行环境完成集成。

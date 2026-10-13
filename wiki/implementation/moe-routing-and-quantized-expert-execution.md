@@ -7,9 +7,10 @@ tags:
   - fp8
   - kernels
 sources:
+  - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/vllm
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # MoE 路由与量化专家执行：SGLang/vLLM 的单设备 FP8 主线
@@ -155,6 +156,10 @@ $$y_t=y_t^{(r)}+y_t^{(s)}.$$
 
 共享专家融合是另一条布局选择。源码支持把共享权重映射到额外 expert slot，在 TopK 中追加始终参与的 ID，使用特殊 gate 抵消后续 routed scaling；是否开启受架构、专家数、量化配置、设备及 overlap 条件限制。本页显式关闭它，只说明它不是“把共享专家也按同一 affinity 自由挑选”；不把独立 shared MLP 和 fused shared slot 计算两遍。[1，`determine_num_fused_shared_experts`][2][3]
 
+### v0.6.17 发布声明中的 FP4 专家接口
+
+固定 FlashInfer v0.6.17 发布说明另报告：统一 `MoELayer` 的 TRTLLM-gen MXFP4 权重支持 MXFP8 激活的 W4A8 和 BF16 激活的 W4A16；预路由 FP4 模式可分别传入连续的 `topk_ids` 与 `topk_weights`；TRTLLM-gen FP4 MoE 增加共享专家融合，以及 MXFP4×MXFP8、NVFP4×NVFP4 的 SiTU 激活。这里的 W4A16 指低精度浮点权重格式，不等于前述 AWQ 整数零点/Marlin 链。发布说明未给这些入口的完整 packing/scale、gate/rho 和融合共享贡献顺序，本页 FP8/Triton 主线只能提供核对问题，不能直接替它们定义执行语义。（来源 v0.6.17 Highlights，Unified MoE API；#4159/#4104/#4239/#4180，仅核发布文本。）
+
 ## 7. SGLang 主线的覆盖与验证边界
 
 这次核读已经连接四个过去需要分别查证的对象：router 选择与 gate 的区别；配对索引、逐专家 padding 与原 token 次序；专家权重/二维块尺度与 activation 行组尺度；routed 归约、缩放和独立共享输出。它可以承接 [MoE 基础](../fundamentals/model/mixture-of-experts-and-routing.md#4.%20%E6%80%BB%E5%AE%B9%E9%87%8F%E3%80%81%E5%8D%95%20token%20%E8%AE%A1%E7%AE%97%E4%B8%8E%E6%89%B9%E6%AC%A1%E6%88%90%E6%9C%AC%E4%B8%BA%E4%BD%95%E4%B8%8D%E5%90%8C)中“单 token 激活参数量不等于批次访存/吞吐”的问题。
@@ -162,6 +167,8 @@ $$y_t=y_t^{(r)}+y_t^{(s)}.$$
 未覆盖 EP/DeepEP 的通信与物理 expert 映射、EPLB、FP4/INT4/WNA16、其他 runner、LoRA 和完整 weight-loader 的所有 checkpoint 名称重映射；TMA、CUDA graph、并行 overlap 也未作为另一条执行链完整核读。源码对不同分支的能力说明不等于本项目已支持全部组合。
 
 实际验证应围绕所选模型、硬件与配置分别检查：expert ID/gate 和 token 对应、padding mask、scale shape 与 K 分组、两次 GEMM/激活/汇合的数值误差，以及真实配对负载与调度成本。此次没有执行这些检查，没有模型正确性、显存或速度结果；不根据参数激活比例或 FP8 名称推算端到端加速。验证方法接到 [Kernel 正确性与测量](kernel-correctness-and-benchmarking.md)及 [服务评测](serving-performance-evaluation.md)。
+
+另一个版本边界是 FlashInfer 发布说明在 release-v0.6.17 撤回 SM90 CUTLASS MoE backend #3738 及依赖 #4025/#4080（What's Changed，#4411）。它没有说明撤回原因，不能推广成所有 SM90 MoE 或 CUTLASS GEMM 都不可用，也没有改变本页所选的 SGLang/vLLM FP8/Triton 源码范围。
 
 ## 8. vLLM 对照：同一 FP8 计算由 factory 与 modular kernel 分工
 
@@ -238,6 +245,8 @@ vLLM 将两组工作空间交给专家模块，当前 gated SiLU shapes 为 `wor
 对照到这里，核心量化公式与配对语义可以复用，接口所有者、$\rho$ 的施加位置、第一次量化所在阶段、activation 融合及临时缓冲生命周期需要逐框架核对。本次对 vLLM 同样只核读固定源码；未执行模型、编译 kernel、验证硬件支持或比较数值误差/速度。EP 通信、其他 FP8 后端、LoRA、CUDA graph 和多 stream 仍未沿另一条调用链完整核验。
 
 ## 来源身份
+
+- FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`），snapshot-2026-08-20，获取于2026-08-20T02:38:02+08:00；统一 FP4 MoE/预路由/shared/SiTU 声明与 SM90 CUTLASS MoE 撤回，未核 PR、匹配实现或运行。
 
 第 1–7 节的 SGLang 源码来自 sgl-project/sglang 固定 commit（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`），`2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`。本地归档身份为 `sgl-project-sglang-2f730e29`；目录日与历史获取日分别登记，目录日期不表示该 commit 的发布日。数字索引对应本页实际核读文件：
 

@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · FlashInfer v0.6.17发布说明 ingest与第12批收尾
+
+- 完整研读固定v0.6.17、snapshot-2026-08-20发布文本，哈希与README一致。在[块缩放](implementation/block-scaled-matmul-execution.md)、[专家路由](implementation/moe-routing-and-quantized-expert-execution.md)、[专家并行](implementation/moe-expert-parallel-execution.md)、[MLA](implementation/mla-cache-and-attention-execution.md)与[DCP](implementation/vllm-mla-context-parallel-execution.md)原有机制旁接续相关版本声明，不另建功能摘要页。
+- 区分0.6.14接口与新尺度参数、浮点FP4专家与AWQ整数链、调优参数缓存与激活/JIT缓存、作业存活与贡献完整性、标准MLA与Blackwell/稀疏入口、Ulysses布局A2A与DCP状态合并。保留SM90 CUTLASS MoE撤回的具体范围，未核PR或对应实现不作运行结论。
+- 第12批选定来源已完成逐项研读、知识承接与内容review流程，其他设备/分支/运行范围按READING保留；当前153条有依据、76条队列，本轮基线88已处理12条。下一项为第13批DistServe，准备工作不计入完成。
+- 独立Astra内容review通过，无必修问题；发布声明与五页既有版本/机制上下文已对照。全库结构/来源strict检查184知识页、644项登记，0错误/待核；7个受影响Wiki页链接strict通过，新增锚点与承接用途已核。未安装、编译或运行GPU/分布式系统。
+
 ## 2026-10-14 · FlashInfer single prefill文档 ingest：mask与尺度
 
 - 固定FlashInfer页面0.6.14、snapshot-2026-07-02，完整保存正文与README哈希一致。在[KV接口页](implementation/flashinfer-paged-kv-write-and-nvfp4.md)接续多query/输出、尾对齐mask与打包选择、FP8按head尺度、NVFP4线性尺度/fa2；复用decode参数和递归状态解释。
