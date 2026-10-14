@@ -10,6 +10,7 @@ sources:
   - raw/articles/2026-09-21/cuda-simt-kernels
   - raw/articles/2026-09-21/cuda-programming-model
   - raw/articles/2026-09-21/nvidia-cuda-programming-model
+  - raw/articles/2026-09-21/nvidia-shared-memory
   - raw/repositories/2026-09-21/cuda-samples
   - raw/repositories/2026-09-21/cs336-lectures
   - raw/papers/2026-09-21/marlin
@@ -50,6 +51,14 @@ SIMT 允许每线程维护自己的状态和控制流。同一 warp 的分歧路
 NVIDIA `matrixMul.cu:MatrixMulCUDA` 在共享 tile 写好后做一次 `__syncthreads()`，读完后再做一次，分别保证消费者可以开始读和生产者可以覆盖下一块。对普通块内屏障，所有需要参与的线程应按一致顺序到达；不能把屏障只放在部分线程满足的 `if (i<n)` 中。尾部线程可为加载填中性值，再一起参与屏障。
 
 `__syncthreads()` 只同步该 block，不能同步整个 grid；原子加提供相应地址的原子更新，也不是整个计算阶段已经完成的屏障。跨块阶段可以拆成有序的 kernel 调用，或使用满足前提的专门协作机制。核对这些依赖时要同时看共享缓冲生命周期，而不只是查找有没有屏障函数。
+
+### shared快照支持一次性原地反转
+
+Using Shared Memory快照的保存示例取64元素、一个64线程block：线程t先把`d[t]`写入`s[t]`，共同屏障后读取`s[63-t]`，再写回自己的`d[t]`。屏障既保证反向位置已写入shared，也保证原数组的旧输入全部搬完才开始覆盖。若直接并发`d[t]=d[63-t]`，先写的新值可能覆盖另一线程尚需的旧输入；这是整理者依据下标作的数据依赖判断。（“Shared Memory Example”“Static Shared Memory”。）
+
+此例不循环重写s，因而没有GEMM中“读完旧tile再覆盖下一块”的第二阶段依赖；不能把两次屏障机械套给所有shared代码。global读写都沿t，重排在shared内完成，但文章把避免逆序store合并损失的动机限定CC≤1.1，并说明CC≥1.2已能合并逆序stores。这个教学流程不证明现代设备必然提速。
+
+保存host只演示n=64；kernel未给任意n的guard或多block映射，静态数组容量也只有64。当前保存稿缺少`#include`头名，所谓“另三个kernel”并未完整保存，正文`extern shared int`与可辨代码`extern __shared__ int`也不一致；本页按可辨代码解释，不称其为已编译完整程序。
 
 ### Compute capability标记硬件特性
 
@@ -124,6 +133,7 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| Using Shared Memory in CUDA C/C++（`https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/`） | `snapshot-2026-07-02` | 完整保存137行；固定反转快照/同步、静态动态shared与CC1.x–3.x范围；头名/函数及拼写保存缺口保留，未取作者代码或运行。 |
 | CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02`，配图补采于2026-09-21 | 完整保存正文与4图；CC硬件版本及主体覆盖核对，不将图示当线程永久绑定或全部A100规格，不核deviceQuery/设备运行。 |
 | CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文取得于2026-07-02、配图补采于2026-09-21 | §1.2.1–1.2.3保存正文；cluster/GPC、地址与内存范围，图3–6/8–9与图注回查；高级API/系统分支/设备运行未核。 |
 | stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |

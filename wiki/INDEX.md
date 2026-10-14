@@ -281,7 +281,7 @@ sources: []
 | [SGLang 算子设计：索引化 KV、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) | 历史前缀和当前输入如何进入 Attention，分段输出怎样按 LSE 合并。 |
 | [门控激活的 CUDA 与 Triton 实现](implementation/gated-activation-cuda-triton-kernels.md) | 从两段输入布局理解独立输出、向量任务、二维 program 网格与融合边界。 |
 | [RMSNorm 的 CUDA 与 Triton 实现](implementation/rmsnorm-cuda-triton-kernels.md) | 从整行统计理解线程协作、分段读取、残差写回与舍入位置。 |
-| [Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 如何权衡数据复用、资源预算、并行工作量与调优成本。 |
+| [Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 静态/动态shared、寄存器与工作块预算怎样影响配置，区分编译hint、正确性和调优测量。 |
 | [GPU 异步拷贝与多级流水：等待完成和缓冲复用](implementation/gpu-async-copy-pipelines.md) | 数据何时可以读取，缓冲何时可以覆盖，怎样安全地重叠搬运和计算。 |
 | [算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 怎样选择验证用例，并正确解释 GPU 计时和吞吐。 |
 | [GGUF 与块量化存储格式](implementation/gguf-block-quantization-formats.md) | 论文里的量化方案要落到文件，还需要回答一组工程问题：权重怎么分块、每块保存哪些元数据、文件如何描述张量与模型、量化工具怎样按张量选择格式、以及校准统计在哪里参与。 |

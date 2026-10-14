@@ -11,6 +11,7 @@ sources:
   - raw/repositories/2026-09-21/triton
   - raw/articles/2026-09-21/cuda-simt-kernels
   - raw/articles/2026-09-21/cuda-tile-kernels
+  - raw/articles/2026-09-21/nvidia-shared-memory
 updated: 2026-10-14
 ---
 
@@ -31,6 +32,12 @@ L 是同时保留的缓冲阶段数，额外项包含 padding、barrier 和其�
 FP32 累加器的总载荷约为 $4B_MB_N$ 字节。若它均匀分给 T 个线程，仅累加器就平均需要 $B_MB_N/T$ 个 32-bit 寄存器；实际还有输入片段、地址、循环状态和分配粒度。不能一律除以 32，那会把整个 CTA 当成一个 warp；也不能将一个 128×128 累加器视为单线程拥有它。
 
 估算之后还要用编译产物确认实际资源：Triton softmax 教程就在预编译后读取寄存器数量和 shared 用量，再估计驻留能力。CUDA 文档 §2.3.3 说明，寄存器用量过高可能 spill 到设备内存；共享内存超限与寄存器 spill 是不同的资源问题。
+
+### 静态与动态shared都占用每block资源
+
+Using Shared Memory快照用`__shared__ int s[64]`声明编译期容量，用`extern __shared__ int s[]`接收启动时的动态区。`<<<1,n,n*sizeof(int)>>>`第三项是每block请求的动态shared字节，不是该block全部shared的上限；资源账还须计入静态区及实际编译状态，“动态”不表示免占SM资源。（“Static/Dynamic Shared Memory”。）
+
+多个动态数组共用一份动态区，以指针切片分配。原例按int/float/char列总字节，没有给任意dtype的对齐算法；推广时须同时核各切片起点的类型对齐、padding与总容量，这是整理者接口补充。文章的16 banks/half-warp请求限定CC1.x，32 banks/整warp请求限定CC2.0，4/8-byte可配置bank宽度限定CC3.x，64KB L1/shared划分限定CC2.x与3.x，不能当当前设备的统一规格；本页先构造预算，再用编译资源和具体设备确认。
 
 ## 2. occupancy 是驻留能力，不是性能分数
 
@@ -125,6 +132,7 @@ Python `replace_hints`创建具有独立JIT cache的新kernel对象，提供的�
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| Using Shared Memory in CUDA C/C++（`https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/`） | `snapshot-2026-07-02` | 静态/动态区、launch字节与多数组分区及历史设备条件；完整保存正文已读，对齐推广为整理者说明，未编译/测资源。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.11–2.4.12 hint与前提，保存正文全读；并非实际编译资源/TMA或性能验证，完整API未核。 |
 | tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
 | Triton（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文所列教程与 runtime 文件；仅代码核对。 |

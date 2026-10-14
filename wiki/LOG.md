@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Shared Memory ingest：反转快照与动态资源
+
+- 核读snapshot-2026-07-02完整保存137行/所有保存示例及README，正文现算哈希相符；没有独立保存配图，未取原HTML/作者GitHub完整程序或编译/运行。
+- 在[GPU基础](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)补n64单block反转的shared旧输入快照和一次屏障，解释其与循环缓冲复用的阶段差别；[配置资源](implementation/kernel-configuration-and-autotuning.md)补静态区与launch第三参数动态区、每block合计资源及多数组分区对齐。既有bank/warp/共享同步主线复用，原地依赖与对齐推广标为整理者说明。
+- 保留CC≤1.1的顺序访存动机与≥1.2逆序store反例，旧16/32bank、4/8-byte和64KB划分不作现代规格；n64/未给guard与多block映射、空include/遗漏函数与extern文本差异保留，未称完整可执行代码或固定100×/必然加速。
+- READING/INDEX/SELF/计划同步：185条有依据、44条队列，本轮基线88已处理44条；第18批下一项Programming Tensor Cores in CUDA 9。独立Astra正式review通过，无剩余必修；旧bank/宽度/shared划分的CC条件逐项明确并复读关闭，最终记录已核。结构/来源strict检查198知识页、702项登记，0错误/待核；5个受影响Wiki页1326条本地链接strict通过，diff及185/44计数检查通过。提交范围为本项7文件，Obsidian改动保留；未编译、运行模型/设备或测性能。
+
 ## 2026-10-14 · CUDA Refresher ingest：硬件版本与二维地址
 
 - 核读snapshot-2026-07-02保存全文103行与4图/图注，5正文/图片现算哈希相符；正文与2026-09-21补采图区分，未取原HTML/外链deviceQuery或完整作者示例。
