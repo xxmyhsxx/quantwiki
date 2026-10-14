@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · R1报告 ingest与第15批收尾
+
+- 核读v2正文GRPO/奖励/阶段与必要Zero结果、附录PPO比较/infra/数据/超参/蒸馏及必要评测协议/完整表；六张源包原图与关键PDF页回查。PDF86页/源包hash匹配，47 regular成员扣编译管理00README为46来源，18展开文件逐字节对应；未称86页全文或全部安全/样例/人评审计。
+- 新建[推理后训练](fundamentals/model/reasoning-post-training-and-distillation.md)，补actor/old/reference、组内反馈、KL样本与期望/教学反例、rule reward、Dev2数据/第二SFT重新V3-Base、输出监督/学生起点；质量页只补抽样pass@1/pass@K/cons@K预算与R1例，Transformer/LLM-QAT/INDEX补用途入口。
+- 保留ε10只明属于R1首RL、zero-std/mask与实现未核、accuracy/format与语言/general奖励范围、800K概数/804745实表、首RL数据与最终teacher泛称、Zero8.2K预算干预/图cons16和最终R1cons64、阶段非单调及蒸馏非等预算RL对照。匹配trainer/rollout、reward/parser、dtype/打包及训练/评测未核；KL反例仅数学核算。
+- READING/SELF/计划同步：168条有依据、61条队列，实际表行已核，本轮基线88已处理27条；第15批Llama/V3/R1按选定来源范围完成，下一项第16批Qwen2.5-VL，准备不计完成。独立Astra正式review通过；问题分布/条件采样公式已修正并复读，600K筛选的V3判定与首RL规则奖励已消歧。结构/来源strict检查191知识页、676项登记，0错误/待核；7个受影响Wiki页1281条本地链接strict通过，diff检查通过。提交范围为本项9文件，Obsidian改动保留；未运行trainer、模型、训练、GPU或评测实验。
+
 ## 2026-10-14 · DeepSeek-V3 ingest：FP8训练、路由与MTP
 
 - 核读v2架构/MTP及训练/推理基础设施主链、完整FP8节116行、必要超参/消融/推测和附录B；PDF53页/源包hash匹配，24成员中8展开源码逐字节核对，核心六图与PDF47原件目视。未扩成全部数据/后训练/质量表。

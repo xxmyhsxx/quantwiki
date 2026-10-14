@@ -6,6 +6,7 @@ tags:
   - numerical-error
   - reliability
 sources:
+  - raw/papers/2026-09-21/deepseek-r1
   - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-10-03/quantforge
   - raw/papers/2026-09-28/same-bit-width-different-outcomes
@@ -108,6 +109,14 @@ PPL 给的是“真实上下文上的预测损失”。自由生成会把模型�
 生成字符串与候选loglikelihood是不同请求；parser选首/末匹配、取首个重复响应和metric忽略大小写也是不同操作。[harness固定实现](lm-evaluation-harness-request-filter-and-aggregation.md)的MMLU-Pro只启用一条大小写敏感regex，失败计零，后续exact_match归一化不能恢复已漏掉的字母。任务名相同仍须对齐执行协议。
 
 学科内逐例均值a_s、实际样本数n_s时，按样本加权总分是 $\sum_s n_s a_s/\sum_s n_s$；学科等权平均则回答另一问题，PPL等非线性指标另按其计数汇总。保留最终配置、原始/过滤响应、指标键与实际分母，并隔离会复用旧输入或模型输出的缓存；没有新模型调用的缓存命中不能证明本次压缩配置已经评测。（所选harness代码及整理者对照要求。）
+
+### 3.5 多次抽样、单次成功与多数投票
+
+同一题生成K个回复，正确指示为$c_i$时，抽样平均$\widehat{\rm pass@1}=K^{-1}\sum_i c_i$估计单次生成的成功率；在恰好K次尝试的教学口径中，“至少一条正确”为$\mathbf1\{\sum_i c_i>0\}$，跨题平均得到相应pass@K；cons@K则先按parser抽答案、投票选一个，再判该选择是否正确。第二种知道尝试集合里有正确答案，不证明部署能够挑中它；多数票还依赖parser、并列和无效输出处理。
+
+R1报告v2默认max32,768 tokens、temperature0.6/top-p0.95；每题AIME/GPQA64次，MATH/Codeforces16次、LCB8次，pass@1按多次正确指示均值计算。附录最终R1 AIME 2024的pass@1=79.8%、pass@64=90.0%、多数票cons@64=86.7%；主文Zero原图/图注明确cons@16，其86.7%不能套同一cons@64标签。标准pass@K的其他估计器和本文parser实现未核，以上集合式是教学定义。（附录Experiment Setup、An Analysis on CoT Length；Zero原图。）
+
+量化对照需要共同固定每响应长度、样本次数、停止条件、提示与选择规则，并记录**总实际生成tokens**。相同单响应上限不保证总预算相同。原报告的LCB时间段2024-08至2025-01、SWE Verified agentless/Aider diff等协议也属于结果身份；o1-1217引用外部官方结果不能证明全部由作者按同协议重跑。10-gram去污染仍未排除改写污染。训练阶段和输出蒸馏的对象区别见[推理后训练](../fundamentals/model/reasoning-post-training-and-distillation.md)。
 
 ## 4. 校准与错误排序是两个问题
 
@@ -251,6 +260,8 @@ $$
 CI含零与质量等价按[第8节](#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E5%BC%82%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%BB%A1%E8%B6%B3%E8%B4%A8%E9%87%8F%E7%AD%89%E4%BB%B7)区分；未设置等价界限、未校正多重比较、缺少逐图CI时保留限制。最终配方的质量表也不能替代消融归因：Ideogram的层保护消融在raw提示下完成，JSON协议只评测完整配方，因此保护贡献比例不能直接移植到JSON协议。
 
 ## 来源身份
+
+- DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning（`https://arxiv.org/abs/2501.12948v2`），`arXiv:2501.12948v2`；Experiment Setup、CoT Length及Zero原图，抽样/投票/时间和引用基线条件，未核parser或运行。
 
 - The Llama 3 Herd of Models（`https://arxiv.org/abs/2407.21783v3`），`arXiv:2407.21783v3`；长上下文训练/后训练及评测、§6.2图26；同版源包未编入PDF的FP8补充稿/三图另行注明；未复现训练、质量或reward评分。
 

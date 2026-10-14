@@ -87,6 +87,7 @@ sources: []
 | 页面 | 主要问题 |
 | --- | --- |
 | [Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) | 从 token、QKV、残差和 LM head 解释 prefill/decode、GQA 与 KV 复用。 |
+| [推理模型后训练：GRPO、验证奖励与输出蒸馏](fundamentals/model/reasoning-post-training-and-distillation.md) | 策略、组内反馈、checkpoint/数据流和输出监督怎样影响生成行为与评测预算。 |
 | [MoE 与专家路由](fundamentals/model/mixture-of-experts-and-routing.md) | 共享与路由专家、设备限制、负载、总容量与量化路由误差怎样连接。 |
 | [MLA：联合潜变量、位置分支与缓存表示](fundamentals/model/multi-head-latent-attention.md) | 联合压缩、矩阵吸收、解耦 RoPE 如何改变量化对象与缓存预算。 |
 | [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
