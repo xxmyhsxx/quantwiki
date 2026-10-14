@@ -8,7 +8,7 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-09-23/sphquant
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # SPHQuant：符号、球面方向与半径的独立编码
@@ -77,7 +77,7 @@ $$\theta_j=\epsilon+(\pi/2-2\epsilon)\operatorname{sigmoid}(\phi_j)$$
 
 当 $0<\epsilon<\pi/4$ 时，角度位于 $(\epsilon,\pi/2-\epsilon)$，方向始终在正球面内部，无需每步重新单位化。固定正 $\epsilon$ 还会排除靠近边界的一部分方向：例如 $c_1\in(\sin\epsilon,\cos\epsilon)$，不能任意逼近 0 或 1。这是由参数化得到的表示限制；sigmoid 饱和和多个正弦乘积也可能造成梯度变小。
 
-Qwen3-VL 校准还保存 DeepStack 视觉特征及其注入层上下文。只缓存第一层 hidden states 而漏掉后续视觉注入，会优化错误的执行路径；附录 §8 的这项约定是理解 VLM 重构的重要条件。
+Qwen3-VL 校准还保存 [DeepStack 视觉特征](../fundamentals/model/vision-language-model-tokens-and-quantization.md#1.3%20Qwen3-VL%E7%9A%84%E5%A4%9A%E5%B1%82%E8%A7%86%E8%A7%89%E8%BE%93%E5%85%A5%E4%B8%8E%E4%BA%A4%E9%94%99%E9%A2%91%E6%AE%B5)及其注入层上下文。只缓存第一层 hidden states 而漏掉后续视觉注入，会优化错误的执行路径；附录 §8 的这项约定是理解 VLM 重构的重要条件。
 
 ## 5. W2 GEMV 怎样消费这些位
 

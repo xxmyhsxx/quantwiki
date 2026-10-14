@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Qwen3-VL ingest：多层视觉输入与时间表达
+
+- 核读v2主编译入口、架构与必要pre/posttrain/数据、消融和needle、视频协议与定向附录提示；图1/3、表1/11/12与PDF1/3/4/24/25回查。PDF42页/源包hash匹配，30成员扣00README为29来源，20展开文件逐字节对应；未扩为全部任务表或实现审计。
+- 完善[视觉token基础](fundamentals/model/vision-language-model-tokens-and-quantization.md)，补SigLIP-2/多层merger→前三LLM层残差、序列长度不变与额外成本，分开轴频率分配、文字timestamp和2D/3D输出坐标；SPHQuant补真实校准入口，INDEX说明同步，不新建模型摘要。
+- 保留旧版14patch/32层/窗口/时间公式不转填，DeepStack结构式/频率角仅示意，internal15B-A2B/200B/no-posttrain消融与TVQA退化，CLIP/VLM阶段、[0,1000]新坐标、per-token平方根归约缺式、text-only蒸馏/SAPO未给更新式、工具奖励反例、视频API帧预算不齐和needle恒定预算文字/横轴差异。匹配内部实现/量化与运行未核。
+- READING/SELF/计划同步：172条有依据、57条队列，本轮基线88已处理31条；第16批四报告范围接续，下一项已归档transformers模型实现。独立Astra正式review通过；新增SPHQuant锚点已按真实标题修正并复读，无剩余必修。结构/来源strict检查192知识页、683项登记，0错误/待核；5个受影响Wiki页1272条本地链接strict通过，diff检查通过。提交范围为本项7文件，Obsidian改动保留；未运行模型、processor、训练、量化、GPU或性能实验。
+
 ## 2026-10-14 · Qwen3 ingest：模式预算与两阶段蒸馏
 
 - 核读v1实际编译入口/摘要、Intro/Arch/Conclusion，必要pretrain主链、posttrain四阶段/模板/蒸馏/协议与Discussion、附录A.1.1及必要语言范围；原图1/2、关键表1/2/9/21/22/23及PDF回查。PDF35页/源包hash匹配，29来源成员中15展开文件逐字节对应；未编入experiments残稿排除，未称全部模型/语言表审计。

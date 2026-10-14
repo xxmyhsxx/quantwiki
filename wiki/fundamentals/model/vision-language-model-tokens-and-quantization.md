@@ -7,6 +7,7 @@ tags:
   - weight-quantization
   - activation-quantization
 sources:
+  - raw/papers/2026-09-21/qwen3-vl
   - raw/papers/2026-09-21/qwen2-5-vl
   - raw/papers/2026-10-07/saprune
   - raw/papers/2026-09-21/qapruner
@@ -25,7 +26,7 @@ updated: 2026-10-14
 
 # 视觉语言模型中的 token 与量化对象
 
-视觉语言模型的量化依然使用共同的数值表示、舍入、裁剪、误差重构和低比特计算基础。新的问题来自图像与文本怎样进入计算图、哪些位置受到什么损失监督，以及最终需要完成什么任务。本页先解释 MBQ v2、VLMQ v2、MQuant v2 所研究的视觉编码器—连接器—语言骨干结构，再以 Qwen2.5-VL v1 说明动态分辨率、特征合并和时间坐标；这些例子不代表所有多模态架构。
+视觉语言模型的量化依然使用共同的数值表示、舍入、裁剪、误差重构和低比特计算基础。新的问题来自图像与文本怎样进入计算图、哪些位置受到什么损失监督，以及最终需要完成什么任务。本页先解释 MBQ v2、VLMQ v2、MQuant v2 所研究的视觉编码器—连接器—语言骨干结构，再以 Qwen2.5-VL v1 和 Qwen3-VL v2 说明动态分辨率、特征合并、多层视觉输入和时间坐标；这些例子不代表所有多模态架构。
 
 ## 1. 图像如何成为语言骨干的输入
 
@@ -69,6 +70,33 @@ Grounding输出使用实际输入图像尺寸下的点/box坐标，区别于归�
 
 长视频的结论也有采样条件：报告视频评测每视频最多768帧、总video tokens不超过24,576；它处理的是选定采样，不是保留数小时视频的每个原始帧。表8分别报告有/无字幕条件，不能合成同一纯视觉成绩。校准和量化对照应共同记录分辨率、FPS/有效帧数、视觉位置数、时间ID、字幕与提示预算，而非只比较相同原始视频时长。（§3.3.4、表8。）
 
+### 1.3 Qwen3-VL的多层视觉输入与交错频段
+
+Qwen3-VL v2仍是视觉编码器—merger—语言骨干链，语言端沿Qwen3 dense/MoE，参数记账复用[专家容量](mixture-of-experts-and-routing.md#4.%20%E6%80%BB%E5%AE%B9%E9%87%8F%E3%80%81%E5%8D%95%20token%20%E8%AE%A1%E7%AE%97%E4%B8%8E%E6%89%B9%E6%AC%A1%E6%88%90%E6%9C%AC%E4%B8%BA%E4%BD%95%E4%B8%8D%E5%90%8C)。视觉端改为从官方SigLIP-2预训练权重继续动态分辨率训练，使用2D-RoPE和按输入尺寸插值的绝对位置embedding；默认SO-400M，2B/4B模型使用Large-300M。两层MLP仍合并$2\times2$特征，但不能把上一版的14像素patch、32个ViT层、窗口/full索引或时间补帧公式带入本版；报告未给这些完整配置。（§2、图1。）
+
+DeepStack从**三个ViT中间层级**分别取特征，经各自专用merger变到语言维，再直接加到**前三个LLM层的对应hidden states**。它与原DeepStack从多尺度视觉输入堆叠tokens不同。记层级为r，经过merger的特征为$Z^{(r)}$，按对应位置组织成视觉残差$\Delta^{(r)}$，可作结构示意：
+
+$$
+V^{(r)}\xrightarrow{M_r}Z^{(r)}\in\mathbb R^{N_{\rm visual}\times D},\qquad
+H_\ell'=H_\ell+\Delta^{(r)},\quad H_\ell,\Delta^{(r)}\in\mathbb R^{S\times D}.
+$$
+
+$D$为语言隐藏维，$S$为整个图文序列长度。新增的是已对齐的特征贡献，**加法后S不变**；不是再拼接三套长视觉序列。因此只缓存首层hidden而漏掉后续视觉注入，会改变重构所见的执行路径，实际校准条件见[SPHQuant](../../methods/sphquant.md#4.%20%E9%80%90%E5%B1%82%E8%AE%AD%E7%BB%83%E5%88%B0%E5%BA%95%E6%9B%B4%E6%96%B0%E4%BB%80%E4%B9%88)。该式是整理者示意，确切ViT层号、注入mask和block前后时序未给；不增加context length也不表示专用merger、特征保存与计算没有成本。（§2.2、图1。）
+
+DeepStack表12的消融使用内部15B-A2B、200B预训练tokens，直接评validation且无post-training：AVG74.7→76.0、InfoVQA71.9→74.2、DocVQA89.5→91.1，但TVQA80.6→80.5。它支持所测配方的部分及平均增量，不保证每款发布模型、每项任务都提升。表11的视觉增强在共同1.7B Qwen3/1.5T VLM训练的所列任务上改善，CLIP阶段ImageNet-R96.1→95.7、ImageNet-S76.2→74.5又有退化；两阶段和任务不能混成普遍更强结论。（§5.12.1–5.12.2、表11–12。）
+
+Interleaved MRoPE改变的是**坐标轴与旋转频率的分配**。沿旋转坐标对j，可用$\theta_j=\omega_jp_{a(j)}$分开角度$\theta_j$、频率$\omega_j$、轴坐标$p$和轴分配$a(j)\in\{t,h,w\}$。旧方案按轴分连续子空间，本版让三个轴交错覆盖低、高频段。这里仍使用位置坐标；它没有把文字时间戳变成某个旋转频率。精确轴占比、索引排列和新版完整time ID生成规则未给，不能把这条整理者示意冒充已核实现。（§2.1。）
+
+### 1.4 文字时间戳、输出坐标与长视频条件
+
+Qwen3-VL v2将上一版直接用绝对时间对齐位置ID的表达，改为在每个**video temporal patch**前放格式化文字时间戳，如`<3.0 seconds>`；训练同时包含seconds与HMS格式。文字时间戳进入语言输入并增加context长度，不能把它默认当成一个单独特殊token，也不由该描述决定所有三轴ID。频段交错与真实时间的文字表达分别承担位置和时间信息。（§2.3、图1。）
+
+本版2D grounding采用`[0,1000]`归一化坐标，与上节Qwen2.5-VL按实际输入像素尺寸表示不同。输出点/box坐标、MRoPE网格坐标与3D任务的虚拟相机坐标是不同对象；转回原图或作3D解释需保留各自尺度、相机与预处理条件，不能共用一个“位置”数值。（§3.2 Grounding/Spatial Understanding。）
+
+普通视频评测最多2048帧/224K video tokens；VideoMMMU/MMVU每帧至多768 token，其余至多640，Charades-STA为4 FPS、其余2 FPS。API对照分别只输入Gemini512、GPT-5 256、Claude100帧，作者明确不能保证完全公平。Appendix B的instruct/thinking提示与秒时间戳输出条件也不同；这些数字不能全部归因于MRoPE或timestamp单项。（§5视频评测、Appendix B。）
+
+图3的needle测试则使用235B-A22B-Instruct、1 FPS与动态分辨率：30分钟/256K报告100%，约2小时/1M通过YaRN外推报告99.5%。任务是插入关键帧的定位/问答，不证明任意长视频推理。原文说保持constant visual token budget，图横轴却列128K/256K/512K/768K/1024K；具体预算调节未披露，不能解释成所有时长最终序列同长。（§5.12.3、图3。）
+
 ## 2. 量化对象不只是一份模型名称
 
 | 部分/张量 | 量化问题 | 本轮证据范围 |
@@ -97,6 +125,10 @@ $$
 若视觉位置有 100 个、回答位置只有 10 个，且每个位置的误差大小相同，那么视觉组对这个目标的贡献约是回答组的 10 倍。但这些重构误差未必按相同倍数影响回答质量；目标中 token 的数量优势与任务上的重要性是两件事。
 
 Qwen2.5-VL v1的SFT数据约200万项，文字/多模态样本各50%，报告明确多模态样本消耗更多tokens与计算。因此按样本平衡并不自动平衡序列位置或重构目标；SFT/DPO阶段冻结ViT也不表示离线量化只需校准文字。模型训练配方与当前量化的模块/目标分别登记。（§2.3 Instruction Data、Training Recipe。）
+
+Qwen3-VL v2的S0只训练merger，S1/S2/S3全参数训练，context为8192→32768→262144；普通SFT约1.2M样本、文字占1/3，Long-CoT又约1:1。报告讨论thinking/non-thinking训练分支，不能直接套用Qwen3的同一权重模式开关。它称从per-sample转为square-root-normalized per-token loss，却未给完整归约式、监督token定义或消融；不能自行写成$\sum\mathrm{loss}/\sqrt N$并称论文公式。样本比例、监督位置与loss归约都需分别核对。（§1、§3.1、§4.1–4.2、表1。）
+
+该版Strong-to-Weak阶段以**text-only数据调整LLM**，接续教师输出监督与学生生成前缀上的logits KL；不能当成全部视觉模块的量化训练。Reasoning RL报告采用SAPO、用任务格式提示而非显式format reward，并另罚语言不一致；未给SAPO更新式，不替换成GRPO。工具轨迹初期只按答案/推理奖励会退化成一次调用，之后加入相对专家估计次数的奖励，说明架构本身不保证工具行为。（§4.3–4.5；软监督基础见[后训练与蒸馏](reasoning-post-training-and-distillation.md)。）
 
 由此产生三个不同问题：
 
@@ -184,6 +216,8 @@ $$
 
 [AKVQ-VL](../../methods/akvq-vl.md) 则保留 token 集合，按 attention 层模式保护文本或 pivot 的 KV 精度：TSA 层的文本主要 4 bit，PSA 层的 pivot 与 recent 用 16 bit，其余历史主要 2 bit。它的早层文本显著、后层枢纽显著是特定模型观测，原文中也有不出现 TSA 的骨干。模态标签、attention 代理、激活幅值、可删除性和量化敏感度应各自说明证据，不能共用一个“重要性”标签便认为可以直接交换策略。
 ## 来源身份
+
+- Qwen3-VL Technical Report（`https://arxiv.org/abs/2511.21631v2`），`arXiv:2511.21631v2`；架构/DeepStack/位置/时间、必要训练与数据、视频及表11–12/图1/3条件，42页PDF关键原件回查。结构式为整理者示意；未核全部任务表、匹配processor/model、mask/频段/patch与运行。
 
 - Qwen2.5-VL Technical Report（`https://arxiv.org/abs/2502.13923v1`），`arXiv:2502.13923v1`；Approach架构/数据/训练、图1/表1与必要视频条件/表8，23页PDF关键页回查。计数/复杂度为结构推导；未核匹配processor、完整位置/窗口/补帧、全部任务表或模型/量化/性能运行。
 
