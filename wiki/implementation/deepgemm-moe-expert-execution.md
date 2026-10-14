@@ -9,7 +9,7 @@ tags:
 sources:
   - raw/repositories/2026-10-07/deepgemm-sglang
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # DeepGEMM 的 MoE 专家执行：行布局、块尺度与 SM90 计算
@@ -124,6 +124,8 @@ $b$ 是 128 通道 group，$n$ 是输出列，$S_A,S_B$ 是传入的 FP32 恢复
 最后 `__float22bfloat162_rn` 将 FP32 final accumulator 转 BF16，STSM 写 swizzled shared 输出，经 store fence/named barrier 发 TMA global store。输出 descriptor 按 $A\times N_g$ 或 flatten 的 $LC\times N_g$ 容量定义，对 masked_m 没有逐行知识。TMA global 边界与有效前缀属于不同层，容量内 padding 可以被写入。
 
 本 caller 的 $K_g$ 按 128 整除，contiguous 的 $A$ 与每专家区间按 128 对齐，masked 容量按候选 M tile 对齐；这些条件避免相应 M/K 的容量尾块。$N_g$ 虽按 128 对齐，`BLOCK_N` 仍可能不整除它，核内用 `num_full_iters` 处理 N 尾部的 scale 选择，输出 TMA descriptor 以实际 $N_g$ 定义界限。B descriptor 把专家 N 轴 flatten 为 $LN_g$，不能描述成 TMA 独立 mask 每专家的 local N 尾部；这里仅说明合法输出列的接口，不推广任意不对齐 shape 的硬件 OOB 行为。
+
+论文训练中每K组恢复、Dgrad/Wgrad与缓存/优化器精度的另一套责任，见[DeepSeek-V3 FP8训练](deepseek-v3-fp8-training.md)。本页固定推理源码不证明作者HAI-LLM训练kernel已核，FP32寄存器/类型声明也不能代替硬件实际累加精度的测量。
 
 ## 6. 两次专家计算的边界与复核范围
 

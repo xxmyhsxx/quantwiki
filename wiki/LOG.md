@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · DeepSeek-V3 ingest：FP8训练、路由与MTP
+
+- 核读v2架构/MTP及训练/推理基础设施主链、完整FP8节116行、必要超参/消融/推测和附录B；PDF53页/源包hash匹配，24成员中8展开源码逐字节核对，核心六图与PDF47原件目视。未扩成全部数据/后训练/质量表。
+- 新建[FP8训练](implementation/deepseek-v3-fp8-training.md)，解释三GEMM、online组尺度/局部promotion、反向缓存/optim与通信及DualPipe条件；MoE基础并列V3 sigmoid/biased选择、wholebatch更新/小seqaux/node条件，保留V2；模型基础补MTP因果链/目标/可丢模块/有条件的推测证据。FP8/DeepGEMM/consumer/INDEX补入口，consumer标题改为具体所选配置。
+- 保留每K128尺度不可移出、H800累加报告与理论算力、E5M6/2幂缓存、FP32master/grad与BF16moments、FP8dispatch/BF16combine、双向流水/拓扑和反例条件。16B/230B相对loss<0.25%不扩成671B完整BF16质量对照；node评分/seqaux记号未明及MTP非全任务改善按原件保留。匹配HAI-LLM/PTX、packed/round和完整训练/设备/推测运行未核。
+- READING/SELF/计划同步：167条有依据、62条队列，实际表行已核，本轮基线88已处理26条，下一项DeepSeek-R1，准备不计完成。独立Astra正式review通过；MTP逐位置简写已恢复为投影加序列因果Transformer并复读，表2/§5.4.3引用及变量/梯度缓冲消歧已关闭，V3配置句另复核。结构/来源strict检查190知识页、674项登记，0错误/待核；9个受影响Wiki页1283条本地链接strict通过，diff检查通过。提交范围为本项11文件，Obsidian改动保留；未运行作者代码、训练、GPU或性能实验。
+
 ## 2026-10-14 · Llama 3报告 ingest：选择性FP8与质量/资源条件
 
 - 研读v3语言主线、预训练/后训练与语言结果、推理PP/FP8和必要图表，多模态/Guard只定向核对象与稳定性；PDF92页/源包hash匹配，157成员中82展开源码逐字节核对，余图仍保留archive内。主代理复核图25/26/27、microbatch两图及三张未编入PDF的FP8补图，不杜撰附图PDF编号。

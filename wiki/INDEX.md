@@ -258,6 +258,7 @@ sources: []
 | [推理服务评测](implementation/serving-performance-evaluation.md) | 负载、TTFT、TPOT、吞吐与 SLO 下的 goodput 如何共同解释量化收益。 |
 | [张量并行与量化](implementation/tensor-parallel-quantization.md) | 列/行分片、GQA 复制、collective 与 group/scale/zero 如何配合。 |
 | [FSDP2：参数生命周期与checkpoint](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md) | 持久分片、计算期聚合、梯度归约和full state保存分别需要哪些对象与rank参与。 |
+| [DeepSeek-V3 FP8训练](implementation/deepseek-v3-fp8-training.md) | Fprop/Dgrad/Wgrad、K组尺度与累加、缓存/optim/通信和验证反例怎样共同决定训练精度。 |
 | [Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) | 从 tile、lane 和寄存器走到 ldmatrix、MMA、AWQ Triton 与编译诊断。 |
 | [CUDA 算子的编写、编译与接入](implementation/cuda-operator-build-and-integration.md) | 从完整设备代码和包装走到编译、dispatcher、FakeTensor 与接口检查。 |
 | [FP4/FP8 块缩放矩阵乘](implementation/block-scaled-matmul-execution.md) | 元素编码、K 组尺度、packed scale 布局与点积接口如何衔接，量化产物需保留哪些尺度参数。 |

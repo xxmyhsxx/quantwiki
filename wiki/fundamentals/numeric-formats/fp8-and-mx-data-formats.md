@@ -6,6 +6,7 @@ tags:
   - floating-point
   - mixed-precision
 sources:
+  - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-09-21/fp8-formats
   - raw/papers/2026-09-21/microscaling-formats
@@ -106,6 +107,10 @@ Llama 3报告v3 §6.2给出H100原生FP8推理案例，区别于上文F的格式
 
 范围保护、尺度粒度和上界共同构成该推理配方，效果由[回复质量分布](../../implementation/model-quality-evaluation.md#9.1%20Llama%203.1%E7%9A%84%E7%BD%95%E8%A7%81%E6%8D%9F%E5%9D%8F%E4%B8%8Ereward%E5%88%86%E5%B8%83)与[资源条件](../../implementation/serving-performance-evaluation.md#3.1%20Llama%203.1%E7%9A%84%E8%8A%82%E7%82%B9%E6%95%B0%E4%B8%8EFP8%E5%90%9E%E5%90%90%E8%AE%A1%E8%B4%A6)承接。训练系统另报告BF16 MFU、跨microbatch梯度累积和FSDP reduce-scatter用FP32；不能将这里的FP8推理写成FP8预训练配方。（§3.3.2 Numerical stability、§6.2。）
 
+### 3.2 DeepSeek-V3的原生FP8训练配方
+
+V3报告v2把Linear的前向、输入梯度和权重梯度GEMM都接入E4M3，而保留高精度敏感算子、FP32主权重/累计梯度及BF16 AdamW moments。激活1×128、权重128×128在线amax和每K128组的FP32恢复/累计是一套联合配方，不能由E4M3格式单独推定训练稳定。反向缓存重分组、E5M6特例、FP8 dispatch/BF16 combine及16B/230B loss对照和Dgrad block发散反例，见[训练计算与状态](../../implementation/deepseek-v3-fp8-training.md)。这个训练实例与上节Llama的选择性推理承担不同对象和证据责任。（V3 §3.3、附录B。）
+
 ## 4. Microscaling：块内共享尺度
 
 M §2 把 MX 的基本单元定义为“一个共享尺度加 $k$ 个元素”：数据单元称为 MX block，由块大小 $k$、尺度数据格式和元素数据格式共同定义；$k$ 个元素共享同一个元素格式，块内每个数满足 $v_i = X P_i$。布局不被规范强制，尺度可以与元素连续存放，也可以分开存放。
@@ -174,6 +179,7 @@ typedef struct {
 
 | 来源 | 版本或快照 |
 | --- | --- |
+| DeepSeek-V3 Technical Report（`https://arxiv.org/abs/2412.19437v2`） | `arXiv:2412.19437v2`；§3.3/附录B原生FP8训练与精度对象，完整配方/证据范围见训练页 |
 | The Llama 3 Herd of Models（`https://arxiv.org/abs/2407.21783v3`） | `arXiv:2407.21783v3`；§6.2/图25及§3.3训练精度条件，未核匹配FBGEMM实现或运行 |
 | FP8 Formats for Deep Learning（`https://arxiv.org/abs/2209.05433v2`） | `arXiv:2209.05433v2` |
 | Microscaling Data Formats for Deep Learning（`https://arxiv.org/abs/2310.10537v3`） | `arXiv:2310.10537v3` |

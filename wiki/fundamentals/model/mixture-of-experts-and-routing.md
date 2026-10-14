@@ -10,8 +10,9 @@ aliases:
   - mixture-of-experts
   - DeepSeekMoE
 sources:
+  - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/deepseek-v2
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # MoE 与专家路由：稀疏计算、容量与量化对象
@@ -44,6 +45,23 @@ $e_i\in\mathbb R^D$ 是 router 中对应专家的可学习向量，$\mathcal J_t
 DeepSeekMoE 的两个设计意图是将专家切得更细，以组合更多专业化路径；将共同信息交给共享专家，减少路由专家之间的冗余。它们是作者的架构动机，不意味着专家已被证明具有固定、可命名的语义分工。
 
 §3.1.2 给出的 V2 配置为 60 层、隐藏维 5120；第一层 FFN 保持稠密，其余 59 层使用 MoE。每个 MoE 层有 2 个共享专家、160 个路由专家，每 token 选 6 个路由专家；各专家中间宽度为 1536。全模型总参数为 236B、每 token 激活参数为 21B，其中还包括 attention 等部分，不能只按 $6/160$ 推算整模型比例。
+
+### 1.1 V3的sigmoid、选择偏置与负载平衡
+
+DeepSeek-V3 v2另用$s_{i,t}=\operatorname{sigmoid}(u_t^Te_i)$；加每专家bias $b_i$选择集合$\mathcal J_t$，最终gate仍取**原来的**$s$，在所选集合内归一化：
+
+$$
+\mathcal J_t=\operatorname{TopK}_i(s_{i,t}+b_i),\qquad
+g_{i,t}=\frac{s_{i,t}\mathbf1\{i\in\mathcal J_t\}}{\sum_{j\in\mathcal J_t}s_{j,t}}.
+$$
+
+这是暂不展开node预选择的值关系，与V2的softmax及未写选中集合重归一化的公式分别保留。Bias改变离散选集，不能直接当作输出权重。训练每步监测whole-batch专家负载，过载$b_i$减γ、欠载增γ；这是显式平衡调整，不等于把$b_i$当任务损失下的普通梯度参数。γ在前14.3T tokens为0.001，最后500B为0。（§2.1.2、§4.2。）
+
+V3配置为61层、隐藏维7168，前3层FFN稠密，其余58层为MoE；每个MoE层256 routed/1 shared、每token选8，专家中间宽度2048。作者报告总参数671B、每token激活37B，含attention等其他部分，不能只按8/256推整模型计算比例。（§4.2。）
+
+“Auxiliary-loss-free”针对主要whole-batch平衡机制，V3仍以α=$10^{-4}$保留sequence-wise辅助损失，防止单序列极端不均。其$\alpha\sum_i f_iP_i$中，原文$f_i$按**未加bias**的affinity top-k记频率，$P_i$先将所有sigmoid affinity归一化再在序列内取均值；没有展开它与实际biased选集的对应，不能自行改成同一个indicator。小权重辅助项与主bias调整处理不同负载范围，不能称完全没有辅助loss。（§2.1.2、§4.2。）
+
+Node限制按各节点最高$K_r/M$个affinity之和选至多M节点；V3 $K_r=8,M=4$，即每节点最高2项参与评分。原文未说明这个node score是否包含bias；[已核消费端](../../implementation/moe-routing-and-quantized-expert-execution.md#2.%20%E8%B7%AF%E7%94%B1%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%80%89%E4%B8%93%E5%AE%B6%E7%9A%84%E5%88%86%E6%95%B0%E4%B8%8E%E8%BE%93%E5%87%BA%20gate%20%E5%88%86%E5%BC%80)明确使用corrected top-2，仍按源码版本解释。作者报告V3训练/推理均不token-drop，和上文V2训练dropping条件不同。低精度计算与通信另见[FP8训练](../../implementation/deepseek-v3-fp8-training.md)，无需重写V2定义。
 
 ## 2. 设备限制怎样改变选择过程
 
@@ -122,4 +140,6 @@ DeepSeek-V2 的效率思路同时作用于两种成本：DeepSeekMoE 减少单 t
 
 ## 来源身份
 
-- DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model（`https://arxiv.org/abs/2405.04434v5`），`arXiv:2405.04434v5`，2024-06-19 修订；采用已归档的同版本 PDF 与 TeX 源包。路由公式和训练条件定位见正文；容量记账、误差展开和校准联系是本页整理者分析。本页没有用 DeepSeek-V3 的路由规则替代 V2。
+- DeepSeek-V3 Technical Report（`https://arxiv.org/abs/2412.19437v2`），`arXiv:2412.19437v2`；§2.1.2与§4.2，sigmoid/biased选择、sequence-wise辅助loss和node/训练条件；消费源码与训练实现另按各自范围。
+
+- DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model（`https://arxiv.org/abs/2405.04434v5`），`arXiv:2405.04434v5`，2024-06-19 修订；采用已归档的同版本 PDF 与 TeX 源包。路由公式和训练条件定位见正文；容量记账、误差展开和校准联系是本页整理者分析。V3 v2的不同规则在§1.1并列说明，没有替代V2定义。

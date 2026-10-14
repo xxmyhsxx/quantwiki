@@ -23,7 +23,7 @@ MoE 的 top-k 结果只是专家 ID 与权重；完整执行还要把 token–�
 
 权重量化专家的加载与设备链见 [W4A16 MoE 专家执行](w4a16-moe-expert-execution.md)：它接续单设备 AWQ 整数零点的 Marlin 格式、专家配对与两次 GEMM。其 down 输出先转 BF16 再乘已转 BF16 的 gate，普通 SiLU 也保留中间舍入；下文所选 FP8/Triton 的精度顺序仍按对应分支解释。
 
-## 1. 先固定分支，避免把不同后端拼成一条链
+## 1. 所选SGLang配置与核读范围
 
 第 1–7 节选定 `DeepseekV2MoE.forward_normal` 的普通 CUDA 路径：单设备，MoE TP/EP 均为 1，`moe-a2a-backend=none`、`moe-runner-backend=triton`；使用已序列化的 FP8 checkpoint，普通 E4M3 权重、`weight_block_size=[128,128]`、dynamic activation。MoE 层未被 ignored-layers 排除，没有 LoRA、EPLB、冗余专家、hash 路由、SBO/TBO 或特殊 graph 执行；本页先按非 TMA 的指针载入分支，关闭 fused sum/all-reduce。共享专家融合也关闭，以单独的共享 MLP 解释汇合。[1][4][5][6][10][14]
 
@@ -41,6 +41,8 @@ MoE 的 top-k 结果只是专家 ID 与权重；完整执行还要把 token–�
 | 返回模型 | `StandardDispatcher.combine`，再加共享输出 | `[M,D]` 隐藏状态 |
 
 `triton` 与源码中的 `triton_kernels` 是两个 runner backend 名称，TopK 输出格式和后端代码并不相同；本页选择前者。[2][8][9]
+
+V3论文的sigmoid、bias负载更新和小sequence-wise辅助loss见[模型路由对照](../fundamentals/model/mixture-of-experts-and-routing.md#1.1%20V3%E7%9A%84sigmoid%E3%80%81%E9%80%89%E6%8B%A9%E5%81%8F%E7%BD%AE%E4%B8%8E%E8%B4%9F%E8%BD%BD%E5%B9%B3%E8%A1%A1)；论文训练描述与本页的固定consumer分别保留，group评分按下面实际实现解释。
 
 ## 2. 路由：用于选专家的分数与输出 gate 分开
 
