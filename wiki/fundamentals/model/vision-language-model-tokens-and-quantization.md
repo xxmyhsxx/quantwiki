@@ -28,7 +28,7 @@ updated: 2026-10-14
 
 视觉语言模型的量化依然使用共同的数值表示、舍入、裁剪、误差重构和低比特计算基础。新的问题来自图像与文本怎样进入计算图、哪些位置受到什么损失监督，以及最终需要完成什么任务。本页先解释 MBQ v2、VLMQ v2、MQuant v2 所研究的视觉编码器—连接器—语言骨干结构，再以 Qwen2.5-VL v1 和 Qwen3-VL v2 说明动态分辨率、特征合并、多层视觉输入和时间坐标；这些例子不代表所有多模态架构。
 
-Qwen2.5-VL 的 processor、视觉占位、三轴位置与 decode 接续见[固定 transformers 实现](../../implementation/qwen25-vl-visual-input-and-position-execution.md)；该版本与本文 Qwen3-VL 的多层视觉结构分别核对。
+Qwen2.5-VL 的 processor、视觉占位、三轴位置与 decode 接续见[固定 transformers 实现](../../implementation/qwen25-vl-visual-input-and-position-execution.md)；Qwen3-VL 的[媒体准备与微调样本](../../implementation/qwen-vl-input-preparation-and-finetuning.md)承接工具、标签、三轴位置和样本边界，外部完整模型仍按版本分别核对。
 
 ## 1. 图像如何成为语言骨干的输入
 

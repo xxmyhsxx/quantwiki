@@ -7,7 +7,7 @@ tags:
 sources:
   - raw/papers/2026-09-21/lora
   - raw/papers/2026-09-22/lrq
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # LoRA：低秩任务适配、训练目标与参数预算
@@ -66,6 +66,8 @@ $\mathcal I$是接入适配器的矩阵集合，$N_{\rm extra}$单列开放训�
 $$r<\frac{dk}{d+k}.$$
 
 因此仅有$r<\min(d,k)$仍不足以保证节省；方阵要求$r<d/2$。这些计数是实际因子元素，不是秩$r$矩阵的内在自由度$r(d+k-r)$；因子存在等价重参数化，优化器仍保存相应元素。
+
+从形状记账进入应用时，[Qwen-VL微调调用](../implementation/qwen-vl-input-preparation-and-finetuning.md)提供目标模块、参数开关和优化器分组的核对入口；实际可训练矩阵集合应按匹配模型确认，再代入上面的预算。
 
 ### GPT-3例子：相同预算有多种分配
 

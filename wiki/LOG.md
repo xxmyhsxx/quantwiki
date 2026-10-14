@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Qwen3-VL仓库 ingest：媒体与微调样本边界
+
+- 核读工具、必要HF/vLLM/web与视频notebook、微调数据/位置/collator/attention/参数/保存与pack和三份配方；root ZIP SHA/CRC及154展开文件逐字节对应。源码保存全核不表示所有评测/cookbooks/网络已读，匹配4.57外部模型未取得。
+- 新建[输入准备与微调样本](implementation/qwen-vl-input-preparation-and-finetuning.md)，沿媒体→模板/processor→回答标签/三轴→累计边界→训练参数与保存解释；VLM、旧版VL实现、LoRA及INDEX补用途入口，不用旧4.53.2转填DeepStack/MRoPE内部。
+- 保留patch16/对齐32与默认14、文件/列表采样metadata和裁剪参照、显式resize预算；硬ID/start+2/end+2标签、video grid拆分/局部t0、普通截断完整媒体与packed不截断、int32累计边界/FA条件、未cast dtype及未传选项、tokenizer上限未同步、merger/head/LoRA/dropout/LR/保存rank条件。调用、原件、静态算例和运行证据分别登记。
+- READING/SELF/计划同步：175条有依据、54条队列，本轮基线88已处理34条；第16批七来源按选定范围收尾，匹配内部条件项保留，下一项第17批Attention Is All You Need。独立Astra正式review通过，无必修；采帧合法下限、标签切片、局部与最终位置、累计边界及参数/保存条件已原件回查。结构/来源strict检查197知识页、688项登记，0错误/待核；7个受影响Wiki页1310条本地链接strict通过，diff与新页EOF检查通过。提交范围为本项9文件，Obsidian改动保留；未运行模型、训练、FA设备、量化、GPU或性能实验。
+
 ## 2026-10-14 · Qwen2.5-Omni仓库 ingest：媒体准备与低显存返回
 
 - 核读固定官方仓库的媒体工具、Web demo与四cookbook代表调用、两个低显存适配demo及本地模型的总生成/Token2Wav分块/Euler/dtype/卸载，README只取使用/量化/服务条件；ZIP SHA/CRC与全部24展开文件逐字节对应，不称全网络或训练审计。

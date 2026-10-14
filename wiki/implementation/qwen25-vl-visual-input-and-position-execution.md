@@ -16,6 +16,8 @@ Qwen2.5-VL把图像或视频编码成与语言隐藏维一致的向量，替换�
 
 本页核对Summer-Summer/transformers的`hf-4.53.2`固定commit，说明`Qwen2_5_VLProcessor`和`Qwen2_5_VLForConditionalGeneration`的静态执行路径。文中源码路径均相对于`src/transformers/`；参数默认值来自类定义，发布checkpoint的配置、tokenizer和聊天模板未核验。这版源码没有Qwen3-VL模型，不能据此补写其DeepStack或交错MRoPE实现。视觉token与量化对象的基础关系见[视觉语言模型中的token](../fundamentals/model/vision-language-model-tokens-and-quantization.md)。
 
+Qwen3-VL 官方仓库的工具、推理示例和微调数据接口另见[视觉输入准备与微调样本](qwen-vl-input-preparation-and-finetuning.md)；它补充调用侧关系，不替换本页的固定 Qwen2.5-VL 内部实现。
+
 ## 1. 像素网格与文字占位共同确定输入长度
 
 processor接收已组织的文字`text`以及按出现顺序提供的`images`、`videos`。它先处理媒体，得到像素patch和每份媒体的`grid_thw=(T,H_g,W_g)`，再把文字中的一个`<|image_pad|>`或`<|video_pad|>`展开为
