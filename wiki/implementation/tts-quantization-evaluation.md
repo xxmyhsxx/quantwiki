@@ -9,7 +9,7 @@ tags:
 sources:
   - raw/papers/2026-09-28/same-bit-width-different-outcomes
   - raw/repositories/2026-09-28/tts-ptq-map
-updated: 2026-09-29
+updated: 2026-10-14
 ---
 
 # TTS 量化评测：组件敏感性、质量判据与真实执行
@@ -17,6 +17,8 @@ updated: 2026-09-29
 *Same Bit Width, Different Outcomes* 比较 13 个 TTS 系统，核心问题是：同样位宽为什么产生完全不同的语音质量和部署结果。它提供的是组件消融与评测程序，不是一个新的通用量化器。结论应落在**模型、组件、量化对象、粒度、采样步数、runtime 和质量标准**的组合上，不能将“W4 可用”作为架构属性。
 
 本页研读完整实验正文与限制，静态核对官方快照的 RTN、激活模拟、校准 PTQ、ONNX 改写和 bootstrap 实现；未生成语音、运行真实低比特算子或复现模型成绩。通用前置见 [混合精度分配](../theory/mixed-precision-allocation.md)、[模型质量评测](model-quality-evaluation.md)和 [缩放到执行](quantized-matmul-scaling-execution.md)。
+
+语音code和波形恢复的另一种计算链见[Thinker-Talker与流式生成](../fundamentals/model/multimodal-perception-and-streaming-speech-generation.md)。它说明输入/输出表示和窗口依赖，具体量化收益仍需本页这类配对评测。
 
 ## 1. 比较单位是匹配基线的配置，不是模型名与位宽
 

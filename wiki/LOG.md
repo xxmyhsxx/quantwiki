@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Qwen2.5-Omni ingest：音画对齐与语音生成
+
+- 核读v1编译入口/摘要、Intro/Architecture/Pretraining/Posttraining/Conclusion及必要输入/输出评测；图2–4与关键PDF、表1/4/7–10回查。PDF20页/源包hash匹配，28来源成员中16展开文件逐字节对应；未编入的Qwen2 appendix残稿排除，未扩成20页全文逐项审计。
+- 新建[多模态感知与语音生成](fundamentals/model/multimodal-perception-and-streaming-speech-generation.md)，沿编码表示/位置→Thinker→隐藏状态与采样文字→Talker code→DiT mel→BigVGAN波形解释；视觉token/TTS/INDEX补用途入口，公共token/质量解释复用。
+- 保留输入40ms/音画2秒与输出codec块不同、时间/空间/序列位置分开、隐语义与实际发音依赖、context不证同一物理cache、两回看一前看及缺首包/RTF实测；训练阶段/参数与DPO目标、TTS评测范围/非等价模态比较分别说明。表9/10同标RL中文WER1.42/1.30差异保留；匹配实现、低比特、训练/语音与设备未运行。
+- READING/SELF/计划同步：170条有依据、59条队列，实际表行已核，本轮基线88已处理29条；下一项Qwen3，准备不计完成。独立Astra正式review通过；DPO改写、音画/codec窗口与WER百分数及两表差异已原件复核。结构/来源strict检查192知识页、678项登记，0错误/待核；6个受影响Wiki页1272条本地链接strict通过，diff检查通过。提交范围为本项8文件，Obsidian改动保留；未运行模型、训练、语音、量化、GPU或性能实验。
+
 ## 2026-10-14 · Qwen2.5-VL ingest：动态长度与时间坐标
 
 - 核读v1完整Approach架构/数据/训练主文、Introduction、video正文/结果表及必要grounding/OCR条件；图1原件与PDF1/3/4/5/14的版本、表1/8回查。PDF23页/源包hash匹配，24来源成员中13展开文件逐字节对应；未扩成全部任务/数据表或实现审计。
