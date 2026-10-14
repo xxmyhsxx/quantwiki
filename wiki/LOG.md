@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · MQA ingest：decode流量与摊销条件
+
+- 核读v1完整主文、einsum伪码、访问/操作分析与WMT/LM1B实验，表1–3/关键PDF4–8回查；PDF9页/eprint哈希相符，3源成员与展开文件逐字节对应，未运行或编译作者实现。
+- 在[既有Transformer基础](fundamentals/model/transformer-autoregressive-inference.md)补n次incremental的长度/head假设、元素访问与算术量，区分batch摊销权重和共享K/V缩小各请求历史；保留query/输出heads与整体计算，roofline连接指理想时间下界，不把元素/操作直接当设备Byte/FLOP。
+- 保留TPUv2八核、batch1024及固定padding的摊销/整批时间；WMT三attention替换、FFN配平与GQA转换分开，dev/test/beam/sacrebleu及lnPPL、LM1B词级PPL口径保留。M/x、o/O、MQA追加轴及尺寸文字问题按原件解释，完整配置仍未补。
+- READING/INDEX/SELF/计划同步：179条有依据、50条队列，本轮基线88已处理38条；下一项RMSNorm。独立Astra正式review通过，无剩余必修；流量/roofline、实验配平与计时/质量口径已原件复读。结构/来源strict检查197知识页、692项登记，0错误/待核；4个受影响Wiki页1305条本地链接strict通过，diff与计数/数学分隔/EOF检查通过。提交范围为本项6文件，Obsidian改动保留；未运行作者代码、模型、训练或设备性能实验。
+
 ## 2026-10-14 · GQA ingest：checkpoint转换与证据条件
 
 - 核读v3完整主文与附录A，图1–6/表1及PDF1–4对应回查；PDF7页/eprint哈希相符，15源成员可读、12保留展开文件字节对应，未编译或运行作者实现。

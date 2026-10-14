@@ -9,6 +9,7 @@ sources:
   - raw/papers/2026-09-21/attention-is-all-you-need
   - raw/papers/2026-09-21/formal-transformer-algorithms
   - raw/papers/2026-09-21/gqa
+  - raw/papers/2026-09-21/multi-query-attention
   - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/llama-3
@@ -234,6 +235,32 @@ Formal Algorithms v1算法14/15每轮调用完整前缀的Transformer，取末�
 
 两算法用$q\propto p^{1/\tau}$采样，声明$\tau>0$。若$p=\operatorname{softmax}(z)$，归一化后等于$\operatorname{softmax}(z/\tau)$，这是整理者代数展开；原件没有$\tau=0$的实际分支。算法14固定生成$\ell_{\rm gen}$步，返回续写、不以EOS提前停；算法15从BOS开始，只以EOS结束，返回包含BOS/EOS的序列。后者未给最大长度或learned位置表越界保护，实际停止与缓存接口需由具体实现核对。（§7，算法14–15。）
 
+### 4.2 batch摊销权重，MQA缩小历史KV读取
+
+《Fast Transformer Decoding》v1用简化模型区分每步重读的投影权重与每条序列增长的KV历史。沿论文记号，$b$为同时推进的独立序列数，$n$为分析的序列长度，$d$为隐藏维，$h$为query head数，$k$为每头K/V宽度；这里$d$对应本页$D$，$b$是batch，**不是容量式的元素字节数**。论文假设$m=n$、$k=v=d/h$、$n\le d$，汇总生成整段的$n$次incremental调用，未另计独立长prompt或变长请求调度。（§2.3.1、§2.4.1、§3.1。）
+
+在这些条件下，MHA与MQA的算术操作总量均为$A=\Theta(bnd^2)$，内存元素访问量为
+
+$$E_{\rm MHA}=\Theta(bn^2d+nd^2),\qquad
+E_{\rm MQA}=\Theta(bnd+bn^2k+nd^2).$$
+
+MHA的$bn^2d$来自跨$n$步读取增长的K/V，$nd^2$来自每步投影权重。MQA去掉K/V及其投影的$h$轴，历史项降为$bn^2k$，当前输入/query/输出等访问仍有$bnd$项。Q及输出投影保留heads，各query仍有自己的attention分布，因此总算术量没有一并除以$h$。原示例省略$1/\sqrt k$，作者说明可将常数折入Q或K投影；共享机制不要求改变已有模型的有效缩放。（§2.2、§3–3.1。）
+
+元素访问量除以算术操作量得到
+
+$$\frac{E_{\rm MHA}}A=\Theta\!\left(\frac nd+\frac1b\right),\qquad
+\frac{E_{\rm MQA}}A=\Theta\!\left(\frac1d+\frac n{dh}+\frac1b\right).$$
+
+增大batch可摊销跨请求共用的权重，减少$1/b$；每个请求仍读自己的历史，不能靠batch消掉$n/d$。MQA把该历史项缩小$h$倍。这里按“元素/操作”计数，转成[roofline的Byte/FLOP与理想时间下界](../hardware/arithmetic-intensity-and-roofline.md)还需dtype字节、FLOP口径、缓存命中与融合流量；论文的全序列并行访问模型另有条件，不能把incremental式无条件套到prefill。
+
+速度证据来自TPUv2八核、batch1024（128/core）、源/目标各128 token的greedy生成。固定shape限制使decoder历史padding到128，每一步支付相同长度成本；local版本只看当前与前31个位置，padding到32。表2普通MHA/MQA的摊销decoder时间为46/3.8微秒每输出token，encoder另为1.7/1.5微秒；原始整批decoder每步为47/3.9毫秒。它不表示单请求延迟，也不保证动态增长缓存或现代GPU有同等倍数。（§4.3、脚注1、表2。）
+
+WMT质量比较还调整参数分配：6层、$d=1024$、$h=8$、$k=v=128$，MQA替换encoder self、decoder self及cross-attention，并把FFN宽度4096→5440，保持211M参数。表1的dev BLEU为MHA26.7/MQA26.5，test greedy/beam4分别27.7/28.4与27.5/28.5；beam采用长度参数0.6，dev/test分别用WMT13/14、sacrebleu intl。表中的1.424/1.439是$\ln(\mathrm{PPL})$，不是PPL本身。这支持所选配平配置的质量接近，不是共享K/V的孤立消融，也不证明旧checkpoint可直接共享。（§4.1–4.2，表1。）
+
+LM1B另用192M的decoder协议，FFN也配平；表3的dev词级PPL为29.9/30.2，不能与翻译的subword PPL直接比较。它与第2.4节GQA的T5 checkpoint转换是不同证据。（§4.1–4.2，表3。）
+
+原incremental伪码使用未传入的M、将输出o写成O；MQA的$[b,m,k]$历史追加仍用axis=2，不能增长$m$轴，§2.4.1的$bhmk=bn^2$文字等式也不符合所定义尺寸。本节依据维度核对解释数学访问模型，不把这些片段当已运行实现；v1的作者配置地址仍是待补文字，完整训练配方与设备kernel未核。（PDF4/6–7。）
+
 ## 5. 从逻辑图进入代码与量化
 
 vLLM 与 SGLang 所选 `llama.py` 都把 gate/up 合并投影，把 Q/K/V 合并投影，再使用行并行的 down/o 投影。这减少或组织调用，同时给分片布局施加约束，见 [张量并行与量化分片](../../implementation/tensor-parallel-quantization.md)。
@@ -251,6 +278,8 @@ Formal Algorithms提供架构与训练/生成的理解模板，没有模型实�
 同版PDF/TeX还有两处记号问题：算法8的decoder循环声明$i$，体内却用$l$；算法9先以$W_f\in\mathbb R^{d_f\times d_e}$得到$d_f$维状态，却声明最终$W_u\in\mathbb R^{V\times d_e}$，当$d_f\ne d_e$时乘法不配。理解结构不等于逐字伪码可执行；原件未声明$d_f=d_e$，本页不把该约束补成作者事实，也不据这些算法推定padding、全mask行或缓存维护已实现。
 
 ## 来源身份
+
+- Fast Transformer Decoding: One Write-Head is All You Need，`arXiv:1911.02150v1`，`https://arxiv.org/abs/1911.02150v1`；完整主文/einsum伪码、§2–4访问分析与WMT/LM1B实验、表1–3及关键PDF4–8核读。元素访问模型、参数配平与摊销时间条件保留，原伪码/尺寸问题不作为可运行代码；作者配置与训练、设备运行未核。
 
 - GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints，`arXiv:2305.13245v3`，`https://arxiv.org/abs/2305.13245v3`；完整主文与附录A、图1–6/表1及关键PDF1–4核读。K/V聚合公式为整理者展开；T5转换/训练、任务与TPU计时条件保留，未核Flaxformer作者实现、训练/推理运行或decoder-only恢复。
 
