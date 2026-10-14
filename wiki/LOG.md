@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · GQA ingest：checkpoint转换与证据条件
+
+- 核读v3完整主文与附录A，图1–6/表1及PDF1–4对应回查；PDF7页/eprint哈希相符，15源成员可读、12保留展开文件字节对应，未编译或运行作者实现。
+- 在[既有Transformer基础](fundamentals/model/transformer-autoregressive-inference.md)补组内K/V mean-pooling与Q保留、非函数恒等转换及继续预训练，α为步数比例；复用已覆盖head映射、KV容量与执行入口，不另建摘要/形状页。
+- 保留T5.1.1仅decoder self/cross转换、Adafactor与原配方、mean/first/random和训练步数消融；区分混合任务dev分数、任务长度与微调、逐模型并行/batch的TPUv4 per-sample/per-chip时间。保留CNN非相等、三任务消融、非严格单调与MQA稳定性反例，图3毫秒/表1秒差异按表记录，未证XXL从头/decoder-only恢复。
+- READING/INDEX/SELF/计划同步：178条有依据、51条队列，本轮基线88已处理37条；下一项MQA。独立Astra正式review通过，无剩余必修；转换/α、dev与单位/计时、消融/稳定性条件已复读闭环，结构/来源strict检查197知识页、691项登记，0错误/待核；4个受影响Wiki页1301条本地链接strict通过，diff与计数/数学分隔/EOF检查通过。提交范围为本项6文件，Obsidian改动保留；未运行作者代码、模型、训练或设备性能实验。
+
 ## 2026-10-14 · Formal Algorithms ingest：记号与训练接口
 
 - 核读v1 §3–8、全部15算法与附录B记号，PDF5–7/11–15关键式/架构/训练生成回查；PDF16页与eprint哈希相符，3成员可读、2保留展开文本字节对应，未编译或核引用模型上游实现。

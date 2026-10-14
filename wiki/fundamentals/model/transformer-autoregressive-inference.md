@@ -8,6 +8,7 @@ tags:
 sources:
   - raw/papers/2026-09-21/attention-is-all-you-need
   - raw/papers/2026-09-21/formal-transformer-algorithms
+  - raw/papers/2026-09-21/gqa
   - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/llama-3
@@ -140,6 +141,31 @@ $$O=O_c^\top=\operatorname{softmax}_{\rm key}(QK^\top/\sqrt{d_a})V,$$
 
 因果self-attention允许$key\le query$。因此原件$S_c[\mathrm{key},\mathrm{query}]$的可见域是上三角，本页$S[\mathrm{query},\mathrm{key}]$则是下三角；两者表达相同依赖。判断mask要同时看轴与不等式，不能仅按“三角方向”判定对错。不可见项仍在softmax前置$-\infty$；cross-attention的全source可见条件另见第1.1节。（式3、算法4。）
 
+### 2.4 MHA checkpoint的K/V均值聚合与继续训练
+
+共享heads的结构可以从已有MHA checkpoint转换。《GQA》v3先把K/V投影按query组分别取均值，再沿原预训练数据、优化器和配方继续训练。若第$g$组包含原heads集合$S_g$，则
+
+$$W_K^{(g)}=\frac1{|S_g|}\sum_{h\in S_g}W_K^{(h)},\qquad
+W_V^{(g)}=\frac1{|S_g|}\sum_{h\in S_g}W_V^{(h)}.$$
+
+Q投影仍保留各head的区别。均值聚合保留部分原投影信息，但一般改变注意力分布与输出，**不保持旧模型函数恒等**；继续预训练让模型适应新结构。论文用$\alpha$表示附加训练步数占原预训练步数的比例，主结果取0.05，并报告约600 TPUv3 chip-days；不能将“5%”理解为任意模型都有固定恢复成本。（§2、§3.1、图1–2；公式为组内mean-pooling的整理者等价写法。）
+
+证据来自T5.1.1 encoder–decoder，使用JAX/Flax/Flaxformer及原T5的Adafactor配方。作者只替换decoder self-attention与cross-attention，encoder self-attention保留。图4在T5-Large→MQA、$\alpha=0.05$下比较mean-pooling、选首head、随机初始化；图5在T5-XXL上比较训练步数，5%有收益、10%新增收益减小；这两组质量消融只用CNN/DailyMail、MultiNews、TriviaQA三任务。附录A的从头训练T5-Large MQA出现loss spikes，并在长输入微调时发散；uptrained MQA仍有高方差，对不稳定任务平均三次微调。GQA表现较稳定，但作者未进一步隔离原因，不能据此宣称共享K/V普遍稳定。（§3.1/3.3，图4–5，附录A。）
+
+主结果包含五项摘要任务的Rouge-1、WMT的BLEU和TriviaQA的F1，表1的平均performance混合这些任务分数。微调统一LR=0.001、batch128、dropout0.1，输入/输出长度按任务为512/256、2048/512或2048/32，选择最高dev分数的checkpoint并greedy decode。下表保留该协议下的平均结果：
+
+| T5-XXL结构 | 平均dev分数 | 报告平均推理时间（秒/样本/TPUv4 chip） |
+| --- | ---: | ---: |
+| MHA | 47.2 | 1.51 |
+| MQA，5% uptraining | 46.6 | 0.24 |
+| GQA-8，5% uptraining | 47.1 | 0.28 |
+
+表1列秒，图3横轴却标ms并使用同量级数字；同版单位标记差异保留，上表依据表1。计时用8个TPUv4、xprof，各模型分别优化并行方式，选择最大可容纳batch、上限32/TPU；它不是共同固定batch的GPU单请求结果。（§3.1，表1、图3。）
+
+“接近MHA质量、接近MQA时间”是这一协议的观察，各任务并不相等，例如CNN Rouge-1为GQA-8 43.5、MHA 43.8。图6另固定输入2048、输出512，观察不同组数的时间，1→4组略变快、更多组总体增加开销；8组是作者所选折中，并非普适最优。（§3.2–3.3，表1、图6。）
+
+作者没有比较XXL GQA从头训练，也未验证decoder-only的同等恢复效果，不能把T5结果直接套到本页Llama配置。（Limitations。）
+
 ## 3. Prefill、decode 与 teacher forcing
 
 输入有 $P$ 个 token 时，prefill 同时计算这些位置。因果 mask 使它们只能看各自前缀；最后位置的 logits 用来选择第一个生成 token。随后把这个新 token 输入模型，利用已有 KV 计算下一轮 logits。**选择一个 token 与把它送入模型形成 KV 是相邻的两个步骤**，不能把“已经采样”直接当作“已经缓存”。
@@ -225,6 +251,8 @@ Formal Algorithms提供架构与训练/生成的理解模板，没有模型实�
 同版PDF/TeX还有两处记号问题：算法8的decoder循环声明$i$，体内却用$l$；算法9先以$W_f\in\mathbb R^{d_f\times d_e}$得到$d_f$维状态，却声明最终$W_u\in\mathbb R^{V\times d_e}$，当$d_f\ne d_e$时乘法不配。理解结构不等于逐字伪码可执行；原件未声明$d_f=d_e$，本页不把该约束补成作者事实，也不据这些算法推定padding、全mask行或缓存维护已实现。
 
 ## 来源身份
+
+- GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints，`arXiv:2305.13245v3`，`https://arxiv.org/abs/2305.13245v3`；完整主文与附录A、图1–6/表1及关键PDF1–4核读。K/V聚合公式为整理者展开；T5转换/训练、任务与TPU计时条件保留，未核Flaxformer作者实现、训练/推理运行或decoder-only恢复。
 
 - Formal Algorithms for Transformers，`arXiv:2207.09238v1`，`https://arxiv.org/abs/2207.09238v1`；§3–8、算法1–15及附录B记号核读，关键PDF5–7/11–15与有效TransAlgs.tex回查。行列转换/温度等价为整理者展开；PE差异、无epsilon、循环索引/投影维度及停止条件分别保留。未核引用模型的上游代码、编译或训练/推理运行。
 
