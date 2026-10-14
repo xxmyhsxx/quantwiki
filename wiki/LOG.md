@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Qwen2.5-VL ingest：动态长度与时间坐标
+
+- 核读v1完整Approach架构/数据/训练主文、Introduction、video正文/结果表及必要grounding/OCR条件；图1原件与PDF1/3/4/5/14的版本、表1/8回查。PDF23页/源包hash匹配，24来源成员中13展开文件逐字节对应；未扩成全部任务/数据表或实现审计。
+- 完善[视觉token基础](fundamentals/model/vision-language-model-tokens-and-quantization.md)，沿resize→14patch→窗口/full编码→四邻拼接/MLP→语言输入解释动态长度，区分视觉2D-RoPE和语言MRoPE、帧数和时间ID。INDEX替换泛泛入口说明，不另建模型摘要页。
+- 保留28倍数调整/补齐未核、四full层的二次项、图像/视频结构计数仅教学、坐标回映/时间取整未核、50/50样本与tokens不同、ViT冻结不替代量化校准，以及768帧/24576video tokens/字幕条件；merger减位置不是降位宽。匹配processor/完整窗口/模型/量化/性能未运行。
+- READING/SELF/计划同步：169条有依据、60条队列，实际表行已核，本轮基线88已处理28条；下一项Qwen2.5-Omni，准备不计完成。独立Astra正式review通过；FPS改变的相邻间隔与相同实际时间的编码尺度已消歧并复读。结构/来源strict检查191知识页、677项登记，0错误/待核；4个受影响Wiki页1253条本地链接strict通过，diff检查通过。提交范围为本项6文件，Obsidian改动保留；未运行模型、processor、量化、GPU或性能实验。
+
 ## 2026-10-14 · R1报告 ingest与第15批收尾
 
 - 核读v2正文GRPO/奖励/阶段与必要Zero结果、附录PPO比较/infra/数据/超参/蒸馏及必要评测协议/完整表；六张源包原图与关键PDF页回查。PDF86页/源包hash匹配，47 regular成员扣编译管理00README为46来源，18展开文件逐字节对应；未称86页全文或全部安全/样例/人评审计。

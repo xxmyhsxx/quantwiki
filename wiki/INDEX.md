@@ -100,7 +100,7 @@ sources: []
 | [算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) | 「这个算子受什么限制」是决定优化方向的第一问题。 |
 | [GPU 的执行模型与存储层次](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) | 量化为什么有时快、有时只是省内存，答案通常不在算法里，而在数据从哪一级存储搬到哪一类计算单元。 |
 | [FP8 与 Microscaling 数值格式](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) | 整数网格不是低精度表示的唯一形式。 |
-| [视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) | 视觉语言模型的量化依然使用共同的数值表示、舍入、裁剪、误差重构和低比特计算基础。 |
+| [视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) | 图像/视频编码、特征合并与时间坐标怎样形成语言输入，数量和模态差异怎样影响校准及量化对象。 |
 | [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) | PTQ 从已训练模型出发完成量化转换，可能包含统计、搜索或局部优化；QAT 在训练前向中模拟量化影响，并通过训练调整模型。 |
 | [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) | 均匀量化用等间距的有限数值表示原来的实数或浮点数。 |
 
