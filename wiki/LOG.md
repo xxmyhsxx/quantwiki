@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Formal Algorithms ingest：记号与训练接口
+
+- 核读v1 §3–8、全部15算法与附录B记号，PDF5–7/11–15关键式/架构/训练生成回查；PDF16页与eprint哈希相符，3成员可读、2保留展开文本字节对应，未编译或核引用模型上游实现。
+- 在[既有Transformer基础](fundamentals/model/transformer-autoregressive-inference.md)补token列/行转换和softmax key轴、因果上/下三角由轴决定、next-token与输入mask重构的目标/归约；具体BERT/GPT2 norm/GELU选择与Llama分开，复用共同attention、KV和归一化解释，不建摘要页。
+- 说明算法14/15全前缀重算及采样/返回/停止差别，温度等价标为整理者展开；保留PE频率/pair差异、无epsilon、i/l及d_f投影维度问题，不把形式伪码当可运行缓存接口或性能结果。
+- READING/INDEX/SELF/计划同步：177条有依据、52条队列，本轮基线88已处理36条；下一项GQA。独立Astra正式review通过，队列论文标题16→15已关闭，正文/原件与计数复读无剩余必修，结构/来源strict检查197知识页、690项登记，0错误/待核；4个受影响Wiki页1298条本地链接strict通过，diff检查通过。提交范围为本项6文件，Obsidian改动保留；未运行作者代码、模型、训练或设备性能实验。
+
 ## 2026-10-14 · Transformer原论文 ingest：结构与位置范围
 
 - 核读v7主文主干与必要实验，精读§3–5/§6.1–6.2和有效ms.tex入口，图1–2、表1–3/PE与关键PDF回查；PDF15页及源包hash相符，23成员可读、11保留展开文件逐字节对应，未读全部可视化heads或编译/运行作者实现。

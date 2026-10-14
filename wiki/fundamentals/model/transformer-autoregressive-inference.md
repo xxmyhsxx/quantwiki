@@ -7,6 +7,7 @@ tags:
   - kv-cache
 sources:
   - raw/papers/2026-09-21/attention-is-all-you-need
+  - raw/papers/2026-09-21/formal-transformer-algorithms
   - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/llama-3
@@ -70,6 +71,8 @@ PE_{p,2i+1}=\cos\!\left(\frac{p}{10000^{2i/D}}\right).$$
 
 每对通道采用一种频率，同一pair中的sin/cos共同编码位置。固定偏移可由pair内线性变换表示，是作者解释相对位置学习的设计动机；它不证明任意长度外推仍保持质量。这里改变的是入口表示；第2节的RoPE在投影后旋转Q/K，V不旋转，作用对象与步骤不同。（§3.4–3.5。）
 
+《Formal Algorithms for Transformers》v1 §5转述的位置式使用$\ell_{\max}^{2i/d_e}$，pair索引从1开始；同版PDF/TeX均如此。它与上式的频率常数及pair指数不同，不能只作行列记号转换便认作原模型公式。该报告算法2的learned位置表还要求位置不超过$\ell_{\max}$；固定sinusoid可计算更长位置，也不保证相应模型的质量外推。
+
 ### 1.3 原模型的翻译与位置证据条件
 
 v7表3(E)在EN-DE newstest2013、无checkpoint平均的base消融中，sinusoidal/learned位置的BLEU为25.8/25.7、word-piece PPL均为4.92。这是该任务和配置的有限对照，不能推定任意位置机制或外推长度等价。同表(A)改变heads并相应调整每头维度以保持总计算，1/8/32 heads的BLEU为24.9/25.8/25.4；更多heads不自动提高该任务质量。原训练还用label smoothing 0.1，作者报告其PPL变差而accuracy/BLEU改善；训练目标和生成任务指标因此要分别看。（§5.4、§6.2、表3。）
@@ -127,6 +130,16 @@ Qwen3 v1的稠密语言模型沿GQA、SwiGLU、RoPE及pre-RMSNorm结构，移除
 
 预训练S1/S2使用4096序列，长context阶段使用32768并将RoPE base由10,000调为1,000,000；报告另用YaRN和DCA作推理外推。**32K训练与部分模型表列128K不是同一条件**，不能将所有模型写成原生128K训练，或只改一个RoPE参数就保证保真。具体RULER配置和模式反例见[质量协议](../../implementation/model-quality-evaluation.md#3.6%20Qwen3%E7%9A%84%E6%A8%A1%E5%BC%8F%E3%80%81%E6%80%BB%E8%BE%93%E5%87%BA%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%A2%84%E7%AE%97)。（§3.2、附录A.1.1；YaRN/DCA方法与匹配实现未在本项展开。）
 
+### 2.3 token列记号下，softmax沿key行归一化
+
+Formal Algorithms v1把token放在矩阵列。为避免与本页行向量混用，记其单头投影为$Q_c\in\mathbb R^{d_a\times M}$、$K_c\in\mathbb R^{d_a\times N}$、$V_c\in\mathbb R^{d_v\times N}$，其中$M$为query数、$N$为context/key数。分数$S_c=K_c^\top Q_c\in\mathbb R^{N\times M}$；**每个query列沿key行**归一化，输出$O_c=V_c\,\operatorname{softmax}_{\rm key}(S_c/\sqrt{d_a})\in\mathbb R^{d_v\times M}$。转置各张量到本页约定，得到
+
+$$O=O_c^\top=\operatorname{softmax}_{\rm key}(QK^\top/\sqrt{d_a})V,$$
+
+此时每个query行沿key列归一化。输出长度仍跟随query，不要求$M=N$；这是算法4与式2的记号展开，同一attention没有改变算法。（§3、§5，算法4。）
+
+因果self-attention允许$key\le query$。因此原件$S_c[\mathrm{key},\mathrm{query}]$的可见域是上三角，本页$S[\mathrm{query},\mathrm{key}]$则是下三角；两者表达相同依赖。判断mask要同时看轴与不等式，不能仅按“三角方向”判定对错。不可见项仍在softmax前置$-\infty$；cross-attention的全source可见条件另见第1.1节。（式3、算法4。）
+
 ## 3. Prefill、decode 与 teacher forcing
 
 输入有 $P$ 个 token 时，prefill 同时计算这些位置。因果 mask 使它们只能看各自前缀；最后位置的 logits 用来选择第一个生成 token。随后把这个新 token 输入模型，利用已有 KV 计算下一轮 logits。**选择一个 token 与把它送入模型形成 KV 是相邻的两个步骤**，不能把“已经采样”直接当作“已经缓存”。
@@ -161,6 +174,22 @@ MTP消融保持其余架构/数据，比较15.7B/1.33T和228.7B/540B两组，推
 
 从这些生成概率进入训练目标时，[GRPO与输出蒸馏](reasoning-post-training-and-distillation.md)解释组内奖励、reference策略和筛选监督文本的作用；学习目标与部署数值位宽分别判断。
 
+### 3.2 next-token目标与mask-token重构
+
+Formal Algorithms v1算法11/13把encoder–decoder与因果decoder的单序列损失写为
+
+$$\mathcal L_{\rm next}(\theta)=-\sum_{t=1}^{\ell-1}\log P_\theta[x[t+1],t].$$
+
+这里沿原件的一基索引及词表×位置矩阵，$P_\theta[x[t+1],t]$是位置$t$预测真实下一个token的概率；encoder–decoder还条件于source。§4在序列中加入BOS/EOS，最后一列没有后续真实target，故不计入此损失；前一列可预测EOS。伪码按每序列求和、逐样本梯度更新，未给token或minibatch平均；归约改变时，梯度尺度也需相应核对。（§4、§7，算法11/13。）
+
+算法12的masked language modelling则随机把部分**输入token**换成mask token，attention仍双向可见，仅在这些位置预测同位置的原token：
+
+$$\mathcal L_{\rm mask}(\theta)=-\sum_{t\in\widetilde T}\log P_\theta[x[t],t].$$
+
+$\widetilde T$为输入中被mask的位置，模型看到的是扰动序列$\widetilde x$。这改变训练输入与目标选择，因果attention mask改变score的可见域，两者作用不同。该报告只有“换成mask/保留原token”两分支，未据此核实被引BERT的完整训练配方。（算法9/12。）
+
+报告所选BERT型算法9用双向attention、post-LN与GELU，GPT-2型算法10用因果attention、pre-LN、GELU及最终LN。这些是具体架构选择，不能推为所有encoder/decoder的规则，也不是上图Llama的RMSNorm/SwiGLU/RoPE来源。（§6，算法9–10。）
+
 ## 4. 为什么缓存 K/V，而不是每轮重算历史
 
 固定模型、位置与前缀，在因果推理中，新增未来 token 不改变历史 token 已经算出的 K/V。因而每层只追加新 token 的 K/V，后续查询复用它们。历史 Q 对以后的位置没有直接用途，logits 是词表空间的预测，也不能替代每层的 K/V。
@@ -173,6 +202,12 @@ $$B_{KV}=2N_lLH_{kv}db.$$
 
 缓存复用依赖模型权重、位置规则与前缀身份。改变这些条件后，旧 KV 不自动仍然有效。KV 数值在线产生，但量化策略与某些变换可离线校准；历史可通过重新前向恢复，只是有计算成本。机制见 [KV cache 量化](../../theory/kv-cache-quantization-objects-and-granularity.md)，管理见 [SGLang 缓存与调度](../../implementation/sglang-inference-execution.md)。
 
+### 4.1 生成伪码重算完整前缀，缓存复用由实现提供
+
+Formal Algorithms v1算法14/15每轮调用完整前缀的Transformer，取末列词表分布，采样后追加token。它们没有KV状态或增量attention接口；算法15调用的encoder–decoder前向还重算source编码。第4节的KV复用是固定模型与因果依赖允许的执行优化，不能从这两段伪码推定作者已实现缓存。
+
+两算法用$q\propto p^{1/\tau}$采样，声明$\tau>0$。若$p=\operatorname{softmax}(z)$，归一化后等于$\operatorname{softmax}(z/\tau)$，这是整理者代数展开；原件没有$\tau=0$的实际分支。算法14固定生成$\ell_{\rm gen}$步，返回续写、不以EOS提前停；算法15从BOS开始，只以EOS结束，返回包含BOS/EOS的序列。后者未给最大长度或learned位置表越界保护，实际停止与缓存接口需由具体实现核对。（§7，算法14–15。）
+
 ## 5. 从逻辑图进入代码与量化
 
 vLLM 与 SGLang 所选 `llama.py` 都把 gate/up 合并投影，把 Q/K/V 合并投影，再使用行并行的 down/o 投影。这减少或组织调用，同时给分片布局施加约束，见 [张量并行与量化分片](../../implementation/tensor-parallel-quantization.md)。
@@ -183,7 +218,15 @@ vLLM 与 SGLang 所选 `llama.py` 都把 gate/up 合并投影，把 Q/K/V 合并
 
 沿这条主干理解结构变化时，[MoE 与专家路由](mixture-of-experts-and-routing.md)解释 FFN 如何按 token 选择专家，以及总参数与激活参数为何不同；[MLA](multi-head-latent-attention.md)解释 attention 如何保存联合潜变量与位置 key。上面的 $2N_lLH_{kv}db$ 是显式 K/V 的容量模型，MLA 需要按自己的缓存对象记账。
 
+### 5.1 形式化伪码仍需核对维度与数值条件
+
+Formal Algorithms提供架构与训练/生成的理解模板，没有模型实验或性能证据。其算法6的LayerNorm没有$\epsilon$，特征方差为0时除法未定义；实际归一化的$\epsilon$、精度与有效宽度仍按[所选实现](../../implementation/rmsnorm-cuda-triton-kernels.md)核对。
+
+同版PDF/TeX还有两处记号问题：算法8的decoder循环声明$i$，体内却用$l$；算法9先以$W_f\in\mathbb R^{d_f\times d_e}$得到$d_f$维状态，却声明最终$W_u\in\mathbb R^{V\times d_e}$，当$d_f\ne d_e$时乘法不配。理解结构不等于逐字伪码可执行；原件未声明$d_f=d_e$，本页不把该约束补成作者事实，也不据这些算法推定padding、全mask行或缓存维护已实现。
+
 ## 来源身份
+
+- Formal Algorithms for Transformers，`arXiv:2207.09238v1`，`https://arxiv.org/abs/2207.09238v1`；§3–8、算法1–15及附录B记号核读，关键PDF5–7/11–15与有效TransAlgs.tex回查。行列转换/温度等价为整理者展开；PE差异、无epsilon、循环索引/投影维度及停止条件分别保留。未核引用模型的上游代码、编译或训练/推理运行。
 
 - Attention Is All You Need，`arXiv:1706.03762v7`，`https://arxiv.org/abs/1706.03762v7`；§3–5、§6.1–6.2，图1–2、表1–3；架构/位置/训练与评测条件，尺寸及方差一步展开为整理者说明。同版EN-FR表/文差异保留，作者实现与模型/训练/设备运行未核。
 
