@@ -23,7 +23,7 @@ sources:
   - raw/papers/2026-09-21/saw-int4
   - raw/papers/2026-10-07/centriq
   - raw/repositories/2026-09-21/quip
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # 正交旋转与量化：等价条件、离群值和在线代价
@@ -75,6 +75,8 @@ $$
 $$
 
 因为正交变换不改变分母，$\operatorname{RMS}_0(xR)=\operatorname{RMS}_0(x)R$。于是相邻块可在旋转坐标中传递残差：输入投影改为 $R^\top B_{in}$，输出投影改为 $B_{out}R$，输出偏置也旋转；embedding、残差各支路和最终 head 必须配套变换。非线性内部输入保持原值，块输出整体旋转，最终 head 抵消旋转。（SliceGPT §3.1、定理 1、附录 A.1；QuaRot §3.4）
+
+这里的统计覆盖完整特征；完整与部分统计、ε及正尺度的不同条件见[RMSNorm与pRMS](../fundamentals/operators/layernorm-rmsnorm-and-partial-statistics.md)。
 
 带可学习逐通道增益的 RMSNorm 不能直接交换任意 $R$。需要先把增益折叠进后续线性权重；偏置存在时也要保留相应线性项。
 

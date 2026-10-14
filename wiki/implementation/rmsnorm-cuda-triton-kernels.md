@@ -10,14 +10,14 @@ tags:
 sources:
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
-updated: 2026-09-22
+updated: 2026-10-14
 ---
 
 # RMSNorm 的 CUDA 与 Triton 实现：行归约、残差与舍入
 
 RMSNorm 的每个输出依赖整行平方和。它适合用来理解三件事：行内数据怎样分给线程，局部统计怎样合并，以及融合怎样改变中间值的保存位置和舍入。这里研读 vLLM 与 SGLang 的现成实现；各分支的调用条件分别说明，不把仓库中的所有 RMSNorm 当成同一条默认路径。
 
-先读[张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)与[归约计算模式](../fundamentals/operators/gpu-kernel-computation-patterns.md)。本页的地址例子、流量估算和舍入反例是整理者教学推导；没有运行这些 GPU kernel。
+[RMSNorm的统计、尺度与部分归一化](../fundamentals/operators/layernorm-rmsnorm-and-partial-statistics.md)解释机制和原论文条件；本页从带ε的实际接口进入设备执行。先读[张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)与[归约计算模式](../fundamentals/operators/gpu-kernel-computation-patterns.md)。本页的地址例子、流量估算和舍入反例是整理者教学推导；没有运行这些 GPU kernel。
 
 ## 1. 先区分数学输出与残差状态
 
