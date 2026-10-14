@@ -6,10 +6,11 @@ tags:
   - floating-point
   - mixed-precision
 sources:
+  - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-09-21/fp8-formats
   - raw/papers/2026-09-21/microscaling-formats
   - raw/repositories/2026-09-21/llama-cpp
-updated: 2026-10-06
+updated: 2026-10-14
 ---
 
 # FP8 与 Microscaling 数值格式
@@ -97,6 +98,14 @@ BLEU：GNMT 24.83 → 24.65、Transformer Base 26.87 → 26.83、Transformer Lar
 
 **缩放粒度的影响。** F 图 2（1.3B 模型）比较不同指数偏置且不做校准时的困惑度：只量化 GEMM 输入时，偏置落在 $[7,10]$ 内有多组接近 bfloat16 基线 10.19；若把残差加法输入也量化到 FP8，则没有任何单一偏置可用，偏置 7 也只有 12.59。改用逐张量缩放因子后，GEMM-only 与 GEMM+残差分别为 10.29 与 10.44。也就是说，同一类型的所有张量共用一个固定偏置，在扩大量化范围后不再够用。
 
+### 3.1 Llama 3.1的选择性FP8推理
+
+Llama 3报告v3 §6.2给出H100原生FP8推理案例，区别于上文F的格式模拟实验：量化多数FFN参数与激活，作者称这些计算约占推理时间50%；self-attention参数不量化，首尾Transformer层也排除。参数和激活采用row-wise尺度，细于整张量共享，但这不是全模型W8A8或KV8配置。（§6.2、图25。）
+
+作者报告日期等高perplexity token会产生大激活、拉高动态尺度，使更多值underflow并造成后续解码错误，因此将动态尺度上界设为 **1200**。这是尺度参数的上界，不是直接裁剪激活到1200；论文未给scale/reciprocal公式、具体FP8编码、校准样本或上界拟合方法，不能补成确定的量化器实现。图25示意FP8输入/权重和BF16输出，但未规定checkpoint轴序或accumulator dtype。
+
+范围保护、尺度粒度和上界共同构成该推理配方，效果由[回复质量分布](../../implementation/model-quality-evaluation.md#9.1%20Llama%203.1%E7%9A%84%E7%BD%95%E8%A7%81%E6%8D%9F%E5%9D%8F%E4%B8%8Ereward%E5%88%86%E5%B8%83)与[资源条件](../../implementation/serving-performance-evaluation.md#3.1%20Llama%203.1%E7%9A%84%E8%8A%82%E7%82%B9%E6%95%B0%E4%B8%8EFP8%E5%90%9E%E5%90%90%E8%AE%A1%E8%B4%A6)承接。训练系统另报告BF16 MFU、跨microbatch梯度累积和FSDP reduce-scatter用FP32；不能将这里的FP8推理写成FP8预训练配方。（§3.3.2 Numerical stability、§6.2。）
+
 ## 4. Microscaling：块内共享尺度
 
 M §2 把 MX 的基本单元定义为“一个共享尺度加 $k$ 个元素”：数据单元称为 MX block，由块大小 $k$、尺度数据格式和元素数据格式共同定义；$k$ 个元素共享同一个元素格式，块内每个数满足 $v_i = X P_i$。布局不被规范强制，尺度可以与元素连续存放，也可以分开存放。
@@ -165,6 +174,7 @@ typedef struct {
 
 | 来源 | 版本或快照 |
 | --- | --- |
+| The Llama 3 Herd of Models（`https://arxiv.org/abs/2407.21783v3`） | `arXiv:2407.21783v3`；§6.2/图25及§3.3训练精度条件，未核匹配FBGEMM实现或运行 |
 | FP8 Formats for Deep Learning（`https://arxiv.org/abs/2209.05433v2`） | `arXiv:2209.05433v2` |
 | Microscaling Data Formats for Deep Learning（`https://arxiv.org/abs/2310.10537v3`） | `arXiv:2310.10537v3` |
 | ggml-org/llama.cpp（`https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b`） | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` |

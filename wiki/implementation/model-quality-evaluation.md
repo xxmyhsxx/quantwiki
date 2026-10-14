@@ -6,6 +6,7 @@ tags:
   - numerical-error
   - reliability
 sources:
+  - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-10-03/quantforge
   - raw/papers/2026-09-28/same-bit-width-different-outcomes
   - raw/papers/2026-09-26/the-alignment-illusion
@@ -21,7 +22,7 @@ sources:
   - raw/papers/2026-09-21/mmlu-pro
   - raw/papers/2026-09-21/ruler
   - raw/repositories/2026-09-21/lm-evaluation-harness
-updated: 2026-10-12
+updated: 2026-10-14
 ---
 
 # 模型质量评测：PPL、任务协议与选择性预测
@@ -66,6 +67,12 @@ PPL 给的是“真实上下文上的预测损失”。自由生成会把模型�
 有效长度要声明测试档位、任务集合/权重、计分、通过阈值与比较方向。[RULER](ruler-task-complexity-and-effective-context.md)用13配置均值超过85.6%；检索占8/13权重，均值通过不保证每类或每项都通过。最大通过档只给该网格的读数；最高档通过尚未测更长，最低档失败也没定位更短边界。
 
 跨长度再汇总时，档位等权、序号线性权重和token数比例权重回答不同问题。保留各档分数，按明确的使用分布计费/比较；不能把选定阈值和汇总权重当作模型自身不变的窗口规格。（RULER v3 §4/表3及整理者解释。）
+
+### 2.3 Llama 3.1的长上下文适应与检索口径
+
+报告v3的405B在预训练后期以约800B长序列训练tokens分六阶段，从8K扩到128K；每阶段同时要求短上下文评测恢复、对应长度单针检索通过。只用短上下文SFT会退化长上下文能力，作者加入合成长文QA、摘要和repo代码任务，报告其消融中0.1%混合比例较好。短上下文DPO没有退化的观察，以已经具备高质量长上下文能力的SFT checkpoint为条件；128K不能仅由RoPE参数或单针成绩推定。（§3.4 Long Context Pre-Training、§4.3 Long Context。）
+
+最终multi-needle插四针、要求找回其中两针，报告十种长度至128K的平均recall；8B/70B/405B为98.8/97.5/98.1，不能当作全部长文任务的成功率。ZeroSCROLLS用validation，任务分别用exact match、F1和ROUGE-L；InfiniteBench En.QA表中405B为30.5、70B为36.7，未支持正文“405B所有项更好”的概括。它们是模型能力表，不是FP8/BF16量化对照。（§5.2.6 Long Context Benchmarks及表21；均按v3的Llama 3.1身份。）
 
 ## 3. 任务准确率背后也有算法
 
@@ -176,6 +183,12 @@ Decision Flips v1 §3–8 说明评测压缩后的输出保真时，需要把浮
 
 当两模型已经可以运行，直接数任务 flip 的成本与计算散度同阶，没有必要用论文经验比代替实测。非有限 logits 应单独作为运行失败记录，不能只在有限样本上给出散度后称整个配置有效。论文只在部分真实后端验证，FP8 明确未通过其试验。
 
+### 9.1 Llama 3.1的罕见损坏与reward分布
+
+Llama 3报告v3 §6.2发现：标准benchmark常显示405B的FP8与BF16接近，未设尺度上界时却偶发corrupted responses。作者因此比较两种推理产生的100,000条回复的reward-model score分布，主图26显示最终[选择性FP8配方](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md#3.1%20Llama%203.1%E7%9A%84%E9%80%89%E6%8B%A9%E6%80%A7FP8%E6%8E%A8%E7%90%86)分布接近BF16。平均任务分数可能漏掉罕见自由生成损坏，reward分布提供另一观察，但没有给corruption rate、均值差或显著性检验，不能据直方图证明逐token等价或罕见风险为零。
+
+同版源包的`fp8_appendix.tex`未被`paper.tex`引入，三张补充图未编入当前92页PDF。补充稿报告首尾层保护的影响大于尺度上界、row-wise略优于tensor-wise；直方图仍高度重叠且无量化统计，文中“significant shift”不能当作统计显著性检验通过。这个实例保留原文报告与图的实际证据范围，未核reward-model版本、抽样/解码manifest或匹配kernel。完整质量大表与这些FP8对照分别解释，不能互相替代。
+
 ## 10. 策略恢复要分清适配范围与统计单位
 
 动作策略中，同状态、同随机噪声下的动作差异隔离输出变化；闭环成功率则让模型自己的动作改变后续环境。两者相互补充，不能把前者的 MSE 降低直接解释为未见任务上的成功率提高。
@@ -238,6 +251,8 @@ $$
 CI含零与质量等价按[第8节](#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E5%BC%82%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%BB%A1%E8%B6%B3%E8%B4%A8%E9%87%8F%E7%AD%89%E4%BB%B7)区分；未设置等价界限、未校正多重比较、缺少逐图CI时保留限制。最终配方的质量表也不能替代消融归因：Ideogram的层保护消融在raw提示下完成，JSON协议只评测完整配方，因此保护贡献比例不能直接移植到JSON协议。
 
 ## 来源身份
+
+- The Llama 3 Herd of Models（`https://arxiv.org/abs/2407.21783v3`），`arXiv:2407.21783v3`；长上下文训练/后训练及评测、§6.2图26；同版源包未编入PDF的FP8补充稿/三图另行注明；未复现训练、质量或reward评分。
 
 - QuantForge: Discovering Residual Decompositions for MXFP4 Post-Training Quantization（`https://arxiv.org/abs/2609.34680v1`），v1；§6.1–6.2、附录 A.1/D.1/D.2，指标聚合、搜索预算及信息反馈边界。
 

@@ -6,6 +6,7 @@ tags:
   - evaluation
   - performance
 sources:
+  - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-09-21/sglang
   - raw/papers/2026-09-21/sarathi-serve
   - raw/papers/2026-09-21/distserve
@@ -55,6 +56,14 @@ $$\text{request throughput}=N_{\mathrm{completed}}/T,\qquad
 量化改变输出或 EOS 时，实际 $L_i$ 可能改变。固定生成长度可用于隔离服务性能，但这是专门的性能协议；实际任务质量仍需按正常停止条件在 [模型质量评测](model-quality-evaluation.md)中判断。
 
 多调用应用还须区分程序与请求。SGLang v2主吞吐实验计完整程序的programs/s，主延迟计一次无程序批处理的完整执行时间；一个程序可以含多次生成和分支等待。其图8(a)消融另计tokens/s，不能把两种单位互换，程序延迟也不能当作单调用TTFT或在线SLO容量。具体负载、基线版本和长输出反例见[程序性能证据](structured-language-model-program-execution.md#7.%20%E6%80%A7%E8%83%BD%E8%AF%81%E6%8D%AE%E7%9A%84%E7%A8%8B%E5%BA%8F%E5%8F%A3%E5%BE%84%E4%B8%8E%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4)。（SGLang v2 §6.1、§6.3及附录C。）
+
+### 3.1 Llama 3.1的节点数与FP8吞吐计账
+
+报告v3 §6.1为BF16的405B使用两节点共16张H100，节点内TP、节点间PP；两个microbatches可在prefill/decode中并发，提高吞吐，同时增加同步和延迟。图24固定4096输入/256输出tokens，比较TP8/PP2有无microbatching，不能把microbatch数当请求到达率。原文“推理气泡不是问题”针对没有训练backward flush的论述，不排除[变长在线PP气泡](serving-memory-and-batching.md#5.2%20Sarathi-Serve%EF%BC%9A%E5%89%A9%E4%BD%99%20token%20%E9%A2%84%E7%AE%97%E4%B8%8E%E6%B7%B7%E5%90%88%E8%BD%AE%E6%AC%A1)。
+
+图27的FP8/BF16对照沿用4096/256长度，BF16为TP8/PP2、其microbatch版及TP4/PP4 microbatch版，FP8为单节点TP8带星曲线。两张原图都注明 **“FP8能放入单节点，吞吐作2×计账”**，但未展开具体副本或资源归一实现。正文prefill“最多50%”和decode Pareto改善是这个资源/配置对照的作者报告，不能改成同节点数、同并行配置的纯kernel加速或单节点原始吞吐。图中prefill横轴为TTFT、decode为incremental-token latency，不是混合到达负载的完整在线SLO容量。
+
+低精度压缩除计算速度外，还能改变模型是否跨节点、通信和可放副本数；该案例支持这些因素应分别记录。数值配方见[选择性FFN FP8](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md#3.1%20Llama%203.1%E7%9A%84%E9%80%89%E6%8B%A9%E6%80%A7FP8%E6%8E%A8%E7%90%86)，质量另看[回复分布](model-quality-evaluation.md#9.1%20Llama%203.1%E7%9A%84%E7%BD%95%E8%A7%81%E6%8D%9F%E5%9D%8F%E4%B8%8Ereward%E5%88%86%E5%B8%83)；本次未核PP scheduler、FP8 kernel或测量服务。
 
 ## 4. Goodput 把延迟目标放进吞吐
 
@@ -142,6 +151,8 @@ Strict/relaxed 分别参考4K context、batch32、无 prefill 干扰的 decode �
 本页核对所选 benchmark 的定义与处理分支，没有启动服务、产生请求或测得性能曲线。
 
 ## 来源身份
+
+- The Llama 3 Herd of Models（`https://arxiv.org/abs/2407.21783v3`），`arXiv:2407.21783v3`；§6.1–6.2与图24/27，H100节点/并行、4096/256长度及图中2×注记；未核匹配调度/内核或复现性能。
 
 - SGLang: Efficient Execution of Structured Language Model Programs（`https://arxiv.org/abs/2312.07104v2`），`arXiv:2312.07104v2`；§6及附录C，程序吞吐/平均程序延迟与消融tokens/s的对象区别，未核历史实现或运行。
 

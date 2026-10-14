@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Llama 3报告 ingest：选择性FP8与质量/资源条件
+
+- 研读v3语言主线、预训练/后训练与语言结果、推理PP/FP8和必要图表，多模态/Guard只定向核对象与稳定性；PDF92页/源包hash匹配，157成员中82展开源码逐字节核对，余图仍保留archive内。主代理复核图25/26/27、microbatch两图及三张未编入PDF的FP8补图，不杜撰附图PDF编号。
+- 四个既有页增量：[模型基础](fundamentals/model/transformer-autoregressive-inference.md)补3.1配置及16/40/63GiB逻辑KV教学计算；[FP8](fundamentals/numeric-formats/fp8-and-mx-data-formats.md)补FFN范围/首尾保护/row-wise/尺度上界1200；[质量](implementation/model-quality-evaluation.md)补十万回复reward/罕见损坏和长上下文协议/表文差异；[服务评测](implementation/serving-performance-evaluation.md)补BF16双节点/FP8单节点、microbatch和2×注记。已有格式与公共评测解释复用，不建模型摘要页。
+- 保留主文实际3.1身份、BF16训练与FP8推理、尺度上界与裁剪、图证据/统计检验、训练适应与最终能力、资源计账与kernel收益的区别；匹配代码/scale/配置、reward manifest、全安全/多模态表和训练/服务运行未核。
+- READING/SELF/计划同步：166条有依据、63条队列，实际表行已核，本轮基线88已处理25条，下一项DeepSeek-V3，准备不计完成。独立Astra正式review通过，九原图及PDF7/39/53/54等编号/条件已回查。结构/来源strict检查189知识页、670项登记，0错误/待核；6个受影响Wiki页850条本地链接strict通过，diff检查通过。提交范围为本项8文件，Obsidian改动保留；未运行模型、训练、量化或服务基准。
+
 ## 2026-10-14 · FSDP2教程 ingest与第14批收尾
 
 - 完整研读Distributed目录217行、FSDP2教程411行和三张保存原图，5文件hash/大小匹配；新建[FSDP2参数生命周期](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md)，补持久Shard(0)/临时group、AG/RS/optim、预取与reshard/dtype、DTensor/DCP full state和collective/单writer。TP/ModelOpt/INDEX只补用途入口，AQLM及MLA DCP版本/对象不混用。
