@@ -8,7 +8,7 @@ tags:
 sources:
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-07
+updated: 2026-10-14
 ---
 
 # 张量并行与量化：分片、通信和元数据
@@ -16,6 +16,8 @@ updated: 2026-10-07
 张量并行（TP）让多个 rank 共同计算同一批 token 的一个层。它拆的是一次运算的张量轴；数据并行把不同请求或样本分给不同副本，流水线并行则拆层。本文以 vLLM/SGLang 的普通稠密线性层为例，解释 TP 如何与量化布局相遇。
 
 [专家并行（EP）](moe-expert-parallel-execution.md)把不同专家交给不同 rank，按路由发送隐藏状态。EP 与 TP 的分工不同；框架怎样组成两类 group、专家本地参数轴和通信量化，须沿实际分支核对。
+
+训练参数在计算外分片、计算前临时聚合的另一条生命周期，见[FSDP2参数与checkpoint](fsdp2-parameter-lifecycle-and-checkpoint.md)。它与这里按张量轴拆层计算的TP分工不同。
 
 ## 1. 列并行保留输出分片，行并行相加输入分片的贡献
 

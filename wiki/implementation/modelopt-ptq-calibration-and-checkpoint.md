@@ -70,6 +70,8 @@ Real Quant 示例先在 `init_quantized_weights` 上下文中加载压缩权重�
 
 `--use_fsdp2` 接入多节点模型分片与校准，不等于推理时使用同样的TP/PP。保存稿明确KV AutoQuantize与该flag组合在加载前被拒绝，weight AutoQuantize仍带experimental warning；分布式KV评分、选择和checkpoint写入尚需同步。通信和导出可以增加耗时，不能用GPU数直接推导校准加速。（HF：Multi-Node Post-Training Quantization with FSDP2。）
 
+FSDP2持久参数、临时聚合和分片/full state保存的基础见[参数生命周期与checkpoint](fsdp2-parameter-lifecycle-and-checkpoint.md)；教程中的训练流程不能替代本ModelOpt路径的匹配实现验证。
+
 运行记录与部署产物也有不同生命周期。文档的MLflow记录包含展开imports后的recipe、版本/调用、日志、quantizer summary及产生时的专家token计数；主rank上传。成功导出后才写本地 `.experiment.json` 指针，较早失败会保留既有checkpoint及旧指针，未tracked导出则清除继承指针。因此记录可用于追溯配置，判断本次产物是否完成还需核导出结果、consumer及[质量/执行验证](quantization-error-diagnosis.md)。上述追踪与恢复行为仅核文档，未访问MLflow服务。（HF：Tracking runs with MLflow。）
 
 ## 来源身份

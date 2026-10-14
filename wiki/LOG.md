@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · FSDP2教程 ingest与第14批收尾
+
+- 完整研读Distributed目录217行、FSDP2教程411行和三张保存原图，5文件hash/大小匹配；新建[FSDP2参数生命周期](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md)，补持久Shard(0)/临时group、AG/RS/optim、预取与reshard/dtype、DTensor/DCP full state和collective/单writer。TP/ModelOpt/INDEX只补用途入口，AQLM及MLA DCP版本/对象不混用。
+- 保存片段torch.save未在rank0 guard内的竞争/空结果风险按静态范围记录，未称当前库运行故障；例程/API/PyTorch库实现、optimizer保存、跨world恢复及训练/通信/保存运行未核。目录链接不代表其他教程已读；3图10-05补录不证9-24字节，README图片改链/source备份说明与现稿不一致，不改raw。
+- READING/SELF/计划同步：165条有依据、64条队列，实际表行已核，本轮基线88已处理24条；第14批ModelOpt/TensorRT/FSDP2按选定材料范围完成研读、承接及独立Astra正式review；下一项第15批Llama 3，准备不计完成。结构/来源strict检查189知识页、666项登记，0错误/待核；6个受影响Wiki页1226条本地链接strict通过，diff检查通过。提交范围为本项8文件，Obsidian改动保留；未运行训练、通信、checkpoint或GPU。
+
 ## 2026-10-14 · TensorRT-LLM文档 ingest：加载入口与KV条件
 
 - 完整研读固定a6f41514…的144行量化正文及模型/硬件两表，1文件hash/大小匹配；在[部署页](implementation/quantized-llm-deployment-backends.md)补默认PyTorch直接加载、NVFP4 KV离线/FP8主体条件、活动与存储层缓存区别；[块缩放页](implementation/block-scaled-matmul-execution.md)补SM90/SM100/103的FP32/UE8M0尺度声明。旧d567f924引擎路径保留版本，不搬运算法或公共格式解释。
