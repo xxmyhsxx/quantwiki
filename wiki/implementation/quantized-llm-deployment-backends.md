@@ -39,6 +39,8 @@ updated: 2026-10-14
 
 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md) 解释第 4 段的通用原理；[GGUF 块量化存储格式](gguf-block-quantization-formats.md) 是第 2 段的一个完整实例；本页关注第 2、3 段在不同框架之间的差异。
 
+ModelOpt的recipe、校准尺度、搜索恢复状态与导出checkpoint各有什么作用，见[ModelOpt PTQ与消费接口](modelopt-ptq-calibration-and-checkpoint.md)。该页用固定vLLM静态FP8实例解释加载后准备，支持范围仍按各自版本核对。
+
 ### 1.1 统一配置、模块 prefix 与初始化分片
 
 固定官方架构文档用 `VllmConfig` 统一承载engine、executor、worker、runner和模型需要的配置，模型constructor接收 `vllm_config` 与 `prefix`。Prefix标识checkpoint里的模块位置，可以让不同子模块采用不同量化配置；以所选Llama/AutoAWQ为例，prefix传给线性层的 `get_quant_method`，被排除的模块返回非量化方法。共享配置结构不等于不同进程共享同一个Python内存对象。（文档Class Hierarchy；源码 `models/llama.py:LlamaForCausalLM`、`layers/linear.py:LinearBase`、`quantization/auto_awq.py:AutoAWQConfig.get_quant_method`。）

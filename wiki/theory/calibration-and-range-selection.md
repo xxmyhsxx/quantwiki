@@ -6,6 +6,7 @@ tags:
   - clipping
   - sensitivity
 sources:
+  - raw/articles/2026-09-24/modelopt-ptq-guides
   - raw/papers/2026-09-21/norm-tweaking
   - raw/papers/2026-09-21/quasar
   - raw/repositories/2026-09-21/aqlm
@@ -33,7 +34,7 @@ sources:
   - raw/repositories/2026-10-07/pivot-q
   - raw/papers/2026-09-21/smoothquant-plus
   - raw/papers/2026-09-21/veq
-updated: 2026-10-12
+updated: 2026-10-14
 ---
 
 # 校准数据与量化范围选择
@@ -135,6 +136,8 @@ $$
 具体记录应足以说明输入如何产生：数据版本、样本数、抽样方式、预处理、随机性、模型与权重版本，以及输入形状。图像任务记录分辨率和增强；文本任务记录分词器、序列长度、拼接/截断、padding/mask 及实际参与统计的 token。不要直接将训练增强得到的范围当作部署范围。若使用标签或浮点教师输出来选择参数，也说明其来源和用途。
 
 静态激活量化离线固定网格，容易受分布偏移影响；动态量化按当前输入估计网格，增加运行时统计开销，也不能保证未见输入的任务质量。[SmoothQuant](../methods/smoothquant.md)的 O1–O3 提供这两个维度的具体案例。
+
+多级尺度还需逐级判断静态/动态。ModelOpt的NVFP4 `input_scale1` recipe固定专家激活全局尺度，却仍动态计算per-block E4M3尺度；KV cast也只跳过相应KV统计，不能推成整个模型免校准。配置是否需要前向数据取决于所有被选量化器，具体常量、权重/KV条件和headroom变体见[ModelOpt尺度层级](../implementation/modelopt-ptq-calibration-and-checkpoint.md#2.%20%E5%B0%BA%E5%BA%A6%E5%B1%82%E7%BA%A7%E4%B8%8E%E5%89%8D%E5%90%91%E8%A6%86%E7%9B%96%E5%86%B3%E5%AE%9A%E6%A0%A1%E5%87%86%E9%9C%80%E6%B1%82)。（固定f2f0d695… Recipes：Calibration variants。）
 
 离线学到的变换与动态激活网格可以并存。[OmniQuant](../methods/omniquant.md) 离线学习通道缩放，默认激活量化仍按当前 token 估计范围。其官方快照 `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` 的 `generate_act_scale_shift.py` 还区分两种初始化统计：`get_act_scales` 累积逐通道最大绝对值；`get_act_shifts` 对每段输入的逐通道区间中点 $c_t=(\max X_t+\min X_t)/2$ 作 $m_t=0.99m_{t-1}+0.01c_t$ 的 EMA，初值为首段中点。后者不是样本均值，也不是所有样本合起来的全局 min/max 中点；这些统计只用于初始化，不能代替训练后参数。
 
@@ -354,6 +357,8 @@ OnPTQ 的两条 token 分支与这里观察到的未来差异也不同：前者�
 锚点本身也须记录来源与刷新：PIVOT-Q 正文称原训练数据集，主代码却采 clean LIBERO 的学生短轨迹并存入 replay；这项差异随方法页保留。
 
 ## 来源身份
+
+- ModelOpt Post-Training Quantization Guides（`https://github.com/NVIDIA/Model-Optimizer/tree/f2f0d6958eb95374d816f3d6256a0be3738231a3`），固定commit `f2f0d6958eb95374d816f3d6256a0be3738231a3`，获取于2026-09-24T02:12:20+08:00；Recipes的全局/块尺度与校准条件，具体流程由实现页承接。
 
 - VEQ v1，来源 `https://arxiv.org/abs/2602.01037v1`，arXiv:2602.01037v1；§6.1引用专家覆盖、两种加权位置及其适用条件。
 

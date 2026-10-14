@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · ModelOpt文档 ingest：校准、搜索与checkpoint消费
+
+- 完整研读固定f2f0d695…的HF PTQ811行与Recipes556行，2文件hash/大小匹配；新增[ModelOpt PTQ](implementation/modelopt-ptq-calibration-and-checkpoint.md)，串起对象/算法、校准尺度/前向覆盖、weight/KV搜索预算和恢复状态、导出及静态FP8 consumer。校准页只补多级尺度，部署/INDEX只补入口。
+- 定向核vLLM568afb配置选择/解析及静态FP8参数、加载后最大尺度重标和转置。保留input_scale1全局固定/块动态、headroom与预算对象、mixed-KV stock0.26 export-only、cast范围与回退、VLM/RealQuant/FSDP2/追踪条件。原始YAML/算法/导出实现及外链/运行未核；README相对链接修复说明与当前稿不同，不改raw。
+- 独立Astra技术review通过，两处加载顺序及layerwise export归属进一步收紧；内容、来源和必要数学/格式/诊断目标已核。READING/SELF/计划同步：163条有依据、66条队列，本轮基线88已处理22条；下一项TensorRT-LLM量化文档，准备不计完成。
+- 结构/来源strict检查188知识页、663项登记，0错误/待核；6个受影响Wiki页的1275条本地链接strict通过，163/66实际表行及管理记录经独立Astra闭环复核通过。提交范围为本项8文件，Obsidian改动保留；没有运行模型、校准/导出或GPU。
+
 ## 2026-10-14 · Ray Serve文档 ingest与第13批收尾
 
 - 完整读七份保存正文26/224/514/29/209/206/263行，7文件hash/大小匹配；ASCII图与十处图注已核，原图未保存。接续[服务编排](implementation/distributed-llm-serving-orchestration.md)的模型/副本两级选择、配置/协议/启动、placement与路由策略、DP gang计数/重启及decode侧P/D和connector预热；Dynamo机制保持各自归属。
