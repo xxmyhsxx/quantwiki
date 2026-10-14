@@ -10,7 +10,8 @@ sources:
   - raw/repositories/2026-09-22/kernel-skills
   - raw/repositories/2026-09-21/triton
   - raw/articles/2026-09-21/cuda-simt-kernels
-updated: 2026-09-22
+  - raw/articles/2026-09-21/cuda-tile-kernels
+updated: 2026-10-14
 ---
 
 # Kernel 配置选择与自动调优：资源、工作划分和测量
@@ -88,7 +89,15 @@ triton.Config(
 
 这里仅展示配置结构，不是实测推荐：tile 决定工作与数据分块，num_warps 决定 program 内的协作规模，num_stages 指导流水深度。三者相互影响，应一起计入资源和延迟分析。
 
-候选应满足实际 kernel 和后端的约束。该 Triton 版本 `semantic.py:arange` 要求区间长度为 2 的幂，因此使用 `tl.arange(0,B)` 的教程对 B 有这一限制；这不能推广成“所有 CUDA tile 必须是 2 的幂或宽度为 32 的倍数”。一个 warp 可以被映射到多行，宽度 16 不自动表示一半线程空闲。是否使用 Tensor Core 同样不能仅由三个 tile 数值达到 16 来保证，还取决于 dtype、布局、精度与后端支持。
+候选应满足实际 kernel 和后端的约束。该 Triton 版本 `semantic.py:arange` 要求区间长度为 2 的幂，因此使用 `tl.arange(0,B)` 的教程对 B 有这一限制；这不能推广到所有一般CUDA分块算法；本节下述CUDA Tile API另有自己的编译形状规则。一个 warp 可以被映射到多行，宽度 16 不自动表示一半线程空闲。是否使用 Tensor Core 同样不能仅由三个 tile 数值达到 16 来保证，还取决于 dtype、布局、精度与后端支持。
+
+### CUDA Tile hint与指针前提承担不同职责
+
+Writing Tile Kernels快照§2.4.11的hint是附在kernel或特定访存调用上的编译建议，可按架构设置，也可被忽略。`occupancy`推荐每SM的活跃CTA数，不是上文warp驻留百分比；`latency=1…10`表示该访问从轻到重的流量/预取倾向，不是周期数。`allow_tma`只用于tile-space访问，允许支持硬件上的TMA候选不保证最终必用，gather/scatter不接受这一hint。
+
+Python `replace_hints`创建具有独立JIT cache的新kernel对象，提供的是调优候选，不是正确性或速度证明。CUDA Tile的shape/dtype按自身编译规则特化，不能直接套用上文Triton的`num_warps`、`num_stages`或autotuner行为。（§2.4.4–2.4.5、§2.4.11。）
+
+相反，C++示例的`__restrict__`和`assume_aligned(ptr,16)`是必须满足的别名与16-byte地址对齐承诺；错误承诺会导致未定义行为。分配基址对齐不能证明切片后的地址也对齐，TMA仍需核其他布局和硬件条件。编译提示、接口前提、实际编译资源与测量结果要分别记录。（§2.4.12；坐标/边界见[Tile接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)。）
 
 ## 6. autotune 的 key、试跑和正确性
 
@@ -116,6 +125,7 @@ triton.Config(
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.11–2.4.12 hint与前提，保存正文全读；并非实际编译资源/TMA或性能验证，完整API未核。 |
 | tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
 | Triton（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文所列教程与 runtime 文件；仅代码核对。 |
 | CUDA Programming Guide：Writing SIMT Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html`） | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | 寄存器、shared memory 与 word/bank 关系。 |

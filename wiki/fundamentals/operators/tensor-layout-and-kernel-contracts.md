@@ -11,6 +11,7 @@ sources:
   - raw/repositories/2026-09-21/triton
   - raw/repositories/2026-09-22/kernels
   - raw/articles/2026-09-21/cuda-programming-model
+  - raw/articles/2026-09-21/cuda-tile-kernels
 updated: 2026-10-14
 ---
 
@@ -88,7 +89,25 @@ Programming Model快照§1.2.2.3把CUDA Tile与SIMT区分：SIMT源码描述每�
 
 该模型的array是device memory中的可变数据，tile则是仅在block内部产生和消费的不可变值，每次操作得到新tile。tile不一定对应一整块物化内存，编译器可用寄存器、shared或其他SM资源承接。本章要求tile各维在编译期已知且为2的幂，并禁止把tile直接作为kernel参数；这不代表所有CUDA分块算法都有同一形状限制。（§1.2.2.3.1。）
 
-load/store在array与tile之间搬数据。tile-space坐标选一块区域，具体尾部处理须按所用API和边界策略核对；编程模型图中的补零不应替代接口检查。SIMT与CUDA Tile可在同一应用中按kernel分别使用、操作同一device数据；编译抽象相似也不使CUDA Tile与上文Triton的API、类型或调参规则互换。（§1.2.2.3.2–1.2.2.3.4，图9；具体Tile接口后续接续。）
+load/store在array与tile之间搬数据。tile-space坐标选一块区域，具体尾部处理须按所用API和边界策略核对；编程模型图中的补零不应替代接口检查。SIMT与CUDA Tile可在同一应用中按kernel分别使用、操作同一device数据；编译抽象相似也不使CUDA Tile与上文Triton的API、类型或调参规则互换。（§1.2.2.3.2–1.2.2.3.4，图9；具体Tile接口见下节。）
+
+### Tile kernel启动、编译形状与array尺寸
+
+Writing Tile Kernels快照§2.4.1–2.4.5沿上一节分工给出两套入口：Python用`@ct.kernel`及`ct.launch(stream,grid,kernel,args)`，分别传执行流、tile-block网格、kernel对象和参数；C++用`__tile_global__`及`<<<grid,1>>>`。C++第二项1是启动约定，实际线程数由编译器决定。Python的`ct.Constant`与C++模板/`integral_constant`把结构参数嵌入编译，tile shape/dtype因此可特化；array的实际长度仍可在运行时传入。
+
+保存正文声明Tile C++从Toolkit13.3起提供，并限制tile函数与SIMT device函数直接互调；这不是本机安装或其他版本的核验。序言还把Python模块写作`cuda.tiles`，实际示例为`cuda.tile`；本页沿可辨示例解释，不推定两个名字可互换，未编译或导入该包。
+
+### tile-space坐标与部分尾块访问
+
+同快照§2.4.6、图19对array `(10,16)`、tile `(2,4)`得到tile grid `(5,4)`；tile坐标`(1,2)`定位元素行2–3、列8–11，不是元素`[1,2]`。C++先用`tensor_span`给指针附加多维范围，再用`partition_view`定义规整分块；Python `tiled_view`或`ct.load(array,index,shape)`表达同样的tile-space关系。gather/scatter才按逐元素index或pointer tile选地址。
+
+| 访问 | Python保存稿规则 | C++保存稿规则 |
+| --- | --- | --- |
+| 部分越界的tile-space load | 默认`UNDETERMINED`；需`ZERO`才保证填零 | unmasked要求整tile有效；`load_masked`默认填零 |
+| 部分越界的tile-space store | 丢弃越界位置写入 | unmasked要求整tile有效；`store_masked`丢弃越界写入 |
+| 非规则gather/scatter | 默认检查元素边界，读填零/写丢弃；关闭检查后越界未定义 | pointer tile无自动边界检查，需逐元素mask |
+
+**两种语言的tile-space保护都只针对部分尾块；整个tile在array之外仍为未定义行为。** grid应覆盖真实tile区间，空尺寸另由包装层定义处理，不能任意多启动。gather的默认零填充不能搬给`ct.load`；K尾补零能消去无效乘积，softmax的失效score却需按数学语义处理为$-\infty$，见[归约与mask](gpu-kernel-computation-patterns.md)。这些条件来自§2.4.6.1.3–2.4.6.2.1，未代替完整API reference。
 
 ## 4. 布局支持必须沿包装层和设备函数一起看
 
@@ -121,6 +140,7 @@ flowchart LR
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02`，图19补采于2026-09-21 | §2.4.1–2.4.6及图19；保存正文全读，启动/特化、坐标与不同边界规则；模块名差异保留，完整API/编译/运行未核。 |
 | CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文与2026-09-21补采图分开登记 | §1.2.2.3与图8–9；block/tile分工与array/tile语义，完整保存正文已读；未核API reference、编译布局或执行。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`） | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |

@@ -12,7 +12,8 @@ sources:
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/triton
   - raw/repositories/2026-09-21/cuda-samples
-updated: 2026-10-13
+  - raw/articles/2026-09-21/cuda-tile-kernels
+updated: 2026-10-14
 ---
 
 # GPU 算子的计算模式：逐元素、归约与分块矩阵乘
@@ -28,6 +29,10 @@ updated: 2026-10-13
 若输入输出都是 s 字节元素，理想主数据流量为 $3ns$：读取两路、写一路；运算量 n 次加法，所以 $I\approx1/(3s)$ FLOP/Byte。FP32 时约为 $1/12$，意味着在大尺寸、带宽主导的理想模型中，减少数据搬运比减少这一次加法更有意义。小向量仍可能受启动开销限制，不能仅由 I 判定真实瓶颈。
 
 增加 BLOCK_SIZE 会让每个 program 多处理元素，却也可能增加寄存器需求或减少可调度 program 数。它没有“越大越快”的单调关系。
+
+### CUDA Tile的标量分支与逐元素选择
+
+Writing Tile Kernels快照§2.4.7/§2.4.9.4中，scalar `if`控制整个block的逻辑分支；`ct.where`或C++ `select`按布尔tile逐元素选值。这是控制流与数据选择的区别，不把block逻辑路径理解成硬件只用一个线程。具体控制流仍有语言限制，例如tile代码不能在循环内部return；完整规则未核。
 
 ## 2. 归约：一个输出依赖多个输入
 
@@ -65,6 +70,14 @@ RMSNorm 使用行内二阶矩 $s=\sum_jx_j^2/D$，再计算 $y_j=x_jw_j/\sqrt{s+
 
 这些问题在[vLLM 与 SGLang 的 RMSNorm](../../implementation/rmsnorm-cuda-triton-kernels.md)中有具体实现：固定分段的 Triton、整行 Triton、CUB 行归约和显式 warp→block 两级归约。无有效元素的线程也可能必须参加 collective；mask 数据访问与退出线程不是同一操作。
 
+### CUDA Tile归约的输出形状与跨block合并
+
+同快照§2.4.9.2对`(2,4)`沿axis1求和：C++保留轴，得到`(2,1)`；Python默认得到`(2,)`，需`keepdims=True`才保留长度1。按末轴对齐的广播下，逐行统计应保留或补出该轴，不能只核总元素数；局部tile归约也不会自动合并其他blocks。
+
+原§2.4.7.1的单block `tile_sum`循环累加相同tile内位置。令tile宽为B，则输出仍长B，$acc[r]=\sum_k arr[kB+r]$，并非整个array的标量总和；再归约acc才得到标量。这是从原示例下标展开的整理者说明，原代码按完整tiles读取。
+
+跨block的§2.4.10示例先局部求和，再atomic加到共享输出。atomic只保证每个元素的更新，整tile调用不是一次事务，也不构成grid屏障；输出初值和完成后读取的依赖由调用方维护。Python普通atomic默认ACQ_REL/device scope，C++示例显式relaxed/device，省略C++scope时则为system；不能混用不同接口的默认值。保存的Python `block_sum`已坍缩为一行且注释吞掉后续代码，本页只依据正文与可辨C++操作解释机制，未把它当可执行示例。
+
 ## 3. 矩阵乘：用一个数据块支撑多个输出
 
 对 $C=AB$，每个输出 $C_{mn}=\sum_kA_{mk}B_{kn}$。Triton `03-matrix-multiplication.py` 把输出分成 $B_M\times B_N$ 的 tile，每个 program 保留这一 tile 的累加器，并以 $B_K$ 遍历归约维：
@@ -91,6 +104,10 @@ Triton 示例在 M/N 加载坐标上取模，使冗余输出行列读取合法�
 
 FP32 累加器在 epilogue 中可以先应用激活，再转成 FP16 输出。若参考路径先落盘 FP16 再应用激活，两者的舍入位置不同，融合验证必须包含这个差别。
 
+### CUDA Tile的K循环复用同一累加状态
+
+快照§2.4.9.1把A的`(tm,tk)`与B的`(tk,tn)`送入`ct.mma`，累加到FP32 `(tm,tn)`状态，循环覆盖$\lceil K/t_k\rceil$块。A/B加载均使用边界处理，K尾显式ZERO或masked load，C的M/N尾在写回侧保护，具体规则见[Tile接口](tensor-layout-and-kernel-contracts.md#tile-space%E5%9D%90%E6%A0%87%E4%B8%8E%E9%83%A8%E5%88%86%E5%B0%BE%E5%9D%97%E8%AE%BF%E9%97%AE)。Python示例转成C dtype再写回，C++示例使用half输入、FP32输出。FP32 accumulator描述部分和精度，不能单独证明全部乘法为FP32或所有dtype/rank组合均合法；本项未核完整API或测量后端性能。
+
 ## 4. 融合与重排分别减少什么
 
 Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，理想融合路径只需读写 $2MN$ 个元素。比值 $4+2/N$ 是该数据流模型的流量比，不是实际加速保证，更不是对框架原生 fused softmax 的通用比较。流量换成字节时还要乘元素大小。
@@ -113,6 +130,7 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.7–2.4.10保存示例/正文；block控制、归约形状/K循环与逐元素atomic，tile_sum下标为整理者展开，Python坍缩示例未执行。 |
 | FlashAttention（`https://arxiv.org/abs/2205.14135v2`） | arXiv:2205.14135v2 | §4的分块、融合与反向重计算连接；论文§3.1–3.2、附录B/C，未核作者CUDA或性能。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | NVIDIA CUDA Samples（`https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc`） | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | `matrixMul.cu:MatrixMulCUDA` 的共享内存分块和同步。 |

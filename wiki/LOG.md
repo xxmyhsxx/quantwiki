@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Writing Tile Kernels ingest：坐标、归约与提示条件
+
+- 核读snapshot-2026-07-02保存正文1210行/§2.4.1–2.4.12与所有保存示例、图19回查；正文与补采图片现算哈希相符，未取得原HTML、完整API/后端或编译/运行设备。
+- 在[布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md)补入口/结构特化、tile-space与element坐标和两语言不同尾块规则；[计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)补block条件/逐元素选择、归约输出轴、tile_sum逐位置部分和、K累计及逐元素atomic；[配置](implementation/kernel-configuration-and-autotuning.md)补hint与别名/对齐承诺。复用通用归约、GEMM与资源解释，不新建API摘要页。
+- 保留ct.load默认UNDETERMINED与gather零填充差异、C++unmasked和masked、两语tile-space全越界共同限制；保留13.3/模块名文本、Python block_sum坍缩、FP32 accumulator/乘法区别、atomic初值与完成依赖、hint不证TMA/资源/性能和切片对齐条件。tile_sum下标明确为整理者展开。
+- READING/INDEX/SELF/计划同步：183条有依据、46条队列，本轮基线88已处理42条；第18批下一项CUDA Refresher。独立Astra正式review通过，无剩余必修；两处衔接/边界及最终LOG已复读闭环；旧后续指代和A/B加载与C写回边界按建议补清。结构/来源strict检查198知识页、698项登记，0错误/待核；6个受影响Wiki页1326条本地链接strict通过，diff及183/46计数检查通过。提交范围为本项8文件，Obsidian改动保留；未编译、运行模型/设备或测性能。
+
 ## 2026-10-14 · CUDA编程模型 ingest：Tile、cluster与内存范围
 
 - 核读snapshot-2026-07-02保存正文166行/§1.2.1–1.2.3及脚注，README与9正文/图片现算哈希相符；配图/图注回查，图3–6/8–9结构可辨，图2/7透明底部分文字由正文核对；正文快照与2026-09-21图片补采分开登记，未重新取得HTML或整部PDF。
