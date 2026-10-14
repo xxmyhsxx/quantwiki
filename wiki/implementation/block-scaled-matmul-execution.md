@@ -8,6 +8,7 @@ tags:
   - data-format
   - floating-point
 sources:
+  - raw/articles/2026-09-24/tensorrt-llm-quantization
   - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/articles/2026-09-21/flashinfer-mm-fp4
   - raw/articles/2026-09-21/flashinfer-mm-bf16-fp4
@@ -126,7 +127,7 @@ accumulator 先创建为 `[BLOCK_M,BLOCK_N]` FP32，每轮点积加入该状态�
 
 同时，固定 `core.py:dot_scaled` 文档说明了无原生 microscaling 硬件时的实验性软件模拟：通常先上转 BF16 后做 dot，部分后端另有规则。这是语言接口的另一种 lowering，不代表本教程的 descriptor/原生路径已经在 A100 可用，更不表示获得原生低精度算力。A100 上学习本页的编码、K 尺度与布局关系后，应结合实际环境选择解码/转换及普通 FP16/BF16 GEMM，或已有[Marlin W4A16](marlin-batched-w4a16-gemm.md)路径；不同存储格式须先核对转换，不能直接互换。
 
-## 7. FlashInfer 的低精度输入准备与消费
+## 7. 框架的低精度输入准备与消费
 
 ### FP4 量化产物：打包数据、块尺度与全局尺度
 
@@ -166,6 +167,12 @@ FlashInfer 0.6.14 的 `fp4_quantize` 文档快照把 `[M,K]` 输入变成两份�
 非归约维在 A/B 两侧分别是 M/N，归约维都是 K；尺度数据必须与 `scale_major_mode` 声明的存储顺序匹配。`mma_sm` 允许 1 或 2，默认 1，文档描述为每次 MMA 融合的 SM 数；本次没有据此推导 CTA 调度、具体指令或性能。（来源 Parameters 与 Returns。）
 
 文档将更完整的参数语义交给 `gemm_fp8_nt_groupwise`，该引用页不在本条保存正文中。本次尚不能从这个短页确定尺度精确 shape/stride、各粒度对应的索引、尾块/对齐、具体 FP8 编码、accumulator dtype 或硬件分派；也不能把 Triton descriptor 的硬件入口或上一小节 CuTe-DSL 量化的 SM100+ 条件套到此 GEMM。这里确认输入轴、独立尺度、存储模式与输出的接口关系，未核匹配实现或运行。（来源概述与参数转引，snapshot-2026-07-02。）
+
+### TensorRT-LLM的block-FP8尺度与硬件
+
+固定`a6f41514`量化文档的硬件表note区分两种block-FP8 GEMM：SM100/103使用MXFP8 recipe，激活/权重元素均为E4M3、两侧尺度为UE8M0；SM90同用E4M3元素，尺度却为FP32。元素编码相同仍不意味着尺度缓冲区可以原样互换，调用方需连同尺度表示和consumer一起确定格式。
+
+这是另一消费接口的文档条件，没有给出block尺寸、swizzle、shape或自动转换实现，不能套用前文Triton或FlashInfer的物理布局。具体模型/硬件支持及活动KV的独立条件见[部署页](quantized-llm-deployment-backends.md#4.1%20PyTorch%E5%8A%A0%E8%BD%BD%E5%85%A5%E5%8F%A3%E3%80%81KV%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%94%AF%E6%8C%81%E7%9F%A9%E9%98%B5)；这里未核匹配kernel或运行。（Hardware Support Matrix note。）
 
 ### BF16×FP4：权重准备与同后端消费
 
@@ -234,6 +241,8 @@ out = mm_fp4(
 后续固定发布说明 v0.6.17（snapshot-2026-08-20）报告：`mm_fp4` 的 SM120 NVFP4 dense GEMM 同步到 b12x HEAD（#4253）；CuTe-DSL NVFP4 量化修复 host global scale 支持（#4138）。SM12x fused-MoE 的 FP4 数值修复另增加 `input_global_scale`，用于解耦权重与激活的尺度（#3932）。这些是不同入口的版本变化，发布说明没有给修复前后的完整运算式或尺度叠加协议，不能将 MoE 参数补进上文 0.6.14 的量化/GEMM 签名，也不能据修复标题确定旧快照的具体错误范围。本次仅核发布声明，未核对应 PR 或新版 kernel、精度和运行。
 
 ## 来源身份
+
+- Quantization — TensorRT-LLM（`https://nvidia.github.io/TensorRT-LLM/latest/features/quantization.html`），`source-commit-a6f4151497372f14a5261113a12be2b406e9b5fc`，获取于2026-09-24T02:12:20+08:00；完整144行文档中的SM90/SM100/103 block-FP8元素与尺度声明，未核kernel或运行。
 
 - FlashInfer Release v0.6.17（`https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.6.17`），snapshot-2026-08-20，获取于2026-08-20T02:38:02+08:00；Highlights/What's Changed 中 SM12x、FP4 数值/全局尺度及 dense GEMM 条目，未核所指 PR 或运行。
 

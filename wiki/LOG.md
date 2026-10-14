@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · TensorRT-LLM文档 ingest：加载入口与KV条件
+
+- 完整研读固定a6f41514…的144行量化正文及模型/硬件两表，1文件hash/大小匹配；在[部署页](implementation/quantized-llm-deployment-backends.md)补默认PyTorch直接加载、NVFP4 KV离线/FP8主体条件、活动与存储层缓存区别；[块缩放页](implementation/block-scaled-matmul-execution.md)补SM90/SM100/103的FP32/UE8M0尺度声明。旧d567f924引擎路径保留版本，不搬运算法或公共格式解释。
+- 模型/硬件单列Y不推组合，矩阵未标支持不写成永久禁用；producer clone未pin，来源完整a6f与站点fca831e分开。匹配loader/导出器、字段/布局、设备kernel、compression外链和运行未核。
+- READING/SELF/计划同步：164条有依据、65条队列，实际表行已核，本轮基线88已处理23条；下一项PyTorch Distributed/FSDP2。独立Astra正式review通过；按可选建议将块缩放上级标题扩大为框架，明确来源归属。结构/来源strict检查188知识页、665项登记，0错误/待核；4个受影响Wiki页820条本地链接strict通过，diff检查通过。提交范围为本项6文件，Obsidian改动保留；未运行框架、模型或GPU。
+
 ## 2026-10-14 · ModelOpt文档 ingest：校准、搜索与checkpoint消费
 
 - 完整研读固定f2f0d695…的HF PTQ811行与Recipes556行，2文件hash/大小匹配；新增[ModelOpt PTQ](implementation/modelopt-ptq-calibration-and-checkpoint.md)，串起对象/算法、校准尺度/前向覆盖、weight/KV搜索预算和恢复状态、导出及静态FP8 consumer。校准页只补多级尺度，部署/INDEX只补入口。

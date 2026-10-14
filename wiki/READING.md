@@ -11,7 +11,7 @@ updated: 2026-10-14
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **163 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **164 条**；另有 **58 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -123,6 +123,7 @@ updated: 2026-10-14
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| Quantization — TensorRT-LLM（`https://nvidia.github.io/TensorRT-LLM/latest/features/quantization.html`）<br>source-commit-a6f4151497372f14a5261113a12be2b406e9b5fc | 完整144行正文、模型/硬件两表，1文件hash/大小对应；核PyTorch加载与NVFP4 KV离线/FP8主体条件、活动/存储缓存区别、模型/硬件矩阵及block-FP8尺度编码 | [部署配置与消费条件](implementation/quantized-llm-deployment-backends.md#4.1%20PyTorch%E5%8A%A0%E8%BD%BD%E5%85%A5%E5%8F%A3%E3%80%81KV%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%94%AF%E6%8C%81%E7%9F%A9%E9%98%B5)；[硬件相关尺度](implementation/block-scaled-matmul-execution.md#TensorRT-LLM%E7%9A%84block-FP8%E5%B0%BA%E5%BA%A6%E4%B8%8E%E7%A1%AC%E4%BB%B6) | loader/导出器、checkpoint字段/packed布局、设备kernel、compression及支持表外链与运行未核；矩阵单列不证组合，站点fca831e/源码a6f身份分别记录，producer clone未pin，不推定f2f配套 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20TensorRT-LLM%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E5%8A%A0%E8%BD%BD%E5%85%A5%E5%8F%A3%E4%B8%8EKV%E6%9D%A1%E4%BB%B6) |
 | ModelOpt Post-Training Quantization Guides（`https://github.com/NVIDIA/Model-Optimizer/tree/f2f0d6958eb95374d816f3d6256a0be3738231a3`）<br>f2f0d6958eb95374d816f3d6256a0be3738231a3 | 完整HF PTQ811行与Recipes556行，2文件hash/大小对应；核对象/算法/CLI、尺度层级与覆盖、weight/KV搜索预算/恢复、unified/legacy、cast/VLM/FSDP2/追踪；定向核568afb配置入口与静态FP8 Linear参数/加载后准备 | [ModelOpt PTQ与消费](implementation/modelopt-ptq-calibration-and-checkpoint.md)；[多级尺度](theory/calibration-and-range-selection.md) | 无匹配ModelOpt YAML/量化器/solver/导出器或完整外链/支持表核验，无校准/导出/模型/GPU/MLflow实测；mixed-KV stock0.26 export-only，cast范围/回退、vision/smoke与FSDP组合边界保留；README链接修复说明与现稿仍有相对链接不一致，哈希仅核当前稿 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20ModelOpt%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E6%A0%A1%E5%87%86%E3%80%81%E6%90%9C%E7%B4%A2%E4%B8%8Echeckpoint%E6%B6%88%E8%B4%B9) |
 | Ray Serve LLM Architecture（`https://docs.ray.io/en/v2.58.0/serve/llm/architecture/index.html`）<br>Ray 2.58.0/642b00f8c3c5a01cab7c2e2bff8725fa027b23b4 | 完整七份保存正文（26/224/514/29/209/206/263行），7文件hash/大小对应；核ASCII图和十处图注、协议/配置/构造、model/replica路由、placement、Po2/prefix/KV策略、DP gang单位/生命周期与P/D预热 | [分布式服务编排](implementation/distributed-llm-serving-orchestration.md)；阶段/EP/MLA DCP与评测内容复用 | 十张原图未保存；外链指南/API、literalinclude配置、匹配Ray/engine/NIXL代码与运行未核；10%仅文档阈值、原子get/set不证复合选择线性化，head轴比较不排除DCP；storage抽象和预热不证持久化/格式/完成释放 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20Ray%20Serve%E6%96%87%E6%A1%A3%20ingest%E4%B8%8E%E7%AC%AC13%E6%89%B9%E6%94%B6%E5%B0%BE) |
 | NVIDIA Dynamo Architecture and Compatibility Documentation（`https://docs.nvidia.com/dynamo/v1.4.2/knowledge-base/overview`）<br>条目登记v1.4.2，兼容正文含v1.5.0/dev材料 | 完整三份保存正文（220/128/329行）与四张原图，7文件hash/大小对应；核三路径、两阶段元数据/时序、xPyD、N−2/WorkerSet与1.4.2明确依赖行、功能组合和三图测量条件 | [分布式服务编排](implementation/distributed-llm-serving-orchestration.md)；已有阶段/评测内容复用 | 未核匹配代码、详细外链/评分/Planner/KVBM/NIXL完成释放及运行；兼容版本/LoRA状态与分离图模型身份差异保留，不将整个功能表归v1.4.2；README所称source原稿目录不存在，修复前后转换不可核 | [2026-10-14](LOG.md#2026-10-14%20%C2%B7%20Dynamo%E6%96%87%E6%A1%A3%20ingest%EF%BC%9A%E8%B7%AF%E7%94%B1%E3%80%81%E5%AE%B9%E9%87%8F%E4%B8%8EKV%E4%BA%A4%E6%8E%A5) |
@@ -287,9 +288,9 @@ updated: 2026-10-14
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下66个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
+首轮140个条目按实际研读、整合与评审结果逐项移入上表；以下65个条目尚未在当前知识页的来源字段中登记，作为首轮待核队列；这不等于从未读过，也不表示对应知识没有覆盖。每项先核现有正文，再研读、整合或确认无需新增，由独立 Astra 子代理 review 后更新实际范围和承接页，并从本队列移出。已有登记的来源仍按上文58条范围待核记录及各页局部缺口接续，不能自动视为完整 ingest。仅有摘要、入口页或不完整材料时保留限制，不用摘要替代全文或实现分析。
 
-2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；recursive state的完整LSE、子集条件与单位边界已接续；single decode的读取/返回、数值参数及LSE未知边界已接续；single prefill的多query/mask、按head尺度与NVFP4线性读取边界已接续；v0.6.17发布声明的FP4/MoE/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段/并行/placement与KV pull、容量/SLO及原件差异已接续；Sarathi-Serve v3的chunk预算/顺序/历史读取、PP气泡与token级TBT容量/消融已接续；SGLang v2的提示流/fork依赖、Radix/离线DFS、FSM/重新分词、API文本复用及IR/程序评测已接续；nano-vllm固定离线状态、非混合调度/完整历史分块、完整块缓存、Qwen3/采样及TP/Graph边界已接续；vLLM v0.26.0发布声明的配置对象/加载峰值与未展开组合边界已接续；vLLM V1官方架构的进程计数/客户端与配置/prefix/初始化分片已接续；KV管理源码解读文章的容量接纳与CPU空闲队列已对照568afb源码接续，文章图文/版本差异保留；Dynamo三路径、backend-specific交接、xPyD/滚动更新及版本/性能边界已接续；Ray的模型/副本路由、实例放置、DP组及decode侧P/D协调已接续，第13批九项选定来源按实际范围完成；第14批ModelOpt的配置/校准尺度、搜索预算/恢复状态、checkpoint导出与所选vLLM静态FP8消费已接续；下一项为TensorRT-LLM量化文档。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
+2026-10-13 按用户确认恢复逐项 ingest，第10批FlexRound、SignRound、LRQ与LoRA已完成四篇选定论文的研读、整合与独立review；任务增量、选码缩放及各自参数预算已区分，代码/运行未核范围仍保留。第11批PACT、LSQ+与LQ-Nets三篇选定论文的机制、公共连接与独立review已完成；未核实现/运行范围仍保留。第12批FlashAttention原论文v2已完成分块、IO定理与反向重计算的研读整合；FlashAttention-2的累计状态、sequence/warp分工、原件差异及性能口径已接续；固定flash-attention独立普通CUDA前后向已核分派、精度和归约；FlashInfer计时文档已核后端与样本口径；FP4量化产物与尺度参数已接续；FP8块缩放GEMM的NT轴与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端布局、样例全局恢复与分派已接续；recursive state的完整LSE、子集条件与单位边界已接续；single decode的读取/返回、数值参数及LSE未知边界已接续；single prefill的多query/mask、按head尺度与NVFP4线性读取边界已接续；v0.6.17发布声明的FP4/MoE/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段/并行/placement与KV pull、容量/SLO及原件差异已接续；Sarathi-Serve v3的chunk预算/顺序/历史读取、PP气泡与token级TBT容量/消融已接续；SGLang v2的提示流/fork依赖、Radix/离线DFS、FSM/重新分词、API文本复用及IR/程序评测已接续；nano-vllm固定离线状态、非混合调度/完整历史分块、完整块缓存、Qwen3/采样及TP/Graph边界已接续；vLLM v0.26.0发布声明的配置对象/加载峰值与未展开组合边界已接续；vLLM V1官方架构的进程计数/客户端与配置/prefix/初始化分片已接续；KV管理源码解读文章的容量接纳与CPU空闲队列已对照568afb源码接续，文章图文/版本差异保留；Dynamo三路径、backend-specific交接、xPyD/滚动更新及版本/性能边界已接续；Ray的模型/副本路由、实例放置、DP组及decode侧P/D协调已接续，第13批九项选定来源按实际范围完成；第14批ModelOpt的配置/校准尺度、搜索预算/恢复状态、checkpoint导出与所选vLLM静态FP8消费已接续；TensorRT-LLM的PyTorch加载、NVFP4 KV与FP8主体组合、活动/存储缓存及硬件尺度条件已接续；下一项为PyTorch Distributed/FSDP2教程。2026-10-13用户授权持续完成当时剩余88条全队列，逐项保留实际范围并按批检查、提交与push。截至2026-10-12，既定第1–9批已按可读范围完成；实际研读范围与未核分支见上表，批次结果见[收尾记录](LOG.md#2026-10-12%20%C2%B7%20harness%20ingest%20%E4%B8%8EP1%E6%94%B6%E5%B0%BE%E8%AF%84%E5%AE%A1)，排期见 `research/plans/2026-10-11-ingest-batches.md`。后续顺序结合 SELF（`SELF.md#6-下一步建设与维护`）与实际缺口复评。
 
 ### 论文（24条）
 
@@ -320,7 +321,7 @@ updated: 2026-10-14
 | Query Independent Variable Rate Visual Token Coding（`https://arxiv.org/abs/2610.00204v1`） | `arXiv:2610.00204v1` |
 | CoVisco: Codec-Native Vision Encoder with Native Token Compression for Unified Image-Video Understanding（`https://arxiv.org/abs/2609.39924v1`） | `arXiv:2609.39924v1` |
 
-### 文章与文档（33条）
+### 文章与文档（32条）
 
 | 来源 | 固定版本或收录快照 |
 | --- | --- |
@@ -354,7 +355,6 @@ updated: 2026-10-14
 | GPT-2 (120M) Transformer Block challenge announcement（`https://x.com/LeetGPU/status/2028270254863090114`） | `public-index-post-snapshot-2026-09-24` |
 | System for AI — Microsoft AI-System Course（`https://microsoft.github.io/AI-System/`） | `repository-commit-2a974e1a483eb5c2f714ba5001ac33d8c58998d5` |
 | PyTorch Distributed Tutorials and FSDP2（`https://docs.pytorch.org/tutorials/distributed.html`） | `PyTorch Tutorials 2.14.0+cu130; FSDP tutorial last verified 2024-11-05` |
-| Quantization — TensorRT-LLM（`https://nvidia.github.io/TensorRT-LLM/latest/features/quantization.html`） | `source-commit-a6f4151497372f14a5261113a12be2b406e9b5fc` |
 | vla.simd model bundle（`https://huggingface.co/collections/khanhnd61/vlasimd-model-bundle`） | `2026-09-28 page snapshot` |
 | TensorRT Edge-LLM: Visual-Token Pruning (DART) and Official Support Matrix（`https://nvidia.github.io/TensorRT-Edge-LLM/user_guide/features/visual-token-pruning.html`） | `0.11.0; docs-build-e649dadcbbf049fa4caf2f09f3a3275ca56751db; snapshot-2026-10-05` |
 

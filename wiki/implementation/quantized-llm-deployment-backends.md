@@ -7,6 +7,7 @@ tags:
   - data-format
   - serving
 sources:
+  - raw/articles/2026-09-24/tensorrt-llm-quantization
   - raw/articles/2026-09-24/vllm-v1-architecture
   - raw/articles/2026-09-21/vllm-release-notes
   - raw/repositories/2026-09-21/vllm
@@ -22,7 +23,7 @@ updated: 2026-10-14
 
 量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。同一个算法名在不同框架里可能对应不同内核，同一位宽标签在不同框架里可能对应不同的量化粒度。本页把这条链路拆开，并记录多个主流推理框架在固定快照下实际暴露的量化支持面。
 
-本页依据 SGLang（快照 `2f730e29`）、vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。各框架按各自固定快照核对；本次另补vLLM v0.26.0固定发布说明中的配置声明，没有构建、导出或运行任何框架。
+本页依据 SGLang（快照 `2f730e29`）、vLLM（快照 `568afb3a`）、TensorRT-LLM（快照 `d567f924`）、MLC-LLM（快照 `6474f7db`）、llama.cpp（快照 `b820cc8e`）的官方代码或文档，以及 [QServe](../methods/qserve.md) 论文与实现中对运行时要求的描述。各框架按各自固定快照核对；另补vLLM v0.26.0发布声明及TensorRT-LLM量化文档§4.1的`a6f41514`版本。这里核文档与注明的源码，没有构建、导出或运行任何框架。
 
 部署时还需核对 [张量并行的分片与量化元数据](tensor-parallel-quantization.md)。后端能够加载后，按 [模型质量协议](model-quality-evaluation.md)与 [服务性能协议](serving-performance-evaluation.md)分别确认质量和收益，不能只用“支持该格式”作为完成依据。
 
@@ -56,7 +57,7 @@ ModelOpt的recipe、校准尺度、搜索恢复状态与导出checkpoint各有�
 | llama.cpp | GGUF，含 k-quant／i-quant 与 MXFP4／NVFP4 块 | 由块结构与层间混合决定 | 单文件加载，按张量类型分派 |
 | SGLang | 框架注册的量化配置，如 GPTQ、W8A8、QoQ | 位宽、分组、对称性及设备约束按具体配置 | 方法配置 → 参数加载/重排 → 内核 |
 | vLLM | 框架内定义的多种量化配置 | 由方法名决定，含 W4A16、W8A8、FP8、MXFP4 等 | 方法名或自动探测 |
-| TensorRT-LLM | 所选文档的 checkpoint → 引擎流程 | qformat 指定，含 FP8、INT8 SQ、INT4 AWQ、W4A8 | 此流程经 `trtllm-build` 编译 |
+| TensorRT-LLM | ModelOpt checkpoint；旧版文档另有 checkpoint → 引擎流程 | 格式、W/A/KV组合与设备按对应版本核对 | `a6f41514`默认PyTorch后端直接加载；`d567f924`所述引擎路径经`trtllm-build` |
 | MLC-LLM | 编译产物，量化模式写在编译配置里 | 权重 q3f16／q4f16／q4f16_awq，W/A 为 FP8 | 先编译再运行，可插入校准步骤 |
 
 ## 3. vLLM：方法名清单
@@ -95,7 +96,7 @@ AWQ 的官方代码、格式转换与内核链已在[既有实现页](awq-implem
 
 发布说明另报告限制Marlin的FP4 MoE权重重排峰值及NVFP4 MoE权重加载峰值（Quantization，#47851/#46276）。这针对加载和布局准备阶段，不能当作运行常驻显存或workspace结论，也不能推广到AWQ整数W4A16。已有[AWQ专家链](w4a16-moe-expert-execution.md)选择非对称 `kU4/G128`，逐专家调用 `awq_marlin_repack`；它与这里的浮点FP4/NVFP4分别保留证据。发布条目未给峰值字节数、模型规模或具体限制机制。
 
-## 4. TensorRT-LLM：量化格式与自动搜索
+## 4. TensorRT-LLM：量化配置与消费条件
 
 TensorRT-LLM 通过 `examples/quantization/quantize.py` 的 `--qformat` 指定方案（快照 `d567f924` 的文档），各选项语义为：
 
@@ -115,6 +116,23 @@ TensorRT-LLM 通过 `examples/quantization/quantize.py` 的 `--qformat` 指定�
 KV cache 通过独立的 `--kv_cache_dtype` 选择 `int8`、`fp8` 或不量化，说明 KV 位宽在部署里是与权重、激活并列的第三个自由度——与 [混合精度分配](../theory/mixed-precision-allocation.md) 中「对象不同、预算不同」的判断一致。
 
 框架还提供量化方案的自动搜索：`--autoq_format` 在 `fp8`、`int4_awq`、`w4a8_awq`、`int8_sq` 中挑选，`--auto_quantize_bits` 给出平均权重位宽的约束。文档说明 `int8_sq` 与 `fp8` 不能同时使用，且实际选择由优化问题求解给出。这相当于把 [逐层精度分配](../theory/mixed-precision-allocation.md) 的做法内置进框架，只是其候选集合与代价模型由框架固定。
+
+### 4.1 PyTorch加载入口、KV配置与支持矩阵
+
+固定`a6f41514`的量化文档以默认 **PyTorch backend** 的`LLM(model=...)`加载ModelOpt预量化checkpoint。上一节`d567f924`的量化脚本和引擎构建属于另一固定文档流程，不能写成这个直接调用之前统一必需的步骤；短示例也没有展开加载器内部编译或布局准备。Producer的校准/导出职责见[ModelOpt PTQ](modelopt-ptq-calibration-and-checkpoint.md)，消费端是否接受某个组合仍需按本版本核对。（Usage、Running Pre-quantized Models。）
+
+| KV配置 | 本版本文档要求 | 判断边界 |
+| --- | --- | --- |
+| `KvCacheConfig(dtype='fp8')` | 即使checkpoint未默认启用FP8 KV，也可手动设置 | 文中未给这种入口的尺度默认值或校准替代机制 |
+| `KvCacheConfig(dtype='nvfp4')` | 先用ModelOpt离线生成对应checkpoint，且当前只支持FP8 **权重/激活主体** | NVFP4 KV不能据格式名字推广到任意NVFP4或混合精度body |
+
+`dtype='nvfp4'`配置的是GPU上的 **active KV cache**。文档另将只在Host/Disk存储Pages时用NVFP4压缩、GPU活动缓存保持普通runtime dtype的功能指向KV Cache Compression；该外链未保存，因此这里不推导转移、恢复流程或收益。数值量化对象及粒度复用[KV基础](../theory/kv-cache-quantization-objects-and-granularity.md)。（NVFP4 KV Cache。）
+
+模型支持矩阵与硬件支持矩阵约束不同，需同时核对。保存硬件表给SM100/103的NVFP4 KV标Y，SM120未标支持；Ampere的FP8 KV标Y，三个FP8 GEMM粒度列却均未标支持，说明缓存dtype不能代替矩阵乘能力。SM90与SM100/103的block-FP8还采用不同尺度编码，见[块缩放接口](block-scaled-matmul-execution.md#TensorRT-LLM%E7%9A%84block-FP8%E5%B0%BA%E5%BA%A6%E4%B8%8E%E7%A1%AC%E4%BB%B6)。同为Blackwell或FP8的标签不足以确定可消费的数据。（Hardware Support Matrix及其note。）
+
+这些表的各列单独标Y，不证明任意联合配置；`.`未给独立图例，本文仅解释为“该保存矩阵未标支持”。例如recipe目录/硬件表列出W4A8 GPTQ，但模型表没有对应标Y的模型，不能据此补出一个支持实例。多模态表默认vision component为FP16，方法支持由language component决定，不表示整模型统一低精度。直接示例的FP8模型名没有明确per-tensor/rowwise/block粒度，也不能用名字补表项。（Model Support Matrix及note。）
+
+本条完整核读144行正文和两份矩阵，来源README登记完整`a6f4151497372f14a5261113a12be2b406e9b5fc`；站点短标识`fca831e`另行保留。示例clone没有pin ModelOpt producer，不能自行认定与本Wiki所读`f2f0d695`配套。匹配loader、checkpoint字段、GEMM/attention kernel、外链及实际运行未核。
 
 ## 5. MLC-LLM：把校准变成独立步骤
 
@@ -153,7 +171,7 @@ v0.26.0发布说明列出 `speculative_config` 独立的 `kv_cache_dtype`，以�
 1. 明确对象与场景：权重、激活、KV cache 分别用什么位宽，目标是显存、吞吐还是延迟；
 2. 选择量化方法与校准数据，记录版本、样本与掩码；
 3. 确认目标框架接受的格式名，并核对位宽、粒度、对称性是否在该框架的支持范围内；
-4. 若框架需要编译（TensorRT-LLM、MLC-LLM），把量化参数与编译配置一并保存；
+4. 若使用引擎构建或编译路径，把量化参数与编译配置一并保存；
 5. 在同一硬件、批量、序列长度与测量口径下比较基线与量化版本，并单独报告 KV 与权重部分的变化。
 
 第 3 步最容易出错：方法支持与内核支持是两件事，格式可加载也不等于走的是高效路径。
@@ -168,6 +186,7 @@ v0.26.0发布说明列出 `speculative_config` 独立的 `kv_cache_dtype`，以�
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| Quantization — TensorRT-LLM（`https://nvidia.github.io/TensorRT-LLM/latest/features/quantization.html`） | `source-commit-a6f4151497372f14a5261113a12be2b406e9b5fc`；获取于2026-09-24T02:12:20+08:00 | 正文144行全文；默认PyTorch加载、W/A/KV条件、模型/硬件矩阵及尺度编码；匹配实现、外链和运行未核。 |
 | vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`） | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad`；获取于2026-09-24T02:12:20+08:00 | Class Hierarchy的统一配置、prefix及初始化分片理由；实际加载后处理/兼容分支另按568afb源码核对。 |
 | vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | — |
 | NVIDIA/TensorRT-LLM（`https://github.com/NVIDIA/TensorRT-LLM/tree/d567f924b729dc81465f2d2f762cabb893e28602`） | `d567f924b729dc81465f2d2f762cabb893e28602` | — |
