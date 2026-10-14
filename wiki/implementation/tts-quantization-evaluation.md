@@ -18,7 +18,7 @@ updated: 2026-10-14
 
 本页研读完整实验正文与限制，静态核对官方快照的 RTN、激活模拟、校准 PTQ、ONNX 改写和 bootstrap 实现；未生成语音、运行真实低比特算子或复现模型成绩。通用前置见 [混合精度分配](../theory/mixed-precision-allocation.md)、[模型质量评测](model-quality-evaluation.md)和 [缩放到执行](quantized-matmul-scaling-execution.md)。
 
-语音code和波形恢复的另一种计算链见[Thinker-Talker与流式生成](../fundamentals/model/multimodal-perception-and-streaming-speech-generation.md)。它说明输入/输出表示和窗口依赖，具体量化收益仍需本页这类配对评测。
+语音code和波形恢复的另一种计算链见[Thinker-Talker与流式生成](../fundamentals/model/multimodal-perception-and-streaming-speech-generation.md)。它说明输入/输出表示和窗口依赖，具体量化收益仍需本页这类配对评测。[Omni官方调用与低显存条件](qwen25-omni-multimodal-input-and-audio-output.md)提供媒体、组件、求解器和卸载的核对入口，比较前需先确定这些条件是否同时改变。
 
 ## 1. 比较单位是匹配基线的配置，不是模型名与位宽
 

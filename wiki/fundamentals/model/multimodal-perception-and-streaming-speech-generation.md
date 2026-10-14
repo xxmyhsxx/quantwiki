@@ -17,7 +17,7 @@ updated: 2026-10-14
 
 图文token、merger与量化对象见[视觉token基础](vision-language-model-tokens-and-quantization.md)，自回归概率与KV见[Transformer基础](transformer-autoregressive-inference.md)。本页没有运行模型；组件敏感性和部署收益需按[TTS量化评测](../../implementation/tts-quantization-evaluation.md)的独立条件判断。
 
-从报告设计进入调用接口时，[固定 transformers 执行](../../implementation/qwen25-omni-model-generation-execution.md)承接有效媒体长度、Thinker/Talker 状态和 Token2Wav 返回时序。
+从报告设计进入调用接口时，[固定 transformers 执行](../../implementation/qwen25-omni-model-generation-execution.md)承接有效媒体长度、Thinker/Talker 状态和 Token2Wav 返回时序；[官方仓库调用链](../../implementation/qwen25-omni-multimodal-input-and-audio-output.md)承接媒体工具、demo消费和专用低显存条件，两份版本分别核对。
 
 ## 1. 编码表示、语音code与波形是不同对象
 

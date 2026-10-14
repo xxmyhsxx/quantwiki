@@ -17,6 +17,8 @@ updated: 2026-10-14
 
 模型原理与训练证据由[Thinker-Talker基础](../fundamentals/model/multimodal-perception-and-streaming-speech-generation.md)承接。这里核对processor、模型forward、生成包装器与Token2Wav的所选路径，没有取得发布checkpoint的实际配置、chat template、speaker参数或权重，也没有运行模型、attention后端或语音评测。
 
+媒体抽取、demo消费和专用低显存调用见[官方仓库调用链](qwen25-omni-multimodal-input-and-audio-output.md)；其依赖版本与本页快照分别核对。
+
 ## 1. 模态占位长度由有效mel和视觉网格决定
 
 `Qwen2_5OmniProcessor.__call__`要求提供`text`。对话先由chat template整理出文字和媒体标记，音频数组、图像与视频另交相应processor；最终输出的`input_ids[B,S]`包含普通文字、控制标记和展开后的模态占位。这里$B$是语言batch，$S$是展开后的语言序列长度，媒体条目数可以与$B$不同。通用`ProcessorMixin.apply_chat_template`在没有模板时直接报错；Omni覆盖方法还检查特定system prompt并给出语音模式警告，警告本身不验证其他提示能否工作。（`processing_qwen2_5_omni.py`的`__call__`、`replace_multimodal_special_tokens`、`apply_chat_template`；`processing_utils.py`的`apply_chat_template`。）

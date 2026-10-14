@@ -270,6 +270,7 @@ sources: []
 | [transformers Qwen3：Q/K归一化、缓存与路由](implementation/transformers-qwen3-cache-and-moe-execution.md) | 当前输入怎样更新KV、经过逐head norm和专家子批次，词表输出与模板由谁负责。 |
 | [Qwen2.5-VL：视觉输入、三轴位置与缓存](implementation/qwen25-vl-visual-input-and-position-execution.md) | 像素/grid与占位如何配对，窗口和merger怎样恢复顺序，时间ID与prefill偏移如何接续。 |
 | [Qwen2.5-Omni：模型生成与完整波形](implementation/qwen25-omni-model-generation-execution.md) | 有效mel/音画位置、Thinker与Talker状态、DiT预算和一次波形返回如何衔接。 |
+| [Qwen2.5-Omni：媒体准备与低显存调用](implementation/qwen25-omni-multimodal-input-and-audio-output.md) | 媒体采样、二元/三元返回、code到mel的重叠裁切以及卸载/精度/求解器条件如何配合。 |
 | [分布式 LLM 服务编排：路由、副本与 KV 交接](implementation/distributed-llm-serving-orchestration.md) | 引擎外的请求目标、阶段容量、缓存可见性与实际传输怎样衔接，版本混用有什么边界。 |
 | [vLLM 推理执行：从 token 调度到变长批次](implementation/vllm-inference-execution.md) | 请求如何分配 token 与 KV 空间，再变成算子的紧凑输入。 |
 | [vLLM 算子设计：Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) | 分页状态与元数据如何进入 Attention，设备端怎样复用、归约并适配图执行。 |

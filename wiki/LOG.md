@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Qwen2.5-Omni仓库 ingest：媒体准备与低显存返回
+
+- 核读固定官方仓库的媒体工具、Web demo与四cookbook代表调用、两个低显存适配demo及本地模型的总生成/Token2Wav分块/Euler/dtype/卸载，README只取使用/量化/服务条件；ZIP SHA/CRC与全部24展开文件逐字节对应，不称全网络或训练审计。
+- 新建[媒体准备与低显存调用](implementation/qwen25-omni-multimodal-input-and-audio-output.md)，沿模板/媒体→外部processor→返回消费→低显存状态与块裁切解释；基础、独立transformers执行与TTS页补用途入口，INDEX同步，不重复模型主链与报告成绩。
+- 保留数组16kHz前提/文件重采样、采样帧数分支与FPS kwargs、两个低显存demo未显式传processor音轨flag；二元/三元返回、48code/24左12右与R mel/vocoder20mel/240样本、内部yield与一次完整wave、预分配与状态驻留分别说明。Thinker低比特、Token2Wav half/Euler及卸载共同改变，README WER/显存不证明纯位宽效应；4.52.3/0.0.4/保存0.0.8与另存fork分别登记，发布实体与运行未核。
+- READING/SELF/计划同步：174条有依据、55条队列，本轮基线88已处理33条；下一项官方Qwen3-VL媒体与微调路径。独立Astra正式review通过；WER改按原表数值引用，未补猜表头单位，已复读关闭。结构/来源strict检查196知识页、687项登记，0错误/待核；7个受影响Wiki页1287条本地链接strict通过，diff与新页EOF检查通过。提交范围为本项9文件，Obsidian改动保留；未运行模型、语音、量化、GPU或性能实验。
+
 ## 2026-10-14 · transformers Qwen实现：媒体输入、缓存与生成状态
 
 - 定向静态核读归档hf-4.53.2的Qwen2.5-VL/Omni/Qwen3稠密与MoE主线，processor/config、媒体编码与注入、位置、缓存、生成包装及必要loss/适配；zip SHA/CRC通过，4775成员身份与32选中文件字节对应，未称全框架源码审计。
