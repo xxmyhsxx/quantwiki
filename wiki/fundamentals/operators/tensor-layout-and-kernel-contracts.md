@@ -12,6 +12,7 @@ sources:
   - raw/repositories/2026-09-22/kernels
   - raw/articles/2026-09-21/cuda-programming-model
   - raw/articles/2026-09-21/cuda-tile-kernels
+  - raw/articles/2026-09-21/nvidia-cuda-programming-model
 updated: 2026-10-14
 ---
 
@@ -68,6 +69,8 @@ $$i=pB+r,\qquad 0\le r<B,\qquad p<\lceil n/B\rceil.$$
 教学例：n=10、B=8 时启动两个 program，覆盖逻辑候选 `0…7` 与 `8…15`。最后一个只有 8、9 有效。只给 store 加 mask 会防止越界写，却不能修复已经发生的越界读，因此读取侧也要保护。
 
 对归约，失效位置不仅不能访问内存，还必须有合适的填充值；求和填 0、最大值填 $-\infty$ 的原因见 [归约与分块](gpu-kernel-computation-patterns.md)。
+
+CUDA Refresher的MatAdd用$i=\mathrm{blockIdx.x}\,\mathrm{blockDim.x}+\mathrm{threadIdx.x}$、$j$沿y维，访问C行优先`MatA[i][j]`，以`i<N && j<N`同时保护读写。按地址$iN+j$展开，在其`(16,16)`block的固定y、16-lane x段内，相邻有效lane相差N个float；一个warp跨两段，段间跳转不同。二维下标方便表达不等于地址已合并，仍须核线程线性化与stride。这是整理者地址观察，不是加法错误或性能测量；N定义、分配与host包装在保存示例中省略。
 
 ### 同一张量可以采用不同工作划分
 
@@ -140,6 +143,7 @@ flowchart LR
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02` | MatAdd二维映射/guard及保存全文；每16-lane段地址步长为整理者按C行优先推导，未运行，省略host示例不作完整程序。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02`，图19补采于2026-09-21 | §2.4.1–2.4.6及图19；保存正文全读，启动/特化、坐标与不同边界规则；模块名差异保留，完整API/编译/运行未核。 |
 | CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文与2026-09-21补采图分开登记 | §1.2.2.3与图8–9；block/tile分工与array/tile语义，完整保存正文已读；未核API reference、编译布局或执行。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |

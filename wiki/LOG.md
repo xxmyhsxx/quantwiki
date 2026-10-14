@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · CUDA Refresher ingest：硬件版本与二维地址
+
+- 核读snapshot-2026-07-02保存全文103行与4图/图注，5正文/图片现算哈希相符；正文与2026-09-21补采图区分，未取原HTML/外链deviceQuery或完整作者示例。
+- [GPU基础](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)补CC硬件功能版本与Toolkit/API条件的职责；[布局接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md)补MatAdd的C行优先地址/每16-lane x段步长，明确warp跨段、guard与省略host。host/device、线程和存储主体已充分覆盖，不重复重写，地址观察标为整理者推导。
+- 不将二维launch当合并访存证明、图3当线程永久绑定core、图4的A10040GB数字当全部型号或实测；原三次拷贝流程不覆盖驻留数据/UM/mapped路径，沿既有边界保留，不添加无增量规格表。
+- READING/INDEX/SELF/计划同步：184条有依据、45条队列，本轮基线88已处理43条；第18批下一项Using Shared Memory。独立Astra正式review通过，无剩余必修，新增解释与最终LOG已复读闭环；结构/来源strict检查198知识页、700项登记，0错误/待核；5个受影响Wiki页1323条本地链接strict通过，diff及184/45计数检查通过。提交范围为本项7文件，Obsidian改动保留；未编译、运行模型/设备或测性能。
+
 ## 2026-10-14 · Writing Tile Kernels ingest：坐标、归约与提示条件
 
 - 核读snapshot-2026-07-02保存正文1210行/§2.4.1–2.4.12与所有保存示例、图19回查；正文与补采图片现算哈希相符，未取得原HTML、完整API/后端或编译/运行设备。

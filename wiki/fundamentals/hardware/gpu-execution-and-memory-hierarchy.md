@@ -9,6 +9,7 @@ sources:
   - raw/repositories/2026-09-22/kernel-skills
   - raw/articles/2026-09-21/cuda-simt-kernels
   - raw/articles/2026-09-21/cuda-programming-model
+  - raw/articles/2026-09-21/nvidia-cuda-programming-model
   - raw/repositories/2026-09-21/cuda-samples
   - raw/repositories/2026-09-21/cs336-lectures
   - raw/papers/2026-09-21/marlin
@@ -49,6 +50,10 @@ SIMT 允许每线程维护自己的状态和控制流。同一 warp 的分歧路
 NVIDIA `matrixMul.cu:MatrixMulCUDA` 在共享 tile 写好后做一次 `__syncthreads()`，读完后再做一次，分别保证消费者可以开始读和生产者可以覆盖下一块。对普通块内屏障，所有需要参与的线程应按一致顺序到达；不能把屏障只放在部分线程满足的 `if (i<n)` 中。尾部线程可为加载填中性值，再一起参与屏障。
 
 `__syncthreads()` 只同步该 block，不能同步整个 grid；原子加提供相应地址的原子更新，也不是整个计算阶段已经完成的屏障。跨块阶段可以拆成有序的 kernel 调用，或使用满足前提的专门协作机制。核对这些依赖时要同时看共享缓冲生命周期，而不只是查找有没有屏障函数。
+
+### Compute capability标记硬件特性
+
+CUDA Refresher快照“Compute capability”用X.Y标记GPU支持的硬件规格与功能，程序可据此判断当前设备有哪些指令/特性。它与CUDA Toolkit/API版本分别核对：下节CC≥9.0是cluster硬件门槛，[Tile接口](../operators/tensor-layout-and-kernel-contracts.md)的13.3则是所选文档声明的软件版本条件，不能用一个版本号替代另一层支持检查。
 
 ### cluster内的通信与同步有硬件和启动条件
 
@@ -119,6 +124,7 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02`，配图补采于2026-09-21 | 完整保存正文与4图；CC硬件版本及主体覆盖核对，不将图示当线程永久绑定或全部A100规格，不核deviceQuery/设备运行。 |
 | CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文取得于2026-07-02、配图补采于2026-09-21 | §1.2.1–1.2.3保存正文；cluster/GPC、地址与内存范围，图3–6/8–9与图注回查；高级API/系统分支/设备运行未核。 |
 | stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |
 | MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`） | `arXiv:2408.11743v1` | — |
