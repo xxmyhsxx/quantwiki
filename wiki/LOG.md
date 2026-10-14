@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Transformer原论文 ingest：结构与位置范围
+
+- 核读v7主文主干与必要实验，精读§3–5/§6.1–6.2和有效ms.tex入口，图1–2、表1–3/PE与关键PDF回查；PDF15页及源包hash相符，23成员可读、11保留展开文件逐字节对应，未读全部可视化heads或编译/运行作者实现。
+- 在[既有Transformer基础](fundamentals/model/transformer-autoregressive-inference.md)补encoder–decoder三attention、cross Q/K/V与不等长、目标右移、post-LN/dropout/ReLU及base参数；相加sinusoid/共享embedding与QK RoPE分开，复用共同attention/mask/KV基础，不建摘要页或重复FA理论。
+- 保留原缩放的独立零均值单位方差假设、层内O1顺序与自由生成区别，PE/heads的dev消融与未证外推、label smoothing指标反例；test checkpoint平均/beam/长度条件、EN-FR表/文41.8/41.0和FLOPs估算分别说明。原件身份、整理者形状/一步方差展开与运行证据分开。
+- READING/INDEX/SELF/计划同步：176条有依据、53条队列，本轮基线88已处理35条；下一项Formal Algorithms。独立Astra正式review通过，无必修；base8头、共享embedding及heads消融条件已复读确认。结构/来源strict检查197知识页、689项登记，0错误/待核；4个受影响Wiki页1294条本地链接strict通过，diff检查通过。提交范围为本项6文件，Obsidian改动保留；未运行作者代码、模型、训练或设备性能实验。
+
 ## 2026-10-14 · Qwen3-VL仓库 ingest：媒体与微调样本边界
 
 - 核读工具、必要HF/vLLM/web与视频notebook、微调数据/位置/collator/attention/参数/保存与pack和三份配方；root ZIP SHA/CRC及154展开文件逐字节对应。源码保存全核不表示所有评测/cookbooks/网络已读，匹配4.57外部模型未取得。

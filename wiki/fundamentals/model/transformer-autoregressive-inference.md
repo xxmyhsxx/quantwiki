@@ -6,6 +6,7 @@ tags:
   - inference
   - kv-cache
 sources:
+  - raw/papers/2026-09-21/attention-is-all-you-need
   - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/llama-3
@@ -44,6 +45,37 @@ X'=H+\bigl[\operatorname{SiLU}(N(H)W_g)\odot N(H)W_u\bigr]W_d.$$
 
 vLLM `LlamaDecoderLayer.forward` 将残差保存在另一条张量流中，交给 RMSNorm 融合相加；源码返回两条流，不表示数学图没有残差。舍入顺序与融合语义见 [RMSNorm 实现](../../implementation/rmsnorm-cuda-triton-kernels.md)。
 
+### 1.1 原始encoder–decoder的三类attention
+
+《Attention Is All You Need》v7研究序列到序列任务：encoder将输入序列编码为上下文表示，decoder用已知目标前缀逐个生成输出。原base的encoder和decoder各6层，隐藏宽度$D=512$；encoder每层依次做self-attention与FFN，decoder每层依次做因果self-attention、cross-attention与FFN。（§3.1，图1。）
+
+| 子层 | Q的来源 | K/V的来源 | 可见位置 |
+| --- | --- | --- | --- |
+| Encoder self-attention | 进入该子层的encoder状态 | 同一状态 | 全部输入位置 |
+| Decoder self-attention | 进入该子层的decoder状态 | 同一状态 | 当前及之前的decoder输入位置 |
+| Encoder–decoder cross-attention | 进入该子层的decoder状态 | encoder最终输出 | 全部source位置 |
+
+这里的Q/K/V仍由各自可学习投影得到，不把原始token ID直接当向量。设decoder状态有$M$行、encoder上下文有$N$行，单头Q为$[M,d_k]$、K为$[N,d_k]$、V为$[N,d_v]$；cross-attention输出为$[M,d_v]$，输出位置数跟随query而不是source长度。两段不必等长，完整尺寸关系见[注意力的query与上下文](../../theory/attention-quantization-error-propagation.md)。这些形状是按原式1展开的整理者说明。（§3.2.1–3.2.3。）
+
+decoder的目标embedding右移一位，再由因果mask排除未来输入位置，两者一起避免将当前预测目标泄露给该位置。训练可提供真实前缀，生成则接回自己的输出，具体时序见第3节。cross-attention可以读完整source，与禁止未来target是不同约束。
+
+原模型每个子层采用$\operatorname{LayerNorm}(X+\operatorname{Sublayer}(X))$，即post-LN；训练时先对子层输出dropout，再加残差和归一化。FFN为$\max(0,XW_1+b_1)W_2+b_2$，同层各位置共享参数，层间不同；base中间宽度为2048。base使用8个独立Q/K/V heads，$d_k=d_v=64$，拼接后投影回512维。它与上图Llama的pre-RMSNorm、SwiGLU和GQA分别保留，不能把这些现代选择归给原论文。（§3.1–3.3、§5.4。）
+
+### 1.2 相加的sinusoidal位置与Q/K旋转位置不同
+
+原模型在encoder和decoder入口把位置向量加到embedding；embedding先乘$\sqrt D$，位置向量宽度同为$D$。所选原模型还共享输入/输出embedding与pre-softmax线性权重，这是其模型约定，不是所有架构的要求。对位置$p$和零基pair索引$i=0,\ldots,D/2-1$，
+
+$$PE_{p,2i}=\sin\!\left(\frac{p}{10000^{2i/D}}\right),\qquad
+PE_{p,2i+1}=\cos\!\left(\frac{p}{10000^{2i/D}}\right).$$
+
+每对通道采用一种频率，同一pair中的sin/cos共同编码位置。固定偏移可由pair内线性变换表示，是作者解释相对位置学习的设计动机；它不证明任意长度外推仍保持质量。这里改变的是入口表示；第2节的RoPE在投影后旋转Q/K，V不旋转，作用对象与步骤不同。（§3.4–3.5。）
+
+### 1.3 原模型的翻译与位置证据条件
+
+v7表3(E)在EN-DE newstest2013、无checkpoint平均的base消融中，sinusoidal/learned位置的BLEU为25.8/25.7、word-piece PPL均为4.92。这是该任务和配置的有限对照，不能推定任意位置机制或外推长度等价。同表(A)改变heads并相应调整每头维度以保持总计算，1/8/32 heads的BLEU为24.9/25.8/25.4；更多heads不自动提高该任务质量。原训练还用label smoothing 0.1，作者报告其PPL变差而accuracy/BLEU改善；训练目标和生成任务指标因此要分别看。（§5.4、§6.2、表3。）
+
+表2的WMT2014 test结果采用base最后5个、big最后20个checkpoint平均，beam=4、length penalty=0.6，最大输出长度为输入长度加50并可提前结束；big EN-DE为28.4 BLEU，EN-FR表2/摘要为41.8而§6.1正文为41.0，同版原件仍有此差异。训练使用8张P100，表列训练FLOPs由时间、GPU数和估计持续算力换算，不能作为当前kernel或量化服务的实测收益。（§5.2、§6.1；质量口径见[模型质量评测](../../implementation/model-quality-evaluation.md)。）
+
 ## 2. Q、K、V 的形状与共享关系
 
 设 query head 数为 $H_q$，KV head 数为 $H_{kv}$，每头维度为 $d$。投影后：
@@ -61,6 +93,8 @@ vLLM `LlamaDecoderLayer.forward` 将残差保存在另一条张量流中，交�
 $$a_{t,j,h}=\operatorname{softmax}_{j\le t}
 \left(\frac{\widetilde Q_{t,h}\widetilde K_{j,g(h)}^\top}{\sqrt d}\right),\qquad
 O_{t,h}=\sum_{j\le t}a_{t,j,h}V_{j,g(h)}.$$
+
+原论文用一个假设例说明$1/\sqrt d$的动机：若Q/K分量相互独立、均值0、方差1，点积方差为$d$，缩放后为1。后一步是整理者由原脚注展开；真实训练后分布未被假定为独立标准变量，该缩放也不保证任意输入都不使softmax进入小梯度区。（§3.2.1，脚注4。）
 
 因果 mask 在 softmax **之前**排除未来位置，否则未来值已经影响归一化分母。拼接各 query head 后，$[T,H_qd]$ 经过输出投影回到 $[T,D]$。`LlamaAttention.forward` 的 QKV split → rotary → attention → o_proj 对应这条链；实现通常融合计算，不要求物化完整注意力矩阵。[FlashAttention](../../theory/flash-attention-tiling-and-recomputation.md)解释如何精确分块并在训练反向重算概率，分页与在线执行见 [vLLM Attention](../../implementation/vllm-attention-operator-design.md)；一次调用的临时矩阵与跨轮KV cache分别计账。
 
@@ -98,6 +132,8 @@ Qwen3 v1的稠密语言模型沿GQA、SwiGLU、RoPE及pre-RMSNorm结构，移除
 输入有 $P$ 个 token 时，prefill 同时计算这些位置。因果 mask 使它们只能看各自前缀；最后位置的 logits 用来选择第一个生成 token。随后把这个新 token 输入模型，利用已有 KV 计算下一轮 logits。**选择一个 token 与把它送入模型形成 KV 是相邻的两个步骤**，不能把“已经采样”直接当作“已经缓存”。
 
 Teacher forcing 给每个位置真实的前文 token，因此可以同时计算整段序列的 next-token 损失。自由生成则把模型自己的输出接回输入，一个早期差异会改变后续上下文。所以 [PPL 评测](../../implementation/model-quality-evaluation.md)与生成问答准确率衡量的行为不同。
+
+原论文表1中self-attention的$O(1)$顺序操作指一层已知输入上的跨位置计算，不表示自由生成的所有token可以同时决定；表列$O(n^2d)$也不能替代包含投影、FFN、缓存和调度的端到端成本。（§4、表1。）
 
 调度可把 prefill 分段，也可把多个请求的 decode 合并。线性层的 GEMM 行数 $M$ 是本轮实际送入的 token 数：8 个请求各推进一个 token 时 $M=8$，并非 8 次必须独立执行的 GEMV。prefill/decode 是请求进度语义，不能单独决定算子的形状或瓶颈；详见 [vLLM token 调度](../../implementation/vllm-inference-execution.md)与 [roofline](../hardware/arithmetic-intensity-and-roofline.md)。
 
@@ -143,11 +179,13 @@ vLLM 与 SGLang 所选 `llama.py` 都把 gate/up 合并投影，把 Q/K/V 合并
 
 权重量化改变这些投影的参数表示；激活量化改变进入乘法的中间张量；KV 量化改变跨轮保存的 K/V。三者作用的时间、误差传播和收益不同，不能仅用一个“4 bit 模型”标签代替完整配置。图中的 gate/up、归一化和投影分别连接 [门控激活](../../implementation/gated-activation-cuda-triton-kernels.md)、[RMSNorm](../../implementation/rmsnorm-cuda-triton-kernels.md)与 [量化 GEMM](../../implementation/tensor-core-quantized-gemm.md)。
 
-本页公式和容量例子是依据所选实现整理的逻辑解释与教学计算；没有执行模型。滑窗、交叉注意力、MoE 和推测执行不由这个基本例子覆盖。
+本页公式和容量例子是依据所选实现整理的逻辑解释与教学计算；没有执行模型。上面的Llama基本逻辑图未展开滑窗、cross-attention、MoE和推测执行；原始cross-attention结构另由第1.1节说明。
 
 沿这条主干理解结构变化时，[MoE 与专家路由](mixture-of-experts-and-routing.md)解释 FFN 如何按 token 选择专家，以及总参数与激活参数为何不同；[MLA](multi-head-latent-attention.md)解释 attention 如何保存联合潜变量与位置 key。上面的 $2N_lLH_{kv}db$ 是显式 K/V 的容量模型，MLA 需要按自己的缓存对象记账。
 
 ## 来源身份
+
+- Attention Is All You Need，`arXiv:1706.03762v7`，`https://arxiv.org/abs/1706.03762v7`；§3–5、§6.1–6.2，图1–2、表1–3；架构/位置/训练与评测条件，尺寸及方差一步展开为整理者说明。同版EN-FR表/文差异保留，作者实现与模型/训练/设备运行未核。
 
 - Qwen3 Technical Report（`https://arxiv.org/abs/2505.09388v1`），`arXiv:2505.09388v1`；§2表1与§3.2/附录A.1.1，稠密配置、QK-Norm名称及训练/外推条件；完整norm、发布checkpoint/模板与执行未核。
 
