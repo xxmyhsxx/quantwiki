@@ -10,6 +10,7 @@ aliases:
   - mixture-of-experts
   - DeepSeekMoE
 sources:
+  - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/deepseek-v2
 updated: 2026-10-14
@@ -17,7 +18,7 @@ updated: 2026-10-14
 
 # MoE 与专家路由：稀疏计算、容量与量化对象
 
-Mixture-of-Experts（MoE）用多个专家网络提供参数容量，让每个 token 只调用其中一部分。由此分开了总参数量与单 token 的参与计算参数量，同时引入专家选择、负载与通信问题。本页以 DeepSeek-V2 v5 的 DeepSeekMoE 为具体例子，解释其路由和量化关系；不同 MoE 的 gate、共享专家和路由策略须按各自定义核对。
+Mixture-of-Experts（MoE）用多个专家网络提供参数容量，让每个 token 只调用其中一部分。由此分开了总参数量与单 token 的参与计算参数量，同时引入专家选择、负载与通信问题。本页以 DeepSeek-V2 v5 的 DeepSeekMoE 解释基本关系，并列 V3 v2 与 Qwen3 v1 的结构差异；不同 MoE 的 gate、共享专家和路由策略须按各自定义核对。
 
 在 [稠密 decoder](transformer-autoregressive-inference.md) 中，每个 token 经过同一个 FFN。这里替换的是 FFN 子层：token 经 router 分配到专家，专家输出汇合回隐藏状态，再沿残差计算继续。输入序列和 attention 的因果可见性仍然存在，按专家选择并不等于删除上下文 token。V2 的 attention 则采用 [MLA](multi-head-latent-attention.md)，它是另一项结构变化。
 
@@ -62,6 +63,17 @@ V3配置为61层、隐藏维7168，前3层FFN稠密，其余58层为MoE；每个
 “Auxiliary-loss-free”针对主要whole-batch平衡机制，V3仍以α=$10^{-4}$保留sequence-wise辅助损失，防止单序列极端不均。其$\alpha\sum_i f_iP_i$中，原文$f_i$按**未加bias**的affinity top-k记频率，$P_i$先将所有sigmoid affinity归一化再在序列内取均值；没有展开它与实际biased选集的对应，不能自行改成同一个indicator。小权重辅助项与主bias调整处理不同负载范围，不能称完全没有辅助loss。（§2.1.2、§4.2。）
 
 Node限制按各节点最高$K_r/M$个affinity之和选至多M节点；V3 $K_r=8,M=4$，即每节点最高2项参与评分。原文未说明这个node score是否包含bias；[已核消费端](../../implementation/moe-routing-and-quantized-expert-execution.md#2.%20%E8%B7%AF%E7%94%B1%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%80%89%E4%B8%93%E5%AE%B6%E7%9A%84%E5%88%86%E6%95%B0%E4%B8%8E%E8%BE%93%E5%87%BA%20gate%20%E5%88%86%E5%BC%80)明确使用corrected top-2，仍按源码版本解释。作者报告V3训练/推理均不token-drop，和上文V2训练dropping条件不同。低精度计算与通信另见[FP8训练](../../implementation/deepseek-v3-fp8-training.md)，无需重写V2定义。
+
+### 1.2 Qwen3的128选8与无共享专家
+
+Qwen3 v1的两款MoE沿其稠密模型的attention基本结构，用更细专家替换FFN；每层128个专家、每token激活8个，**没有共享专家**，并使用global-batch load-balancing loss。它不能直接继承上文DeepSeek的共享分支、biased sigmoid、设备/node预选择或dropping。报告此节未给gate公式、选后归一化与完整通信规则，需另核实现。（§2。）
+
+| 模型 | 层数 | Q/KV heads | 总/每token参与参数 |
+| --- | ---: | --- | --- |
+| 30B-A3B | 48 | 32/4 | 30B/3B |
+| 235B-A22B | 94 | 64/4 | 235B/22B |
+
+这些是全模型报告口径，包含attention等共同部分；$8/128=6.25\%$只表示该专家集合的选择比例。对应第4节记账取$N_s=0,N_r=128,K_r=8$，专家常驻参数仍包含全部128个专家，单token只参与8个，批次则访问多token专家集合的并集。因此活跃参数比例不能直接变成整模型内存、吞吐或量化收益比例。（表2；代入记账为整理者解释。）
 
 ## 2. 设备限制怎样改变选择过程
 
@@ -139,6 +151,8 @@ DeepSeek-V2 的效率思路同时作用于两种成本：DeepSeekMoE 减少单 t
 本页完成的是模型结构和量化对象的解释。[MoE 路由与量化专家执行](../../implementation/moe-routing-and-quantized-expert-execution.md)沿固定 SGLang 版本连接 top-k、token–专家配对、块尺度、两次专家 GEMM 与共享输出。该页选定的有偏 sigmoid 路由是实现类支持的另一配置，不能替换上面的 V2 论文公式。
 
 ## 来源身份
+
+- Qwen3 Technical Report（`https://arxiv.org/abs/2505.09388v1`），`arXiv:2505.09388v1`；§2与表2，128选8/无shared、global-batch平衡和模型参数口径；gate/通信/发布配置及运行未核。
 
 - DeepSeek-V3 Technical Report（`https://arxiv.org/abs/2412.19437v2`），`arXiv:2412.19437v2`；§2.1.2与§4.2，sigmoid/biased选择、sequence-wise辅助loss和node/训练条件；消费源码与训练实现另按各自范围。
 

@@ -71,7 +71,7 @@ $i$ 为序列，$t$ 为预测位置，$c$ 为词表项，$m$ 排除无效位置�
 
 表 5 的 W4A6 LLaMA-7B：硬标签、单独 logits、硬标签加 logits 的平均分分别为 62.4、63.1、63.2；作者采用单独 logits，但它并非每个指标都严格最佳。额外隐藏层/注意力蒸馏在该表中更差，说明额外约束未必帮助量化学生；不是中间层蒸馏普遍有害的结论。
 
-筛选teacher回复后做输出SFT的另一种监督方式，见[推理模型后训练与蒸馏](../fundamentals/model/reasoning-post-training-and-distillation.md#4.%20%E8%BE%93%E5%87%BA%E8%92%B8%E9%A6%8F%E6%94%B9%E5%8F%98%E7%9B%91%E7%9D%A3%E5%92%8C%E5%AD%A6%E7%94%9F%E8%A7%84%E6%A8%A1)。它与本页的软概率目标、量化前向分别比较，不能只凭“蒸馏”名称混用。
+筛选teacher回复后做输出SFT的另一种监督方式，见[推理模型后训练与蒸馏](../fundamentals/model/reasoning-post-training-and-distillation.md#4.%20%E8%92%B8%E9%A6%8F%E7%9A%84%E7%9B%91%E7%9D%A3%E6%95%B0%E6%8D%AE%E3%80%81%E8%BD%AF%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%AD%A6%E7%94%9F%E8%A7%84%E6%A8%A1)。它与本页的软概率目标、量化前向分别比较，不能只凭“蒸馏”名称混用。
 
 ## 5. 训练中的 K/V 与生成中的 cache
 

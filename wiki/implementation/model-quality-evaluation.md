@@ -6,6 +6,7 @@ tags:
   - numerical-error
   - reliability
 sources:
+  - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-r1
   - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-10-03/quantforge
@@ -117,6 +118,21 @@ PPL 给的是“真实上下文上的预测损失”。自由生成会把模型�
 R1报告v2默认max32,768 tokens、temperature0.6/top-p0.95；每题AIME/GPQA64次，MATH/Codeforces16次、LCB8次，pass@1按多次正确指示均值计算。附录最终R1 AIME 2024的pass@1=79.8%、pass@64=90.0%、多数票cons@64=86.7%；主文Zero原图/图注明确cons@16，其86.7%不能套同一cons@64标签。标准pass@K的其他估计器和本文parser实现未核，以上集合式是教学定义。（附录Experiment Setup、An Analysis on CoT Length；Zero原图。）
 
 量化对照需要共同固定每响应长度、样本次数、停止条件、提示与选择规则，并记录**总实际生成tokens**。相同单响应上限不保证总预算相同。原报告的LCB时间段2024-08至2025-01、SWE Verified agentless/Aider diff等协议也属于结果身份；o1-1217引用外部官方结果不能证明全部由作者按同协议重跑。10-gram去污染仍未排除改写污染。训练阶段和输出蒸馏的对象区别见[推理后训练](../fundamentals/model/reasoning-post-training-and-distillation.md)。
+
+### 3.6 Qwen3的模式、总输出与任务预算
+
+Qwen3 v1评测两模式时还改变采样配方，不能当作只改flag的单变量对照：
+
+| 模式 | temperature / top-p / top-k | presence penalty |
+| --- | --- | --- |
+| thinking | 0.6 / 0.95 / 20 | Creative Writing v3/WritingBench为1.5，其余未列 |
+| non-thinking | 0.7 / 0.8 / 20 | 1.5 |
+
+普通max output length为32768，AIME'24/25另为38912；这与[思考段预算](../fundamentals/model/reasoning-post-training-and-distillation.md#5.1%20%E6%80%9D%E8%80%83%E9%A2%84%E7%AE%97%E6%8E%A7%E5%88%B6%E8%BE%93%E5%87%BA%E9%98%B6%E6%AE%B5%EF%BC%8C%E4%B8%8D%E4%BF%9D%E8%AF%81%E6%AF%8F%E7%B1%BB%E4%BB%BB%E5%8A%A1%E5%8F%97%E7%9B%8A)分开。AIME每年30题、每题64次取平均正确率，估计pass@1；GPQA每题10次平均。Codeforces经CodeElo、最多8次独立尝试，不能把这三种协议统称pass@64；表21括号才另列pass@64。（§4.6–4.7。）
+
+LCB v5为2024.10–2025.02，thinking提示去掉“只返回程序”限制；BFCL v3的Qwen3用FC格式、多轮用YaRN部署到64K，部分baseline从排行榜FC/Prompt取较高值，其余按Prompt。提示、输出约束和执行格式共同属于结果身份。预训练119语言不表示每种能力均已评：INCLUDE44语言/MMMLU14语言只抽各10%数据，Belebele评80语言并排42未优化语言。（§4.6、附录A.1.2。）
+
+更多思考也有任务反例。RULER表23用YaRN factor4、thinking budget8192：235B非thinking平均95.0/128K90.6，thinking92.2/86.0；32B93.7/91.0，8B89.1/84.4均是非thinking/thinking均分。作者提出思考“可能干扰检索”，仍是解释假设；这不是量化对照或所有长文任务有效长度证明。对照需固定模型、模式、外推、采样、思考/答案预算与实际tokens。（附录A.1.1、表23。）
 
 ## 4. 校准与错误排序是两个问题
 
@@ -260,6 +276,8 @@ $$
 CI含零与质量等价按[第8节](#8.%20%E6%97%A0%E6%98%BE%E8%91%97%E5%B7%AE%E5%BC%82%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%BB%A1%E8%B6%B3%E8%B4%A8%E9%87%8F%E7%AD%89%E4%BB%B7)区分；未设置等价界限、未校正多重比较、缺少逐图CI时保留限制。最终配方的质量表也不能替代消融归因：Ideogram的层保护消融在raw提示下完成，JSON协议只评测完整配方，因此保护贡献比例不能直接移植到JSON协议。
 
 ## 来源身份
+
+- Qwen3 Technical Report（`https://arxiv.org/abs/2505.09388v1`），`arXiv:2505.09388v1`；§4.6–4.7与附录A.1.1/A.1.2，模式采样、AIME/Codeforces/BFCL、RULER和语言覆盖条件；未核完整manifest/模板/运行。
 
 - DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning（`https://arxiv.org/abs/2501.12948v2`），`arXiv:2501.12948v2`；Experiment Setup、CoT Length及Zero原图，抽样/投票/时间和引用基线条件，未核parser或运行。
 

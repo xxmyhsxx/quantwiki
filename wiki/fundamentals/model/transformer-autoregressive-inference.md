@@ -6,6 +6,7 @@ tags:
   - inference
   - kv-cache
 sources:
+  - raw/papers/2026-09-21/qwen3
   - raw/papers/2026-09-21/deepseek-v3
   - raw/papers/2026-09-21/llama-3
   - raw/papers/2026-09-21/flashattention
@@ -75,6 +76,23 @@ O_{t,h}=\sum_{j\le t}a_{t,j,h}V_{j,g(h)}.$$
 
 原文表3记词表128,000、RoPE θ=500,000；GQA的KV heads均为8，不随Q heads增加。按§4容量式，以BF16两字节计算，全模型逻辑KV每token分别128/320/504 KiB，长度131,072时为16/40/63 GiB。这是整理者计算，未含分页浪费、量化元数据、TP复制或前缀共享，不是每rank实际显存。论文的[选择性FFN FP8推理](../numeric-formats/fp8-and-mx-data-formats.md#3.1%20Llama%203.1%E7%9A%84%E9%80%89%E6%8B%A9%E6%80%A7FP8%E6%8E%A8%E7%90%86)也没有据此提出KV量化。（v3 §3.2，表1/3。）
 
+### 2.2 Qwen3稠密结构与报告配置
+
+Qwen3 v1的稠密语言模型沿GQA、SwiGLU、RoPE及pre-RMSNorm结构，移除Qwen2所用QKV bias，并加入QK-Norm。报告没有展开该norm的完整张量轴、dtype或实际执行顺序，不能仅凭名称认作某个已核kernel；另一固定实现的条件见[nano-vllm](../../implementation/nano-vllm-inference-execution.md)。表1列：
+
+| 稠密模型 | 层数 | Q/KV heads | input/output embedding共享 | 报告context |
+| --- | ---: | --- | --- | --- |
+| 0.6B | 28 | 16/8 | 是 | 32K |
+| 1.7B | 28 | 16/8 | 是 | 32K |
+| 4B | 36 | 32/8 | 是 | 128K |
+| 8B | 36 | 32/8 | 否 | 128K |
+| 14B | 40 | 40/8 | 否 | 128K |
+| 32B | 64 | 64/8 | 否 | 128K |
+
+共享embedding时，同一个词表×隐藏维的权重不应重复计存储，logits计算仍需执行。该表未给head_dim，不能只凭heads和层数精确计算KV字节。MoE两款的结构/参与参数另见[专家路由](mixture-of-experts-and-routing.md#1.2%20Qwen3%E7%9A%84128%E9%80%898%E4%B8%8E%E6%97%A0%E5%85%B1%E4%BA%AB%E4%B8%93%E5%AE%B6)。（§2、表1；共享权重记账为结构解释。）
+
+预训练S1/S2使用4096序列，长context阶段使用32768并将RoPE base由10,000调为1,000,000；报告另用YaRN和DCA作推理外推。**32K训练与部分模型表列128K不是同一条件**，不能将所有模型写成原生128K训练，或只改一个RoPE参数就保证保真。具体RULER配置和模式反例见[质量协议](../../implementation/model-quality-evaluation.md#3.6%20Qwen3%E7%9A%84%E6%A8%A1%E5%BC%8F%E3%80%81%E6%80%BB%E8%BE%93%E5%87%BA%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%A2%84%E7%AE%97)。（§3.2、附录A.1.1；YaRN/DCA方法与匹配实现未在本项展开。）
+
 ## 3. Prefill、decode 与 teacher forcing
 
 输入有 $P$ 个 token 时，prefill 同时计算这些位置。因果 mask 使它们只能看各自前缀；最后位置的 logits 用来选择第一个生成 token。随后把这个新 token 输入模型，利用已有 KV 计算下一轮 logits。**选择一个 token 与把它送入模型形成 KV 是相邻的两个步骤**，不能把“已经采样”直接当作“已经缓存”。
@@ -130,6 +148,8 @@ vLLM 与 SGLang 所选 `llama.py` 都把 gate/up 合并投影，把 Q/K/V 合并
 沿这条主干理解结构变化时，[MoE 与专家路由](mixture-of-experts-and-routing.md)解释 FFN 如何按 token 选择专家，以及总参数与激活参数为何不同；[MLA](multi-head-latent-attention.md)解释 attention 如何保存联合潜变量与位置 key。上面的 $2N_lLH_{kv}db$ 是显式 K/V 的容量模型，MLA 需要按自己的缓存对象记账。
 
 ## 来源身份
+
+- Qwen3 Technical Report（`https://arxiv.org/abs/2505.09388v1`），`arXiv:2505.09388v1`；§2表1与§3.2/附录A.1.1，稠密配置、QK-Norm名称及训练/外推条件；完整norm、发布checkpoint/模板与执行未核。
 
 - DeepSeek-V3 Technical Report（`https://arxiv.org/abs/2412.19437v2`），`arXiv:2412.19437v2`；§2.2/图3、§4.2、MTP消融与§5.4.3报告；原式分母保留，匹配训练/推测实现与运行未核。
 

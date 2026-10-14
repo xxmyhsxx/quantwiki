@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · Qwen3 ingest：模式预算与两阶段蒸馏
+
+- 核读v1实际编译入口/摘要、Intro/Arch/Conclusion，必要pretrain主链、posttrain四阶段/模板/蒸馏/协议与Discussion、附录A.1.1及必要语言范围；原图1/2、关键表1/2/9/21/22/23及PDF回查。PDF35页/源包hash匹配，29来源成员中15展开文件逐字节对应；未编入experiments残稿排除，未称全部模型/语言表审计。
+- 在既有模型/MoE/后训练/质量四页补职责内增量，不建模型摘要页；后训练标题扩大为模式控制与蒸馏，章节与LLM-QAT锚点/INDEX同步。区分Qwen3继续Fusion SFT与R1重新Base、同一权重模式/思考输出预算、教师回复与学生前缀soft KL、无shared的128选8及常驻/批次预算。
+- 保留head_dim/发布配置、gate和完整norm/KL/模板未核，32K训练与128K外推、采样配方/总输出差异、8B同off-policy checkpoint接续的1/10 GPUh、阶段退化/ThinkFollow非100%、RULER更多思考退化及语言子集/agent协议。匹配实现、量化、模型/训练/设备性能未运行。
+- READING/SELF/计划同步：171条有依据、58条队列，实际表行已核，本轮基线88已处理30条；下一项Qwen3-VL，准备不计完成。独立Astra正式review通过；表22阶段数字的thinking条件、空block与预算指代已补明并复读，图/表原件已核。结构/来源strict检查192知识页、682项登记，0错误/待核；8个受影响Wiki页1310条本地链接strict通过，diff检查通过。提交范围为本项10文件，Obsidian改动保留；未运行模型、trainer、训练、量化、GPU或性能实验。
+
 ## 2026-10-14 · Qwen2.5-Omni ingest：音画对齐与语音生成
 
 - 核读v1编译入口/摘要、Intro/Architecture/Pretraining/Posttraining/Conclusion及必要输入/输出评测；图2–4与关键PDF、表1/4/7–10回查。PDF20页/源包hash匹配，28来源成员中16展开文件逐字节对应；未编入的Qwen2 appendix残稿排除，未扩成20页全文逐项审计。
