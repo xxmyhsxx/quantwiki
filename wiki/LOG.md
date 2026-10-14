@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · CUDA编程模型 ingest：Tile、cluster与内存范围
+
+- 核读snapshot-2026-07-02保存正文166行/§1.2.1–1.2.3及脚注，README与9正文/图片现算哈希相符；配图/图注回查，图3–6/8–9结构可辨，图2/7透明底部分文字由正文核对；正文快照与2026-09-21图片补采分开登记，未重新取得HTML或整部PDF。
+- 在[GPU执行](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)补CC≥9.0可选cluster、同GPC/同组协作范围与DSM，区分UVA、Unified Memory及mapped访问/局部性；在[布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md)补SIMT/Tile职责、block执行与tile数据、array/不可变tile及编译shape，复用普通warp/访存/同步，不复写已有机制。
+- 不把cluster当全grid屏障、统一地址当物理DRAM合并、tile元素数当线程数，或图示补零当全部API默认；CUDA Tile与Triton规则分别保留。高级启动/迁移API、系统类别、编译器布局和设备性能未核。
+- READING/INDEX/SELF/计划同步：182条有依据、47条队列，本轮基线88已处理41条；第18批下一项Writing Tile Kernels。独立Astra正式review通过，无剩余必修；GPC定义与最终LOG已复读闭环；GPC名称/SM分组按可选建议补清。结构/来源strict检查198知识页、695项登记，0错误/待核；5个受影响Wiki页1309条本地链接strict通过，diff及182/47计数检查通过。提交范围为本项7文件，Obsidian改动保留；未编译、运行模型/设备或测性能。
+
 ## 2026-10-14 · CUDA指南主页研读：目录范围无需新增
 
 - 核对CUDA Programming Guide主页snapshot-2026-07-02，完整保存正文49行及README版本/哈希，当前正文SHA相符；只含五部分组织、读者与章节用途，未取得原HTML或链接指向整部PDF。

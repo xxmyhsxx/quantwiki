@@ -93,7 +93,7 @@ sources: []
 | [MoE 与专家路由](fundamentals/model/mixture-of-experts-and-routing.md) | 共享与路由专家、设备限制、负载、总容量与量化路由误差怎样连接。 |
 | [MLA：联合潜变量、位置分支与缓存表示](fundamentals/model/multi-head-latent-attention.md) | 联合压缩、矩阵吸收、解耦 RoPE 如何改变量化对象与缓存预算。 |
 | [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
-| [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | shape、stride、dtype 和执行接口怎样决定正确读写。 |
+| [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | shape、stride、dtype与接口决定读写，区分CUDA Tile的数据对象与block线程映射。 |
 | [Triton 语言与编译语义](fundamentals/operators/triton-language-and-compilation.md) | 逻辑张量、广播、mask、类型与 JIT 特化怎样影响设备代码。 |
 | [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解并行分工、mask、复用和融合。 |
 | [LayerNorm、RMSNorm与部分统计](fundamentals/operators/layernorm-rmsnorm-and-partial-statistics.md) | 中心化、正尺度与梯度、ε及固定前缀统计为何有不同条件。 |
@@ -101,7 +101,7 @@ sources: []
 | [熵、条件熵与依赖：量化代理指标的解释边界](fundamentals/mathematics/entropy-and-dependence.md) | 熵描述一个指定概率分布的不确定性。 |
 | [可逆变换、数值条件与 Kronecker 乘积](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md) | 量化前可以改变坐标，使数值更适合有限网格；另一侧施加逆变换，保持浮点计算。 |
 | [算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) | 「这个算子受什么限制」是决定优化方向的第一问题。 |
-| [GPU 的执行模型与存储层次](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) | 量化为什么有时快、有时只是省内存，答案通常不在算法里，而在数据从哪一级存储搬到哪一类计算单元。 |
+| [GPU 的执行模型与存储层次](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) | 线程/warp/SM、cluster协作与内存位置怎样限制执行，统一地址与Unified Memory如何区分。 |
 | [FP8 与 Microscaling 数值格式](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) | 整数网格不是低精度表示的唯一形式。 |
 | [视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) | 图像/视频编码、多层视觉输入与位置/时间怎样形成语言输入，数量和模态差异怎样影响校准及量化对象。 |
 | [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) | PTQ 从已训练模型出发完成量化转换，可能包含统计、搜索或局部优化；QAT 在训练前向中模拟量化影响，并通过训练调整模型。 |

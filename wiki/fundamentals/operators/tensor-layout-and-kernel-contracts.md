@@ -10,7 +10,8 @@ sources:
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/triton
   - raw/repositories/2026-09-22/kernels
-updated: 2026-09-22
+  - raw/articles/2026-09-21/cuda-programming-model
+updated: 2026-10-14
 ---
 
 # 张量布局与算子接口：从逻辑下标到内存地址
@@ -81,6 +82,14 @@ $$i=pB+r,\qquad 0\le r<B,\qquad p<\lceil n/B\rceil.$$
 
 B 决定一个 program 的逻辑工作范围，V 决定一次向量任务的元素数，T 决定线程数，三者不能互换。向量化也不同于合并访存：前者描述一个线程处理的一组元素，后者取决于同一 warp 的线程访问地址如何组成内存事务。需要行统计时，不能把同样的列块拆分直接套上独立归一化；[RMSNorm 的分段与归约](../../implementation/rmsnorm-cuda-triton-kernels.md)说明如何先得到整行统计，再写各列。
 
+### CUDA Tile由block描述数据操作，编译器分配线程
+
+Programming Model快照§1.2.2.3把CUDA Tile与SIMT区分：SIMT源码描述每个线程怎样工作，CUDA Tile源码描述每个block的控制流和整块数据操作，编译器决定block内线程数及工作映射。block是执行单位，tile是数据对象；一个block可产生多个不同shape/dtype的tile，tile元素数不能当线程数。（图8。）
+
+该模型的array是device memory中的可变数据，tile则是仅在block内部产生和消费的不可变值，每次操作得到新tile。tile不一定对应一整块物化内存，编译器可用寄存器、shared或其他SM资源承接。本章要求tile各维在编译期已知且为2的幂，并禁止把tile直接作为kernel参数；这不代表所有CUDA分块算法都有同一形状限制。（§1.2.2.3.1。）
+
+load/store在array与tile之间搬数据。tile-space坐标选一块区域，具体尾部处理须按所用API和边界策略核对；编程模型图中的补零不应替代接口检查。SIMT与CUDA Tile可在同一应用中按kernel分别使用、操作同一device数据；编译抽象相似也不使CUDA Tile与上文Triton的API、类型或调参规则互换。（§1.2.2.3.2–1.2.2.3.4，图9；具体Tile接口后续接续。）
+
 ## 4. 布局支持必须沿包装层和设备函数一起看
 
 Triton 的矩阵乘设备函数使用 A/B/C 的各维 stride，但同时对其作正值假设，包装层还要求 A 连续。不能据“签名里有 stride”就宣布支持零步长广播、负步长或任意视图。
@@ -112,6 +121,7 @@ flowchart LR
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文与2026-09-21补采图分开登记 | §1.2.2.3与图8–9；block/tile分工与array/tile语义，完整保存正文已读；未核API reference、编译布局或执行。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`） | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
 | vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | CUDA 门控与 Triton 列块的工作映射。 |

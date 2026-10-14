@@ -8,11 +8,12 @@ tags:
 sources:
   - raw/repositories/2026-09-22/kernel-skills
   - raw/articles/2026-09-21/cuda-simt-kernels
+  - raw/articles/2026-09-21/cuda-programming-model
   - raw/repositories/2026-09-21/cuda-samples
   - raw/repositories/2026-09-21/cs336-lectures
   - raw/papers/2026-09-21/marlin
   - raw/papers/2026-09-21/qserve
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # GPU 的执行模型与存储层次
@@ -43,11 +44,23 @@ SIMT 允许每线程维护自己的状态和控制流。同一 warp 的分歧路
 | global memory | 设备上相关线程可寻址 | 可跨 kernel 保存；可寻址不等于并发访问自动有序 |
 | L1/L2 cache | 硬件缓存层次 | 缓存命中不替代数据依赖与同步约定 |
 
-依据 CUDA 文档 §2.3.3；这里讨论普通线程块，未展开具有专门启动条件的 cluster/distributed shared memory。限制寄存器用量可能提高驻留数，也可能引入 spill；occupancy 不是单独需要最大化的性能目标。
+依据 CUDA 文档 §2.3.3；上表限定普通线程块，cluster的扩展范围见下节。限制寄存器用量可能提高驻留数，也可能引入 spill；occupancy 不是单独需要最大化的性能目标。
 
 NVIDIA `matrixMul.cu:MatrixMulCUDA` 在共享 tile 写好后做一次 `__syncthreads()`，读完后再做一次，分别保证消费者可以开始读和生产者可以覆盖下一块。对普通块内屏障，所有需要参与的线程应按一致顺序到达；不能把屏障只放在部分线程满足的 `if (i<n)` 中。尾部线程可为加载填中性值，再一起参与屏障。
 
 `__syncthreads()` 只同步该 block，不能同步整个 grid；原子加提供相应地址的原子更新，也不是整个计算阶段已经完成的屏障。跨块阶段可以拆成有序的 kernel 调用，或使用满足前提的专门协作机制。核对这些依赖时要同时看共享缓冲生命周期，而不只是查找有没有屏障函数。
+
+### cluster内的通信与同步有硬件和启动条件
+
+Programming Model快照§1.2.2.1.1引入CC≥9.0的可选thread-block cluster。启动时指定cluster，把grid内相邻blocks编为一组；grid尺寸和block ID保留。GPC（Graphics Processing Cluster）是组织多个SM的硬件分组。组内blocks同时调度到同一GPC，各block仍在所属SM执行，不能将cluster理解为全部blocks挤进一个SM。（图5–6。）
+
+同cluster的threads可经专门Cooperative Groups接口同步，并访问组内各block的shared memory，即distributed shared memory。这是普通跨block独立规则的有限扩展，不提供任意grid范围的屏障；cluster尺寸还受设备限制。本项只核编程模型，具体启动API、shared生命周期和设备资源上限未展开。
+
+### 统一虚拟地址与Unified Memory负责不同事情
+
+同一快照§1.2.3区分统一虚拟地址和Unified Memory：前者让CPU与各GPU的地址区间可辨认、可判断指针归属，不能据此推定物理DRAM合并或数据已放在当前处理器旁。后者另由runtime/hardware提供跨处理器访问或按需搬迁，就近访问与减少迁移仍影响性能。（§1.2.3.1/1.2.3.3。）
+
+普通显式分配按所在处理器访问；mapped CPU memory是允许GPU经互连直接访问的例外。可寻址不表示拥有本地device DRAM的带宽/延迟，跨GPU global memory的可见性也需具体机制。本页没有核Unified Memory各系统类别、迁移API或实际设备行为。
 
 ## 2. 计算单元：CUDA 核心与张量核心
 
@@ -106,6 +119,7 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文取得于2026-07-02、配图补采于2026-09-21 | §1.2.1–1.2.3保存正文；cluster/GPC、地址与内存范围，图3–6/8–9与图注回查；高级API/系统分支/设备运行未核。 |
 | stanford-cs336/lectures（`https://github.com/stanford-cs336/lectures/tree/8b59b50730766695c2ffedd1a79c50cd09b9eb91`） | `8b59b50730766695c2ffedd1a79c50cd09b9eb91` | — |
 | MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`） | `arXiv:2408.11743v1` | — |
 | QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`） | `arXiv:2405.04532v3` | — |
