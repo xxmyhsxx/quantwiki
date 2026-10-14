@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · CUDA指南主页研读：目录范围无需新增
+
+- 核对CUDA Programming Guide主页snapshot-2026-07-02，完整保存正文49行及README版本/哈希，当前正文SHA相符；只含五部分组织、读者与章节用途，未取得原HTML或链接指向整部PDF。
+- 现有[GPU执行与存储基础](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)已有知识路径，主页没有独立机制增量；确认无需正文新增，不把目录材料登记成整部指南研读或复制组织说明填充知识页。Programming Model、Tile Kernels等独立来源后续分别核读。
+- READING/SELF/计划同步：181条有依据、48条队列，本轮基线88已处理40条；第18批下一项Programming Model。独立Astra正式review通过，无必修，目录范围与最终LOG已复读闭环；复用上一项有效结构/来源检查（知识正文与来源字段无修改），本项2个受影响Wiki页849条本地链接strict、diff及181/48计数检查通过。提交范围为本项4管理文件，Obsidian改动保留；未编译、运行设备或核完整指南/后端。
+
 ## 2026-10-14 · RMSNorm ingest：统计、尺度与部分归一化
 
 - 核读v1主文主线、§3–5公式/表1、§6代表实验及附录A设置，PDF3–9关键式和表4/8/10回查；PDF14页/eprint哈希相符，17源成员可读、4保留展开文本字节对应，原图仍在eprint，未编译或运行作者实现。
