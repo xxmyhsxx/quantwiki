@@ -78,7 +78,7 @@ O_{t,h}=\sum_{j\le t}a_{t,j,h}V_{j,g(h)}.$$
 
 ### 2.2 Qwen3稠密结构与报告配置
 
-Qwen3 v1的稠密语言模型沿GQA、SwiGLU、RoPE及pre-RMSNorm结构，移除Qwen2所用QKV bias，并加入QK-Norm。报告没有展开该norm的完整张量轴、dtype或实际执行顺序，不能仅凭名称认作某个已核kernel；另一固定实现的条件见[nano-vllm](../../implementation/nano-vllm-inference-execution.md)。表1列：
+Qwen3 v1的稠密语言模型沿GQA、SwiGLU、RoPE及pre-RMSNorm结构，移除Qwen2所用QKV bias，并加入QK-Norm。报告没有展开该norm的完整张量轴、dtype或实际执行顺序，不能仅凭名称认作某个已核kernel；逐 head norm、缓存与词表输出见[固定 transformers Qwen3](../../implementation/transformers-qwen3-cache-and-moe-execution.md)，另一实现的条件见[nano-vllm](../../implementation/nano-vllm-inference-execution.md)；代码默认配置与本报告发布表分别保留。表1列：
 
 | 稠密模型 | 层数 | Q/KV heads | input/output embedding共享 | 报告context |
 | --- | ---: | --- | --- | --- |

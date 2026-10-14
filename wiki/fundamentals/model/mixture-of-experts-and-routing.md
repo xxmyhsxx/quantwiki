@@ -66,7 +66,7 @@ Node限制按各节点最高$K_r/M$个affinity之和选至多M节点；V3 $K_r=8
 
 ### 1.2 Qwen3的128选8与无共享专家
 
-Qwen3 v1的两款MoE沿其稠密模型的attention基本结构，用更细专家替换FFN；每层128个专家、每token激活8个，**没有共享专家**，并使用global-batch load-balancing loss。它不能直接继承上文DeepSeek的共享分支、biased sigmoid、设备/node预选择或dropping。报告此节未给gate公式、选后归一化与完整通信规则，需另核实现。（§2。）
+Qwen3 v1的两款MoE沿其稠密模型的attention基本结构，用更细专家替换FFN；每层128个专家、每token激活8个，**没有共享专家**，并使用global-batch load-balancing loss。它不能直接继承上文DeepSeek的共享分支、biased sigmoid、设备/node预选择或dropping。报告此节未给gate公式、选后归一化与完整通信规则；[固定 transformers 的逐行路由](../../implementation/transformers-qwen3-cache-and-moe-execution.md)补实际 softmax/top-k、配置开关和输出汇合，发布 checkpoint 取值仍需另核。（§2。）
 
 | 模型 | 层数 | Q/KV heads | 总/每token参与参数 |
 | --- | ---: | --- | --- |

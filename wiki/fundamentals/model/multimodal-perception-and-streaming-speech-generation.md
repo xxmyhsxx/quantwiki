@@ -17,6 +17,8 @@ updated: 2026-10-14
 
 图文token、merger与量化对象见[视觉token基础](vision-language-model-tokens-and-quantization.md)，自回归概率与KV见[Transformer基础](transformer-autoregressive-inference.md)。本页没有运行模型；组件敏感性和部署收益需按[TTS量化评测](../../implementation/tts-quantization-evaluation.md)的独立条件判断。
 
+从报告设计进入调用接口时，[固定 transformers 执行](../../implementation/qwen25-omni-model-generation-execution.md)承接有效媒体长度、Thinker/Talker 状态和 Token2Wav 返回时序。
+
 ## 1. 编码表示、语音code与波形是不同对象
 
 Thinker是带视觉/音频编码器的Transformer decoder，接收各模态形成的序列表示，再产生文字和高维隐藏状态。文字经tokenizer/embedding进入语言空间；音频先重采样到16 kHz，转换为128通道mel谱（25 ms窗口、10 ms hop），再编码为约每40 ms一个输入表示。这种连续输入的编码表示不是Talker输出的离散语音code，也不决定输出codec的时间粒度。（§2.1–2.2。）

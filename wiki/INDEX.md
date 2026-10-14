@@ -37,6 +37,7 @@ sources: []
 - **选择生成校准的状态与目标**：[校准数据与前缀覆盖](theory/calibration-and-range-selection.md#11.%20%E8%87%AA%E5%9B%9E%E5%BD%92%E6%A0%A1%E5%87%86%E8%BF%98%E9%9C%80%E8%A6%81%E9%80%89%E6%8B%A9%E5%89%8D%E7%BC%80%E7%8A%B6%E6%80%81) → [OnPTQ 的决策与分支后果](methods/onptq.md) → [静态 token 权重与生成状态的比较](research/mbq-vlmq-comparison.md#9.%20%E4%BB%8E%E9%9D%99%E6%80%81%20token%20%E9%87%8D%E8%A6%81%E6%80%A7%E5%88%B0%E7%94%9F%E6%88%90%E7%8A%B6%E6%80%81%E4%B8%8E%E5%90%8E%E6%9E%9C)。
 
 - **理解模型与数值**：[Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) → [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md)。
+- **追踪多模态模型调用**：[视觉输入与位置](implementation/qwen25-vl-visual-input-and-position-execution.md) / [音画到完整波形](implementation/qwen25-omni-model-generation-execution.md)；共享语言层的输入、KV和路由再读[Qwen3执行](implementation/transformers-qwen3-cache-and-moe-execution.md)，各页按固定版本区分默认配置与发布模型。
 - **理解 MoE/MLA 与量化对象**：[稠密 decoder 主干](fundamentals/model/transformer-autoregressive-inference.md) → [MoE 的专家选择与容量](fundamentals/model/mixture-of-experts-and-routing.md) / [MLA 的联合缓存与位置分支](fundamentals/model/multi-head-latent-attention.md) → [排序稳定性](theory/quantization-ranking-stability.md) / [KV cache 量化](theory/kv-cache-quantization-objects-and-granularity.md)。
 - **建立共同基础**：[线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) → [均匀量化与分组](fundamentals/quantization/uniform-quantization-and-groups.md) → [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [校准数据与量化范围选择](theory/calibration-and-range-selection.md)。
 - **理解量化训练**：[PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) → [PACT的激活裁剪](methods/pact.md) → [LSQ 的步长学习](methods/lsq.md) → [LSQ+的偏移与初始化](methods/lsq-plus.md) → [LQ-Nets的基码值与交替拟合](methods/lq-nets.md) → [LLM-QAT 的生成数据蒸馏](methods/llm-qat.md) → [EfficientQAT 的分阶段训练](methods/efficientqat.md)。
@@ -266,6 +267,9 @@ sources: []
 | [FP4/FP8 块缩放矩阵乘](implementation/block-scaled-matmul-execution.md) | 元素编码、K 组尺度、packed scale 布局与点积接口如何衔接，量化产物需保留哪些尺度参数。 |
 | [ModelOpt PTQ：配置、校准与部署 checkpoint](implementation/modelopt-ptq-calibration-and-checkpoint.md) | Recipe对象/尺度、搜索预算和恢复状态怎样变成后端消费的表示，哪些组合只支持导出。 |
 | [nano-vllm 离线推理：token进度、分页缓存与模型执行](implementation/nano-vllm-inference-execution.md) | 固定Qwen3离线实例的prefill/decode选择、完整块命中、输入/槽位与采样如何配合。 |
+| [transformers Qwen3：Q/K归一化、缓存与路由](implementation/transformers-qwen3-cache-and-moe-execution.md) | 当前输入怎样更新KV、经过逐head norm和专家子批次，词表输出与模板由谁负责。 |
+| [Qwen2.5-VL：视觉输入、三轴位置与缓存](implementation/qwen25-vl-visual-input-and-position-execution.md) | 像素/grid与占位如何配对，窗口和merger怎样恢复顺序，时间ID与prefill偏移如何接续。 |
+| [Qwen2.5-Omni：模型生成与完整波形](implementation/qwen25-omni-model-generation-execution.md) | 有效mel/音画位置、Thinker与Talker状态、DiT预算和一次波形返回如何衔接。 |
 | [分布式 LLM 服务编排：路由、副本与 KV 交接](implementation/distributed-llm-serving-orchestration.md) | 引擎外的请求目标、阶段容量、缓存可见性与实际传输怎样衔接，版本混用有什么边界。 |
 | [vLLM 推理执行：从 token 调度到变长批次](implementation/vllm-inference-execution.md) | 请求如何分配 token 与 KV 空间，再变成算子的紧凑输入。 |
 | [vLLM 算子设计：Attention 后端、分页计算与图执行](implementation/vllm-attention-operator-design.md) | 分页状态与元数据如何进入 Attention，设备端怎样复用、归约并适配图执行。 |

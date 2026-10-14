@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-14 · transformers Qwen实现：媒体输入、缓存与生成状态
+
+- 定向静态核读归档hf-4.53.2的Qwen2.5-VL/Omni/Qwen3稠密与MoE主线，processor/config、媒体编码与注入、位置、缓存、生成包装及必要loss/适配；zip SHA/CRC通过，4775成员身份与32选中文件字节对应，未称全框架源码审计。
+- 新建[VL输入与位置](implementation/qwen25-vl-visual-input-and-position-execution.md)、[Omni模型生成](implementation/qwen25-omni-model-generation-execution.md)、[Qwen3缓存与路由](implementation/transformers-qwen3-cache-and-moe-execution.md)，沿输入对象/状态/输出解释；四个基础页与INDEX只补用途入口，不复制报告训练/质量主文。
+- 保留VL每时间网格full、dense mask成本与0.5秒先转整数的静态反例、实例delta和embedding绕过注入；Omni有效mel/mask、音画与codec单位、串行完整返回、独立Talker cache、DiT层级窗口/首head RoPE、FP32/SDPA与10时间点9区间×4RK4调用；Qwen3逐head norm不受bias开关、cache更新与输出开关、top-k配置/专家预算、loss触发与混合稠密层None项前提分别说明。发布checkpoint/template/speaker、Qwen3-VL内部与模型/训练/语音/量化/GPU运行未核。
+- READING/SELF/计划同步：173条有依据、56条队列，本轮基线88已处理32条；一份来源分三个执行主线，下一项官方Qwen2.5-Omni仓库。独立Astra正式review通过；视频帧数/FPS条件、混合稠密层aux汇总前提及DiT引用定位已修正并复读。结构/来源strict检查195知识页、686项登记，0错误/待核；10个受影响Wiki页1339条本地链接strict通过，diff检查通过。提交范围为本项12文件，Obsidian改动保留；未运行模型、训练、语音、量化、GPU或性能实验。
+
 ## 2026-10-14 · Qwen3-VL ingest：多层视觉输入与时间表达
 
 - 核读v2主编译入口、架构与必要pre/posttrain/数据、消融和needle、视频协议与定向附录提示；图1/3、表1/11/12与PDF1/3/4/24/25回查。PDF42页/源包hash匹配，30成员扣00README为29来源，20展开文件逐字节对应；未扩为全部任务表或实现审计。
