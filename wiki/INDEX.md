@@ -284,7 +284,7 @@ sources: []
 | [SGLang 算子设计：索引化 KV、Extend 与 Decode 归约](implementation/sglang-attention-operator-design.md) | 历史前缀和当前输入如何进入 Attention，分段输出怎样按 LSE 合并。 |
 | [门控激活的 CUDA 与 Triton 实现](implementation/gated-activation-cuda-triton-kernels.md) | 从两段输入布局理解独立输出、向量任务、二维 program 网格与融合边界。 |
 | [RMSNorm 的 CUDA 与 Triton 实现](implementation/rmsnorm-cuda-triton-kernels.md) | 从整行统计理解线程协作、分段读取、残差写回与舍入位置。 |
-| [Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 从资源与分工选择配置，连接grouped问题表/负载、元数据隐藏的调优key及Hopper consumer分工。 |
+| [Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 输入stage、输出暂存与任务元数据怎样共同影响配置，区分访问块、累加预算与调优key。 |
 | [GPU 异步拷贝与多级流水：等待完成和缓冲复用](implementation/gpu-async-copy-pipelines.md) | 区分cp.async批次等待与CUTLASS Pipeline双方状态推进，连接数据可读与缓冲复用。 |
 | [Hopper BF16 GEMM：TMA、WGMMA 与缓冲复用](implementation/hopper-gemm-tma-wgmma-pipeline.md) | 从 full/empty 队列贯通 WGMMA、资源/局部性和输出复用；对照固定11/12的实际同步条件与驱动。 |
 | [GB300 NVFP4 GEMM：输入双环、TMEM 累加与输出复用](implementation/blackwell-nvfp4-tmem-execution.md) | 标准FP4/尺度怎样经双环进入TMEM，部分重叠的累加区怎样释放，以及调度与计时覆盖范围。 |

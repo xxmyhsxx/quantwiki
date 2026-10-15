@@ -7,6 +7,7 @@ tags:
   - performance
   - matmul
 sources:
+  - raw/articles/2026-09-21/triton-persistent-matmul
   - raw/articles/2026-09-21/triton-group-gemm
   - raw/articles/2026-09-21/cutlass-grouped-schedulers
   - raw/articles/2026-09-21/cutlass-efficient-gemm
@@ -102,7 +103,7 @@ Triton `09-persistent-matmul.py:matmul_persistent` 启动 $\min(\text{NUM\_SMS},
 
 “启动 NUM_SMS 个 program”不等于 API 将每个 program 固定绑到不同 SM。它表示控制 launch 的工作块数，再让每块循环处理多个 tile。教程的 softmax 则用估计的每 SM 驻留数量乘 SM 数决定 persistent program 数，说明 persistent 并不统一等于“每 SM 仅一个 block”。
 
-普通 tiled GEMM 与 persistent GEMM 都可以只启动一次 kernel，因此后者不必然减少主机 kernel launch 次数。它改变了设备工作调度、循环和可能的数据复用；工作不均、循环状态和资源占用也可能有成本。上述 Triton 例子只核对教程的普通 persistent 分支，不代表 TMA/warp-specialized 分支或所有 persistent 算法。
+普通 tiled GEMM 与 persistent GEMM 都可以只启动一次 kernel，因此后者不必然减少主机 kernel launch 次数。它改变了设备工作调度、循环和可能的数据复用；工作不均、循环状态和资源占用也可能有成本。上述轮转解释依据教程的普通persistent分支；保存快照中的TMA与descriptor配置另见第5节，具体调度与支持范围按各路径定义。
 
 ### Grouped GEMM 怎样定位多个问题的输出 tile
 
@@ -192,6 +193,14 @@ Python `replace_hints`创建具有独立JIT cache的新kernel对象，提供的�
 
 相反，C++示例的`__restrict__`和`assume_aligned(ptr,16)`是必须满足的别名与16-byte地址对齐承诺；错误承诺会导致未定义行为。分配基址对齐不能证明切片后的地址也对齐，TMA仍需核其他布局和硬件条件。编译提示、接口前提、实际编译资源与测量结果要分别记录。（§2.4.12；坐标/边界见[Tile接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)。）
 
+### Descriptor访问块与epilogue暂存共同参与配置
+
+Persistent Matmul快照的TMA路径以A `[M,K]`、B `[N,K]`和`dot(a,b.T)`计算。host构造的descriptor先用占位block shape，配置pre-hook再按当前候选改为A `[BM,BK]`、B `[BN,BK]`和C `[BM,BN]`。候选tile改变时，每次访存的块描述也须跟着改变。另一条路径在设备内创建descriptor，直接声明A/B stride为`[K,1]`、C为`[N,1]`；它依赖连续内轴，不能将实际stride不同的视图直接套入声明。输入准备与descriptor条件见[布局接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md#Group%20GEMM%E7%9A%84%E6%8C%87%E9%92%88%E4%B8%8ETMA%E6%8E%A5%E5%8F%A3)。（`matmul_tma_set_block_size_hook/matmul_kernel_descriptor_persistent`。）
+
+输出也会占用mainloop的shared预算。`EPILOGUE_SUBTILE`先完成整个`[BM,BN]` FP32累加，再沿N拆成两个`[BM,BN/2]`子块，分别转换、store，同时将C descriptor的访问块改为半宽。来源以此减小epilogue一次需要的shared暂存，为输入流水stage留出空间；累加器的逻辑面积仍是完整`[BM,BN]`。它提供预算取舍，实际总shared和stage数继续由配置与编译结果确定。（`matmul_kernel_tma_persistent`及device-descriptor epilogue。）
+
+warp specialization、循环flatten与subtile的组合还受路径限制。该快照runner在**Hopper且启用warp specialization**时跳过两条host-descriptor路径，保留device-descriptor路径，但令`FLATTEN=False`，进而裁掉`EPILOGUE_SUBTILE=True`候选。Hopper未启用warp specialization时仍保留flatten与subtile候选。能力检测的CC major≥9只是入口条件，具体组合按这些分支选择；descriptor调用也没有在这份Python代码中展开显式barrier协议。
+
 ## 6. autotune 的 key、试跑和正确性
 
 固定版本 `Autotuner.run` 将 `key` 指定且出现在参数中的值组成 tuple，并追加张量参数的 dtype。它没有自动将所有 shape、stride、layout、量化组大小都纳入 key。底层 JIT 为新参数编译 kernel，与 tuner 是否重新比较候选，是两件事。
@@ -222,6 +231,7 @@ CUTLASS 的类型组装、运行参数和构建期 `StageCountAuto`，见 [GEMM�
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| Persistent Matmul — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/09-persistent-matmul.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00` | 完整730行/代码、48行README，无附件；五条路径、pre-hook/subtile与Hopper组合条件。保存TMA标签⭕按代码为未启用；检查以普通tiled为参考、转FP16、atol=1.0，失败仅打印。benchmark固定M=N=8192并循环调用包装，未据Proton输出合成完整算子墙钟；未核编译展开、分配器/自动barrier或运行GPU。 |
 | Group GEMM — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/08-grouped-gemm.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00` | 完整561行正文/代码及README，无本地附件；使用问题表/设备静态定位、两分支NUM_SM、调优key及预制元数据的计时协议。历史表无TMA列；key语义另核下列固定Triton runtime，未运行。 |
 | Grouped Kernel Schedulers（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/grouped_scheduler.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，7图补采于2026-09-21 | 完整保存311行/7图、README；global tile定位、两模式、Rank2K及K负载。公式/图示按本文展开，原文命名与216/256差异保留；未取外链visitor/sort实现或运行。 |
 | Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |

@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Triton Persistent Matmul ingest：访问块与输出暂存配置
+
+- 完整核读snapshot-2026-07-02保存730行/代码、48行README，五条普通/host descriptor/device descriptor路径、hook/验证/benchmark与CLI均覆盖，无本地附件。网页范围与既有固定代码证据分别登记。
+- [配置页](implementation/kernel-configuration-and-autotuning.md)第5节补候选tile与descriptor block_shape联动、完整FP32累加后沿N半宽写回以缩小epilogue暂存、Hopper且启用WS时的host跳过/device flatten与subtile裁剪条件；复用刚完成的布局接口，不复制普通persistent或显式barrier。第4节原普通分支范围改为准确指向新增配置说明。
+- 保存TMA⭕按代码解释为未启用；检查以普通tiled结果为参考、转FP16、atol=1.0且失败仅打印，benchmark循环调用会构造descriptor/分配C的包装，不套用Group GEMM预制仅launch口径；实际shared/stages与生成同步仍按编译与运行证据判断。
+- INDEX/READING/SELF/计划同步：205条有依据、24条队列（12论文/8文档/4代码），本轮基线88已处理64条；下一项Triton Fused Attention。独立Astra原件/正文及记录review通过，无必修项；结构/来源strict检查203知识页、727项登记，0错误/待核，4个受影响Wiki页1403条本地链接strict及diff检查通过；205/58/24记录与12/8/4分类数相符。未新增测试或执行上游/编译/GPU，提交本项6文件，Obsidian改动保留。
+
 ## 2026-10-15 · Triton Group GEMM ingest：问题表、输入接口与调优key
 
 - 完整核读snapshot-2026-07-02保存561行/代码、48行README，普通与TMA分支均完整保存，无本地附件。定向补核固定Triton81a46fa0的descriptor load/store、make_tensor_descriptor、multiple_of及Autotuner.run；网页身份与源码语义分别登记，未重新执行归档或设备检查。
