@@ -7,10 +7,11 @@ tags:
   - performance
   - gpu
 sources:
+  - raw/articles/2026-09-21/triton-fused-attention
   - raw/repositories/2026-09-21/flash-attention
   - raw/papers/2026-09-21/flashattention-2
   - raw/papers/2026-09-21/flashattention
-updated: 2026-10-13
+updated: 2026-10-15
 ---
 
 # FlashAttention-2：累计状态、序列并行与warp分工
@@ -55,6 +56,16 @@ FA1论文算法以K/V块为外层，要对每个K/V块扫描Q和输出。FA2前�
 反向在单个attention head内按K/V列块并行：各工作块独占对应$dK,dV$，但不同列块都对同一$dQ_i$贡献
 $dS_{ij}K_j$。§3.2明确使用atomic add汇总$dQ$，所以反向不是所有输出都独立，原子加法和求和顺序也涉及数值/确定性。算法2先在HBM预计算
 $D_i=\operatorname{rowsum}(dO_i\odot O_i)$，再恢复局部概率并累加梯度；它与FA1伪码内层重复算$D$的组织不同。完整梯度与dropout同mask要求复用[反向重计算](flash-attention-tiling-and-recomputation.md)。
+
+### 独立Triton快照用两条扫描完整拥有梯度块
+
+另存的Fused Attention教程采用一种不同的反向分工。主kernel的每个program先持有一个128-key块，扫描所需query，完整累计该块$dK,dV$；随后再为自己的128-query块扫描所需K/V，完整累计$dQ$，直接写各自独占的梯度块。保存代码没有跨CTA的$dQ$原子工作区与最终合并步骤；代价是两条链分别读取并重算所需score/概率。它改变了归约组织，速度仍取决于重复计算、访存和资源。（`snapshot-2026-07-02`，`_attn_bwd`；所选[CUDA反向](../implementation/flash-attention-2-cuda-execution.md)按其固定commit另述。）
+
+该实现保存的行统计$M$使用log2单位：前向score乘$\tau\log_2 e$，最后保存$m+\log_2\ell$。反向包装先生成$K'=\tau\log_2(e)K$，再以$P=\exp_2(QK'^{\mathsf T}-M)$重算有效位置的概率。$dK$完成后乘$\tau$；使用$K'$累计的$dQ$在写回前乘$\ln2$，抵消换底因子而保留$\tau$。这里的$M$与上文自然对数$L$是不同接口，交换统计时须明确单位。
+
+预处理实际计算$D_i=\sum_d O_{id}dO_{id}$，使用的是保存且已舍入的$O$；两处“D已预除ds_scale”的注释没有对应操作。重算概率或$dS$在相应矩阵乘前还会转FP16，局部梯度以FP32累加，$K'$也先形成缩放后的输入张量。因此上述常数关系用于解释代码各处的缩放，不能理解为全链FP32或对原始K逐位等价。
+
+本对照按等长、同头数、无dropout的FP16主路径解释，来源测试的head dim为64/128。反向要求N可被128整除、dO连续且Q/K/V/O/dO的stride一致；前向descriptor声明固定布局。因果前向将对角段不可见项加有限值`-1e6`，不能改述成原样使用负无穷。测试明确跳过FP8 backward，而基准仅在forward时转换E5M2，因此保存表的“FP8”反向列仍是FP16，不能据其标签证明低精度梯度支持。
 
 ## 3. warp分Q减少哪一种通信
 
@@ -111,6 +122,7 @@ H100-80GB-SXM5结果使用未适配TMA等新特性的同一实现；正文报最
 
 ## 来源身份
 
+- Fused Attention — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html`），`snapshot-2026-07-02`，取得于 `2026-07-02T02:37:55+08:00`。完整核读764行保存正文/代码、48行README，无附件；使用两条反向拥有者、log2统计与缩放、FP16中间值和调用条件。前向逻辑STAGE与流水num_stages分别定义；Hopper WS基准条件实际为非因果forward，与causal注释相反，保存输出全WS=False且无Flash-2列。Triton基准scale=1.3，外部Flash未显式传同值；反向计时含K缩放、预处理与主反向，不视为单kernel结果。网页快照、论文与下列CUDA commit分别登记；未重核全部compiler/descriptor展开、外部Flash版本或执行测试/编译/GPU。
 - Dao-AILab/flash-attention（`https://github.com/Dao-AILab/flash-attention/tree/73c992c8ca746935548df620ef3c1b6238fe6e68`），固定commit `73c992c8ca746935548df620ef3c1b6238fe6e68`；后续普通CUDA实现连接，实际selected配置与源码定位见实现页，保留版本差异。
 - FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning（`https://arxiv.org/abs/2307.08691v1`），arXiv:2307.08691v1；正文§1–5、算法1–2、图2–7和表1，PDF/同版TeX核对；重缩放/因果条件校正、形状与计数展开、教学反例为整理者分析。未逐点重建曲线，未核作者代码、全部接口或GPU/模型运行。
 - FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness（`https://arxiv.org/abs/2205.14135v2`），arXiv:2205.14135v2；复用§3.1–3.2与附录B/C的归一化定义、反向数学和IO范围；不把原循环流量证明直接归给FA2实现。

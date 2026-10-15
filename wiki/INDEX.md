@@ -111,7 +111,7 @@ sources: []
 
 | 页面 | 主要问题 |
 | --- | --- |
-| [FlashAttention-2：累计状态、序列并行与warp分工](theory/flash-attention-2-work-partitioning.md) | 非matmul工作、query块与warp拥有者、原件公式差异和计数边界。 |
+| [FlashAttention-2：累计状态、序列并行与warp分工](theory/flash-attention-2-work-partitioning.md) | 累计状态与query/warp分工，区分论文共享梯度归约和独立Triton双扫描、log2统计及精度标签。 |
 | [FlashAttention：精确分块、IO复杂度与反向重计算](theory/flash-attention-tiling-and-recomputation.md) | 全行归一化、片上容量、访存定理与训练重算的条件。 |
 | [Attention sink 选头图谱](theory/attention-sink-map-transfer.md) | 全局相关、集合边界、域迁移及重校准的证据范围。 |
 | [量化后的排序稳定性](theory/quantization-ranking-stability.md) | 分数间隔、原有正确结果损失、校准保证与检索精度分配。 |

@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Triton Fused Attention ingest：梯度拥有者与log2统计
+
+- 完整核读snapshot-2026-07-02保存764行/代码、48行README，包括前向/descriptor/配置、预处理/反向两扫描、包装/测试/性能及保存输出，无本地附件；网页与论文v1、后续CUDA库commit分别登记。
+- [FA2分工页](theory/flash-attention-2-work-partitioning.md)第2节后补独立Triton对照：每program完整拥有128-key的dK/dV及128-query的dQ，用两条重算扫描替代所选CUDA跨CTA dQ工作区；log2 M、K乘τlog2e、dQ乘ln2与dK乘τ配套解释，保留已舍入O/dO行统计和FP16中间值，未补出注释所称D预除。
+- 等长同头/无dropout、N%128与stride/有限mask条件就近保留。测试跳过FP8 bwd而benchmark只在fwd转换，所以保存FP8反向标签实际FP16；Hopper WS条件按非因果fwd代码、保存表全WS=False/无Flash列、scale与多阶段反向计时口径集中登记。不复制在线softmax/IO推导或新建实现综述。
+- INDEX/READING/SELF/计划同步：206条有依据、23条队列（12论文/7文档/4代码），本轮基线88已处理65条；下一项Triton-Puzzles。独立Astra原件/正文及记录review通过，无必修项；结构/来源strict检查203知识页、728项登记，0错误/待核，4个受影响Wiki页1396条本地链接strict及diff检查通过；206/58/23记录与12/7/4分类数相符。未新增测试或执行上游/编译/GPU，提交本项6文件，Obsidian改动保留。
+
 ## 2026-10-15 · Triton Persistent Matmul ingest：访问块与输出暂存配置
 
 - 完整核读snapshot-2026-07-02保存730行/代码、48行README，五条普通/host descriptor/device descriptor路径、hook/验证/benchmark与CLI均覆盖，无本地附件。网页范围与既有固定代码证据分别登记。
