@@ -8,6 +8,7 @@ tags:
   - numerics
 sources:
   - raw/papers/2026-09-21/cudaforge
+  - raw/papers/2026-09-21/flashinfer-bench
   - raw/articles/2026-09-24/cuda-softmax-worklog
   - raw/articles/2026-09-21/flashinfer-bench-gpu-time
   - raw/repositories/2026-09-21/vllm
@@ -64,6 +65,16 @@ $$|y_i-\widehat y_i|\le\mathrm{atol}+\mathrm{rtol}|y_i|,$$
 其中 $y$ 是参考。atol 控制参考接近零时的绝对误差；rtol 随参考量级放宽。容限应由 dtype、输入范围、归约长度和算法允许的近似决定，不应在看过错误结果后不断放宽直到通过。
 
 最大绝对误差能够暴露局部坏点；相对误差需说明近零分母如何处理；范数误差能看整体偏差，但会掩盖少数错误元素。另行检查 NaN/Inf 和未写位置，不让平均值把它们隐藏。
+
+### 低精度的匹配比例与随机采样的分布判据
+
+FlashInfer-Bench v1区分三类输出。确定输出使用逐元素容限；低精度输出可以在相同逐元素判据下，要求至少比例 $\rho$的元素匹配。$\rho=0.95$只是论文例子，不是FP8统一默认值。这种判据允许少数元素超差，因此还应报告最大误差、元素总数以及多输出/多次试验的归约方式；匹配比例不能替代任务质量评估。
+
+采样输出则要检验分布。给定概率 $p$，先应用任务的top-k/top-p有效mask并归一化成 $q$；重复采样得到经验频率 $f$，要求
+$\operatorname{TVD}(f,q)=\frac12\sum_v|f_v-q_v|<\tau$，
+同时每个样本都落在有效mask内。有限样本的分布接近与“从不产生无效样本”是两道门，频率接近不能抵消一次越界采样。（FlashInfer-Bench §3.3。）
+
+特殊值也按语义判断：该文一般流程写reject NaN/Inf，附录A.2的空KV参考却返回零输出与负无穷LSE。对这类定义合法的特殊值，应按对应输出语义比较，不能套一个“全部有限”的统一规则；本轮未核其实际harness怎样实现。
 
 整理者反例：按 IEEE FP32 逐步舍入，$(2^{24}+1)-2^{24}=0$，而 $2^{24}+(1-2^{24})=1$。同一实数和因结合顺序产生差别；这说明树形归约与串行归约可能不同，并不说明任何大小的差异都能接受。Triton GEMM 的 FP32 累加、LayerNorm 的 FP32 中间统计和 softmax 的近似指数必须分别核对。
 
@@ -253,3 +264,4 @@ SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段�
 | CUTLASS Profiler（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/profiler.html`） | 存量 snapshot-2026-07-02 | 实例库的测试/基准入口与编译范围；未运行。 |
 | PyTorch Profiler（`https://docs.pytorch.org/docs/2.14/profiler.html`） 与 Nsight Systems（`https://docs.nvidia.com/nsight-systems/UserGuide/`） | snapshot-2026-09-22；PyTorch URL 版本 2.14 | 算子关联与 CUDA 时间线的工具分工。 |
 | CudaForge: An Agent Framework with Hardware Feedback for CUDA Kernel Optimization（`https://arxiv.org/abs/2511.01884v2`） | `arXiv:2511.01884v2` | §3.1–3.2/3.5、Table1/3及附录A/D，250/25任务与候选预算/成本；方法容限1e-4与prompt/实验identical措辞不一，按数值检查范围解释。未核作者实现、完整生成产物或运行。 |
+| FlashInfer-Bench: Building the Virtuous Cycle for AI-driven LLM Systems（`https://arxiv.org/abs/2601.00227v1`） | `arXiv:2601.00227v1` | §3.3确定/低精度匹配/随机采样判据与附录A.2空KV参考；区分匹配比例、TVD与mask，保留一般Inf禁用与合法LSE特殊值的边界。未核实际harness、采样次数/阈值或运行。 |

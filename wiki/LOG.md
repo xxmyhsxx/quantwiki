@@ -1621,3 +1621,10 @@
 - 新增[生成Kernel任务与评测](implementation/llm-generated-kernel-evaluation.md)：区分任务/Module与设备kernel、全任务fast_p与正确子集速度、预算内至少一次与最后一轮；Table7第8轮正确但慢于Eager、第10轮重新错误作为实际反例。G/E/P与生成/CPU编译/GPU隔离复用已有候选验证和CudaForge状态解释，Events不泛称完整主机wall-clock。
 - TritonBench G184/T166的来源、接口与速度参考分别记录；用Table4覆盖下降而条件速度上升说明分母差异，G的尺寸扫描峰值GPU Efficiency与平均表现、occupancy和NCU流量分开，未扩大到T也有该列。原文Call/Execution冲突、聚合/容限与harness未给范围保留。
 - INDEX与测量/分析页连接；READING/SELF/计划同步215条有依据、14条队列（9论文/2文档/3代码），本轮基线88已处理74条，第22批范围完成。独立Sol review通过，结构/来源检查通过（206知识页、738项来源），受影响链接检查通过（6文件、1473条本地链接），git diff --check通过。未运行生成器/评测器/GPU，未新增测试；提交8文件，Obsidian改动保留。
+
+## 2026-10-15 · 生产Kernel评测：真实输入、数值契约与归约
+
+- 联合研读FastKernels v1、FlashInfer-Bench v1、KernelBenchX v2的固定主文与必要/全部附录，关键图表原件回查；源包身份复用已有版本证明。准备报告分别保留实际视觉范围、完整数据/harness缺失与原文差异，没有沿外链补采或修改raw。
+- [生成Kernel评测](implementation/llm-generated-kernel-evaluation.md)补模型来源与真实输入、状态/通信关系、Trace四对象；区分FastKernels代理主表、MacroEval与46架构端到端实验，解释有效族几何平均和三轴乘积；FlashInfer按workload→solution的宏平均保留基线身份与apply离线选择/fallback。
+- KernelBenchX补shape/dtype前置门、标准/异常输入、六项量化三指标联合阈值，以及任务内多输入总时间比和跨正确任务算术平均。[验证页](implementation/kernel-correctness-and-benchmarking.md)补低精度匹配比例、采样TVD+mask与空KV合法LSE特殊值；不重复计时/反馈基础，也不把静态门、有限测试和算法图扩成实现保证。
+- 原件FastKernels CI/条件速度强表述、FlashInfer Figure8性能与末候选、KernelBenchX图文/名称/环境和do_bench runs差异集中登记，不据此做生成器排名。READING/INDEX/SELF/计划同步218条有依据、11条队列（6论文/2文档/3代码），本轮基线88已处理77条，第23批范围完成；接续第24批。独立Sol review修正apply图号后通过；结构/来源检查通过（206知识页、742项来源），受影响链接检查通过（5文件、1470条本地链接），git diff --check通过。未执行上游/模型/GPU，不新增测试；提交7文件，Obsidian改动保留。
