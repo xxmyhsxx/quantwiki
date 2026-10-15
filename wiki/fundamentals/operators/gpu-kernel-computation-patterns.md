@@ -86,6 +86,8 @@ $$\ell=\sum_t e^{m_t-m}\ell_t.$$
 
 文章同时把一线程一行改为一 block 一行，使同轮相邻线程读取相邻列；变化涉及工作分配、访存和归约，不能只归因于 shared。其 shared 二分树需相应的2幂 block，保存 `smem[1024]` 也限制线程索引；shuffle 版仍用 shared 和 block 屏障合并各 warp 的结果。`warp_size=4` 是缩小的教学图例，真实32-lane/FULL_MASK的参与条件见 [Warp成员与内存依赖](../hardware/gpu-execution-and-memory-hierarchy.md#Warp%20collective%20%E7%9A%84%E6%88%90%E5%91%98%E4%B8%8E%E5%86%85%E5%AD%98%E4%BE%9D%E8%B5%96)。原文永久锁步与 shuffle 越界“默认值/undefined”的不同说法不作为 API 保证；数学式的求和上界写 N，此处按代码 `col<N` 解释 N 个有效元素。（“Kernel1–4”。）
 
+固定 [CUDA Softmax实现](../../implementation/cuda-softmax-row-reductions.md)沿runner、局部统计重标定、两级归约与再次读取输入走到输出，接续上述计算模式；与文章片段和报告数字分别核对。
+
 ### LayerNorm：mask 之后的运算也可能污染归约
 
 `05-layer-norm.py:_layer_norm_fwd_fused` 计算

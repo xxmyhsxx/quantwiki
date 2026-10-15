@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · cudacodes ingest：行Softmax统计、归约与输出
+
+- 核固定9a459b1的所选softmax README/Makefile、6kernel/6声明header/helper、bench/test/PyTorch脚本、两log/plot等softmax内所选21文本/4图及仓库根README；原archive哈希及78普通文件source字节/执行位匹配，未将档案核对当语义全库，未执行二进制/编译/设备。
+- 新增[CUDA行Softmax实现](implementation/cuda-softmax-row-reductions.md)，沿默认入口→0–4分工→局部统计/共同基准→两级归约/缓冲复用→再次读输入输出和host消费。复用公共Softmax数学、Warp成员和测量页，计算模式/INDEX连接主线，源码v1独立resd与README/文章原地片段分开。
+- 保留默认0/1单CTA与2–4每行CTA的多因素差异、1024/full-warp/shared条件、caller发布/复用屏障、float4行首对齐与scalar tail、混合expf/__expf；v5行映射/归约/返回等静态缺口不当完成实现。test无数值参考、单次CUDA event与PyTorch墙钟、日志缺N/运行身份和画图另组数据均保留，不报告GPU或模型收益。
+- READING/INDEX/SELF/计划同步：189条有依据、40条队列，本轮基线88已处理48条；第18批九项选定来源按实际范围完成，接第19批CUTLASS/GEMM。独立Astra内容review无机制、条件或知识关系必修；核读数量按其建议澄清为softmax内所选21文本/4图及仓库根README，由主代理对照实际文件清单核实。结构/来源strict检查199知识页、708项登记，0错误/待核；5个受影响Wiki页1345条本地链接strict通过，diff及189/40（12论文/23文档/5代码）计数通过；launch/shared字节/行首对齐与v5行索引静态算术核对通过。提交范围为本项7文件，Obsidian改动保留；未运行上游或设备。
+
 ## 2026-10-15 · Softmax worklog ingest：共同基准与计时范围
 
 - 完整读取indexed-text-snapshot-2026-09-24保存505行、README与对应fixed仓库3图，文章正文哈希匹配；原HTML在采集时404，未声称网页完整恢复，仓库代码整项留后续。
