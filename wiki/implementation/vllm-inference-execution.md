@@ -10,7 +10,7 @@ sources:
   - raw/articles/2026-09-24/vllm-v1-architecture
   - raw/articles/2026-09-24/vllm-v1-zhihu-source-reading
   - raw/repositories/2026-09-21/vllm
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # vLLM 推理执行：从 token 调度到变长批次
@@ -20,6 +20,8 @@ vLLM 把持续到达、长度不同的请求组织成一轮轮 GPU 工作。核�
 本页研读 raw 固定快照中的 V1 路径，以普通 decoder-only、全注意力、无推测解码的请求为解释主线。多进程概览另核官方文档快照 `f9ad9dd6` 及其原图，与执行源码 `568afb3a` 分别登记；执行链依据 `EngineCore.step`、`Scheduler.schedule` 和 `GPUModelRunner`。分页原理及原始论文实验复用[内存管理与批处理](serving-memory-and-batching.md)，Attention 接口和设备计算接续到[vLLM 算子设计](vllm-attention-operator-design.md)。
 
 紧凑离线实例见[nano-vllm 的 token/KV 与模型执行](nano-vllm-inference-execution.md)：可先沿其状态、块池和runner建立接口认识，再对照本页的现代V1组织；两份固定实现的调度与batch条件各由对应正文说明。
+
+[推测解码的候选、验证与每轮成本](../fundamentals/model/speculative-decoding-proposals-verification-and-cost.md)另解释提议、目标评分、连续前缀提交与lookahead KV，并保留旧讲义的执行范围。它用于理解推测流程与下面普通decode主线的区别。
 
 请求背后的模型计算、下一 token 与 KV 的关系见 [Transformer 与自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)。多卡线性层的切片、归约与量化元数据见 [张量并行](tensor-parallel-quantization.md)，调度效果如何测量见 [服务性能评测](serving-performance-evaluation.md)。
 

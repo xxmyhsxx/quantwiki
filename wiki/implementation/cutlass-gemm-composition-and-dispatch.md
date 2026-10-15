@@ -7,6 +7,7 @@ tags:
   - gpu
   - data-layout
 sources:
+  - raw/articles/2026-09-24/gpu-mode-lecture-materials
   - raw/articles/2026-09-21/cutlass-gemm-api
   - raw/articles/2026-09-21/cutlass-quickstart
 updated: 2026-10-15
@@ -16,7 +17,7 @@ updated: 2026-10-15
 
 CUTLASS 3 把 GEMM 分成几层协作：主机 handle 准备调用参数，kernel 分配输出任务，collective 完成当前任务的搬运、K 归约与输出处理，CuTe 再将这些操作组织成线程和指令。理解这条链，才能判断一个配置改变的是工作划分、流水还是数值接口。
 
-本页依据 CUTLASS 3.0 GEMM API 与 Quickstart 的固定文档快照。输出 tile 与 K 归约的基础见 [分块矩阵乘](../fundamentals/operators/gpu-kernel-computation-patterns.md)，元素 stride 见 [张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)。
+本页依据 CUTLASS 3.0 GEMM API 与 Quickstart 的固定文档快照，EVT示例另据2024-06-07的Speaking Tensor Cores讲义（CUTLASS 3.5）。输出 tile 与 K 归约的基础见 [分块矩阵乘](../fundamentals/operators/gpu-kernel-computation-patterns.md)，元素 stride 见 [张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)。
 
 ## 1. Mainloop和epilogue组成kernel，adapter提供主机入口
 
@@ -35,6 +36,14 @@ Mainloop 沿 K 搬入 A/B tile，把乘积累加到同一输出状态；epilogue
 例如 warp-specialized collective 可以让 producer 搬运、consumer 做 MMA，并通过共享状态协调依赖。Kernel 则在独立输出任务之间调度；普通 grid 可直接分配任务，persistent kernel 可继续向 work-tile scheduler 领取。每个任务内部的 K 循环仍由 mainloop 处理。具体 Hopper 分工见 [配置与工作划分](kernel-configuration-and-autotuning.md#Hopper%E7%9A%84%E4%B8%A4%E4%B8%AAconsumer%E6%80%8E%E6%A0%B7%E5%88%86%E6%8B%85%E8%BE%93%E5%87%BA)。
 
 多个GEMM怎样组成任务空间、visitor怎样定位problem，见[Grouped GEMM任务调度](kernel-configuration-and-autotuning.md#Grouped%20GEMM%20%E6%80%8E%E6%A0%B7%E5%AE%9A%E4%BD%8D%E5%A4%9A%E4%B8%AA%E9%97%AE%E9%A2%98%E7%9A%84%E8%BE%93%E5%87%BA%20tile)。
+
+### EVT将表达式接入输出子块循环
+
+Epilogue Visitor Tree（EVT）将取值/广播、计算与存储节点组成树或DAG，表达输出依赖。Speaking Tensor Cores第42–49页以 $D=\operatorname{ReLU}(\alpha\,\mathrm{accum}+b+\beta C)$ 为例：先将alpha、accumulator与bias组成multiply-add节点，再将beta×C与前一结果合并，最后施加ReLU并转换输出。树类型 `EVTOutput`作为参数交给epilogue `CollectiveBuilder`，再与mainloop组成kernel；各节点不是独立launch。
+
+例中的 `Sm90ColBroadcast`使用 `Stride<_1,_0,int>`，Python示例的bias shape是 `(m,1)`：bias随M变化、沿N广播。广播方向应从shape/stride确认。`ElementCompute`、`ElementOutput`与 `RoundStyle`又分别规定中间计算、结果类型和舍入，实数表达式相同不保证不同树的数值路径相同。
+
+第50–51页的SM90 consumer store warpgroup伪码把树接到epilogue subtile循环：取accumulator片段，按需要将C从shared读入寄存器，在 `visit`中计算，将结果写入shared，再按树执行 `reduce/postreduce`，最后TMA写D。`begin/end`包围整个循环，`previsit/visit`等随子块推进。这说明融合怎样进入已有输出搬运流程，同时仍有source/aux访问、暂存与同步成本；[W8A8尺度与bias融合](w8a8-quantization-gemm-kernels.md)是具体实例。
 
 ## 2. 实现类型与本次调用参数分开
 
@@ -97,3 +106,5 @@ Quickstart同时包含不同代际的构建与GEMM示例。其概述列出的CUD
 - Quickstart — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/quickstart.html`），`snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，通用层次图补采于2026-09-21。完整保存794行/README及同图；主要使用主机缓冲/stride/调用、Library选择和构建过滤，原件差异见正文；没有执行构建、Profiler、测试或设备程序。
 
 - CUTLASS 3.0 GEMM API — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/gemm_api_3x.html`），`snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，配图补采于2026-09-21。完整保存493行与配图，主要使用 Device/Kernel/Collective，Tiled/Atom 按本页概述；坐标例为整理者展开。文档未给完整参数初始化和启动示例，本次未核外链实现、完整 CuTe 教程或运行。
+
+- Supplementary Material for Lectures — GPU Mode（`https://github.com/gpu-mode/lectures/blob/77a8df418834e5789c12da23e7d2719e0efabef1/README.md`），目录commit `77a8df418834e5789c12da23e7d2719e0efabef1`，获取于2026-09-24T19:54:39+08:00；使用保存的Speaking Tensor Cores PDF（2024-06-07，CUTLASS 3.5）第42–51页的SM90 EVT表达式、广播轴和subtile回调。外部PDF与目录commit分开，未执行讲义代码或核完整同步实现。

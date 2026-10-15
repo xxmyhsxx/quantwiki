@@ -199,6 +199,8 @@ greedy 推测解码需要 draft 与 target 一致；采样版在同一状态下�
 
 真实 vLLM 两个 Qwen3 target 的评测中，TV 预测 greedy 接受率的平均相对误差为 1.1–2.4%，但按权重字节近似计算成本时，TV 选出的 draft 仅达到最佳实测加速的 85–100%。一致性还没有计入 draft kernel、验证批次和调度成本，不能据此选最快模型。
 
+这些成本怎样进入提议、目标评分、验证和KV提交，见[推测解码执行与每轮成本](../fundamentals/model/speculative-decoding-proposals-verification-and-cost.md)；连续接受长度与每轮实际输出量分别计量。
+
 最终任务则需要别的证据：论文 §8 在 Gemma-3-4B、相近 GSM8K KL 与 flip 下，magnitude pruning 损失 33.3 个准确率百分点，Wanda 却增加 4.8 个百分点。同样数量的决策改变，其方向与后果可以完全不同；teacher forcing 也没有覆盖早期改变对未来状态的反馈。评测应直接报告任务内 flip，并配合[模型质量协议](../implementation/model-quality-evaluation.md#9.%20%E8%BE%93%E5%87%BA%E5%88%86%E5%B8%83%E4%B8%80%E8%87%B4%E6%80%A7%E8%A6%81%E5%9B%BA%E5%AE%9A%E5%89%8D%E7%BC%80%E5%92%8C%E6%8C%87%E6%A0%87%E5%8F%A3%E5%BE%84)。
 
 ## 来源身份

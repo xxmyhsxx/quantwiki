@@ -88,6 +88,7 @@ sources: []
 | 页面 | 主要问题 |
 | --- | --- |
 | [Transformer 与自回归推理](fundamentals/model/transformer-autoregressive-inference.md) | 解释结构、位置/记号、训练与生成，连接GQA转换、KV容量及MQA历史流量与batch摊销。 |
+| [推测解码：候选、目标验证与每轮成本](fundamentals/model/speculative-decoding-proposals-verification-and-cost.md) | 提议与目标评分怎样变成连续前缀输出，lookahead KV、每轮推进量与旧单query展开怎样影响成本。 |
 | [推理模型后训练：GRPO、模式控制与蒸馏](fundamentals/model/reasoning-post-training-and-distillation.md) | 策略、组内反馈、checkpoint/数据流、模式预算和硬/软监督怎样影响生成行为。 |
 | [多模态感知与流式语音生成](fundamentals/model/multimodal-perception-and-streaming-speech-generation.md) | 音画时间与序列位置、Thinker/Talker依赖、语音code到波形以及分块前看条件。 |
 | [MoE 与专家路由](fundamentals/model/mixture-of-experts-and-routing.md) | 共享与路由专家、设备限制、负载、总容量与量化路由误差怎样连接。 |

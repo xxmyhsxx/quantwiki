@@ -6,6 +6,7 @@ tags:
   - data-layout
   - gpu
 sources:
+  - raw/articles/2026-09-24/gpu-mode-lecture-materials
   - raw/articles/2026-09-21/triton-group-gemm
   - raw/articles/2026-09-21/cutlass-tile-iterators
   - raw/repositories/2026-09-21/vllm
@@ -76,6 +77,14 @@ CUTLASS C++ 的 `Layout` 把逻辑坐标映射成元素偏移，并保存所需�
 逻辑元素数 **size** 与布局所需的元素容量 **capacity** 分别用于描述内容和预算存储。来源的 RowMajor 约定是 `capacity=rows*pitch`，pitch 包含行尾 padding。整理者沿用前面的二维地址公式：shape 为 `(2,3)`、pitch 为5时，size为6，`(1,2)` 的偏移为7，而该接口的 capacity为10；FP32数据对应40字节。只从首元素到最后有效元素算出的8个位置，是最小触及跨度，和该API的容量约定不同。
 
 `Layout::packed(extent)` 返回描述紧密排列的 layout 对象，后续可据此分配、访问相应缓冲。它没有重排已有数据：把pitch为5的原缓冲换成pitch为3的描述，不会自动移除padding。需要把数据变成紧密排列时，还须实际搬运，这与上文“转置视图”和“物理重排”的区别相连。
+
+### CuTe的层次shape先分解坐标，再由stride映射存储
+
+Speaking Tensor Cores讲义第24页使用 `Shape=(4,(2,2))`、`Stride=(2,(1,8))`。逻辑枚举号 $I$先分解为层次坐标 $(i,(j_1,j_2))$，其中 $0\le i<4$、$0\le j_1,j_2<2$；shape决定枚举关系，stride再给元素偏移：
+
+$$I=i+4(j_1+2j_2),\qquad o=2i+j_1+8j_2.$$
+
+例如 $I=9$对应 $(1,(0,1))$，物理偏移为10。逻辑编号与存储位置因此不是同一个量；层次结构还保留了一个mode内部怎样继续拆分。这个描述不搬运数据，也没有单独规定哪些线程持有哪些值。公式是按讲义图展开的坐标解释，完整的layout composition/product/divide另有规则，不能从这个例子直接推出全部布局代数。
 
 ### CUTLASS 2.x迭代器怎样推进和访问tile
 
@@ -205,3 +214,4 @@ flowchart LR
 | Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`） | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |
 | vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | CUDA 门控与 Triton 列块的工作映射。 |
 | SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 门控的全局向量任务映射。未运行 GPU 实现。 |
+| Supplementary Material for Lectures — GPU Mode（`https://github.com/gpu-mode/lectures/blob/77a8df418834e5789c12da23e7d2719e0efabef1/README.md`） | 目录commit `77a8df418834e5789c12da23e7d2719e0efabef1`；获取于2026-09-24T19:54:39+08:00；Speaking Tensor Cores PDF为2024-06-07讲义 | 第24–25页层次shape/stride；坐标公式为按图展开的整理者说明，未核完整CuTe布局代数/线程映射或执行。 |

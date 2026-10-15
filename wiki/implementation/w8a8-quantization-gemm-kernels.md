@@ -121,6 +121,8 @@ $$
 
 SGLang `int8_gemm_kernel.cu` 的 SM90 EVT 先做 $s_w\operatorname{FP32}(C)$，再乘 $s_x$；带 bias 时第二级用 multiply-add。vLLM `scaled_mm_epilogues_c2x.hpp` 的 `ScaledEpilogue`／`ScaledEpilogueBias` 也按先列尺度、后行尺度构造 visitor 树。
 
+EVT的取值、广播、计算节点怎样交给builder并接入输出子块，见[表达式与epilogue组成](cutlass-gemm-composition-and-dispatch.md#EVT%E5%B0%86%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%8E%A5%E5%85%A5%E8%BE%93%E5%87%BA%E5%AD%90%E5%9D%97%E5%BE%AA%E7%8E%AF)。
+
 这些源码表达的是同一实数公式，但 FP32 的乘法结合次序和 multiply-add 融合会改变舍入。后端比较不能要求仅凭“INT32 累加、FP32 epilogue”便逐位相同，也不能从一个 CPU 模拟证明实际编译器的 FMA 行为。
 
 vLLM `scaled_mm_c2x.cuh` 还明确选用 INT8 的 `OpMultiplyAddSaturate`、`ThreadblockSwizzleStreamK`；调用参数中的 `kGemmSplitKParallel` 与 batch count 1 不能单独证明启动了多少个 $K$ 分区。其构建默认 CUTLASS tag 为 v4.4.2，且允许外部源目录覆盖。本页核对其 wrapper 与 visitor 源码，没有把上一节 SGLang 依赖的主循环等同于 vLLM 的完整执行。

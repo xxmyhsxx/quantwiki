@@ -1600,3 +1600,10 @@
 - [硬件页](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)补NNFusion任务融合图的进度死锁：驻留block等待全部Matmul结束，却占满可用资源，尚未调度的依赖任务无法执行。区分数据可见性与执行机会，不推定任意grid自旋屏障或完整软件执行器已可用。
 - [计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)仅补最后使用/同时存活容量与[MoE工作区](implementation/moe-routing-and-quantized-expert-execution.md)的连接；现有实例已说明gate/up消费后复用down缓冲，不另开内存规划专题。保留历史材料身份，不吸收量化数例不一致或把未作答练习当实现证据。
 - READING/SELF/计划同步：211条有依据、18条队列（12论文/3文档/3代码），本轮基线88已处理70条；下一项GPU Mode讲义。独立Astra review通过，结构/来源检查通过（204知识页、731项来源），受影响链接检查通过（4文件、1006条本地链接），git diff --check通过。未执行课程/NNFusion代码，不新增测试；提交6文件，Obsidian改动保留。
+
+## 2026-10-15 · GPU Mode讲义研读：推测执行与EVT布局连接
+
+- 材料准备完整读README40行、固定目录253行及三份PDF（54/36/95共185页）的可提取文本/逐页渲染图览；根代理复读Lecture22全36页文本，重点核18/24/30原图及Lecture23第24、42/44–47/49–51原页。目录commit77a8df418834e5789c12da23e7d2719e0efabef1与外部PDF保存身份分开；未沿目录取代码或其他课程材料。
+- 新增[推测解码](fundamentals/model/speculative-decoding-proposals-verification-and-cost.md)：候选/目标概率→验证→接受前缀与纠正/bonus，区分输出与有效KV；以A+1推进量和期望尾和解释每轮成本，公式为带终止条件的整理者展开。lookahead与旧单query虚拟序列限定在讲义设计，不接成568afb3a普通V1源码；新版完整采样/提交协议及性能未核。
+- [CUTLASS组成](implementation/cutlass-gemm-composition-and-dispatch.md)补SM90 EVT节点、(m,1) bias沿N广播、builder与subtile回调；[布局](fundamentals/operators/tensor-layout-and-kernel-contracts.md)补(4,(2,2))/(2,(1,8))的逻辑分解与存储映射。保留2024-06-07/CUTLASS3.5与伪码范围，不据简化指令/consumer片段改写现有正确解释。量化基础已有充分覆盖，不复制历史性能表或把2/3bit模拟记作原生kernel。
+- INDEX与vLLM/一致性/W8A8按理解需要连接；READING/SELF/计划同步212条有依据、17条队列（12论文/2文档/3代码），本轮基线88已处理71条，第21批五项范围完成，下一项第22批。独立Astra review通过，结构/来源检查通过（205知识页、734项来源），受影响链接检查通过（9文件、1484条本地链接），git diff --check通过。未执行上游、未新增测试；提交11文件，Obsidian改动保留。
