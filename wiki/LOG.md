@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Tensor Core ingest：WMMA片段与历史入口
+
+- 核读snapshot-2026-07-02完整保存334行、全部保存代码及5图/README，6正文/图现算哈希相符；正文与2026-09-21图片补采分开，未取原HTML/外链完整程序/API或编译/运行。
+- 在[Tensor Core与量化GEMM](implementation/tensor-core-quantized-gemm.md)补WMMA不透明fragment、列主序地址与K循环、同模板统一epilogue，连接既有显式PTX lane表和编译检查；保存CUDA9/V100硬件/warp粒度、旧库入口与图表证据条件，不复写通用GEMM机制。
+- 保留host省略/共同参与、起点guard的整块局限与M17静态反例、beta0仍读C、A行/B列文字和实际代码差异及残缺cuBLAS；旧cuBLAS倍数/cuDNN通道条件不扩现代API，峰值/跨代GEMM和卷积层几何均值不代端到端或质量验证。
+- READING/INDEX/SELF/计划同步：186条有依据、43条队列，本轮基线88已处理45条；第18批下一项Using CUDA Warp-Level Primitives。独立Astra review通过，无剩余必修；READING下一项/计划日期、旧CPU检查归属和网页获取时间已修正并复读关闭。结构/来源strict检查198知识页、703项登记，0错误/待核；4个受影响Wiki页1321条本地链接strict通过，diff及186/43（12论文/25文档/6代码）计数检查通过。提交范围为本项6文件，Obsidian改动保留；未编译或运行设备。
+
 ## 2026-10-14 · Shared Memory ingest：反转快照与动态资源
 
 - 核读snapshot-2026-07-02完整保存137行/所有保存示例及README，正文现算哈希相符；没有独立保存配图，未取原HTML/作者GitHub完整程序或编译/运行。
