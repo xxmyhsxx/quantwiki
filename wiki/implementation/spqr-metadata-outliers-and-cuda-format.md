@@ -9,14 +9,16 @@ tags:
   - gpu-kernel
 sources:
   - raw/repositories/2026-09-21/spqr
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # SpQR 的两级尺度、稀疏保护值与所选 CUDA 格式
 
-本页核固定543d10e56f921e5eeb10d5f0aaaccd30b6662d0e的所选Linear校准、逐列补偿/保护、两级元数据、旧保存/浮点恢复、3bit与16×16的转换、CSR/PTCSR及packed matvec。方法与论文结果由[SpQR](../methods/spqr.md)承接；未核全部模型、lm-evaluation-harness、任意组宽/尾块、完整HF加载或设备同步/越界正确性。未导入上游、安装、编译、运行模型或GPU；cuda_kernel.py在导入时会JIT编译，文件阅读没有执行它。
+SpQR 的实现要把“小组低比特主体加少量高精度例外”变成可保存、可读取的线性层。校准时，它沿输入列量化并补偿误差，同时选出需要保护的位置；保存时，它压缩主体的尺度和零点，再记录例外值与位置。两级元数据降低小组的存储开销，稀疏记录则避免少量难量化权重破坏整组质量。算法动机和论文结果见[SpQR 方法页](../methods/spqr.md)。
 
-主链有两种消费：旧统计文件能恢复普通浮点Linear；优化格式把码和元数据重排成64bit字，并在CUDA内恢复FP16权重、FP32累加稠密与稀疏贡献。旧保护值的覆盖语义和新接口的相加语义必须核对，不能把“有CUDA代码”当作保存产物已无误转换。
+固定版本有两条后续路径：旧统计文件恢复成普通浮点 Linear；优化格式将码与元数据重排成 64-bit 字，交 CUDA 边解码边计算。第二条路径能保持权重压缩，但必须正确转换例外值：旧文件保存的绝对值用于覆盖，优化接口读取的值却直接相加。下面按校准、保存、打包和消费的顺序说明这处差异及各阶段成本。
+
+范围为 commit `543d10e56f921e5eeb10d5f0aaaccd30b6662d0e` 的所选 Linear、3-bit/16×16 优化格式及必要容器/测试入口。未核全部模型、任意组宽/尾块、完整 HF 加载或设备同步/越界正确性；未导入、编译或运行上游。`cuda_kernel.py` 的导入会触发 JIT，文件阅读没有执行它。
 
 ## 1. 校准前缀、顺序和误差代理
 
@@ -34,13 +36,19 @@ $$\theta=\tau\,\operatorname{mean}_j\!\left(\frac{\operatorname{var}_i W_{ij}}{U
 
 ## 2. 先估计保护收益，再使用已恢复元数据
 
+保护某个权重有两种收益：不必量化它本身，还可能收紧剩余权重的范围。因此组内先估计“排除谁有利于拟合”，逐列量化时再按补偿后的实际误差决定最终保护位置。随后参与量化的尺度和零点必须是部署时能恢复的值，不能先按高精度元数据量化完，再单独压缩元数据。
+
+### 组内预测与逐列保护
+
 有限阈值且未启用simplified_outliers时，每个输入列组先做leave-one-out：对每个候选排除它、重拟合基础网格，比较全部保留元素的 $\sum_j(w_j-d_j)^2/U_{jj}^2$ 与全组基础误差，预测哪些排除能降低足够多误差。它不是只测候选自己的幅值；这里试拟合不启用QQ元数据量化。
 
 预测例外以其余元素均值替换后，才拟合真正的网格；分母有clamp_min(1)。实际逐列补偿后再按当前误差选最终mask，两种mask不必相同。simplified_outliers只省掉组内重拟合，仍可执行最终误差保护。
 
-每个输出行、每groupsize个连续输入权重，使用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,2^b-1)$、$d=s(q-z)$。非对称默认round_zero为False/CLI None，z为实数；xmin/xmax直接来自组值，不自动扩展到包含0，相同端点另设[-1,1]。不要将它替换为整数零点契约。
+### 网格与两级元数据
 
-QQ将当前输入组的每输出行s/z向量reshape为[-1,qq_groupsize]：**二级分组跨输出行**，不沿同一输出行跨多个输入组。先量化s/z并恢复，再用恢复的值量化权重和计算误差；压缩元数据不是最后才做。qq_zero是否执行还取决于round_zero与所设位宽，转换接口不能只检查wbits。
+每个输出行、每 `groupsize` 个连续输入权重，使用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,2^b-1)$、$d=s(q-z)$。非对称默认round_zero为False/CLI None，z为实数；xmin/xmax直接来自组值，不自动扩展到包含0，相同端点另设[-1,1]。不要将它替换为整数零点契约。
+
+QQ 是对量化参数再次量化。它将当前输入组各输出行的 s/z 向量 reshape 为 `[-1, qq_groupsize]`：**二级分组跨输出行**，不沿同一输出行跨多个输入组。先量化s/z并恢复，再用恢复的值量化权重和计算误差；压缩元数据不是最后才做。qq_zero是否执行还取决于round_zero与所设位宽，转换接口不能只检查wbits。
 
 | 对象 | CLI/代码字段 | 本页记法 |
 | --- | --- | --- |
@@ -80,17 +88,25 @@ convert_legacy_model_format.load_legacy_tensor将同一outliers_matrix转CSR，�
 
 PTCSR每16输出行取最大行长度k，把16行的条目交错并补到16k，row_offsets按行块存；col_vals包含零填充。此时nnz/density计入填充，不能当真实保护比例，存储与负载平衡之间要结合实际分布判断。[格式预算与保护协议](../theory/codebook-quantization-and-bit-budget.md#5.2%20%E4%BF%9D%E6%8A%A4%E5%80%BC%E5%BA%94%E8%A6%86%E7%9B%96%E8%BF%98%E6%98%AF%E7%9B%B8%E5%8A%A0%EF%BC%8C%E7%94%B1%E4%BF%9D%E5%AD%98%E5%8D%8F%E8%AE%AE%E5%86%B3%E5%AE%9A)区分这些口径。
 
-## 5. packed matvec怎样恢复并消费
+## 5. packed matvec 怎样恢复并消费
+
+优化格式的消费者是矩阵与单向量乘法（matvec）。它读取压缩主体及稀疏记录，恢复所需权重并累加输出；多 token 的 Python 接口仍逐向量调用，不能直接按批量 GEMM 估计吞吐。
+
+### 数值恢复与输入置换
 
 两级尺度先由half2减法/乘法恢复FP16 s/z，再以同样操作恢复FP16 d；不是将所有QQ参数提升FP32再计算。输入为FP16，转FP32后使用fmaf累加主体，稀疏half值乘输入也并入FP32，跨线程归约后转FP16输出。这与校准时的FP32量化近似、或旧浮点恢复路径不保证逐bit一致，保存元数据的dtype也会改变网格。
 
 in_perm把两相邻原输入索引存成一个int32，kernel按ushort2读取，在线gather到共享输入再计算；置换要与W的列、保护列同坐标。稀疏ColVal的低16位列/高16位half值，在所选接口还读为signed short并由Python short转换；非负列小于32768是本页的范围，不能仅从16bit字段宣称支持全部65536列。perm的unsigned16容量、稀疏列的signed前提及n为偶数是不同条件。
 
-CSR由row_offsets长度m+1判定，否则按PTCSR行块读取；分支都在同一matvec中恢复主体并加入稀疏。这是所选固定代码的融合实现，论文原始数据不能直接作为本版本的运行证据。同步调用的feature flag未设IS_ASYNC，spqr_matvec末尾cudaDeviceSynchronize；flag名字包含FP32不是对所有外部选项已验证的证据，host错误返回也未向Python上层传播。
+### 融合范围与批量接口
+
+CSR 由 `row_offsets` 长度 m+1 判定，否则按PTCSR行块读取；分支都在同一matvec中恢复主体并加入稀疏。这是所选固定代码的融合实现，论文原始数据不能直接作为本版本的运行证据。同步调用的feature flag未设IS_ASYNC，spqr_matvec末尾cudaDeviceSynchronize；flag名字包含FP32不是对所有外部选项已验证的证据，host错误返回也未向Python上层传播。
 
 QuantizedLinear.forward按x.shape[1]循环逐向量调用，最后固定reshape[1,seq,m]，不是原生矩阵乘或一般批量接口。本页按[1,seq,n]且FP16/连续输入解释；prefill多token会执行多次matvec，不能把单向量低位读取直接概括为大batch吞吐。
 
-原测试以人工构造码/元数据/稀疏值对照CPU dequantize，所读fused辅助传identity排列；它没有核真实legacy绝对保护值转换的语义，也不证明任意置换。bench_matvec_kernel的计时段设置2000次、丢前10次再取最小值，主要计局部无perm入口，CSR/PTCSR一致断言被注释；ptcsr_path虽为可选参数，文件循环仍直接用它拼路径，省略时的静态前提没有闭合。计时表达不保证整个入口已可运行，也与带模型、真实cache的端到端时间不同。inference_demo虽构StaticCache逐token生成，其所选计时没有显式设备同步，CUDA内部同步和可选compile又会改变边界，不能作为本轮性能实测。
+### 测试覆盖与计时边界
+
+原测试以人工构造码/元数据/稀疏值对照 CPU dequantize，所读fused辅助传identity排列；它没有核真实legacy绝对保护值转换的语义，也不证明任意置换。bench_matvec_kernel的计时段设置2000次、丢前10次再取最小值，主要计局部无perm入口，CSR/PTCSR一致断言被注释；ptcsr_path虽为可选参数，文件循环仍直接用它拼路径，省略时的静态前提没有闭合。计时表达不保证整个入口已可运行，也与带模型、真实cache的端到端时间不同。inference_demo虽构StaticCache逐token生成，其所选计时没有显式设备同步，CUDA内部同步和可选compile又会改变边界，不能作为本轮性能实测。
 
 ## 来源身份
 
