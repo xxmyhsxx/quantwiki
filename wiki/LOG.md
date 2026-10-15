@@ -2,6 +2,16 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · 整体解释与阅读路径改进
+
+- 将对象的整体作用、工作方式与局部机制的联系融入 Wiki 写作、实现分析和维护条款；AGENTS 保留简短入口，SELF 调整完成判断，wiki-ingest 与 wiki-review 的设计/执行同步修改。沿现有步骤落实，不新增模板、检查器或 Skill，不要求局部页重讲全系统。
+- [部署页](implementation/quantized-llm-deployment-backends.md)补 MLC-LLM `6474f7db` 的配置、参数缓存、模型库与 Python 引擎交接，说明 JIT 入口和参数统计口径；定向回查固定配置/转换/编译/引擎源码。未扩展为编译 pass、代码生成、C++ 调度或设备核验，READING 与局限说明同步。
+- [nano-vllm](implementation/nano-vllm-inference-execution.md)补组件与状态分工，定向复核 `bb823b3e` 的轮次、调度/后处理、块释放、KV 池与 Attention 读写；[模型基础](fundamentals/model/transformer-autoregressive-inference.md)综合已有解释，比较 GQA、QK-Norm、MoE、MLA 与视觉输入怎样改变量化对象，不新增模型支持或性能结论。
+- SELF 压缩已由正文、READING 与历史 LOG 承接的逐项细节，保留主线、入口和关键限制；[INDEX](INDEX.md)保留全部 48 条既有阅读路径，按基础、方法、表示、模型/缓存、系统/算子和质量组织，补模型差异入口。
+
+- 阅读复核：从入口回读三处改动，能沿正文解释 MLC 配套产物、nano-vllm 状态职责及模型差异的量化含义；新增知识链接逐项读取目标。另抽查 AWQ 开头与校准/产物主线、RMSNorm 开头与接口/归约说明，已有解释充分，未套模板改写。两个 Skill 的设计与执行变更逐项对应；这属于内容阅读与静态流程检查，未重新执行论文 ingest 或开展实验，也不代表全库语义审查。
+- 机械检查：7 个受影响 Wiki 文件、1628 条本地链接 strict 通过，0 错误/待核；根目录与 Skill 文档 6 文件的 54 个本地链接目标存在；48 条阅读路径完整保留，差异格式检查通过。原有 Obsidian 工作区改动保留。
+
 ## 2026-10-15 · Triton-Puzzles研读：练习骨架与已有覆盖
 
 - 完整静态研读固定4d794abed02292081500ebf4b1e35cd5fc5fb019的条目/根README、notebook49cell及全部16内嵌PNG；四个source文件的身份/保存证明复用原登记。4个访存demo有实现，12题kernel仍为TODO，19代码cell无保存execution_count/outputs，未将图示或题目目标当已实现/通过。

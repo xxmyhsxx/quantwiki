@@ -8,16 +8,28 @@ tags:
   - memory
 sources:
   - raw/repositories/2026-09-21/nano-vllm
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # nano-vllm 离线推理：token 进度、分页缓存与模型执行
 
 nano-vllm 的固定版本把一批文本或 token-ID 提示变成生成结果：等待队列提供请求，调度器选择本轮工作，块管理器提供历史 KV 和写入空间，runner 构造输入，Qwen3 前向及采样产生候选 token，后处理再推进请求。它适合用来跟清一条紧凑执行链；这是**离线批量接口**，没有 HTTP 服务、流式响应或现代 V1 的混合调度主线。
 
-本页依据 `bb823b3e06983d71485a8e1f23715ebd87d98ef8`，除根目录的README、pyproject、example.py与bench.py外，以下模块路径相对于 `nanovllm/`。现代引擎的不同组织见[vLLM 推理执行](vllm-inference-execution.md)；因果模型、下一 token 与 KV 的关系见[自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)，分页基础见[服务内存管理](serving-memory-and-batching.md)。本次静态读取全部21个 Python 文件，未导入上游或运行模型。
+本页依据 `bb823b3e06983d71485a8e1f23715ebd87d98ef8`，除根目录的README、pyproject、example.py与bench.py外，以下模块路径相对于 `nanovllm/`。现代引擎的不同组织见[vLLM 推理执行](vllm-inference-execution.md)；因果模型、下一 token 与 KV 的关系见[自回归推理](../fundamentals/model/transformer-autoregressive-inference.md)，分页基础见[服务内存管理](serving-memory-and-batching.md)。既有静态研读已覆盖全部21个 Python 文件；本轮补组件分工时定向复核相关入口，未导入上游或运行模型。
 
 ## 1. 离线调用、轮次执行与返回结果
+
+这条执行链把“决定本轮做什么”与“执行张量计算”分开。请求的逻辑进度保存在 `Sequence`，scheduler 决定进度何时前推；KV 块的分配信息与 GPU 上真正的 KV 数值也由不同组件维护：
+
+| 组件 | 管理的状态或职责 | 怎样与下一环节配合 |
+| --- | --- | --- |
+| `LLMEngine` | 接收输入，驱动轮次，收集完成结果 | 每轮调用 `schedule → runner.run → postprocess` |
+| `Sequence` 与 `Scheduler` | Sequence 保存 token、前向进度和页表；Scheduler 管理 waiting/running、选定本轮工作并处理返回 token | 把选中序列及 prefill/decode 标识交给 runner，返回后更新进度或结束请求 |
+| `BlockManager` | 管理物理块 ID、引用计数和前缀 hash，更新序列的块表 | 为 runner 的位置映射提供块号；归还块引用不等于释放 GPU 张量 |
+| `ModelRunner` | 分配每个 rank 的 KV 池，准备紧凑输入、位置与页表，调用模型和采样 | 将每层 KV 视图交给 Attention；采样结果返回 scheduler 判断是否接纳 |
+| 模型与 `Attention` | 计算本轮隐藏状态，按 slot 写入 K/V，再读取允许的历史 | 产出供 LM head 与采样使用的隐藏状态，不负责请求队列和结束判定 |
+
+因此，“缓存已经分配”“本轮已算出 KV”“采样 token 已加入序列”是三个不同事件。后面的进度、分页和前向章节分别解释这些事件如何衔接。（`engine/llm_engine.py:step`、`engine/scheduler.py:schedule/postprocess`、`engine/block_manager.py`、`engine/model_runner.py:allocate_kv_cache/run`、`layers/attention.py`。）
 
 `LLM` 直接继承 `LLMEngine`。初始化先读本地模型配置，构造 runner，完成权重加载、warmup、KV 池分配及可选 CUDA Graph 捕获，再建立 tokenizer 和 scheduler。模型类在 runner 中固定为 `Qwen3ForCausalLM`，不是由 `AutoConfig` 自动选择任意架构。（`llm.py`；`engine/llm_engine.py:__init__`、`engine/model_runner.py:__init__`。）
 

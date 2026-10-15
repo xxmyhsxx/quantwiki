@@ -35,7 +35,7 @@ updated: 2026-10-15
 
 1. **量化与校准**：确定位宽、粒度、对称性与尺度来源，产出量化权重与元数据；
 2. **导出格式**：把权重、尺度、零点、分组信息与全部元数据序列化成某个具体格式；
-3. **框架加载**：框架按格式名或自动探测加载配置，决定用哪套内核；
+3. **执行准备与加载**：框架读取配置和参数表示，准备可消费它们的执行路径；可以在加载时选择/重排内核所需数据，也可以先按目标平台编译模型库，再交给运行时；
 4. **运行场景**：prefill 还是 decode、批量大小、序列长度、是否量化 KV，决定实际收益落在哪里。
 
 [量化矩阵乘法的缩放与执行路径](quantized-matmul-scaling-execution.md) 解释第 4 段的通用原理；[GGUF 块量化存储格式](gguf-block-quantization-formats.md) 是第 2 段的一个完整实例；本页关注第 2、3 段在不同框架之间的差异。
@@ -58,7 +58,7 @@ ModelOpt的recipe、校准尺度、搜索恢复状态与导出checkpoint各有�
 | SGLang | 框架注册的量化配置，如 GPTQ、W8A8、QoQ | 位宽、分组、对称性及设备约束按具体配置 | 方法配置 → 参数加载/重排 → 内核 |
 | vLLM | 框架内定义的多种量化配置 | 由方法名决定，含 W4A16、W8A8、FP8、MXFP4 等 | 方法名或自动探测 |
 | TensorRT-LLM | ModelOpt checkpoint；旧版文档另有 checkpoint → 引擎流程 | 格式、W/A/KV组合与设备按对应版本核对 | `a6f41514`默认PyTorch后端直接加载；`d567f924`所述引擎路径经`trtllm-build` |
-| MLC-LLM | 编译产物，量化模式写在编译配置里 | 权重 q3f16／q4f16／q4f16_awq，W/A 为 FP8 | 先编译再运行，可插入校准步骤 |
+| MLC-LLM | 转换后的参数缓存与包含推理逻辑的模型库，配置记录模型与量化模式 | 权重 q3f16／q4f16／q4f16_awq，W/A 为 FP8 | 配置与权重转换配合模型编译；Python 引擎未指定模型库时可走 JIT |
 
 ## 3. vLLM：方法名清单
 
@@ -134,11 +134,26 @@ KV cache 通过独立的 `--kv_cache_dtype` 选择 `int8`、`fp8` 或不量化�
 
 本条完整核读144行正文和两份矩阵，来源README登记完整`a6f4151497372f14a5261113a12be2b406e9b5fc`；站点短标识`fca831e`另行保留。示例clone没有pin ModelOpt producer，不能自行认定与本Wiki所读`f2f0d695`配套。匹配loader、checkpoint字段、GEMM/attention kernel、外链及实际运行未核。
 
-## 5. MLC-LLM：把校准变成独立步骤
+## 5. MLC-LLM：配置、权重、编译与运行时
+
+MLC-LLM 将模型的计算定义编译为面向目标平台的模型库，再由运行时结合转换后的权重执行推理。它把“参数以什么形式保存”和“这些参数怎样参与计算”分成两类配套产物：参数缓存提供数值，模型库包含推理逻辑，配置则记录模型、量化模式与执行约束。因此部署不能只有一个低比特权重文件，也不能把编译模型库理解为重新校准权重。（固定 `6474f7db`，`docs/compilation/compile_models.rst` 开头；以下 Python 路径相对 `python/mlc_llm/`。）
+
+| 环节 | 实际职责与产物 | 与后续工作的关系 |
+| --- | --- | --- |
+| `gen_config` | 由模型配置、量化模式与覆盖项生成 `mlc-chat-config.json`，记录模型类型、上下文/滑窗、prefill chunk、并行设置与对话模板等 | 编译与引擎据此识别模型及约束；配置文件本身不含转换后的权重 |
+| `convert_weight` | 创建量化模型及 `quantize_map`，loader 将来源参数映射、转换为模型所需参数，写出 TVM tensor cache | 提供运行时需要的参数；转换时按模型声明核对名称、shape、dtype、重复和缺失 |
+| `compile` | 按模型与量化配置导出 TVM IR、参数描述和外部模块，交给面向 target 的 `mlc_llm` 编译流水，生成模型库 | 参数表示需要与转换产物配套；编译还携带上下文界限、并行设置与参数元数据，供执行使用 |
+| Python 引擎初始化 | 读取模型目录的配置，确定 `model_lib`，将目录与模型库写入引擎配置，再调用底层引擎的 `reload` | 将参数所在目录与执行逻辑交给同一运行时；这里核到 Python/FFI 交界，未继续审计 C++ 调度和设备执行 |
+
+上述职责来自 `interface/gen_config.py:gen_config`、`interface/convert_weight.py:_convert_args`、`interface/compile.py:_compile` 和 `serve/engine_base.py:_process_model_args/MLCEngineBase.__init__`。表格表达产物之间的依赖，不规定必须手动依次运行四条命令：Python API 未给 `model_lib` 时，会按模型目录、设备与引擎覆盖项进入 JIT；显式提供模型库则使用该文件。由此也不能推定每次启动都重新编译，JIT 缓存内部策略未在这里核对。
+
+转换日志的 `ParamSize` 是输出参数张量的数量，`ParamBytes` 按转换后张量的形状与 dtype 累计，`BitsPerParam` 再除以 loader 统计的原参数数目。它们描述参数转换结果，不是运行时显存：KV cache、工作区等还未计入；写缓存使用的编码也使该字节数不能直接当作最终磁盘文件大小。理解这层区别，才能把权重压缩与整个部署过程的资源占用分开。（`convert_weight.py:_param_generator/_metadata_callback`。）
+
+### 量化模式与校准如何接入
 
 MLC-LLM 的量化模式写成短代码（快照 `6474f7db` 的文档）。权重侧格式为 `qAfB(_id)`：`A` 是权重位数、`B` 是激活存储位数、`_id` 区分算法（对称、非对称、AWQ 等）。当前可选 `q0f16`、`q0f32`、`q3f16_1`、`q4f16_1`、`q4f32_1` 与标注为不稳定的 `q4f16_awq`。权重与激活都量化时，CUDA 上提供 `e4m3_e4m3_f16` 与 `e5m2_e5m2_f16`，即两种 FP8（见 [FP8 与 MX 数值格式](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md)），层输出保持 FP16 后重新量化为 FP8。文档把默认分组量化算法的来源指向 k-bit inference scaling laws 与 LUT-GEMM 两篇工作。
 
-它的校准流程值得单独记录，因为它明确把校准暴露为独立运行阶段：
+需要校准的模式在上述部署过程中增加一次收集量化参数的运行，不是所有模式统一必需的步骤：
 
 1. 以校准模式（如 `e4m3_e4m3_f16_max_calibrate`）生成配置并转换权重；
 2. 用 `mlc_llm calibrate` 在 ShareGPT 一类数据上运行校准模型，将参数写入 `--output` 指定的缓存目录。代码启用 `update_if_exists=True`；只有该目录指向原有权重缓存时才是就地更新。文档说明该阶段需要关闭 CUDA graph；
@@ -178,7 +193,7 @@ v0.26.0发布说明列出 `speculative_config` 独立的 `kv_cache_dtype`，以�
 
 ## 9. 局限与未验证
 
-已核对的算法与格式路径见对应实现页；其余方法、TensorRT-LLM 插件、MLC-LLM 后端代码生成和跨框架格式互转尚未核验。各框架缺少统一场景的对照性能数据，不能据支持面排序。
+已核对的算法与格式路径见对应实现页；MLC-LLM 已接到配置、参数转换、编译入口与 Python 引擎交接，量化算法内部、具体编译 pass、TVM 后端代码生成和 C++ 执行仍未核验。其余方法、TensorRT-LLM 插件和跨框架格式互转也不在已核范围。各框架缺少统一场景的对照性能数据，不能据支持面排序。
 
 ## 来源身份
 
@@ -190,7 +205,7 @@ v0.26.0发布说明列出 `speculative_config` 独立的 `kv_cache_dtype`，以�
 | vLLM V1 Architecture Overview（`https://docs.vllm.ai/en/latest/design/arch_overview/`） | `vllm-main-f9ad9dd6b495f7492fa975e0ac48164b090d99ad`；获取于2026-09-24T02:12:20+08:00 | Class Hierarchy的统一配置、prefix及初始化分片理由；实际加载后处理/兼容分支另按568afb源码核对。 |
 | vllm-project/vllm（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | — |
 | NVIDIA/TensorRT-LLM（`https://github.com/NVIDIA/TensorRT-LLM/tree/d567f924b729dc81465f2d2f762cabb893e28602`） | `d567f924b729dc81465f2d2f762cabb893e28602` | — |
-| mlc-ai/mlc-llm（`https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008`） | `6474f7dbfa9bf18fdfd3ef468b227c0706eb9008` | — |
+| mlc-ai/mlc-llm（`https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008`） | `6474f7dbfa9bf18fdfd3ef468b227c0706eb9008` | 量化/校准文档与入口；增核配置、权重转换、编译入口和 Python 引擎模型目录/库交接，未核编译 pass、代码生成与 C++ 执行。 |
 | ggml-org/llama.cpp（`https://github.com/ggml-org/llama.cpp/tree/b820cc8e6f94843d32f92c8ebd7db837dae2bd8b`） | `b820cc8e6f94843d32f92c8ebd7db837dae2bd8b` | — |
 | mit-han-lab/omniserve（`https://github.com/mit-han-lab/omniserve/tree/02b2925aa6fa3b92b06316a1524b7f38922cd9c8`） | `02b2925aa6fa3b92b06316a1524b7f38922cd9c8` | — |
 | sgl-project/sglang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | 注册项与所选算法/格式路径 |

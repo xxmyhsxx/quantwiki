@@ -16,7 +16,7 @@ sources:
   - raw/papers/2026-09-21/flashattention
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # Transformer 与自回归推理：从 token 到 KV cache
@@ -269,7 +269,19 @@ vLLM 与 SGLang 所选 `llama.py` 都把 gate/up 合并投影，把 Q/K/V 合并
 
 本页公式和容量例子是依据所选实现整理的逻辑解释与教学计算；没有执行模型。上面的Llama基本逻辑图未展开滑窗、cross-attention、MoE和推测执行；原始cross-attention结构另由第1.1节说明。
 
-沿这条主干理解结构变化时，[MoE 与专家路由](mixture-of-experts-and-routing.md)解释 FFN 如何按 token 选择专家，以及总参数与激活参数为何不同；[MLA](multi-head-latent-attention.md)解释 attention 如何保存联合潜变量与位置 key。上面的 $2N_lLH_{kv}db$ 是显式 K/V 的容量模型，MLA 需要按自己的缓存对象记账。
+### 模型结构变化怎样改变量化对象
+
+把方法迁移到另一模型时，需要先找到计算图中改变的部分，再判断原来的校准、参数映射和缓存表示是否仍适用。下表综合本页及所链接正文中的结构解释，右列是由这些结构关系得出的整理说明，用于判断量化配置能否迁移；它不宣称这些模型已经完成某种量化或获得性能收益。
+
+| 模型或结构 | 相对上述稠密主干的变化 | 对量化理解与实现的影响 |
+| --- | --- | --- |
+| Llama 3.1 的 GQA 稠密模型 | Q heads 与 KV heads 数不同，多个 Q heads 共享 K/V；本页第 2.1 节保留具体规模 | KV 容量按 KV heads 计，不能用 Q heads 代替；权重分片与缓存分片仍需按实现对应 |
+| Qwen3 稠密模型 | 本页第 2.2 节说明移除 QKV bias、加入 QK-Norm；[固定实现](../../implementation/transformers-qwen3-cache-and-moe-execution.md)解释实际顺序 | Q/K 的归一化与旋转决定中间张量的含义；不能只匹配投影名称，就沿用另一模型的统计位置或缩放融合方式 |
+| Qwen3 MoE 与 DeepSeekMoE | FFN 变成路由、专家计算及汇合；共享专家和 gate 规则随模型而异，见[专家路由](mixture-of-experts-and-routing.md) | 专家权重误差、router 的选集变化和输出加权是不同问题；总参数、每 token 参与参数与通信成本也要分开理解 |
+| 以 DeepSeek-V2 为例的 MLA | 内容 K/V 由联合潜变量表示，位置 key 独立，见[MLA](multi-head-latent-attention.md) | 缓存量化需要先确认实际保存与读取的对象；上面的显式 K/V 容量式不能直接套用，潜变量误差也不等于分别扰动普通 K/V |
+| 视觉语言模型 | 视觉编码器与连接器把图像变成语言骨干接收的向量序列，具体结构见[VLM 对象](vision-language-model-tokens-and-quantization.md) | 需区分视觉编码器、连接器、语言骨干的量化范围；输入构造与模态位置会影响校准样本和激活统计，语言层相似不足以证明纯文本校准可直接迁移 |
+
+模型名称还可能表达训练或生成方式，而不直接指定新算子。[推理模型后训练](reasoning-post-training-and-distillation.md)区分 RL、蒸馏、模式控制与低位表示；“reasoning”或“Distill”标签本身不能确定学生的稠密/MoE 结构、权重位宽或 KV 格式。理解具体模型时，应将这些行为条件与上表的计算结构分别对应。
 
 ### 5.1 形式化伪码仍需核对维度与数值条件
 
