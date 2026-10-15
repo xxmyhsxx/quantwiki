@@ -24,7 +24,7 @@ sources:
   - raw/papers/2026-09-21/fluxbin
   - raw/repositories/2026-09-21/quip-sharp
   - raw/repositories/2026-09-21/spqr
-updated: 2026-10-13
+updated: 2026-10-15
 ---
 
 # 码本量化：标量、向量、加性表示与位宽预算
@@ -79,11 +79,9 @@ AQLM 使用残差 K-means 初始化，随后交替更新索引和码本。原文
 
 ### 4.2 逻辑码字与物理打包为什么需要分别核对
 
-一个16bit逻辑索引表达8D E8P码字，不决定它在GPU上的位置。固定QuIP# E8P12把相邻两输出行与相邻两向量块的四个逻辑码，重排进一个int64：低32位放四个模式字节，高32位将四组符号的第j位交错到4j+i。两者仍共64bit，但无法通过连续读取四个uint16直接恢复正确行/列。
+一个 16 bit 逻辑索引表达 8D E8P 码字，不决定它在 GPU 上的位置。固定 QuIP# E8P12 把四个逻辑码按 tile 重排到 int64 中，并联合编码符号与平移。因此，同容量的连续 uint16 数组不能直接替代物理载荷；位域、分量与地址排列见 [E8P 打包与解码](../implementation/quip-sharp-e8p-packing-and-inference.md#3.%20%E9%80%BB%E8%BE%9116%E4%BD%8D%E7%B4%A2%E5%BC%95%E5%A6%82%E4%BD%95%E5%8F%98%E6%88%90kernel%E8%BD%BD%E8%8D%B7)。
 
-逻辑码的低8位b还将符号与四分之一平移耦合：由八位XOR得到p，实际符号为b XOR p，仅p=1时翻转最低位；p同时决定±1/4平移，模式底表已有自身的奇偶修正。论文的“8位模式、7位符号、1位平移”是自由度分解，不保证物理格式把三者分别存成连续字段。解码必须核符号/平移、分量排列及tile地址。（固定QuIP#（`https://github.com/Cornell-RelaxML/quip-sharp/tree/1d8f873e9a2a8b86b12bb1064c312c5689b77d98`），latticee8_padded12.py的get_full_grid/maybe_pack_idxs及quiptools_e8p_gemv.cu。）
-
-对于m×n权重，所选格式为m×(n/32)个int64，kernel view为[m/16,n/64,8,4]；主体预算 $64m(n/32)=2mn$。16×64教学tile只占256字节，展开FP16需2048字节；它既不是每码都花64bit，也不是完整模型压缩比已证明8倍。
+对于 $m\times n$ 权重，所选格式为 $m\times(n/32)$ 个 int64，主体预算仍为 $64m(n/32)=2mn$ bit。16×64 教学 tile 只占 256 字节，展开 FP16 需 2048 字节；这个 8 倍仅针对理想主体，整模型还要计入其他状态。
 
 单行可在kernel中边解码边乘加，多行可先生成整个FP16矩阵再计算。它们保存相同的packed主体，运行临时内存和数值路径却不同。底表1KiB也不包括参考网格、变换向量、其他参数或临时空间。沿[所选E8P实现](../implementation/quip-sharp-e8p-packing-and-inference.md)的保存、加载和实际消费判断物理格式，避免把码率、文件字节数、GPU驻留与峰值混成一个数字。
 

@@ -11,7 +11,7 @@ sources:
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/llm-awq
-updated: 2026-10-13
+updated: 2026-10-15
 ---
 
 # 权重量化反量化内核的契约：AWQ 与 marlin 两种实现
@@ -56,7 +56,7 @@ _scaling_factors: half  [OC, IC // G]
 
 要点有三：**权重按 8 个一组打包**（`IC // 8`）；**零点与尺度按分组维给出**，且零点本身也被打包（额外除以 8）；**group_size 是模板参数**——主机端按 `group_size == 64` 或 `== 128` 分别启动 `gemv_kernel_g64` 与 `gemv_kernel_g128`，注释特别提醒「无法从尺度张量的形状推断 group size」。此外，`zeros_w` 与 `sf_w` 都用两层 `make_divisible` 对齐（先把组数对齐到 `PACK_FACTOR`，再对齐到 2），源码里还留着一条 TODO 说明对齐处理曾导致地址错位——元数据的宽度对齐是这类格式最容易出错的地方。
 
-线程与分块：`dim3 num_blocks(1, num_out_channels / 4, num_out_feats)`、`dim3 num_threads(32, 4)`，注释说明 `blockDim_x * workload_per_thread = IC`、`blockDim_y * gridDim_y = OC`。也就是说输出通道方向按 4 个一组分给 block 的 y 维，batch 维走 z 维，每个 block 只处理一个输出特征（batch 项）。
+线程与分块：`dim3 num_blocks(1, num_out_channels / 4, num_out_feats)`、`dim3 num_threads(32, 4)`，注释说明 `blockDim_x * workload_per_thread = IC`、`blockDim_y * gridDim_y = OC`。`grid.y` 枚举每 4 个输出通道组成的组，`grid.z` 枚举输入行；每个 block 用 4 个 warp 处理同一输入行的 4 个输出通道。
 
 `gemm_cuda_gen.cu` 走另一套分块：`num_blocks((num_out_feats + 128 - 1) / 128 * j_factors1 * split_k_iters)`、`threads_per_block(32, 4)`，即输出方向按 128 切块，并带有 split-K 因子——与 [Marlin](marlin-batched-w4a16-gemm.md) 用 split-K/条带划分解决形状不整除的思路同源，只是实现方式更简单。
 

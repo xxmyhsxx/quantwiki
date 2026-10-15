@@ -12,7 +12,7 @@ sources:
 paper_version: arXiv:2412.19509v2
 code_commit: a4d460dfb4b1c07b5d1f3ddda6e86d1c90d6e7f1
 verification: 全文与附录研读；定向官方代码核对；未运行模型实验
-updated: 2026-09-14
+updated: 2026-10-15
 ---
 
 # MBQ：模态平衡的视觉语言模型量化
@@ -152,7 +152,7 @@ $$
 
 与 token 级二阶路线的比较见 [MBQ 与 VLMQ 的条件化比较](../research/mbq-vlmq-comparison.md)。
 
-后续工作已把 MBQ 用作多模态量化中「数据感知方法」的代表，与数据无关的 HQQ 在 int8／int4／int3 下对照，并同时测量准确率、校准误差与选择性预测表现；该研究得到的量级是 int4 MBQ 加外部置信度估计器可保留约 98% 的 bf16 精度、显存约减少 75%。这属于同一方法在另一组评测维度上的表现，不能反过来替代本页的精度与实现证据，详见 [量化与可靠性：选择性预测评测](../theory/quantization-reliability-and-selective-prediction.md)。
+后续[可靠性评测](../theory/quantization-reliability-and-selective-prediction.md)将 MBQ 与 HQQ 在 int8／int4／int3 下对照，分别检查准确率、置信度校准和弃答覆盖率，并评测外部置信度估计器的作用。它补充了本页任务精度之外的评价维度；具体模型、数据和指标见该页。
 
 ## 来源身份
 

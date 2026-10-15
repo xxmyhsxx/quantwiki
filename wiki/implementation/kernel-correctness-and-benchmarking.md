@@ -244,7 +244,7 @@ SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段�
 
 此前基础整理已核对教程的地址、mask、FP32 累加、包装限制与 benchmark 工具实现；独立 CPU 教学计算覆盖地址映射、尾块覆盖、softmax/LayerNorm padding 反例、分块 GEMM 等价关系和 FP32 结合顺序差异。它们验证正文中的推理，不验证 CUDA/Triton 编译、原实现运行、GPU 数值或速度。
 
-既有采集模板在编辑主机上仅完成 CLI、语法与 CPU 逻辑核对；NVIDIA 工具命令及 CUDA 路径尚未执行。后续 RMSNorm 和 W8A8 实验将在具备 NVIDIA GPU 和 CUDA 环境的目标设备上开展，执行正确性、内存与竞争诊断、计时和性能分析；上述既有 CPU 检查记录只代表准备阶段的验证范围。
+既有采集模板在编辑主机上仅完成 CLI、语法与 CPU 逻辑核对；NVIDIA 工具命令及 CUDA 路径尚未执行。
 
 这组基础用于理解并验证真实实现；可继续沿 [AWQ 实现链](awq-implementation.md) 和 [反量化 kernel](weight-only-dequant-kernels.md) 检查输入到内核的完整对应关系。
 

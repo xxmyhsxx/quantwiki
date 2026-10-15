@@ -14,7 +14,7 @@ sources:
   - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
   - raw/repositories/2026-09-21/affinequant
   - raw/repositories/2026-09-21/flatquant
-updated: 2026-09-15
+updated: 2026-10-15
 ---
 
 # OmniQuant、AffineQuant 与 FlatQuant：可学习变换路线比较
@@ -81,8 +81,6 @@ OmniQuant 主要学习可融合的通道尺度；AffineQuant 在 W4A4 的 Norm �
 ## 5. 对研究选择有什么用
 
 如果需要清楚理解“怎样学习量化参数”，从 OmniQuant 的具体裁剪和块前向入手；如果要检验“通道混合是否比对角尺度有用”，AffineQuant 提供机制与稳定性问题；如果还要覆盖更多线性位置并讨论部署，FlatQuant 提供结构化变换和融合设计。
-
-三者的既有结果尚未覆盖本项目的多模态分布与端云场景；后续比较应围绕数据、目标和部署位置的具体差异。
 
 另一个对照轴是 [QuaRot](../methods/quarot.md) → [SpinQuant](../methods/spinquant.md)：从固定正交旋转走向以最终 CE 学习可融合旋转。它保持 RMSNorm 所需的正交结构，和本页的局部块 MSE/一般可逆变换路线并非同一组变量逐级放宽；具体比较由 SpinQuant 方法页承接。这个差别有助于区分“变换族不足”“校准目标不合适”和“部署位置受限”三个研究问题。（QuaRot v2 §4；SpinQuant v4 §3–4。）
 

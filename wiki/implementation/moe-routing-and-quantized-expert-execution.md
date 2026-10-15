@@ -10,7 +10,7 @@ sources:
   - raw/articles/2026-09-21/flashinfer-release-notes
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/vllm
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # MoE 路由与量化专家执行：SGLang/vLLM 的单设备 FP8 主线
@@ -164,7 +164,7 @@ $$y_t=y_t^{(r)}+y_t^{(s)}.$$
 
 ## 7. SGLang 主线的覆盖与验证边界
 
-这次核读已经连接四个过去需要分别查证的对象：router 选择与 gate 的区别；配对索引、逐专家 padding 与原 token 次序；专家权重/二维块尺度与 activation 行组尺度；routed 归约、缩放和独立共享输出。它可以承接 [MoE 基础](../fundamentals/model/mixture-of-experts-and-routing.md#4.%20%E6%80%BB%E5%AE%B9%E9%87%8F%E3%80%81%E5%8D%95%20token%20%E8%AE%A1%E7%AE%97%E4%B8%8E%E6%89%B9%E6%AC%A1%E6%88%90%E6%9C%AC%E4%B8%BA%E4%BD%95%E4%B8%8D%E5%90%8C)中“单 token 激活参数量不等于批次访存/吞吐”的问题。
+本页连接四组执行关系：router 选择与 gate 的区别；配对索引、逐专家 padding 与原 token 次序；专家权重/二维块尺度与 activation 行组尺度；routed 归约、缩放和独立共享输出。它可以承接 [MoE 基础](../fundamentals/model/mixture-of-experts-and-routing.md#4.%20%E6%80%BB%E5%AE%B9%E9%87%8F%E3%80%81%E5%8D%95%20token%20%E8%AE%A1%E7%AE%97%E4%B8%8E%E6%89%B9%E6%AC%A1%E6%88%90%E6%9C%AC%E4%B8%BA%E4%BD%95%E4%B8%8D%E5%90%8C)中“单 token 激活参数量不等于批次访存/吞吐”的问题。
 
 未覆盖 EP/DeepEP 的通信与物理 expert 映射、EPLB、FP4/INT4/WNA16、其他 runner、LoRA 和完整 weight-loader 的所有 checkpoint 名称重映射；TMA、CUDA graph、并行 overlap 也未作为另一条执行链完整核读。源码对不同分支的能力说明不等于本项目已支持全部组合。
 

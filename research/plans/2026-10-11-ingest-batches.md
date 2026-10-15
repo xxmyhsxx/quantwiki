@@ -4,21 +4,21 @@
 
 2026-10-15收尾：用户授权的原88条已按来源实际范围全部完成，当前229条有依据、58条历史范围未知、0条本轮待核。各批历史排期与条件事项保留，队列完成不扩大为全部分支或运行验证。
 
-状态（更新于2026-10-15）：2026-10-13 全库重复性维护完成后，按用户确认恢复逐项 ingest；第10批FlexRound、SignRound、LRQ、LoRA四篇选定论文的核心机制、公共连接和实际研读范围已写入 Wiki。第1–9批P1已按既定材料和选定路径完成研读、整合与独立review，包含第2–9批35个队列条目及第1批AQLM接续。实际范围和未核分支由READING维护；条件事项仍保留。第10批选定论文范围完成，未核代码与运行条件保留；第11批PACT、LSQ+与LQ-Nets三篇选定论文范围完成，任务代理、初始化及结构化码值/交替拟合的区别已整合；未核代码与运行条件保留。第12批FlashAttention原论文v2的分块、IO与反向重计算已整合；FlashAttention-2的累计/序列并行/warp分工和原件边界已接续，固定代码的所选普通CUDA前后向已接续，其他分支/运行未核范围保留；FlashInfer计时文档的后端与样本口径已接续；FP4量化产物的尺度参数与后端声明已接续；FP8块缩放GEMM的NT输入与尺度存储已接续；BF16×FP4的权重准备/同后端消费与alpha折叠已接续；FP4 GEMM的后端准备/全局恢复与分派已接续；recursive state的完整LSE/子集条件与单位边界已接续；single decode的普通读取/返回与LSE边界已接续；single prefill的mask、按head尺度与NVFP4读取边界已接续；FlashInfer v0.6.17发布声明的FP4/专家/MLA与Ulysses版本边界已接续，第12批选定来源范围完成；第13批DistServe v3的阶段分离、KV转移与容量/SLO口径已接续；Sarathi-Serve v3的chunk预算、混合轮次/PP气泡与token级TBT容量条件已接续；SGLang v2的结构化程序、Radix/离线DFS、FSM/重新分词、API文本复用及IR/程序计量已接续，历史实现与运行未核；nano-vllm固定离线执行链、完整块/尾块、非混合调度、Qwen3/采样与TP/Graph条件已接续，模型/设备运行未核；vLLM v0.26.0发布说明的配置对象、加载峰值和组合边界已接续，PR/新组合实现与运行未核；vLLM V1官方架构的进程拓扑/客户端、统一配置与初始化分片已接续，文档快照和执行源码分别登记；KV管理源码解读文章的watermark接纳与CPU空闲队列已对照568afb源码接续，原文预算/长度及版本差异保留；Dynamo架构的请求/容量/缓存责任、backend-specific KV交接、阶段池/滚动更新与版本/性能边界已接续；Ray Serve的两级路由、配置/placement、DP组计数/生命周期和decode侧P/D协调已接续，第13批九项选定来源按实际范围完成；第14批ModelOpt的对象/算法、尺度/覆盖、搜索预算/状态、导出与所选静态FP8消费已接续，consumer/设备/实现边界保留；TensorRT-LLM的PyTorch加载、KV组合/存储层及硬件尺度条件已接续；FSDP2的参数生命周期、预取/dtype和full state协作已接续，第14批三项选定来源范围完成；第15批Llama 3 v3的配置/逻辑KV、选择性FP8及质量/资源条件已接续；DeepSeek-V3 v2训练精度/缓存/通信、V3路由与MTP已接续；R1 v2的GRPO/验证奖励、checkpoint与监督数据和蒸馏/抽样预算已接续，第15批三项选定来源范围完成；第16批Qwen2.5-VL v1的动态分辨率/帧率、窗口/合并与MRoPE时间坐标及预算条件已接续；Qwen2.5-Omni v1的TMRoPE/表示、Thinker/Talker和codec窗口、训练/评测边界已接续；Qwen3 v1的稠密/MoE配置、模式/预算与两阶段蒸馏及质量条件已接续；Qwen3-VL v2的多层视觉输入、位置/文字时间戳及训练/评测条件已接续；第16批四报告范围完成，已归档transformers前三模型所选输入/位置、生成与缓存/路由主线已接续；官方Omni工具、demo消费及低显存卸载/分块/精度路径按固定范围接续，外部依赖与运行条件保留；官方Qwen3-VL工具、示例和微调调用按选定路径接续；第16批七份已收录来源的选定范围完成，匹配HF内部实现仍按第5节条件项接续。第17批Attention Is All You Need的三attention、post-LN/位置及训练评测条件已接续；Formal Algorithms的行列/softmax轴、mask-token目标与整段推理及原件边界已接续；GQA的组内K/V转换与继续训练、质量/TPU计时条件已接续；MQA的decode访问/操作模型、batch与共享K/V作用及实验配平/摊销已接续；RMSNorm统计、正尺度/梯度、ε与部分统计条件和训练证据已接续，第17批五项选定来源范围完成；第18批CUDA指南主页组织说明已完整研读，无独立正文增量；Programming Model的block/tile、cluster与UVA/UM范围已接续；Writing Tile Kernels的启动/坐标/边界、归约/MMA与hint及前提已接续；CUDA Refresher的CC职责与二维地址关系已接续，主体复用既有解释；Using Shared Memory的反转快照/屏障、静态动态字节及旧硬件条件已接续；Programming Tensor Cores in CUDA 9的WMMA片段/列主序、尾块与历史库及证据条件已接续；Using CUDA Warp-Level Primitives的成员/内存依赖、部分归约与同址预留条件已接续；CUDA Softmax worklog的共同基准/两遍、片段与计时口径已接续；cudacodes固定Softmax 0–4的分工/统计校正/输出及helper/float4与计时边界已接续，第18批九项选定范围完成；第19批按基础依赖先接续Efficient GEMM的输出布局、拆K后处理与Hopper分工；CUTLASS 3.0 GEMM API的类型组装/运行参数、逻辑坐标与Auto预算已接续；Blackwell SM100的指令选择、整体/每CTA分块、512B尺度布局与输出尺度已接续；CuTe DSL已按仅存目录登记，语言/编译子页未收录；Layouts/Tensors的映射/视图分工与size/capacity已接续；Grouped Kernel Schedulers的前缀任务定位、host/device分工与有效/K负载已接续；Quickstart的主机缓冲/typed stride/调用及预编译Library选择已接续；Synchronization primitives的四API、初始empty与双方状态推进已接续；Tile Iterator Concepts的旧接口范围、tile/Fragment与三种偏移单位已接续；CUTLASS历史博客的常规SIMT线程外积与寄存器复用已接续；H100 BF16案例的TMA输入/计算完成、资源/局部性与输出复用已接续；fast.cu的H100输入/输出条件与GB300双环/TMEM及runner已按选定路径接续，第19批范围完成；第20批Triton Introduction的块级数据流设计说明已接续，分块模型复用已有解释；Triton Matmul的分组映射/末组与输入集合解释已接续；Triton Group GEMM的问题表/普通与TMA接口及隐藏workload的调优key已接续；Triton Persistent Matmul的descriptor访问块/输出subtile与Hopper组合已接续；Triton Fused Attention的独立梯度拥有者/log2统计与实际精度标签已接续；Triton-Puzzles已完整静态研读并确认无需正文增量，第20批六项范围完成；第21批课程页面说明与LeetGPU挑战公告已按实际文本范围研读，无需正文增量；IIT Bombay讲义的collective语义、ring成本与网络分层已接续；Microsoft讲义的跨块进度与缓冲生命周期已接续；GPU Mode讲义的推测执行、EVT与层次坐标已接续，第21批五项范围完成；第22批CudaForge的生成/验证/硬件反馈与候选状态已接续；KernelBench/TritonBench共同任务与指标已接续，第22批范围完成；第23批FastKernels/FlashInfer-Bench/KernelBenchX的真实输入、数值契约与归约已接续，三项选定来源范围完成；第25批两篇多模态案例先行完成删层恢复与脉冲时间编码的研读整合；第24批四论文/三代码/两文档按实际范围完成，vla.simd/MWOP/CoVisco/RDTok及DART已接续，模型包索引无需正文增量；原88条队列完成。2026-10-13用户授权持续完成当时剩余88条全部队列，按批研读、review、检查、提交与push；当前状态以READING为准（剩0条），不等待逐项继续指令。
+状态：第1–25批已按所收录材料的实际范围完成。第25批与第24批并行准备并先交付；同主题资料合批研读、独立评审和提交。逐来源范围见[READING](../../wiki/READING.md)，实际修改与验证见[LOG](../../wiki/LOG.md)。以下保留原排期与分组依据。
 
 ## 1. 目标、范围与依据
 
 将已收录资料按知识问题分批研读，补足核心机制、必要前置解释和实现边界。成果应进入可独立阅读的 Wiki；已有解释充分时，核对后登记实际范围和“无需新增”的判断。
 
-本计划覆盖 [READING 的待核队列](../../wiki/READING.md#待逐项核查与-ingest-的已收录材料) 中的 130 个条目：57 篇论文、53 份文章或文档、20 个代码条目。第 1 批接续已登记的 AQLM 实现范围，另计于这 130 个条目之外。队列登记状态不等于从未阅读或知识完全缺失，执行前仍需核对已有正文。
+原排期覆盖 [READING 的资料处理队列](../../wiki/READING.md#待逐项核查与-ingest-的已收录材料) 中的 130 个条目：57 篇论文、53 份文章或文档、20 个代码条目。第 1 批接续已登记的 AQLM 实现范围，另计于这 130 个条目之外。队列登记状态不等于从未阅读或知识完全缺失，执行前仍需核对已有正文。
 
-另有 59 条 [已使用、研读范围待核实的记录](../../wiki/READING.md#已使用研读范围待核实)：37 篇论文、6 份文档、16 个代码版本。它们随相关批次核实实际范围，不并入 130 条待核队列。
+排期时另有 59 条 [已使用、研读范围待核实的记录](../../wiki/READING.md#已使用研读范围待核实)：37 篇论文、6 份文档、16 个代码版本。它们不并入130条队列；随相关主题核实后，目前仍有58条范围未知，状态以READING为准。
 
 排期依据是 [SELF 的当前画像和优先方向](../../SELF.md#6-下一步建设与维护)、READING 的确定版本与范围记录，以及已读的 PTQ/QAT、混合精度、低比特表示、校准和质量评测正文。各批的理由是拟核查的问题与预期知识增量，正式 ingest 时还需阅读主材料并复核覆盖。
 
 ## 2. 优先级、执行顺序与完成条件
 
-第 1–9 批为当前排期 P1，第 10–25 批为 P2。优先级依据当前知识增量；编号表示默认执行顺序。必要的基础文档、原始论文或实现依赖可前移，仍在原分配批次中登记处理结果。前面批次完成后，依据剩余缺口复评后续顺序。
+原排期将第1–9批列为P1，第10–25批列为P2。优先级依据当前知识增量；编号表示默认执行顺序。必要的基础文档、原始论文或实现依赖可前移，仍在原分配批次中登记处理结果。前面批次完成后，依据剩余缺口复评后续顺序。
 
 批次是主题分组，执行时逐篇论文或逐条有明确范围的文档、代码路径推进。2026-10-15按用户加速要求，同主题材料可合批：各项仍完成实际研读与覆盖判断，集中整合后由独立Sol review，合并必要检查，再按明确范围提交与push。材料较多的批次可按表中列出的接口或问题拆成工作单元。
 
@@ -90,7 +90,7 @@ OnPTQ 的匹配参数更新配置、WUSH-KV 作者改版及一般可逆变换接
 
 第 16 批的完整 Qwen3-VL 模型实现需补匹配材料。[归档 transformers 的身份记录](../../raw/repositories/2026-09-21/transformers/README.md)是 `hf-4.53.2`，没有 `qwen3_vl` 模型目录；Qwen3-VL 固定仓库的 Quickstart（`../../raw/repositories/2026-09-21/qwen3-vl/source/README.md.txt#quickstart`）要求 `transformers >= 4.57.0`。先完成现有可读范围，再按待补材料规则确认版本和范围，不能用同批的旧版本替代。
 
-59 条历史范围待核记录随相应主题核实。来源已使用与完整研读分别判断；无法核实的范围继续保留未知。模型运行和性能验证另按具体任务登记。
+剩余58条历史范围记录随相应主题核实；已有使用证据但范围无法还原时，继续保留未知。模型运行和性能验证另按具体任务登记。
 
 READING 维护资料的实际处理状态，SELF 维护当前画像与优先方向，本文件保留批次和排期理由。发生实质范围或顺序变化时更新本计划；不另外复制逐项进度表。
 

@@ -10,7 +10,7 @@ sources:
   - raw/papers/2026-09-21/affinequant
   - raw/papers/2026-09-21/omniquant
   - raw/repositories/2026-09-21/affinequant
-updated: 2026-09-15
+updated: 2026-10-15
 ---
 
 # AffineQuant：可学习仿射变换与渐进掩码
@@ -140,7 +140,7 @@ Q/K 的风险可用代数表达：若行向量在位置 $t$ 经过旋转 $R_t$�
 
 **Weak：**求逆和大矩阵校准有成本，稳定性依赖配置；可逆不等于条件良好。为方便融合而限制变换位置，会让“完整矩阵空间”的理论动机与实际全模型可用空间不同。启用 Norm 完整矩阵又会保留在线计算，且 Q/K 路径需要核对 RoPE。
 
-如果问题是“逐通道缩放不够”，这篇值得作为研究起点；如果问题还包含“每个主要线性层都需要混合且实际要加速”，应继续看 [FlatQuant 的结构化变换与内核融合](flatquant.md)。三者的共同条件和证据边界集中在 [OmniQuant、AffineQuant 与 FlatQuant 比较](../research/omniquant-affinequant-flatquant-comparison.md)。本页不将纯文本模型结果直接迁移成多模态或端云收益。
+如果问题是“逐通道缩放不够”，这篇值得作为研究起点；如果问题还包含“每个主要线性层都需要混合且实际要加速”，应继续看 [FlatQuant 的结构化变换与内核融合](flatquant.md)。三者的共同条件和证据边界集中在 [OmniQuant、AffineQuant 与 FlatQuant 比较](../research/omniquant-affinequant-flatquant-comparison.md)。
 
 ## 来源身份
 
