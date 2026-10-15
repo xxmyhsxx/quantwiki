@@ -7,6 +7,7 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/articles/2026-09-21/cutlass-efficient-gemm
   - raw/articles/2026-09-24/cuda-softmax-worklog
   - raw/articles/2026-09-21/nvidia-warp-primitives
   - raw/papers/2026-09-21/flashattention
@@ -140,6 +141,12 @@ Triton 示例在 M/N 加载坐标上取模，使冗余输出行列读取合法�
 
 FP32 累加器在 epilogue 中可以先应用激活，再转成 FP16 输出。若参考路径先落盘 FP16 再应用激活，两者的舍入位置不同，融合验证必须包含这个差别。
 
+### Epilogue将计算片段转换为输出布局
+
+CUTLASS Efficient GEMM 的“Epilogue”说明，mainloop 留在各线程寄存器里的输出元素，是按计算复用与指令接口组织的，未必适合合并访问 global。所述 epilogue 先经 shared 在线程间交换元素，再按 striped 映射协作读写 global，同时可施加线性缩放、clamp 等逐元素处理。因此它承担计算布局到输出布局的转换，不能只理解为附加一次 activation。具体寄存器映射可对照 [Tensor Core 片段](../../implementation/tensor-core-quantized-gemm.md)。
+
+具体交换与写回接口随架构和后端而异。若将 K 拆给多个工作单元，还需区分哪些后处理可分配到分片上执行、哪些必须在部分和合并后执行，见 [拆K后的合并与后处理](../../implementation/kernel-configuration-and-autotuning.md#%E6%8B%86K%E5%90%8E%E7%9A%84%E5%90%88%E5%B9%B6%E4%B8%8E%E5%90%8E%E5%A4%84%E7%90%86)。
+
 ### CUDA Tile的K循环复用同一累加状态
 
 快照§2.4.9.1把A的`(tm,tk)`与B的`(tk,tn)`送入`ct.mma`，累加到FP32 `(tm,tn)`状态，循环覆盖$\lceil K/t_k\rceil$块。A/B加载均使用边界处理，K尾显式ZERO或masked load，C的M/N尾在写回侧保护，具体规则见[Tile接口](tensor-layout-and-kernel-contracts.md#tile-space%E5%9D%90%E6%A0%87%E4%B8%8E%E9%83%A8%E5%88%86%E5%B0%BE%E5%9D%97%E8%AE%BF%E9%97%AE)。Python示例转成C dtype再写回，C++示例使用half输入、FP32输出。FP32 accumulator描述部分和精度，不能单独证明全部乘法为FP32或所有dtype/rank组合均合法；本项未核完整API或测量后端性能。
@@ -166,6 +173,7 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |
 | Learning CUDA by optimizing softmax: A worklog（`https://maharshi.bearblog.dev/optimizing-softmax-cuda/`） | `indexed-text-snapshot-2026-09-24`，取得于 `2026-09-24T19:49:18+08:00` | 保存505行索引文本与所列对应3图；online/并行归约及原地/片段边界，合并公式与两元素反例为整理者推导；原HTML采集时404，未运行。 |
 | Using CUDA Warp-Level Primitives（`https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 完整保存273行/3图；Listing3参与/缺失源与机会式同址atomic，例子为静态推导；helper/调用省略、API/运行未核。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.7–2.4.10保存示例/正文；block控制、归约形状/K循环与逐元素atomic，tile_sum下标为整理者展开，Python坍缩示例未执行。 |

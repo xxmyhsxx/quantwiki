@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Efficient GEMM ingest：输出布局、拆K与Hopper分工
+
+- 完整读取snapshot-2026-07-02保存175行/所有伪码与3图/README，4正文/图哈希相符；层级图结构可辨，透明底部分标字按正文核对。未取原HTML/外链实现、编译或运行GPU。
+- [计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)补epilogue的寄存器→shared交换→输出布局责任；[配置](implementation/kernel-configuration-and-autotuning.md)补CTA/shared与warp/register两级缓冲、splitK/slicedK协作范围、后处理时序及Hopper cooperative/ping-pong分工。已有分块/复用/普通pipeline与rasterization主体复用，不另建摘要页。
+- 保留两kernel/workspace是所述splitK方案而非统一规则、逻辑分片不等于合法MMA、beta/bias只计一次及非线性反例为整理推导；按M拆与按K拆、不同tile交替与单tile双缓冲分别说明。Hopper结构不扩SM100，persistent不承诺host launch减少；旧CPU检查与本次核读区分。
+- READING/INDEX/SELF/计划同步：190条有依据、39条队列，本轮基线88已处理49条；第19批按基础依赖先完成本项，下一项CUTLASS 3.0 GEMM API。独立Astra review闭环通过，无剩余必修；公式转义/控制字符、后处理概括与原文分片示例归属已修正并复读。按用户要求删去新增正文的重复防御性提醒，保留具体条件并复用有效检查。结构/来源strict检查199知识页、710项登记，0错误/待核；5个受影响Wiki页1355条本地链接strict通过，diff及190/39（12论文/22文档/5代码）计数通过；分片求和、beta重复计入与ReLU教学算术核对通过，七文件无非预期控制字符。提交范围为本项7文件，Obsidian改动保留；未执行上游、编译或设备任务。
+
 ## 2026-10-15 · cudacodes ingest：行Softmax统计、归约与输出
 
 - 核固定9a459b1的所选softmax README/Makefile、6kernel/6声明header/helper、bench/test/PyTorch脚本、两log/plot等softmax内所选21文本/4图及仓库根README；原archive哈希及78普通文件source字节/执行位匹配，未将档案核对当语义全库，未执行二进制/编译/设备。

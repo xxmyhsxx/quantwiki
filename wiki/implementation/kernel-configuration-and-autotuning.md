@@ -7,12 +7,13 @@ tags:
   - performance
   - matmul
 sources:
+  - raw/articles/2026-09-21/cutlass-efficient-gemm
   - raw/repositories/2026-09-22/kernel-skills
   - raw/repositories/2026-09-21/triton
   - raw/articles/2026-09-21/cuda-simt-kernels
   - raw/articles/2026-09-21/cuda-tile-kernels
   - raw/articles/2026-09-21/nvidia-shared-memory
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # Kernel 配置选择与自动调优：资源、工作划分和测量
@@ -30,6 +31,8 @@ $$S_{\rm tile}=eB_K(B_M+B_N),\qquad S_{\rm block}\approx L S_{\rm tile}+S_{\rm e
 L 是同时保留的缓冲阶段数，额外项包含 padding、barrier 和其他共享状态。这是解释明确使用 L 份 A/B 缓冲的模型；Triton `num_stages` 是编译器流水参数，不能保证所有 kernel 的 shared 字节数都严格等于这个乘式。row-wise softmax 的逻辑行也不能机械记为“一整行都占 shared”；寄存器布局与跨线程归约临时空间由编译结果决定。
 
 FP32 累加器的总载荷约为 $4B_MB_N$ 字节。若它均匀分给 T 个线程，仅累加器就平均需要 $B_MB_N/T$ 个 32-bit 寄存器；实际还有输入片段、地址、循环状态和分配粒度。不能一律除以 32，那会把整个 CTA 当成一个 warp；也不能将一个 128×128 累加器视为单线程拥有它。
+
+Efficient GEMM 的“Pipelining”在两级保存输入双缓冲：CTA 的 shared tiles 轮流供应当前计算与接收下一轮 global 数据；warp 的寄存器 fragments 则轮流供应当前 MMA 与接收下一次 shared fetch。两级作用域和资源不同，输入片段也不同于一直累计输出的 accumulator；它们都要进入资源账。此处保留所述常规结构，不把两个 buffer 当作所有 CUTLASS/架构的固定 stage 数，具体完成等待见 [异步流水](gpu-async-copy-pipelines.md)。
 
 估算之后还要用编译产物确认实际资源：Triton softmax 教程就在预编译后读取寄存器数量和 shared 用量，再估计驻留能力。CUDA 文档 §2.3.3 说明，寄存器用量过高可能 spill 到设备内存；共享内存超限与寄存器 spill 是不同的资源问题。
 
@@ -74,13 +77,41 @@ $$U_{\rm tile}=\frac{MN}{\lceil M/B_M\rceil B_M\;\lceil N/B_N\rceil B_N}.$$
 
 若输出块太少而 K 很长，可考虑把 K 切成多个部分，但 split-K 需要归约部分和，会增加中间存储或原子竞争，并改变浮点结合顺序。它是并行度与额外成本的交换，不是对所有小 M 的免费加速；具体分支可对照 [AWQ 内核](weight-only-dequant-kernels.md)。
 
+### 拆K后的合并与后处理
+
+Efficient GEMM 的“Parallelized Reductions”按协作范围区分：
+
+| 分工 | 部分结果在哪里产生 | 所述合并路径 |
+| --- | --- | --- |
+| parallel reduction split-K | 多个 CTA 对同一输出计算不同 K 分片 | partitionedK GEMM 先写 workspace，再由第二个 batched reduction kernel 合并分片部分和 |
+| sliced-K | 同一 CTA 的多个 warp 计算不同 K 分片 | CTA 内合并各 warp 的部分和；这本身不增加 CTA 数 |
+
+表中的 split-K 采用 workspace 与第二个 kernel，其他实现可有不同合并方式；沿 M/N 分配独立输出、各自完成 K 的 warp 分工也不属于 sliced-K。文档以 K=4096 分20段举例，前19段各204、最后220；此例定义逻辑分片区间，执行时仍需满足 tile/MMA 的 K 维要求；分片区间与 buffer stage 是不同粒度。
+
+整理者推导：若 $P_s$ 是 S 个 K 分片的矩阵部分和，目标为
+
+$$D=\alpha\sum_{s=0}^{S-1}P_s+\beta C.$$
+
+完整的 $\beta C$ 只应计一次；若每个分片都先加完整 $\beta C$ 再求和，会变成 $S\beta C$。bias 同理。非线性也不能默认与部分和求和交换，例如 ReLU(−2+3)=1，而 ReLU(−2)+ReLU(3)=3。拆 K 后仍需计入 workspace、额外流量、同步与浮点归约顺序的成本。
+
 ## 4. persistent 描述工作循环，不承诺绑定 SM
 
 Triton `09-persistent-matmul.py:matmul_persistent` 启动 $\min(\text{NUM\_SMS},G)$ 个 program，设备函数按 `tile_id = start_pid + q*NUM_SMS` 遍历输出 tile。q 是循环次数；每块依然独立完成相应输出，边界 store 有 mask。
 
 “启动 NUM_SMS 个 program”不等于 API 将每个 program 固定绑到不同 SM。它表示控制 launch 的工作块数，再让每块循环处理多个 tile。教程的 softmax 则用估计的每 SM 驻留数量乘 SM 数决定 persistent program 数，说明 persistent 并不统一等于“每 SM 仅一个 block”。
 
-普通 tiled GEMM 与 persistent GEMM 都可以只启动一次 kernel，因此后者不必然减少主机 kernel launch 次数。它改变了设备工作调度、循环和可能的数据复用；工作不均、循环状态和资源占用也可能有成本。本页只核对教程的普通 persistent 分支，不概括 TMA/warp-specialized 分支或所有 persistent 算法。
+普通 tiled GEMM 与 persistent GEMM 都可以只启动一次 kernel，因此后者不必然减少主机 kernel launch 次数。它改变了设备工作调度、循环和可能的数据复用；工作不均、循环状态和资源占用也可能有成本。上述 Triton 例子只核对教程的普通 persistent 分支，不代表 TMA/warp-specialized 分支或所有 persistent 算法。
+
+### Hopper的两个consumer怎样分担输出
+
+同一快照“Hopper Warp Specialization”另述 Hopper 的 producer/consumer warp-group（承担搬运/计算的 warp 协作组）：producer 先等待 shared buffer empty，用 TMA（Tensor Memory Accelerator）从 global 搬入数据；完成后通知 full，consumer 等待、发起 MMA，消费完成再 release，供下一轮复用。它们用显式完成与释放维护依赖，不能把普通 `cp.async` 的等待距离直接搬给 TMA。
+
+| Hopper persistent 设计 | 两个 consumer 的工作 | 希望重叠或节省什么 |
+| --- | --- | --- |
+| cooperative | 沿 M 将同一输出 tile 分成两半，各组处理对应行 | 减少每组持有的输出状态，为较大 tile 提供选择 |
+| ping-pong | Tile Scheduler 分给两组不同输出 tile，producer 按有序序列供给 | 重叠一组的 epilogue 与另一组的 math |
+
+按 M 拆独立行不是 sliced-K 的部分和，按不同输出 tile 交替也不等于单 tile 双缓冲。Tile Scheduler 按 cluster 形状与可用 SM 信息安排工作；persistent block 可在其生命周期处理多个输出 tile，以摊薄 CTA 启动与 prologue，而非必然减少 host kernel launch。上述分工限定 Hopper；文档中的 SM100 warp-specialization 结构显著不同。
 
 ## 5. 候选配置表达哪些选择
 
@@ -124,7 +155,7 @@ Python `replace_hints`创建具有独立JIT cache的新kernel对象，提供的�
 
 比较时同时观察有效工作量、编译资源和延迟，按场景权重保留必要的配置分派。多测几个配置能提高覆盖，但不存在必须 6–8 个候选才有效的通用定理。最优性仅限已测试候选、输入和环境；配置差异接近测量波动时，不应把最快单次结果当作稳定优势。调优开销与稳态延迟分别记录，具体计时见 [测量页](kernel-correctness-and-benchmarking.md)。
 
-本轮核对了上述源码，完成资源、尾块与 persistent 分工的 CPU 教学计算；未运行 Triton GPU 编译、autotune 搜索或实际性能测量。
+此前整理核对了上述 Triton 源码，并完成资源、尾块与 persistent 分工的 CPU 教学计算；本次 Efficient GEMM 增量核读保存文档/配图，并核对拆 K 后处理的教学算术。
 
 如何从 Nsight 时间线和计数器判断应改变 tile、warp 数还是 stages，以及怎样检验等待减少是否真的缩短延迟，见 [GPU 算子性能分析](gpu-kernel-performance-analysis.md)。
 
@@ -132,6 +163,7 @@ Python `replace_hints`创建具有独立JIT cache的新kernel对象，提供的�
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |
 | Using Shared Memory in CUDA C/C++（`https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/`） | `snapshot-2026-07-02` | 静态/动态区、launch字节与多数组分区及历史设备条件；完整保存正文已读，对齐推广为整理者说明，未编译/测资源。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.11–2.4.12 hint与前提，保存正文全读；并非实际编译资源/TMA或性能验证，完整API未核。 |
 | tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
