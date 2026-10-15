@@ -2,7 +2,7 @@
 
 范围：2026-10-15 的 213 个知识页，分为 54 批。覆盖基础 21 页、理论 16 页、方法 97 页、综合研究 3 页、实现 76 页；不包含管理页、Skill 和 raw 原件。原件只在核验相应主张时读取。
 
-当前进度：完整审核 0/213 页，完成 0/54 批。下一批：01。此前四页已修正指定问题，仍需检查其余正文，未记为整页通过。
+当前进度：完整审核 3/213 页，完成 1/54 批。下一批：02。勾选表示完成正文审核及所记范围的原件核验，不表示没有待修问题。此前四页已修正指定问题，仍需检查其余正文，未记为整页通过。
 
 ## 审核要求
 
@@ -35,9 +35,21 @@
 
 重点：从已训练模型到可运行产物的职责、依赖与兼容条件；优先处理 ModelOpt 已发现的段落混杂。
 
-- [ ] [ModelOpt PTQ：配置、校准与部署 checkpoint](wiki/implementation/modelopt-ptq-calibration-and-checkpoint.md)
-- [ ] [量化模型的部署框架与后端支持](wiki/implementation/quantized-llm-deployment-backends.md)
-- [ ] [GGUF 与块量化存储格式](wiki/implementation/gguf-block-quantization-formats.md)
+- [x] [ModelOpt PTQ：配置、校准与部署 checkpoint](wiki/implementation/modelopt-ptq-calibration-and-checkpoint.md)
+- [x] [量化模型的部署框架与后端支持](wiki/implementation/quantized-llm-deployment-backends.md)
+- [x] [GGUF 与块量化存储格式](wiki/implementation/gguf-block-quantization-formats.md)
+
+审核记录（2026-10-15）：三页正文完整阅读；以下问题待修，本批未改知识正文。
+
+- **确认错误：IQ2_XS 尺度粒度。** GGUF §4 表将其写为“每 32 权重的尺度”。固定 llama.cpp `b820cc8e` 的 `ggml-quants.c:dequantize_row_iq2_xs`（2444–2470 行）从每字节高低半字节分别解出 `db[0/1]`，各覆盖两个 8 元素向量，即每 16 权重一个尺度。字节数量与数值共享粒度混淆会误导解码实现；改为“每 32 权重保存一字节，内含两个各服务 16 权重的 4-bit 尺度”，2.3125 bpw 不变。
+- **确认错误：`--pure` 的作用范围。** GGUF §5 示例称“所有张量同一类型”。同版本 `src/llama-quant.cpp:llama_tensor_get_type` 先执行 `tensor_allows_quantization`，norm、router 等仍被排除，输出/embedding 显式覆盖也先于 `pure` 判断；`pure` 跳过默认混合、正则覆盖和对应的类型 fallback。上游 README 的简写不能覆盖源码条件。改为“对可量化且未被专门覆盖的张量使用默认类型，关闭自动混合”，避免据此推算整个模型位宽或认为不兼容形状会自动回退。
+- **解释混淆：i-quant 并非都用一个索引表示多个权重。** GGUF §4 的引导和总述笼统采用向量网格解释，表内 IQ4_NL/IQ4_XS 实际由 `dequantize_row_iq4_nl/iq4_xs` 逐个半字节查 `kvalues_iq4nl`。建议用一句话区分 IQ1/2/3 的向量网格与 IQ4 的非均匀标量码本；保留现有位宽表和 IQ1_M 分散尺度解释，避免把不同解码机制混为一类。
+- **部署条件遗漏：GGUF 文件不独自保证部署完整。** 部署页 §6“格式即部署”“部署资产是文件本身”过于绝对。同版本 `tools/quantize/README.md` 的 Overview 与 multimodal 小节明确先转换 HF→GGUF 再量化，图像/音频还可能需独立 mmproj；正文也已承认各后端按类型分派。建议改标题并补一句：GGUF 是参数及元数据产物，仍需匹配模型架构、张量类型和运行后端，多模态须带齐组件。GGUF §5 同时补转换输入的前置关系；不必展开转换器源码。
+- **组织断点：ModelOpt §5 第二段与 §6 后半。** block32 粒度、GGML 整除/导出限制、checkpoint mirror/alias 语义被接成一段，FSDP2 接入后又直接转入 MLflow 指针，读者不易辨认哪些条件约束数值表示、哪些仅描述配置复用或追溯。开头已有完整 PTQ 主线，不需重写全页；最小处理是拆开独立主题，把 mirror/alias 放回 §1 的 recipe 解释，把 MLflow 单独成小节，保留全部具体条件和来源。
+
+原件核验：按来源 README 确认版本；抽核 ModelOpt `f2f0d695` 的量化/导出接口、input_scale1/headroom、KV AutoQuantize 预算与 export-only 条件；vLLM `568afb3a` 注册表和静态 FP8 Linear 参数/重标/转置主链；TensorRT-LLM `a6f41514` 全文与两张支持矩阵；MLC `6474f7db` 参数字节统计、模型库/JIT 交接；llama.cpp `b820cc8e` 容器读取、K/IQ 结构、所选解码、Q4_K 加权拟合、imatrix 统计与作者测量表。以上核心核验未见新增数值冲突。关联阅读抽查校准页的多级尺度说明、LUQ §4/部署口径和本批互链；其余存量关系未逐条核目标全文。未逐项复核部署页其他算法分派、旧 TensorRT-LLM 流程、QServe 和 release 声明，后续对应批次继续核；未核全部设备 kernel、外链或实际运行。链接检查：3 页、47 项通过，客户端跳转未测。
+
+提交：本批记录以 `review: audit batch 01 deployment artifacts` 提交到本地 Git；不推送。后续提交号以该提交记录为准。
 
 ## 02 · 量化矩阵乘的公共解释（3 页）
 
