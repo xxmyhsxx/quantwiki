@@ -41,7 +41,7 @@ sources:
   - raw/repositories/2026-09-21/flexq
   - raw/papers/2026-09-21/sharq
   - raw/repositories/2026-09-21/sharq
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # 量化矩阵乘法的缩放与执行路径
@@ -256,7 +256,6 @@ SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill
 
 [混合精度预算](../theory/mixed-precision-allocation.md) 还需把编码参数、scale、分组/索引、未量化模块和运行缓冲分别计入。BiLLM v2 §3.3、表 6 已明确区分参数位宽与标记/尺度存储，故“1.08 bit 参数”尤其不能直接代替完整模型占用。
 
-> 来源维护（2026-09-21）：上列固定 commit 的外部代码引用对应已移除的本地快照；保留原版本身份，本轮未重新审查相关代码结论。
 
 ## 14. 规则化残差、融合边界与整图延迟
 
@@ -327,7 +326,7 @@ $$XW-\widehat Y=X(W-W_{dn})+E_RW_{dn}
 | QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs（`https://arxiv.org/abs/2404.00456v2`） | `arXiv:2404.00456v2` | — |
 | FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
 | OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
-| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/int_llama_layer.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/models/int_llama_layer.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 2026-10-15同SHA临时核QK与cache路径；原raw快照已移除 |
 | QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`） | `arXiv:2305.14314v1` | — |
 | MQuant: Unleashing the Inference Potential of Multimodal Large Language Models via Full Static Quantization（`https://arxiv.org/abs/2502.00425v2`） | `arXiv:2502.00425v2` | — |
 | VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`） | `arXiv:2508.03351v2` | — |

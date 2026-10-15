@@ -14,7 +14,7 @@ sources:
   - raw/papers/2026-09-21/smoothquant
   - raw/papers/2026-09-21/roformer
   - https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14
-updated: 2026-09-15
+updated: 2026-10-15
 ---
 
 # OmniQuant：可学习裁剪与等价变换的块级校准
@@ -282,7 +282,6 @@ $$
 
 三者都学习量化前的表示，实际变换空间、裁剪对象和输入误差路径并不相同。先读本页的完整机制，再沿 [三种方法比较](../research/omniquant-affinequant-flatquant-comparison.md) 判断哪些差异有助于研究；不能用“后续论文”代替单篇理解，也不能以更大的参数空间推导普遍更好的结果。
 
-> 来源维护（2026-09-21）：上列固定 commit 的外部代码引用对应已移除的本地快照；保留原版本身份，本轮未重新审查相关代码结论。
 
 ## 来源身份
 
@@ -293,7 +292,7 @@ $$
 | OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
 | SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models（`https://arxiv.org/abs/2211.10438v7`） | `arXiv:2211.10438v7` | — |
 | RoFormer: Enhanced Transformer with Rotary Position Embedding（`https://arxiv.org/abs/2104.09864v5`） | `arXiv:2104.09864v5` | — |
-| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/tree/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 2026-10-15同SHA临时核LLaMA校准、LWC/LET、QK/cache与pack入口；原raw快照已移除 |
 
 ## 教学计算材料
 

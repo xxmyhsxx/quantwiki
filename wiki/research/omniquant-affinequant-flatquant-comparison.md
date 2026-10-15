@@ -84,7 +84,6 @@ OmniQuant 主要学习可融合的通道尺度；AffineQuant 在 W4A4 的 Norm �
 
 另一个对照轴是 [QuaRot](../methods/quarot.md) → [SpinQuant](../methods/spinquant.md)：从固定正交旋转走向以最终 CE 学习可融合旋转。它保持 RMSNorm 所需的正交结构，和本页的局部块 MSE/一般可逆变换路线并非同一组变量逐级放宽；具体比较由 SpinQuant 方法页承接。这个差别有助于区分“变换族不足”“校准目标不合适”和“部署位置受限”三个研究问题。（QuaRot v2 §4；SpinQuant v4 §3–4。）
 
-> 来源维护（2026-09-21）：OmniQuant 固定代码的本地快照已移除，其代码结论沿用既有核读记录。
 
 ## 来源身份
 
@@ -95,6 +94,6 @@ OmniQuant 主要学习可融合的通道尺度；AffineQuant 在 W4A4 的 Norm �
 | OmniQuant: Omnidirectionally Calibrated Quantization for Large Language Models（`https://arxiv.org/abs/2308.13137v3`） | `arXiv:2308.13137v3` | — |
 | AffineQuant: Affine Transformation Quantization for Large Language Models（`https://arxiv.org/abs/2403.12544v1`） | `arXiv:2403.12544v1` | — |
 | FlatQuant: Flatness Matters for LLM Quantization（`https://arxiv.org/abs/2410.09426v4`） | `arXiv:2410.09426v4` | — |
-| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/omniquant.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 本地快照已移除 |
+| OpenGVLab/OmniQuant（`https://github.com/OpenGVLab/OmniQuant/blob/feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14/quantize/omniquant.py`） | `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` | 2026-10-15同SHA临时核LLaMA校准/变换主线；原raw快照已移除 |
 | bytedance/AffineQuant（`https://github.com/bytedance/AffineQuant/tree/0f3ba9392bb0037f30750c4b2dbdd38469a2d7da`） | `0f3ba9392bb0037f30750c4b2dbdd38469a2d7da` | — |
 | ruikangliu/FlatQuant（`https://github.com/ruikangliu/FlatQuant/tree/9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1`） | `9d88ffcb7d2c6bda59fb5c44dad36adc101aadb1` | — |
