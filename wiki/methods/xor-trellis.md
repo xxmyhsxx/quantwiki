@@ -8,12 +8,14 @@ tags:
   - data-format
 sources:
   - raw/papers/2026-10-03/xor-trellis
-updated: 2026-10-08
+updated: 2026-10-15
 ---
 
 # XOR-Trellis：局部候选集合、曲率加权路径与轻量解码
 
 XOR-Trellis 在 [QTIP](qtip.md) 的 bitshift trellis 上改变两件事：用少量异或与固定 FP4 小表生成状态对应的权重值；在无 Hadamard 变换时，用 LDL 分解暴露的对角敏感性给离线路径误差加权。前者减少运行时重构逻辑，后者改变离线选择目标，二者并不互相替代。
+
+离线量化时，二阶反馈先调整待编码权重，Viterbi 再按加权误差选取合法路径；部署保存路径位流及组尺度。在线解码从局部位窗口生成 FP4 值，再乘组尺度恢复权重，既不重新选路，也不读取校准 Hessian。下文先解释这份表示，再解释怎样选择它。
 
 本页依据 arXiv:2610.00432v1 正文与附录 A–F，回查关键 PDF 公式、图与表。实验结果和电路综合均为作者报告；本轮只核论文和其中的生成器 listing，没有匹配的完整作者仓库，也未运行模型、上游程序或硬件实验。前置见[码本与位预算](../theory/codebook-quantization-and-bit-budget.md)、[二阶重构](../theory/layer-reconstruction-second-order-compensation.md)与[FP4/块尺度](../fundamentals/numeric-formats/fp8-and-mx-data-formats.md)。
 
