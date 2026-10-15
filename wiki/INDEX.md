@@ -264,7 +264,7 @@ sources: []
 | [FSDP2：参数生命周期与checkpoint](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md) | 持久分片、计算期聚合、梯度归约和full state保存分别需要哪些对象与rank参与。 |
 | [DeepSeek-V3 FP8训练](implementation/deepseek-v3-fp8-training.md) | Fprop/Dgrad/Wgrad、K组尺度与累加、缓存/optim/通信和验证反例怎样共同决定训练精度。 |
 | [CUDA Softmax：线程分工、局部统计与两级归约](implementation/cuda-softmax-row-reductions.md) | 从默认入口沿局部统计、基准校正和shared/warp归约到输出，保留float4、未完成分支及测量边界。 |
-| [CUTLASS GEMM的组成与调度](implementation/cutlass-gemm-composition-and-dispatch.md) | 沿mainloop/epilogue、kernel和主机handle理解类型、运行参数、逻辑坐标与构建期配置。 |
+| [CUTLASS GEMM的组成与调度](implementation/cutlass-gemm-composition-and-dispatch.md) | 从类型组装和逻辑坐标接到主机缓冲/stride与调用，再区分构建期派发和预编译Library选择。 |
 | [Tensor Core 与量化 GEMM](implementation/tensor-core-quantized-gemm.md) | 对照 WMMA fragment 与显式 PTX 布局，沿加载、MMA、AWQ Triton 走到编译诊断；历史库条件分别说明。 |
 | [CUDA 算子的编写、编译与接入](implementation/cuda-operator-build-and-integration.md) | 从完整设备代码和包装走到编译、dispatcher、FakeTensor 与接口检查。 |
 | [FP4/FP8 块缩放矩阵乘](implementation/block-scaled-matmul-execution.md) | 元素编码、K 组尺度、packed scale 布局与点积接口如何衔接，量化产物需保留哪些尺度参数。 |

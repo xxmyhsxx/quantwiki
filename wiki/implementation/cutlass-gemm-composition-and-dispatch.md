@@ -8,6 +8,7 @@ tags:
   - data-layout
 sources:
   - raw/articles/2026-09-21/cutlass-gemm-api
+  - raw/articles/2026-09-21/cutlass-quickstart
 updated: 2026-10-15
 ---
 
@@ -15,7 +16,7 @@ updated: 2026-10-15
 
 CUTLASS 3 把 GEMM 分成几层协作：主机 handle 准备调用参数，kernel 分配输出任务，collective 完成当前任务的搬运、K 归约与输出处理，CuTe 再将这些操作组织成线程和指令。理解这条链，才能判断一个配置改变的是工作划分、流水还是数值接口。
 
-本页依据 CUTLASS 3.0 GEMM API 的固定文档快照。输出 tile 与 K 归约的基础见 [分块矩阵乘](../fundamentals/operators/gpu-kernel-computation-patterns.md)，元素 stride 见 [张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)。
+本页依据 CUTLASS 3.0 GEMM API 与 Quickstart 的固定文档快照。输出 tile 与 K 归约的基础见 [分块矩阵乘](../fundamentals/operators/gpu-kernel-computation-patterns.md)，元素 stride 见 [张量布局与接口](../fundamentals/operators/tensor-layout-and-kernel-contracts.md)。
 
 ## 1. Mainloop和epilogue组成kernel，adapter提供主机入口
 
@@ -57,7 +58,23 @@ $$B_{\rm api}(n,k,l)=B_{\rm math}(k,n,l),\qquad P(m,n,l)=\sum_k A(m,k,l)B_{\rm a
 
 Builder 的 `AlignmentA/B` 也按**元素个数**计：8个 FP16 对应16字节。它是实现选择的输入前提，应由实际指针与布局满足。类型同样要分层：global 的逻辑 `ElementA/B` 可以不同于 MMA 接收的 `TiledMma::ValTypeA/B`，特化可经 TMA 或用户 transform 转型；直接 `CollectiveMma` 的累加类型来自 `TiledMma::ValTypeC`，builder 用 `ElementAccumulator` 指定所需的指令累加类型。（“Collective Mainloops”“Collective Builder for CollectiveMmas”。）
 
-## 4. Dispatch选择特化，Auto推导构建配置
+## 4. 从缓冲和typed stride形成一次调用
+
+Quickstart 的 Hopper 示例将上面的类型组装接到主机调用：A/B为FP16，A行主序、B列主序，C/D列主序，FP32累加。它从已选kernel取得 `StrideA/B/C/D` 类型，再用本次尺寸构造紧密排列的stride。尺寸值决定动态步长，哪些轴连续则已包含在stride类型中。（“Launching a GEMM kernel using CUTLASS 3.0 or newer”。）
+
+| 对象 | 数学shape | `make_cute_packed_stride` 接收的shape | 分配元素数 |
+| --- | --- | --- | --- |
+| A | `[M,K]` | `[M,K,1]`，配kernel的StrideA | M×K |
+| B | `[K,N]` | `[N,K,1]`，配kernel的StrideB | K×N |
+| C与D，各自一份 | `[M,N]` | `[M,N,1]`，分别配StrideC/D | 各M×N |
+
+第三个mode的1表示此例只有一份矩阵；B仍沿本页的 `(n,k,l)` 接口坐标解释，helper不转置或搬运B数据。它和 `DeviceAllocation::reset` 分配缓冲承担不同工作：前者建立地址描述，后者提供数据存储，调用前还需把A/B/C准备成期望输入。示例的beta为−1.25，C参与计算；仅分配容量没有展示输入填值或传输过程。
+
+调用 `gemm_op({...})` 时，`kGemm` 与 `{M,N,K}` 给出运算模式和问题尺寸，A/B各传设备指针及typed stride，epilogue参数再连接C、D的指针/stride与alpha/beta。mainloop完成乘积累加，epilogue据这些参数读C、写D；因此D的分配和布局也属于完整调用契约。保存示例检查返回的 `cutlass::Status`，但没有展示输入准备、完成等待和结果读回；这些由实际调用方按执行流与输出消费方式完成。
+
+前一段Turing的 `device::Gemm` 示例则用 `HostTensor::device_ref()` 封装指针和leading dimension，并让C/D共用同一个缓冲及布局。这是该例完全同形、同stride的使用方式，与Hopper例为D单独分配内存的选择分别保留。（“Launching a GEMM kernel in CUDA”。）
+
+## 5. Dispatch选择特化，Auto推导构建配置
 
 `DispatchPolicy` 用 tag 选择架构与算法特化。文档的 Hopper 策略包含 `Stages`、`ClusterShape`、`arch::Sm90` 和 kernel `Schedule`；mainloop 与 schedule 可以在各自支持的组合内复用。类型名称保持 `CollectiveMma` 或 `GemmUniversal`，具体执行仍由匹配的特化决定。（“Collective Dispatch Policies”。）
 
@@ -65,6 +82,18 @@ Builder 的 `AlignmentA/B` 也按**元素个数**计：8个 FP16 对应16字节�
 
 保存文档对其 **3.0 builder** 的支持声明是 beta、SM90 tensorop；同名 kernel/adapter 还可由不同特化承接 2.x 与 3.x 接口。判断一个项目的支持范围时，需要对应它实际使用的版本和特化。（“Collective Builder for CollectiveMmas”“Kernel API”“Device API”。）
 
+## 6. 模板实例与预编译Library选择不同的调用路径
+
+上面的adapter路径在客户端选择模板类型，再调用该实例。Quickstart另提供 `cutlass::library::Handle`：调用方用dtype/layout枚举、尺寸、指针、leading dimension与alpha/beta描述请求，Library从**已编译的kernel集合**中寻找第一个满足类型、布局和对齐条件的实例。它提供功能上足够的选择，并不比较候选耗时，也不保证选到最快tile。（“CUTLASS Library”。）
+
+因此构建过滤影响运行时可选范围：`CUTLASS_NVCC_ARCHS` 选择目标架构，`CUTLASS_LIBRARY_OPERATIONS` 与 `CUTLASS_LIBRARY_KERNELS` 限制生成的operation/实例。编译全部候选会增加构建与二进制成本，Handle也无法选到未编入的实例。普通模板使用需提供 `include` 路径；使用HostTensor等工具还需 `tools/util/include`；Library调用另需其header与链接目标 `cutlass_lib`。这些是头文件/实例集合与主机调用的不同依赖，不是设备计算阶段。
+
+Library示例写 `ptrD=C.device_data()`，却从未声明的 `D.device_ref()` 取ldd；若沿其C/D共用存储的意图，ldd应取C的stride。本页解释对象连接，不将该片段作为可直接编译程序。Quickstart末段的SM100 blockscaled例也存在operation class文字与代码不一致；该路径的合法类型、尺度和policy由[SM100块缩放页](cutlass-blackwell-block-scaled-gemm.md)承接。
+
+Quickstart同时包含不同代际的构建与GEMM示例。其概述列出的CUDA11.4最低条件不能直接覆盖后面的SM90/SM100路径；构建目标和工具链须匹配所用源码与架构。完整应用如何安排编译、库加载和调用接口，另见[CUDA编写与接入](cuda-operator-build-and-integration.md)。
+
 ## 来源身份
+
+- Quickstart — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/quickstart.html`），`snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，通用层次图补采于2026-09-21。完整保存794行/README及同图；主要使用主机缓冲/stride/调用、Library选择和构建过滤，原件差异见正文；没有执行构建、Profiler、测试或设备程序。
 
 - CUTLASS 3.0 GEMM API — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/gemm_api_3x.html`），`snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，配图补采于2026-09-21。完整保存493行与配图，主要使用 Device/Kernel/Collective，Tiled/Atom 按本页概述；坐标例为整理者展开。文档未给完整参数初始化和启动示例，本次未核外链实现、完整 CuTe 教程或运行。

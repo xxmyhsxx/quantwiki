@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · CUTLASS Quickstart ingest：主机缓冲与实例调用
+
+- 完整核读snapshot-2026-07-02保存794行、README与通用层次图；正文/同图2项哈希匹配，复用本批通用图及独立准备/Astra原件核读证据。
+- 在[CUTLASS组成与调用](implementation/cutlass-gemm-composition-and-dispatch.md)补kernel typed stride、DeviceAllocation与A/B/C/D对象流、alpha/beta和输出位置；对照SM75 TensorRef与SM90独立D。Library Handle的首个兼容实例选择、构建过滤和不同include/link依赖也留在此页，复用现有布局/配置/SM100及CUDA接入解释。
+- 保存示例未展示输入准备与结果消费，正文保留这些调用责任；Library中D未声明、SM100块缩放operation class前后不一按原件登记。一般CUDA最低前提不扩展为所有架构条件；没有新增无用测试或执行构建。
+- INDEX/READING/SELF/计划同步：196条有依据、33条队列（12论文/16文档/5代码），本轮基线88已处理55条；下一项Synchronization primitives。独立Astra原件/正文及记录review通过，无必修项。结构/来源strict检查201知识页、715项登记，0错误/待核；4个受影响Wiki页1356条本地链接strict及diff检查通过，196/33记录数相符。本项六文件提交，既有Obsidian改动保留，没有编译/设备运行或新增算式测试。
+
 ## 2026-10-15 · Grouped Scheduler ingest：任务定位与负载分配
 
 - 完整核读snapshot-2026-07-02保存311行、README及7张2026-09-21补采图；正文/图8项哈希核对一致，复用独立准备与Astra原件核读证据。
