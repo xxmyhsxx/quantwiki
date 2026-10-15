@@ -21,25 +21,25 @@
       "purpose": "在应用环境实现或优化算子，完成编译、正确性与性能验证。"
     }
   ],
-  "content_sha256": "45b70c3269ce7e160dac0dae6676796f91b991e7674b072ebe725b425c5189c1",
+  "content_sha256": "b5b08983c5e7176a7a1001c0fcf6dabcad478c5a999e71402b293d2ae3929f96",
   "files": {
-    "README.md": "b3450394dbb0bfe4372a170c231024ea443e6a83e881ecae39d54d00242b5734",
-    "SKILL.md": "f83f61cca85b0b66e4e58d4452e046061ffb12f56ddcd4444f01a8489c1e399b",
+    "README.md": "a93477221881c860300184ce1f076a13f41804b2eb254ed4f54572a4cd1d8188",
+    "SKILL.md": "834399a9a8485b793ebd41fcd708171d5a753055542a3a2a34defe54bb8aeb82",
     "scripts/package.py": "c46acc33b09cd654ef946d1caebafb44121cd87da61275705a8dc7b120c4ca8b",
     "scripts/test_package.py": "99b3fef44b17ad09e9ca53a9e9918ca373c1aac8704c52d734b12055162dee61",
-    "skills/wiki-kernel-writing/README.md": "6ed187734146e835ab047a9cb82c84fed20d327242ba41735cf3162536b58233",
-    "skills/wiki-kernel-writing/SKILL.md": "fbad935ca93d402bf083405a5d9aecdcb189c4c10fe8adfbbe2932a02891455c",
-    "skills/wiki-query/README.md": "07db2229516a74c7b494e772a6e7a2079506b4baeab8ee8a692c665eeea6a73c",
-    "skills/wiki-query/SKILL.md": "a7e888d6351bd83c003a6235eb2746360b50354aede5c3d0ab8983a0b55062bf",
+    "skills/wiki-kernel-writing/README.md": "7746c49622617ca015c9a0af28074a98bb45024cd03d04b5b0b94e94d6b0a000",
+    "skills/wiki-kernel-writing/SKILL.md": "2dba4da95ddcbfa7c9507762314a7140825b685e5276c5b3a0404446812bf5e9",
+    "skills/wiki-query/README.md": "f318043be75285f3036ba29430a9451c5582417966156f30b6a1b36f89375eed",
+    "skills/wiki-query/SKILL.md": "eda8a2760218d421a7b24d25c1455ad173c1bb8301cec26d6e8b5e443eab6d3a",
     "skills/wiki-query/references/deployment.md": "83912fddefef325c3052631ac3bfadce6896f6ec63e829752dd86f50ff635ca8",
     "skills/wiki-query/references/evaluation.md": "02926f904145530fa81f4a89eb925779de6e489db7e8af43fbf7cedf6da0aaac",
     "skills/wiki-query/references/kernels.md": "c3de17a329e950e35a6d4d60949bee239355a28bc2728aec5e5a53f2c69e2d2e",
     "skills/wiki-query/references/models-and-cache.md": "7715ce655628503abe26c493190a594d97082db28474d73b24ea2694f52e4fe2",
     "skills/wiki-query/references/quantization.md": "59947210df5fdf076d4385e0a17f9bb1bd140ed1ea228159bb524fdfb035cd33",
-    "skills/wiki-research/README.md": "0cd3ffcc31deecfb0eee413f9eb10084fc5afaf2e853b2dbfd479901238aee27",
-    "skills/wiki-research/SKILL.md": "ef906b71b2dce9c90188917644e1a2e619feddad01a45b4fc8254b274abee5fb"
+    "skills/wiki-research/README.md": "f6a8694c552e1601282347530df456d9923fce630de05728bb35883638411d01",
+    "skills/wiki-research/SKILL.md": "5900c0f4b41ecf3c4d25728a39affd6668d82aae67fd762609ec999c4b8aa69d"
   },
   "name": "use-quant-wiki",
   "schema_version": 1,
-  "version": 7
+  "version": 8
 }

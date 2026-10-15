@@ -5,9 +5,21 @@ description: "使用量化 Wiki 回答问题、研究方案或开发 GPU 算子�
 
 # 使用量化 Wiki
 
-根据任务选择包内能力，完成后统一回传反馈。应用代码、环境和运行记录属于应用项目；知识库、源包、反馈目录以 `package.json` 的绝对绑定为准，不能从应用目录猜测。当前 Wiki 为 `/Users/xiao/Documents/Projects/quantwiki`。
+## 任务
 
-## 1. 准备本次版本
+根据任务选择包内能力，完成后统一回传反馈。
+
+## 输入
+
+当前任务、应用目录及目标约束。应用代码、环境和运行记录属于应用项目；知识库、源包、反馈目录以 `package.json` 的绝对绑定为准，不能从应用目录猜测。当前 Wiki 为 `/Users/xiao/Documents/Projects/quantwiki`。
+
+## 原则
+
+准备、安装、发布和反馈的核验由工具完成。成功后不再追加 `status`、`verify`、目录扫描或清单比对；只有失败或结果矛盾时定向排查并报告阻塞。
+
+## 工作步骤
+
+### 1. 准备本次版本
 
 同任务已有快照时继续使用。新任务将入口所在目录设为 `quantwiki_package`，在应用任务目录中选一个尚不存在的快照绝对路径，设为 `quantwiki_snapshot`：
 
@@ -19,9 +31,7 @@ python3 -B "$quantwiki_package/scripts/package.py" prepare --output "$quantwiki_
 
 成功后使用返回的 `snapshot` 路径，记录版本、内容标识和限制，读取快照入口。执行期间不切换版本；内部规范及辅助材料都从该快照读取。
 
-准备、安装、发布和反馈的核验由工具完成。成功后不再追加 `status`、`verify`、目录扫描或清单比对；只有失败或结果矛盾时定向排查并报告阻塞。
-
-## 2. 使用所需能力
+### 2. 使用所需能力
 
 按问题读取下列规范，路径相对于任务快照，不默认加载全部：
 
@@ -35,7 +45,7 @@ python3 -B "$quantwiki_package/scripts/package.py" prepare --output "$quantwiki_
 
 公共知识和共享方法的修订交维护端，不调用未下发的维护 Skill。算子知识在迭代前准备，执行中不追加外部 Wiki 查询。
 
-## 3. 回传反馈并交付
+### 3. 回传反馈并交付
 
 任务结束时整合内部能力的结果，只提交一份反馈；续接不重复提交，`task_id` 本身不会去重。使用应用已有记录位置保存 JSON，必需字段为：
 
@@ -51,9 +61,7 @@ python3 -B "$quantwiki_snapshot/scripts/package.py" feedback --input "$quantwiki
 
 工具唯一新建反馈记录，不覆盖已有日志。成功后不回读；失败时交付反馈文本并说明未回传，不换目录写入。反馈不会自动修改 Wiki 或源 Skill。
 
-交付用户所需结果、关键依据和限制，说明所用版本与能力。区分安装完成、知识可访问和应用实测；算子结果按内部规范交付。
-
-## 接入：明确要求时安装
+### 接入：明确要求时安装
 
 读取接收方协作约定，确认可访问的接收项目绝对路径，设为 `quantwiki_project`，将 `quantwiki_package` 设为实际包目录：
 
@@ -67,7 +75,7 @@ python3 -B "$quantwiki_package/scripts/package.py" install --project "$quantwiki
 
 依据返回结果交付位置、版本、安装记录和备份；知识访问另按目标环境确认。纯安装至此结束，不生成使用反馈；同时有应用任务时，从返回的安装路径准备任务。
 
-## 维护：发布源包
+### 维护：发布源包
 
 维护者按 skill-creator 同步设计与执行，检查全部能力、依赖和引用。将 `quantwiki_package` 设为绑定源包，`quantwiki_version` 设为大于当前版本的正整数：
 
@@ -76,3 +84,11 @@ python3 -B "$quantwiki_package/scripts/package.py" publish --version "$quantwiki
 ```
 
 首次发布使用 `--metadata` 提供含 `schema_version: 1`、名称、绑定和能力的 JSON；后续沿用清单。保留三项能力与实际绑定，包内文件变化才升级包。使用端不能发布未知草稿。按 Wiki 约定记录结果；发布不自动安装或推送 Git。
+
+## 输出
+
+交付用户所需结果、关键依据和限制，说明所用版本与能力。区分安装完成、知识可访问和应用实测；算子结果按内部规范交付。
+
+## 校验
+
+依据工具返回结果核对交付版本、路径、限制和完成状态；不把安装成功写成应用实测。
