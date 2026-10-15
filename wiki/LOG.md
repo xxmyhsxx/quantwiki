@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · H100 GEMM worklog ingest：TMA、WGMMA 与缓冲复用
+
+- 完整核读599行保存正文、85行README与38个实际附件，正文哈希与登记一致；40处图引用缺swizzle/Hilbert小图，Conclusion性能plot未保存，补采图不声称历史字节同版。关联fast.cu只核README身份，晚于文章，不作为发表时实现证据。
+- 新增[Hopper BF16 GEMM执行](implementation/hopper-gemm-tma-wgmma-pipeline.md)，按输入slot→TMA/full→WGMMA完成→empty复用贯通，连接双consumer沿M分工、QSIZE与角色寄存器预算、persistent局部性/multicast及输出sC生命周期；保留作者配置/性能口径与因果猜测归属，不复制11项成绩排行或硬件概述中的规格泛化。
+- 定向增核已有CUDA async-copies保存正文519–565/1082–1153行，以官方多维TMA示例说明writer proxy可见性、发起线程bulk-group读取完成及共享源复用，未把该补充推定为博客省略wrapper的实现。异步流水与配置页各加一处必要入口，INDEX/READING/SELF/计划同步：200条有依据、29条队列（12论文/12文档/5代码），本轮基线88已处理59条；下一项fast.cu。
+- 独立Astra原件/正文与管理记录review通过，无必修项。结构/来源strict检查202知识页、720项登记，0错误/待核；6个受影响Wiki页1388条本地链接strict及diff检查通过，200条有依据/58条历史范围待核/29条队列与12/12/5分类数一致。本批不新增算术测试或执行上游/GPU；提交范围为本项8文件，Obsidian改动保留。
+
 ## 2026-10-15 · CUTLASS历史博客 ingest：线程内外积与寄存器复用
 
 - 完整核读snapshot-2026-07-02保存447行、README与10张2026-09-21补采图；正文/图11项哈希与登记一致。页首只保留2018-05-21更新，主体为preview/v0.1.1链接范围，不把抓取日期或图片路径当首次发布日期。

@@ -60,6 +60,8 @@ acquire解决“旧数据是否已用完”，wait解决“新数据是否已备
 
 方法的具体完成保证还取决于所用Pipeline类。示例对普通producer内存操作明确要求先保证写已完成且对consumer可见，再commit。`PipelineTmaAsync`这类TMA producer可由操作自动更新关联barrier，使`producer_commit`成为No-Op；此时consumer仍须按该类协议等待数据满足依赖。不能从是否执行了一个显式commit，判断搬运是否已经完成。（“Producer commit”及“Pipeline example”注释。）
 
+具体的 full/empty 队列、TMA transaction 字节与 WGMMA 完成如何接续，见 [Hopper BF16 GEMM](hopper-gemm-tma-wgmma-pipeline.md)；该案例还将输出 TMA 的 shared 暂存复用与输入流水分别解释。
+
 ## 3. `commit_group` 与 `wait_group` 等待的是批次
 
 CuTe `copy_sm80.hpp:cp_async_fence` 发出 `cp.async.commit_group`，将线程此前尚未提交的拷贝归成一组；提交不阻塞等待完成。同文件 `cp_async_wait<N>` 包装 PTX 等待：允许最近 N 组仍待完成，较早的组必须完成。N=0 在这个 CuTe 包装中使用 `wait_all`；不要据包装名称假定它与任意手写的未提交操作序列完全相同。

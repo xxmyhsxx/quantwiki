@@ -157,6 +157,8 @@ $$i(i+1)/2\le t<(i+1)(i+2)/2$$
 
 按 M 拆独立行不是 sliced-K 的部分和，按不同输出 tile 交替也不等于单 tile 双缓冲。Tile Scheduler 按 cluster 形状与可用 SM 信息安排工作；persistent block 可在其生命周期处理多个输出 tile，以摊薄 CTA 启动与 prologue，而非必然减少 host kernel launch。上述分工限定 Hopper；文档中的 SM100 warp-specialization 结构显著不同。
 
+[H100 BF16 案例](hopper-gemm-tma-wgmma-pipeline.md)进一步连接双 consumer 的累加载荷、输入队列深度与角色寄存器分配，并说明 persistent 任务顺序怎样影响跨 tile 的数据局部性。
+
 ## 5. 候选配置表达哪些选择
 
 官方矩阵乘教程把 kernel 的 `BLOCK_SIZE_*` 放进 `Config.kwargs`，把编译选项作为 `Config` 的构造器参数：
