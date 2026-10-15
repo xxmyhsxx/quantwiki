@@ -24,7 +24,7 @@ sources:
   - raw/papers/2026-09-21/mmlu-pro
   - raw/papers/2026-09-21/ruler
   - raw/repositories/2026-09-21/lm-evaluation-harness
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # 模型质量评测：PPL、任务协议与选择性预测
@@ -41,6 +41,8 @@ $$\mathrm{NLL}=-\sum_{t\in\mathcal I}\log p_\theta(x_t\mid x_{<t}),\qquad
 等概率预测的教学例：每个正确目标的概率都是 $1/4$，则 PPL 为 4。一般 PPL 是正确 token 概率倒数的几何平均，不是正确率，也不是生成答案的平均概率。
 
 padding、只提供上下文的重叠 token、被忽略的 prompt labels 不计入 $\mathcal I$。因果 LM 常在内部把 logits 与 labels 错开一位；用 loss 乘有效 token 数还原 NLL 时，必须按**错位后的有效 labels**计数，不能盲乘输入序列长度。
+
+**保存示例的计数问题。** Hugging Face 的所存网页示例用有效 labels 数减 batch size 计数；这只在每条序列的首标签原本有效时成立。重叠窗口的首标签已被设为 `-100` 时，错位丢掉的是一个忽略项，再减一次会少计有效目标。按该示例的二维 labels 和左移一位约定，应直接统计 `target_ids[:, 1:] != -100`。例如 `[-100, a, b]` 错位后仍有两个有效目标，减一却只得到一个。这是对保存代码的静态核对，未运行模型。
 
 合并多个样本时先累加 NLL 和有效 token 数，再取指数。教学例：两段分别有 2 个、8 个计分 token，平均 NLL 分别为 1、3，合并平均 NLL 为 2.6；不能直接平均两段 PPL，亦不能不加权平均两个 loss。
 
