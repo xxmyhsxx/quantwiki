@@ -22,9 +22,9 @@
 
 ## 3. 输入设计
 
-从实际问题或现象，以及绑定的 [SELF](/Users/xiao/Desktop/量化/SELF.md) 与 [INDEX](/Users/xiao/Desktop/量化/wiki/INDEX.md) 开始。按研究需要取得对象、已有观察、约束、比较基线、解决标准、材料、代码和可用资源。未知条件本身可能就是需要解决的缺口，不要求启动前备齐所有信息。
+从实际问题或现象，以及绑定的 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md) 与 [INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 开始。按研究需要取得对象、已有观察、约束、比较基线、解决标准、材料、代码和可用资源。未知条件本身可能就是需要解决的缺口，不要求启动前备齐所有信息。
 
-知识库固定为 `/Users/xiao/Desktop/量化`，不能根据应用当前目录猜测或替换。需要核验原始来源时，先按当前问题明确材料范围，再沿知识页来源登记定向读取 [raw 规范](/Users/xiao/Desktop/量化/raw/README.md) 与必要原始材料，不扫描整个 raw。访问失败保留未核实，不改用未经说明的知识来源。
+知识库固定为 `/Users/xiao/Documents/Projects/quantwiki`，不能根据应用当前目录猜测或替换。需要核验原始来源时，先按当前问题明确材料范围，再沿知识页来源登记定向读取 [raw 规范](/Users/xiao/Documents/Projects/quantwiki/raw/README.md) 与必要原始材料，不扫描整个 raw。访问失败保留未核实，不改用未经说明的知识来源。
 
 算子开发的 GPU、服务器、代码路径和运行环境由应用任务确定，不默认使用 Wiki 的历史实验环境。算子执行期间遵守其运行时闭包；额外知识需求保留为反馈或下一阶段研究的问题，不在迭代循环中插入外部 Wiki 查询。
 
@@ -62,7 +62,7 @@
 
 向统一入口提供可复用的机制、适用条件、方法联系、反例和有依据的修正建议，包括已读知识位置、拟补位置及证据。具体代码版本、配置和原始结果留在应用研究记录中。尚未成立的猜想作为开放问题说明依据与未知部分，不直接整合为公共知识。
 
-入口将本次调用的反馈整合成唯一记录，写入 `/Users/xiao/Desktop/量化/query-feedback/`；本能力不另外写入反馈目录。反馈材料已提交与公共知识已修改是不同状态，回传受阻时交付实际材料与限制。
+入口将本次调用的反馈整合成唯一记录，写入 `/Users/xiao/Documents/Projects/quantwiki/query-feedback/`；本能力不另外写入反馈目录。反馈材料已提交与公共知识已修改是不同状态，回传受阻时交付实际材料与限制。
 
 执行步骤和必要的验证要求集中在 [SKILL.md](SKILL.md)，本文件说明设计取舍。
 

@@ -15,7 +15,7 @@ description: "use-quant-wiki 包内的知识使用能力。直接读取绑定的
 
 当前问题、主题、方法或待分析表述，应用已知的对象、版本、配置、目标与约束；可选范围和回答粒度。信息已明确时直接使用，未知条件保留为未知。
 
-知识库固定为 `/Users/xiao/Desktop/量化`。读取 [SELF](/Users/xiao/Desktop/量化/SELF.md)、[INDEX](/Users/xiao/Desktop/量化/wiki/INDEX.md) 以及所需正文；不根据应用当前目录推断 Wiki 位置。入口不可读时报告具体路径和影响，不把访问失败写成知识缺失。
+知识库固定为 `/Users/xiao/Documents/Projects/quantwiki`。读取 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md)、[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 以及所需正文；不根据应用当前目录推断 Wiki 位置。入口不可读时报告具体路径和影响，不把访问失败写成知识缺失。
 
 ## 原则
 
@@ -28,8 +28,8 @@ description: "use-quant-wiki 包内的知识使用能力。直接读取绑定的
 ## 工作步骤
 
 1. **明确问题与范围。** 从任务提取核心概念、需要的输出及应用约束。先读取绑定的 SELF 与 INDEX；同次调用已读且仍有效的内容可以复用。问题含糊时从最可能的概念试查并收敛，不扩大成全库审查。
-2. **两路检索。** 用 `rg --files /Users/xiao/Desktop/量化/wiki` 查英文文件名，用 `rg -n '关键词' /Users/xiao/Desktop/量化/wiki` 查标题、术语和机制。不中时补查中英文名、别名、方法名、机制特征及相邻方法。
-3. **读正文和必要关联。** 判断该处能否支撑当前问题；相关但不等价的内容保留边界。直接内容不足时沿链接补前置、共同机制、比较、实现与验证。按 [Wiki 链接规范](/Users/xiao/Desktop/量化/wiki/README.md#知识链接与页面身份) 解析：Markdown 链接以知识页目录为基准，`#` 后为标题锚点，显示文字不是文件名。只纳入实际存在且已读到所需内容的位置。
+2. **两路检索。** 用 `rg --files /Users/xiao/Documents/Projects/quantwiki/wiki` 查英文文件名，用 `rg -n '关键词' /Users/xiao/Documents/Projects/quantwiki/wiki` 查标题、术语和机制。不中时补查中英文名、别名、方法名、机制特征及相邻方法。
+3. **读正文和必要关联。** 判断该处能否支撑当前问题；相关但不等价的内容保留边界。直接内容不足时沿链接补前置、共同机制、比较、实现与验证。按 [Wiki 链接规范](/Users/xiao/Documents/Projects/quantwiki/wiki/README.md#知识链接与页面身份) 解析：Markdown 链接以知识页目录为基准，`#` 后为标题锚点，显示文字不是文件名。只纳入实际存在且已读到所需内容的位置。
 4. **形成所需结果。** 将已读知识与当前事实连接，给出答案、解释、比较或分析；保留版本、模型、配置及适用条件。当前推理写明前提，当前应用效果由实际记录支持。知识不足时说明检索词、范围和具体缺口；需要原文核验或实际求解时，将需求交给入口按需读取包内 [wiki-research](../wiki-research/SKILL.md)，不自行访问 raw 或启动 ingest。
 5. **交付并提供反馈材料。** 交付当前结果、关键正文依据与剩余未知。将任务摘要、已读位置、结果、限制和改进依据交给统一入口；没有缺口时如实说明。入口负责本次调用唯一的反馈记录，本能力不再单独落盘。
 

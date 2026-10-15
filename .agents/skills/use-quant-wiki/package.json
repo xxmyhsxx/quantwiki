@@ -1,8 +1,8 @@
 {
   "bindings": {
-    "feedback_root": "/Users/xiao/Desktop/量化/query-feedback",
-    "source_package": "/Users/xiao/Desktop/量化/.agents/skills/use-quant-wiki",
-    "wiki_root": "/Users/xiao/Desktop/量化"
+    "feedback_root": "/Users/xiao/Documents/Projects/quantwiki/query-feedback",
+    "source_package": "/Users/xiao/Documents/Projects/quantwiki/.agents/skills/use-quant-wiki",
+    "wiki_root": "/Users/xiao/Documents/Projects/quantwiki"
   },
   "capabilities": [
     {
@@ -21,20 +21,20 @@
       "purpose": "在应用环境实现或优化算子，完成编译、正确性与性能验证。"
     }
   ],
-  "content_sha256": "2b35f5c92e03be645d498f7641e82237d5ccdbbd8ff150e8fe2b4d19de415685",
+  "content_sha256": "0776d1ce1679729311640dc2ebd6518f58ce7a8ad34dca4623552605d8806263",
   "files": {
-    "README.md": "ac38bebfa9933d17ad4f075632788cc827ca2c0b949be938516b5b85a617cb0b",
-    "SKILL.md": "2ce699ef3a4092d39b2e1cfb47a294f246ad4ed9cde072776270c6da215beb4c",
+    "README.md": "9806a49de8602127ce963414eaaedde707849e55c3a9208cd7aeef1708aa4979",
+    "SKILL.md": "1392d762745cca9af3baa19b5ca8f504116ab366fc1bb24a8a715a223594ab50",
     "scripts/package.py": "c46acc33b09cd654ef946d1caebafb44121cd87da61275705a8dc7b120c4ca8b",
     "scripts/test_package.py": "99b3fef44b17ad09e9ca53a9e9918ca373c1aac8704c52d734b12055162dee61",
     "skills/wiki-kernel-writing/README.md": "75e08512b9115db8a4f6d092bc42e72eb20148e35864a2ac89e889effbeb0fd4",
     "skills/wiki-kernel-writing/SKILL.md": "c09c6ca750de571539f82c50972ca84f295493bd09374934bb53867e65be8be1",
-    "skills/wiki-query/README.md": "ea7ad983123e25fe7eff9d89ce71867440be67da8cf2119a7ded696be07af788",
-    "skills/wiki-query/SKILL.md": "b67fa001b22155430458d151e317032438f620c4c51e9628a7ce4e5de120ee56",
-    "skills/wiki-research/README.md": "f4e550f9946eb0164a1ee064eca954605172c0d5e11770bc0d34026d19227a0e",
-    "skills/wiki-research/SKILL.md": "2e2caa4d511679cf0c1447daa2d6ecaadd2f11209bf1d38af59e5ca46b8deea0"
+    "skills/wiki-query/README.md": "f7836597b6320e87aa9c30bf0ad67896c931ee1550aad63b707802f8528c1b28",
+    "skills/wiki-query/SKILL.md": "d1ed5dc7933082b61b80aaac0c244db4489c5717fb4be482e37fab1fecf6c6c5",
+    "skills/wiki-research/README.md": "73bdb0810a26c2142abe214bba7346e4beb9e9c9e2382ff039d6649e68dbaffa",
+    "skills/wiki-research/SKILL.md": "5364638d8b5ff5c83bdd5f26843ada2a61d11c3dbd93af26ade76f926811162e"
   },
   "name": "use-quant-wiki",
   "schema_version": 1,
-  "version": 4
+  "version": 5
 }

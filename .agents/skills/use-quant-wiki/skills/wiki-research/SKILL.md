@@ -15,7 +15,7 @@ description: "use-quant-wiki 包内的研究能力。结合绑定的 Wiki 研究
 
 实际问题或现象，以及应用工作区、目标和约束。按研究需要取得对象、已有观察、比较基线、解决标准、材料、代码和可用资源；未知条件保留为待解决的问题。
 
-知识库固定为 `/Users/xiao/Desktop/量化`，从 [SELF](/Users/xiao/Desktop/量化/SELF.md)、[INDEX](/Users/xiao/Desktop/量化/wiki/INDEX.md) 与必要正文进入。路径不可读时说明实际限制，不把当前应用目录当作 Wiki，也不自动切换知识库。原始来源核验只在当前研究问题需要时明确范围，遵循 [raw 规范](/Users/xiao/Desktop/量化/raw/README.md)，保留版本，不全量扫描原始材料。
+知识库固定为 `/Users/xiao/Documents/Projects/quantwiki`，从 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md)、[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 与必要正文进入。路径不可读时说明实际限制，不把当前应用目录当作 Wiki，也不自动切换知识库。原始来源核验只在当前研究问题需要时明确范围，遵循 [raw 规范](/Users/xiao/Documents/Projects/quantwiki/raw/README.md)，保留版本，不全量扫描原始材料。
 
 GPU、服务器、模型和运行环境以应用任务为准，不沿用 Wiki 中历史记录的执行位置。
 
@@ -36,7 +36,7 @@ GPU、服务器、模型和运行环境以应用任务为准，不沿用 Wiki �
 
 ### 2. 判断知识是否够用
 
-按对象、机制和决策点定位并阅读绑定的 Wiki 正文，需要知识支持时显式读取包内 [wiki-query](../wiki-query/SKILL.md)。检索不足时补查别名、机制描述和相邻页面；检查拟用知识能支持哪一步、条件是否适用。研究需要原始核验时，先明确范围，再沿知识页的 `sources` 定向回查绑定的 `/Users/xiao/Desktop/量化/raw/` 或任务提供的材料。材料不可读记为未核实；证据冲突先核对版本、定义和条件。
+按对象、机制和决策点定位并阅读绑定的 Wiki 正文，需要知识支持时显式读取包内 [wiki-query](../wiki-query/SKILL.md)。检索不足时补查别名、机制描述和相邻页面；检查拟用知识能支持哪一步、条件是否适用。研究需要原始核验时，先明确范围，再沿知识页的 `sources` 定向回查绑定的 `/Users/xiao/Documents/Projects/quantwiki/raw/` 或任务提供的材料。材料不可读记为未核实；证据冲突先核对版本、定义和条件。
 
 已有知识充分时进入求解；接不上时判断缺口：
 
@@ -71,7 +71,7 @@ GPU、服务器、模型和运行环境以应用任务为准，不沿用 Wiki �
 
 检查研究中哪些已有知识支撑了求解，哪些地方需要补充或修正。向统一入口提供已读知识位置、答案或验证结果、可复用的机制、条件、关系和反例，以及具体拟补位置与依据；具体配置、代码版本和原始输出留在应用研究记录中。尚未成立的猜想作为开放问题写明依据与未知部分，不直接写为公共知识。
 
-统一入口整合本次调用的反馈并写入 `/Users/xiao/Desktop/量化/query-feedback/`。本能力不重复写日志，不修改公共正文、导航、SELF、原始来源或源 Skill。公共修订、论文入库和共享方法调整由维护任务另行处理；入口回传受阻时保留反馈文本与实际限制，不能声称已经回传或完成知识修改。
+统一入口整合本次调用的反馈并写入 `/Users/xiao/Documents/Projects/quantwiki/query-feedback/`。本能力不重复写日志，不修改公共正文、导航、SELF、原始来源或源 Skill。公共修订、论文入库和共享方法调整由维护任务另行处理；入口回传受阻时保留反馈文本与实际限制，不能声称已经回传或完成知识修改。
 
 ## 输出
 

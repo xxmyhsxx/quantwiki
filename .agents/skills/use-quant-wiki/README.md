@@ -49,7 +49,7 @@
 
 外派输入为实际接收位置及本次安装要求。项目接入默认安装到 `<项目根目录>/.agents/skills/use-quant-wiki/`；共享接入使用已确认 Skill 目录，安装到 `<Skill目录>/use-quant-wiki/`。二者不可混用，不猜全局路径。仓库 URL 或服务器地址须先对应到可访问的接收工作区。
 
-本包的知识库绑定为 `/Users/xiao/Desktop/量化`，源包位置为其 `.agents/skills/use-quant-wiki/`，反馈位置为其 `query-feedback/`。镜像中的绑定保持一致。路径不可访问时报告具体限制，不根据应用当前目录猜测知识库，也不自动改成另一位置。
+本包的知识库绑定为 `/Users/xiao/Documents/Projects/quantwiki`，源包位置为其 `.agents/skills/use-quant-wiki/`，反馈位置为其 `query-feedback/`。镜像中的绑定保持一致。路径不可访问时报告具体限制，不根据应用当前目录猜测知识库，也不自动改成另一位置。
 
 应用的 GPU、模型、依赖和服务器位置由应用任务确定，不沿用本 Wiki 的历史实验环境作为默认执行目标。
 
@@ -122,9 +122,9 @@
 
 ## 7. References 与现有内容
 
-量化知识继续通过 [SELF](/Users/xiao/Desktop/量化/SELF.md)、[INDEX](/Users/xiao/Desktop/量化/wiki/INDEX.md) 和 [Wiki 规范](/Users/xiao/Desktop/量化/wiki/README.md) 获取，不随能力包复制。
+量化知识继续通过 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md)、[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 和 [Wiki 规范](/Users/xiao/Documents/Projects/quantwiki/wiki/README.md) 获取，不随能力包复制。
 
-[研究知识页](/Users/xiao/Desktop/量化/wiki/research/) 保留研究问题、机制综合、方法联系和有依据的结论。研究计划、应用代码、部署配置和运行结果由 Wiki 仓库外的应用或实验工程承接；Wiki 的资料状态与维护变动见 [READING](/Users/xiao/Desktop/量化/wiki/READING.md) 和 [LOG](/Users/xiao/Desktop/量化/wiki/LOG.md)。
+[研究知识页](/Users/xiao/Documents/Projects/quantwiki/wiki/research/) 保留研究问题、机制综合、方法联系和有依据的结论。研究计划、应用代码、部署配置和运行结果由 Wiki 仓库外的应用或实验工程承接；Wiki 的资料状态与维护变动见 [READING](/Users/xiao/Documents/Projects/quantwiki/wiki/READING.md) 和 [LOG](/Users/xiao/Documents/Projects/quantwiki/wiki/LOG.md)。
 
 ## 8. 校验设计
 

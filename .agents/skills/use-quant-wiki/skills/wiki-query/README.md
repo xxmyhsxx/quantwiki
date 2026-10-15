@@ -20,15 +20,15 @@
 
 用于使用已有 Wiki 知识完成定位、概念解释、机制说明、方法比较与分析。需要进一步研究实际问题、核验原始来源或验证方案时，由入口按需选择包内 [wiki-research](../wiki-research/SKILL.md)；明确的算子实现与优化使用包内 [wiki-kernel-writing](../wiki-kernel-writing/SKILL.md)。内部规范按显式相对路径读取，不依赖递归发现。
 
-本能力读取 `/Users/xiao/Desktop/量化/SELF.md` 和 `/Users/xiao/Desktop/量化/wiki/`。不读取 `raw/`，不修改公共知识、来源、SELF 或源 Skill，不启动未随包下发的维护能力。原文核验需求与知识缺口交给入口处理，不能声称已经完成来源核查。
+本能力读取 `/Users/xiao/Documents/Projects/quantwiki/SELF.md` 和 `/Users/xiao/Documents/Projects/quantwiki/wiki/`。不读取 `raw/`，不修改公共知识、来源、SELF 或源 Skill，不启动未随包下发的维护能力。原文核验需求与知识缺口交给入口处理，不能声称已经完成来源核查。
 
-使用反馈由统一入口整合并写入 `/Users/xiao/Desktop/量化/query-feedback/`。本能力提供已读位置、结果、限制和改进依据，不自行再写一份反馈。
+使用反馈由统一入口整合并写入 `/Users/xiao/Documents/Projects/quantwiki/query-feedback/`。本能力提供已读位置、结果、限制和改进依据，不自行再写一份反馈。
 
 ## 3. 输入设计
 
 输入是当前问题、主题、方法或待分析表述，以及应用已知的模型、硬件、版本、配置、目标和约束。可限定子领域、页面集或回答粒度，不要求固定表单。
 
-知识库位置固定为 `/Users/xiao/Desktop/量化`；应用目录不是知识库。入口传入本次所用包版本和快照位置，执行始终读取该快照中的内部规范。
+知识库位置固定为 `/Users/xiao/Documents/Projects/quantwiki`；应用目录不是知识库。入口传入本次所用包版本和快照位置，执行始终读取该快照中的内部规范。
 
 ## 4. 原则设计
 
@@ -44,7 +44,7 @@
 
 - 先读取绑定的 SELF 与 INDEX，理解知识范围；后续阅读由当前问题决定。
 - 并行检索英文文件名与正文中的中文标题、术语、机制描述；不中时补查中英文名、别名、相关方法与相邻机制。
-- 按 [Wiki 链接规范](/Users/xiao/Desktop/量化/wiki/README.md#知识链接与页面身份) 解析正文链接，只使用实际存在且读到所需内容的页面与章节。
+- 按 [Wiki 链接规范](/Users/xiao/Documents/Projects/quantwiki/wiki/README.md#知识链接与页面身份) 解析正文链接，只使用实际存在且读到所需内容的页面与章节。
 - 回答区分 Wiki 已支持的结论、当前条件下的推理及未核实部分；不能把代码分析或来源报告写成当前应用已运行验证。
 - 知识不足时交代检索词与范围，形成供入口选择进一步研究的具体缺口。
 
@@ -56,7 +56,7 @@
 
 ## 7. References 设计
 
-不设置 `references/`。知识入口为 [SELF](/Users/xiao/Desktop/量化/SELF.md)、[INDEX](/Users/xiao/Desktop/量化/wiki/INDEX.md) 和 [Wiki 规范](/Users/xiao/Desktop/量化/wiki/README.md)，只在相关步骤按需读取，不随包复制。
+不设置 `references/`。知识入口为 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md)、[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 和 [Wiki 规范](/Users/xiao/Documents/Projects/quantwiki/wiki/README.md)，只在相关步骤按需读取，不随包复制。
 
 ## 8. 校验设计
 
