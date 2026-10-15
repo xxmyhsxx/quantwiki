@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · CUTLASS Tile Iterator ingest：旧接口的推进与偏移
+
+- 完整核读snapshot-2026-07-02保存471行、README及同hash通用层次图，正文/图2项哈希核对；正文开头限定legacy CUTLASS2.x，并说明3.0弃用tile access iterators而转用cute::Tensor/Layout。
+- 在[布局与接口](fundamentals/operators/tensor-layout-and-kernel-contracts.md)第2节后接旧iterator的当前tile/每线程Fragment、显式load/store与三种单位：预定序列中的tile、逻辑整tile、Element线性偏移。Mask的实现定义、contiguous存储与tile具体排列分别说明，复用现有TensorCore与低比特格式解释。
+- 不复制整套重复概念声明，不把concept当C++20关键字或把弃用写成全部移除；访存Fragment与MMA片段需具体映射，未据概念补造packing、mask补零或设备同步。没有新增测试或运行上游。
+- INDEX/READING/SELF/计划同步：198条有依据、31条队列（12论文/14文档/5代码），本轮基线88已处理57条；下一项CUTLASS技术博客。独立Astra原件/正文及记录review通过，无必修项。结构/来源strict检查201知识页、717项登记，0错误/待核；4个受影响Wiki页1367条本地链接strict及diff检查通过，198/31记录数相符。本项六文件提交，既有Obsidian改动保留；没有新增教学算术测试或运行上游。
+
 ## 2026-10-15 · CUTLASS Pipeline ingest：阶段复用与双方进度
 
 - 完整核读snapshot-2026-07-02保存112行与README，无附件；正文哈希与登记一致，独立准备与Astra原件核读相符。

@@ -6,6 +6,7 @@ tags:
   - data-layout
   - gpu
 sources:
+  - raw/articles/2026-09-21/cutlass-tile-iterators
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/triton
@@ -74,6 +75,22 @@ CUTLASS C++ 的 `Layout` 把逻辑坐标映射成元素偏移，并保存所需�
 逻辑元素数 **size** 与布局所需的元素容量 **capacity** 分别用于描述内容和预算存储。来源的 RowMajor 约定是 `capacity=rows*pitch`，pitch 包含行尾 padding。整理者沿用前面的二维地址公式：shape 为 `(2,3)`、pitch 为5时，size为6，`(1,2)` 的偏移为7，而该接口的 capacity为10；FP32数据对应40字节。只从首元素到最后有效元素算出的8个位置，是最小触及跨度，和该API的容量约定不同。
 
 `Layout::packed(extent)` 返回描述紧密排列的 layout 对象，后续可据此分配、访问相应缓冲。它没有重排已有数据：把pitch为5的原缓冲换成pitch为3的描述，不会自动移除padding。需要把数据变成紧密排列时，还须实际搬运，这与上文“转置视图”和“物理重排”的区别相连。
+
+### CUTLASS 2.x迭代器怎样推进和访问tile
+
+旧CUTLASS 2.x还用tile iterator把固定大小的tile组织成可遍历序列。Layout回答坐标如何映射到存储，TensorRef绑定指针与布局；iterator进一步提供当前tile的推进及读写能力。Tile Iterator Concepts所说的concept是对类型成员的要求集合，并非C++20的 `concept` 声明；算法只需要求自己使用的能力。该快照明确说明这些tile access iterators在CUTLASS 3.0中已弃用，由以`cute::Layout`参数化的`cute::Tensor`统一表达；以下用于阅读2.x旧接口。（开头版本说明及“Definitions”。）
+
+基础iterator声明`Element`和`Shape`：前者是组成tile的元素类型，可为数值类型或Array，后者描述tile范围，具体约定随实现。可读/可写iterator另定义`Fragment`，保存**各线程负责的那部分tile数据**。`load(frag)`把内存数据装入该线程的Fragment，`store(frag)`将其写回；改变iterator位置与执行数据读写是不同操作。访存Fragment与MMA寄存器片段的对应需按具体实现建立，后者见[Tensor Core的片段与布局](../../implementation/tensor-core-quantized-gemm.md)。（Base、Readable与Writeable概念。）
+
+| 操作 | 移动或偏移的单位 | 阅读代码时要确认什么 |
+| --- | --- | --- |
+| Forward的`++`，Bidirectional另有`--` | 预定义遍历序列中的一个tile | 序列由iterator用途定义；GEMM中可能沿K，不能一律解释为指针加1 |
+| RandomAccess的`add_tile_offset`、`+=`、`-=` | 逻辑坐标各维的整tile | 结合`Layout`、`TensorCoord`及tile Shape解释位置变化 |
+| `add_pointer_offset` | 线性`Element`个数 | 它增加内部指针偏移，须先确定Element代表的实际类型，再换算标量数或字节数 |
+
+支持相应能力的load/store还可接tile offset、pointer offset或两者，将偏移与该次访问合在一起。这里“contiguous memory”指tensor位于一片连续存储中，tile在其中仍按布局分布；tile内部的排列及[低比特容器的位序](../../implementation/block-scaled-matmul-execution.md#2.%20uint8%20%E5%AE%B9%E5%99%A8%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%95%B0%E5%80%BC%20uint8)仍需按具体实现核对。（Contiguous Memory、Forward与Random Access概念及load/store overload。）
+
+矩阵范围不能整除tile时，Masked概念提供`Mask`保护内存访问。`clear_mask`禁用所有受mask控制的访问，`enable_mask`开启它们，`get_mask/set_mask`读取或设置mask。具体谓词和被屏蔽load后的Fragment值由实现定义：开启全部访问不能代替构造正确尾部条件，关闭访问也不等于将载荷清零。已有Triton或CUDA Tile的补零/丢弃规则，各自沿对应接口理解。（“Masked Tile Iterator Concept”。）
 
 ## 3. shape、线程数量与逻辑块大小是三个量
 
@@ -162,6 +179,7 @@ flowchart LR
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Tile Iterator Concepts（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/tile_iterator_concept.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`；通用层次图于2026-09-21补采 | 完整471行/README与同hash通用图；使用legacy 2.x的tile/Fragment、推进与偏移单位、显式读写及实现定义的Mask。仅为类型要求，具体iterator实现、CuTe布局代数、packing/指令映射与编译运行未核。 |
 | Layouts and Tensors（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/layout.html`） | `snapshot-2026-07-02`，取得于`2026-07-02T02:41:08+08:00`；通用层次图补采于2026-09-21 | 完整保存280行、README与配图；使用C++ Layout/TensorRef/View及capacity约定，地址/字节例为教学展开。CuTe布局代数、int4底层打包、附录仅列名称的layout实现与编译运行不在本次范围。 |
 | CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02` | MatAdd二维映射/guard及保存全文；每16-lane段地址步长为整理者按C行优先推导，未运行，省略host示例不作完整程序。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02`，图19补采于2026-09-21 | §2.4.1–2.4.6及图19；保存正文全读，启动/特化、坐标与不同边界规则；模块名差异保留，完整API/编译/运行未核。 |

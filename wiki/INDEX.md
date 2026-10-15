@@ -93,7 +93,7 @@ sources: []
 | [MoE 与专家路由](fundamentals/model/mixture-of-experts-and-routing.md) | 共享与路由专家、设备限制、负载、总容量与量化路由误差怎样连接。 |
 | [MLA：联合潜变量、位置分支与缓存表示](fundamentals/model/multi-head-latent-attention.md) | 联合压缩、矩阵吸收、解耦 RoPE 如何改变量化对象与缓存预算。 |
 | [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
-| [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | 由shape/stride到地址，区分Layout/ref/view、逻辑size与存储capacity，再看Tile线程映射和尾块规则。 |
+| [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | 由shape/stride到地址，区分Layout/ref/view、size/capacity及旧iterator偏移，再看Tile线程映射和尾块规则。 |
 | [Triton 语言与编译语义](fundamentals/operators/triton-language-and-compilation.md) | 逻辑张量、广播、mask、类型与 JIT 特化怎样影响设备代码。 |
 | [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解归约、复用与融合；区分Warp参与/尾部贡献、同址atomic预留及Tile形状/K累计。 |
 | [LayerNorm、RMSNorm与部分统计](fundamentals/operators/layernorm-rmsnorm-and-partial-statistics.md) | 中心化、正尺度与梯度、ε及固定前缀统计为何有不同条件。 |
