@@ -15,7 +15,7 @@ description: "use-quant-wiki 包内的研究能力。结合绑定的 Wiki 研究
 
 实际问题或现象，以及应用工作区、目标和约束。按研究需要取得对象、已有观察、比较基线、解决标准、材料、代码和可用资源；未知条件保留为待解决的问题。
 
-知识库固定为 `/Users/xiao/Documents/Projects/quantwiki`，从 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md)、[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 与必要正文进入。路径不可读时说明实际限制，不把当前应用目录当作 Wiki，也不自动切换知识库。原始来源核验只在当前研究问题需要时明确范围，遵循 [raw 规范](/Users/xiao/Documents/Projects/quantwiki/raw/README.md)，保留版本，不全量扫描原始材料。
+知识库固定为 `/Users/xiao/Documents/Projects/quantwiki`；需要知识时使用包内 [wiki-query](../wiki-query/SKILL.md) 的选路与检索方式，已知页面直接读取，复用已有有效内容，不预读整份 INDEX 或 SELF。路径不可读时说明实际限制，不把当前应用目录当作 Wiki，也不自动切换知识库。原始来源核验只在当前研究问题需要时明确范围，遵循 [raw 规范](/Users/xiao/Documents/Projects/quantwiki/raw/README.md)，保留版本，不全量扫描原始材料。
 
 GPU、服务器、模型和运行环境以应用任务为准，不沿用 Wiki 中历史记录的执行位置。
 

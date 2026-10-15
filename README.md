@@ -16,7 +16,7 @@
 | GPU 与 Kernel | 低比特执行、布局与并行分工：[反量化内核](wiki/implementation/weight-only-dequant-kernels.md) |
 | 诊断与评测 | 误差定位、质量指标与性能口径：[误差诊断](wiki/implementation/quantization-error-diagnosis.md) |
 
-完整主题与阅读路径见 [Wiki 导航](wiki/INDEX.md)。
+主要主题的阅读入口见 [Wiki 导航](wiki/INDEX.md)，具体方法与实现可按名称查找。
 
 ## 怎样阅读
 

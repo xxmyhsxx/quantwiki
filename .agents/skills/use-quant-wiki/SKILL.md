@@ -37,7 +37,7 @@ python3 -B "$quantwiki_package/scripts/package.py" prepare --output "$quantwiki_
 | 解释现象、比较路线、设计或验证方法 | [wiki-research](skills/wiki-research/SKILL.md) |
 | 实现或优化 CUDA/Triton 算子 | [wiki-kernel-writing](skills/wiki-kernel-writing/SKILL.md) |
 
-直接读取绑定 Wiki 的根 `SELF.md`、`wiki/INDEX.md` 及相关正文，按需读取 `wiki/README.md` 和必要关联。已读且仍有效的内容可以复用。普通知识使用不读 `raw/`；研究需要核验来源时明确范围与版本。结论基于实际正文，保留来源条件和未核实范围。
+需要 Wiki 知识时使用包内 `wiki-query` 的主题 references 与定向检索，按问题进入相关正文；已知页面可以直接读取，不预读整份 INDEX、SELF、READING 或 LOG。SELF 仅在判断知识库职责或覆盖时按段读取，Wiki 规范仅在需要解析约定时查阅。复用已读且有效的内容。普通知识使用不读 `raw/`；研究核验来源时明确范围与版本。结论基于实际正文，保留来源条件和未核实范围。
 
 应用代码和运行记录归应用工作区。公共知识和共享方法修订交维护任务；应用不调用未下发的维护 Skill。算子执行遵循包内完整验证流程，在迭代循环中不追加外部 Wiki 查询。
 

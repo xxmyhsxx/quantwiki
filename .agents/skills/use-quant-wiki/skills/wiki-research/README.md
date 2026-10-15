@@ -22,7 +22,7 @@
 
 ## 3. 输入设计
 
-从实际问题或现象，以及绑定的 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md) 与 [INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 开始。按研究需要取得对象、已有观察、约束、比较基线、解决标准、材料、代码和可用资源。未知条件本身可能就是需要解决的缺口，不要求启动前备齐所有信息。
+从实际问题或现象开始，需要 Wiki 知识时按包内 [wiki-query](../wiki-query/SKILL.md) 的选路与检索方式进入相关正文；不先读整份 INDEX 或 SELF，已读且有效的知识直接复用。按研究需要取得对象、已有观察、约束、比较基线、解决标准、材料、代码和可用资源。未知条件本身可能就是需要解决的缺口，不要求启动前备齐所有信息。
 
 知识库固定为 `/Users/xiao/Documents/Projects/quantwiki`，不能根据应用当前目录猜测或替换。需要核验原始来源时，先按当前问题明确材料范围，再沿知识页来源登记定向读取 [raw 规范](/Users/xiao/Documents/Projects/quantwiki/raw/README.md) 与必要原始材料，不扫描整个 raw。访问失败保留未核实，不改用未经说明的知识来源。
 

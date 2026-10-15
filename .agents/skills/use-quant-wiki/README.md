@@ -37,7 +37,7 @@
 
 `wiki-ingest`、`wiki-review`、`wiki-prune` 和 `skill-creator` 继续承担 Wiki 维护，不随首版能力包下发。研究发现需要论文入库、修改知识或调整共享方法时，交付依据和建议，由维护任务处理；不能假定应用镜像中有这些维护 Skill。
 
-知识使用能力读取根目录的 `SELF.md` 与 `wiki/` 内的导航、规范和正文，适配本项目实际入口。单纯使用已有知识时不读取 `raw/`。研究需要核验来源或读取其他材料时，由当前研究任务明确范围，区分知识页、来源核查和实际实验。
+知识使用能力通过 `wiki-query` 的主题 references 和定向检索定位 `wiki/` 正文，不预读整份 INDEX 或 SELF；只有任务涉及知识库职责或覆盖判断时，才读取 SELF 的相关段落。单纯使用已有知识时不读取 `raw/`。研究需要核验来源或读取其他材料时，由当前研究任务明确范围，区分知识页、来源核查和实际实验。
 
 源码维护位置为本仓库。上述三项能力已完整迁入包内，原兄弟目录不保留另一份独立维护副本；项目任务通过统一入口选择包内规范。
 
@@ -80,7 +80,7 @@
 
 入口根据问题选择内部规范。只需知识时使用 `wiki-query`；需要研究路线、解释现象或验证判断时使用 `wiki-research`；明确的算子实现与优化交给 `wiki-kernel-writing`。同一任务需要多项能力时，按实际依赖顺序组合，不默认加载全部内容。
 
-知识使用先明确目标 Wiki，读取 SELF、INDEX、相关正文和必要关联，再结合应用条件形成结果。包内 `wiki-query` 支持定位、解释、比较与分析，保留实际阅读依据。
+知识使用先明确目标 Wiki，由包内 `wiki-query` 按问题选择主题 reference、检索位置并读取相关正文及必要关联，再结合应用条件形成结果。已知文件或章节时直接进入，不必经过导航；references 只承担选路，不复制 Wiki 知识或完整目录。INDEX 保留为人工浏览的简短入口，不是模型查询的前置输入。
 
 研究过程可复用包内知识使用和算子能力。需要资料入库、知识修订或方法改进时向维护端提交反馈，不把未下发的兄弟目录当成可用依赖。
 
@@ -106,7 +106,7 @@
 
 ### 维护：发布源包
 
-维护者完成入口、内部 Skill 和实际需要的随包材料，核对规范一致、包内引用和运行依赖。三个内部 Skill 没有独立的 `references/` 或 `scripts/`，首版不创建无用途的占位材料。
+维护者完成入口、内部 Skill 和实际需要的随包材料，核对规范一致、包内引用和运行依赖。wiki-query 的 `references/` 承担按主题选路；其他能力仅随实际需要增加辅助材料，不创建占位目录。
 
 包清单记录名称、一个递增的发布版本、绝对绑定、内部能力的用途和路径、完整文件清单及内容校验值。清单本身不纳入自己的内容摘要；应用的安装记录也不属于源包载荷。改变发布材料后更新包版本并重新校验，知识正文不纳入包清单或摘要。
 
@@ -122,7 +122,7 @@
 
 ## 7. References 与现有内容
 
-量化知识继续通过 [SELF](/Users/xiao/Documents/Projects/quantwiki/SELF.md)、[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 和 [Wiki 规范](/Users/xiao/Documents/Projects/quantwiki/wiki/README.md) 获取，不随能力包复制。
+量化知识继续从绑定 Wiki 的相关正文获取，不随能力包复制。[wiki-query 的主题 references](skills/wiki-query/README.md) 只提供代表入口和检索线索；[INDEX](/Users/xiao/Documents/Projects/quantwiki/wiki/INDEX.md) 保留人工浏览入口，不作为模型查询的前置阅读。
 
 [研究知识页](/Users/xiao/Documents/Projects/quantwiki/wiki/research/) 保留研究问题、机制综合、方法联系和有依据的结论。研究计划、应用代码、部署配置和运行结果由 Wiki 仓库外的应用或实验工程承接；Wiki 的资料状态与维护变动见 [READING](/Users/xiao/Documents/Projects/quantwiki/wiki/READING.md) 和 [LOG](/Users/xiao/Documents/Projects/quantwiki/wiki/LOG.md)。
 
