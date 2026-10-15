@@ -16,8 +16,6 @@
 | GPU 与 Kernel | 低比特执行、布局与并行分工：[反量化内核](wiki/implementation/weight-only-dequant-kernels.md) |
 | 诊断与评测 | 误差定位、质量指标与性能口径：[误差诊断](wiki/implementation/quantization-error-diagnosis.md) |
 
-主要主题的阅读入口见 [Wiki 导航](wiki/INDEX.md)，具体方法与实现可按名称查找。
-
 ## 怎样阅读
 
 - **学习基础：** 从均匀量化与分组进入经典方法，沿链接补充必要前置知识。
@@ -34,10 +32,6 @@
 
 ## 对外能力包
 
-本项目通过 [use-quant-wiki](.agents/skills/use-quant-wiki/SKILL.md) 发布一个完整能力包：一个入口 Skill 按任务选择包内的知识使用、实际问题研究和算子编写能力。应用接收整个包的镜像，直接读取原 Wiki，在自己的工作区执行方法，并向 Wiki 回传使用反馈。
+[use-quant-wiki](.agents/skills/use-quant-wiki/SKILL.md) 为应用项目提供知识查询、问题研究和算子编写能力。应用直接读取原 Wiki，在自己的目录保存代码、环境和运行记录，并回传使用反馈。
 
-用户提供外部项目地址并要求接入时，入口实际创建目标 Skill 目录、复制完整能力包并核验安装，交付明确的目标路径和结果。外派能力包保留原 Wiki 的知识绑定，不复制知识正文。
-
-整个包统一管理发布版本和内容校验。知识页面更新不触发包升级；应用开始任务前用一次版本准备完成必要检查与更新，随后固定所用版本。入口按需使用内部能力并统一反馈，不追加重复核验。
-
-入口、包内三项能力及发布安装工具已实现，版本和完整文件清单见 [包清单](.agents/skills/use-quant-wiki/package.json)，使用与维护方式见 [能力包设计](.agents/skills/use-quant-wiki/README.md)。当前工作在本仓库完成；外派和更新已用仓库内临时目标验证，尚未安装到其他真实项目或用户共享目录，也未开展模型部署或 GPU 实测。
+需要接入时，指定实际接收目录，安装完整能力包。使用流程为准备版本、调用所需能力、回传反馈；安装与维护方式见 [能力包设计](.agents/skills/use-quant-wiki/README.md)，当前版本与文件清单见 [package.json](.agents/skills/use-quant-wiki/package.json)。
