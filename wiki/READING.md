@@ -11,7 +11,7 @@ updated: 2026-10-15
 
 本次于 2026-10-05 依据当前正文与历史 LOG 建立索引，不表示在这一天重新研读所有来源。初始范围是当前知识页登记使用的外部资料：127 份本地资料（74 篇论文、16 份文章/文档、37 个代码仓库版本）及 3 个仅以固定 commit 外链登记的仓库版本。后续实际研读可以补入尚未写入 Wiki 的资料；原始资料的文件核验与模型运行另按任务记录说明。
 
-当前有明确范围依据的研读记录 **277 条**；另有 **10 条**只能确认已使用，研读范围与日期待核实。这两个数量表示记录状态，不是全文阅读率或科学正确率。
+当前有明确范围依据的研读记录 **287 条**；原58条历史范围记录已全部处理，当前此类待核记录为 **0条**。这些数量表示记录状态，不是全文阅读率或科学正确率。
 
 2026-10-13 全库内容审查已完成，见[分批记录](LOG.md#2026-10-13%20%C2%B7%20%E5%85%A8%E5%BA%93%E5%88%86%E6%89%B9%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%AC%AC%2030%20%E6%89%B9)；该轮内容审查定向回查核心主张，保留各来源原有研读范围与日期。
 
@@ -32,6 +32,12 @@ updated: 2026-10-15
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs（`https://arxiv.org/abs/2602.13289v1`）<br>arXiv:2602.13289v1 | main.tex:110-427两主表、Selector/MaxProb、PTQ/设置/指标、结果与结论；可靠性页全文及模型质量页相关段。 | [量化与可靠性：选择性预测评测](theory/quantization-reliability-and-selective-prediction.md)；[模型质量评测：PPL、任务协议与选择性预测](implementation/model-quality-evaluation.md) | 未逐点读取OOD图；未取得或核Selector训练配置/信号实现，未运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`）<br>arXiv:2405.04532v3 | text/4-algorithm.tex与5-system.tex全文；QServe方法页全文及服务/部署对应段。 | [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)；[QServe：W4A8KV4 量化与系统协同](methods/qserve.md) | 本轮未重读全部§3/§6表图与artifact，未核OmniServe全设备/调度代码，未运行模型或性能。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`）<br>arXiv:2309.06180v1 | main.tex:120-400中迭代调度、§4分页/块表、共享/COW、FCFS抢占、TP及kernel设计；eval.tex后半共享节；服务页§1-5。 | [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md) | 未重读整篇全部评测/附录和所有图点；现代vLLM代码属于独立版本，本条无运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`）<br>arXiv:2408.11743v1 | marlin.tex:1-175身份/摘要、180-560的论文代码脚注、§3.1动机/层级/Kernel Design；方法承接页全文及roofline相关段。 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md)；[算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) | 本轮未重读全部Sparse-MARLIN/实验表/附录或逐点核性能图；无运行验证。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| LVLM-Compress-Bench: Benchmarking the Broader Impact of Large Vision-Language Model Compression（`https://arxiv.org/abs/2503.04982v1`）<br>arXiv:2503.04982v1 | acl_latex.tex:130-430的框架/指标、KV主表、可信度正文、AWQ+KV表及消融；主承接页全文。 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) | 未重读全部附录表、HallusionBench细分表及配图；未读框架实现或运行模型。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache（`https://arxiv.org/abs/2402.02750v2`）<br>arXiv:2402.02750v2 | 论文method.tex（§3全节）、prelim.tex、experiment.tex；核对粒度对照、逐元素相对误差、K整段刷新/V FIFO、prefill与吞吐协议。 | [KIVI：键按通道、值按 token 的 2 bit KV cache 量化](methods/kivi.md)；[Attention 量化误差传播：从 KV 重构到输出与生成](theory/attention-quantization-error-propagation.md) | 本轮未重读全部附录、LongBench整表和NIAH图点；设备实现与模型运行未核。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
 | VLMQ: Token Saliency-Driven Post-Training Quantization for Vision-language Models（`https://arxiv.org/abs/2508.03351v2`）<br>arXiv:2508.03351v2 | 带残差attention重构反向、投影token梯度、范数内G²、非对称补偿及QKVO范围。 | [VLMQ方法](methods/vlmq.md)；[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md)；[GPTQ：基于二阶补偿的权重量化](methods/gptq.md) | 结果表全部数值、GPTAQ外部依赖全部推导和VLMQ实际代码未本轮核；原论文算法零梯度启动处理仍不明确。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC3%E6%89%B9%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E5%BD%92%E5%9B%A0) |
 | Breaking Modality Heterogeneity in Low-Bit Quantization for Large Vision-Language Models（`https://arxiv.org/abs/2605.19929v1`）<br>arXiv:2605.19929v1 | 视觉选列、文字百分位簇残差、三组变换、CWS、MAC及SVD子空间门控与辅助位宽。 | [SplitQ方法](methods/splitq.md)；[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md)；[FlatQuant：结构化可学习变换与低比特执行](methods/flatquant.md) | 全部图/表/附录案例与CUDA实现未重核；指定代码SHA只有项目声明，见下方SplitQ固定代码记录。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC3%E6%89%B9%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E5%BD%92%E5%9B%A0) |
 | QLoRA: Efficient Finetuning of Quantized LLMs（`https://arxiv.org/abs/2305.14314v1`）<br>arXiv:2305.14314v1 | §3：NF4码本、double quantization的尺度预算、冻结低比特权重、BF16反量化与适配器梯度。 | [NF4与double quantization](fundamentals/quantization/uniform-quantization-and-groups.md)；[量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md)；[Q-VLM：熵驱动的联合校准与视觉编码器优化](methods/q-vlm.md) | QLoRA全部指令微调实验、评测协议与训练实现未核，不表述为完整QLoRA ingest；分页实际性能未验证。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC3%E6%89%B9%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E5%BD%92%E5%9B%A0) |
@@ -258,6 +264,10 @@ updated: 2026-10-15
 
 | 来源与固定版本 | 可确认的研读范围 | Wiki 成果：主承接页 | 尚未核查或验证 | 有依据的日期 |
 | --- | --- | --- | --- | --- |
+| NVIDIA/TensorRT-LLM（`https://github.com/NVIDIA/TensorRT-LLM/tree/d567f924b729dc81465f2d2f762cabb893e28602`）<br>d567f924b729dc81465f2d2f762cabb893e28602 | examples/quantization/README.md.txt:1-200与quantize.py全文；docs/source/features/quantization.md.txt全文；部署页TensorRT-LLM节。 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | 未核quantize_and_export内部/ModelOpt匹配版本、引擎构建、插件/GEMM/attention及全模型支持组合；无运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| mlc-ai/mlc-llm（`https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008`）<br>6474f7dbfa9bf18fdfd3ef468b227c0706eb9008 | docs/compilation/configure_quantization.rst全文；python/mlc_llm/quantization/__init__.py及quantization.py:1-110；cli/calibrate.py全文、interface/calibrate.py:19-66/131-172；部署页MLC节。 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | 未读group/FP8量化算法、编译pass、TVM代码生成及后端kernel；无编译/校准运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| IST-DASLab/marlin（`https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90`）<br>1f25790bdd49fba53106164a24666dade68d7c90 | marlin/__init__.py全文的mul/Layer/pack与排列、marlin_cuda.cpp绑定全文、marlin_cuda_kernel.cu:1-155的cp.async/mma/ldsm4/dequant；Marlin页与Tensor Core相关段。 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md)；[Tensor Core 与量化 GEMM：从 Tile 到寄存器和编译产物](implementation/tensor-core-quantized-gemm.md) | 未重读设备主循环/host全分派、GPTQ搜索、bench/test与稀疏扩展；未编译运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
+| jy-yuan/KIVI（`https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6`）<br>876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6 | models/llama_kivi.py:100-250普通attention prefill/decode；quant/new_pack.py:217-252包装与scale/mn；KIVI方法页及KV粒度相应段。 | [KIVI：键按通道、值按 token 的 2 bit KV cache 量化](methods/kivi.md)；[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) | 普通路径断言num_key_value_groups==1；FlashAttention/Mistral/Falcon分支、CUDA矩阵乘和Triton设备体未逐行核；未构建运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC4%E6%89%B9%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%AF%84%E6%B5%8B%E4%B8%8E%E5%85%A858%E6%9D%A1%E6%94%B6%E5%B0%BE) |
 | ChangyuanWang17/QVLM（`https://github.com/ChangyuanWang17/QVLM/tree/191bdc9a833b7ed273c234d9f7b69ceb51d33b6f`）<br>191bdc9a833b7ed273c234d9f7b69ceb51d33b6f | SQA脚本、inference校准、启发式熵/视觉常数、浮点CLIP、NF4/double/FP16及单/多token分流。 | [Q-VLM：熵驱动的联合校准与视觉编码器优化](methods/q-vlm.md) | 完整模型加载其他分支、Linear4bit激活插入、所有C++/CUDA内核及其他任务未本轮沿完；未运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC3%E6%89%B9%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E5%BD%92%E5%9B%A0) |
 | ucas-xiang/QIG（`https://github.com/ucas-xiang/QIG/tree/06fa88134671647827dea08dc37c50c81e4eeac7`）<br>06fa88134671647827dea08dc37c50c81e4eeac7 | WO零基线/32节点积分、MAE梯度、IQR/双计数及20候选；WA归因缩放、无裁剪/no_grad和浮点执行。 | [QIG：以量化误差积分梯度指导 token 加权校准](methods/qig.md)；[积分梯度与量化敏感性：基线、路径和归因边界](theory/integrated-gradients-and-quantization-sensitivity.md) | WA全部模块复制/尺度候选与模型adapter、GPTQ扩展实现、全部配置/缓存、实际计算图和质量未本轮完整核；未运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC3%E6%89%B9%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E5%BD%92%E5%9B%A0) |
 | StiphyJay/MQuant（`https://github.com/StiphyJay/MQuant/tree/7b3e8196e6930b5ce16ec3f058e46687b5d59a6d`）<br>7b3e8196e6930b5ce16ec3f058e46687b5d59a6d | RMS首通道浮点旁路、其余激活量化、Qwen2VL单网格；校准/eval数据入口与aifs参数消费范围。 | [MQuant：模态静态量化、等价重排与旋转幅度抑制](methods/mquant.md) | 本轮未全仓穷举aifs或核视觉GPTQ/observer全部路径，故“未展示完整MSQ+AIFS链”按所读入口限定；其他模型/内核和论文精度未运行。 | [2026-10-15](LOG.md#2026-10-15%20%C2%B7%20%E5%8E%86%E5%8F%B2%E8%8C%83%E5%9B%B4%E6%A0%B8%E5%AE%9E%E7%AC%AC3%E6%89%B9%EF%BC%9A%E5%A4%9A%E6%A8%A1%E6%80%81%E4%B8%8E%E5%BD%92%E5%9B%A0) |
@@ -328,37 +338,12 @@ updated: 2026-10-15
 
 ## 已使用，研读范围待核实
 
-下面仅依据当前知识页的来源登记确认使用关系。部分资料还有早期建设摘要，但不足以逐条还原该固定版本的完整研读范围与准确日期；不据此猜填。每条默认状态均为“已使用，研读范围与日期待核实”，不能按未读统计，也不能按完整研读统计。承接页的具体章节引用和限制仍可作为进一步核实的线索。
-
-### 论文与报告
-
-| 来源与固定版本 | 使用证据：主承接页 |
-| --- | --- |
-| KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache（`https://arxiv.org/abs/2402.02750v2`）<br>arXiv:2402.02750v2 | [KIVI：键按通道、值按 token 的 2 bit KV cache 量化](methods/kivi.md)；[Attention 量化误差传播：从 KV 重构到输出与生成](theory/attention-quantization-error-propagation.md) |
-| LVLM-Compress-Bench: Benchmarking the Broader Impact of Large Vision-Language Model Compression（`https://arxiv.org/abs/2503.04982v1`）<br>arXiv:2503.04982v1 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) |
-| MARLIN: Mixed-Precision Auto-Regressive Parallel Inference on Large Language Models（`https://arxiv.org/abs/2408.11743v1`）<br>arXiv:2408.11743v1 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md)；[算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) |
-| Efficient Memory Management for Large Language Model Serving with PagedAttention（`https://arxiv.org/abs/2309.06180v1`）<br>arXiv:2309.06180v1 | [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md) |
-| QServe: W4A8KV4 Quantization and System Co-design for Efficient LLM Serving（`https://arxiv.org/abs/2405.04532v3`）<br>arXiv:2405.04532v3 | [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md)；[QServe：W4A8KV4 量化与系统协同](methods/qserve.md) |
-| Evaluating the Impact of Post-Training Quantization on Reliable VQA with Multimodal LLMs（`https://arxiv.org/abs/2602.13289v1`）<br>arXiv:2602.13289v1 | [量化与可靠性：选择性预测评测](theory/quantization-reliability-and-selective-prediction.md)；[模型质量评测：PPL、任务协议与选择性预测](implementation/model-quality-evaluation.md) |
-
-### 文章与文档
-
-| 来源与固定版本 | 使用证据：主承接页 |
-| --- | --- |
-
-### 代码版本
-
-| 来源与固定版本 | 使用证据：主承接页 |
-| --- | --- |
-| jy-yuan/KIVI（`https://github.com/jy-yuan/KIVI/tree/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6`）<br>876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6 | [KIVI：键按通道、值按 token 的 2 bit KV cache 量化](methods/kivi.md)；[KV cache 量化的对象与粒度](theory/kv-cache-quantization-objects-and-granularity.md) |
-| IST-DASLab/marlin（`https://github.com/IST-DASLab/marlin/tree/1f25790bdd49fba53106164a24666dade68d7c90`）<br>1f25790bdd49fba53106164a24666dade68d7c90 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md)；[Tensor Core 与量化 GEMM：从 Tile 到寄存器和编译产物](implementation/tensor-core-quantized-gemm.md) |
-| mlc-ai/mlc-llm（`https://github.com/mlc-ai/mlc-llm/tree/6474f7dbfa9bf18fdfd3ef468b227c0706eb9008`）<br>6474f7dbfa9bf18fdfd3ef468b227c0706eb9008 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) |
-| NVIDIA/TensorRT-LLM（`https://github.com/NVIDIA/TensorRT-LLM/tree/d567f924b729dc81465f2d2f762cabb893e28602`）<br>d567f924b729dc81465f2d2f762cabb893e28602 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) |
+原58条记录（37篇论文、6份文档、15个代码版本）已于2026-10-15逐条核实实际范围与Wiki承接，结果并入上方记录。旧历史日期无法还原的，以本轮实际核读日期建立范围；当前没有此类待核条目。
 
 ## 待逐项核查与 ingest 的已收录材料
 
 2026-10-08 按用户要求，将当前 raw 收录的全部材料纳入逐项处理范围。本次清点为283个来源条目：147篇论文、69份文章/文档、67个代码条目。它按 raw 条目计数；上文按确定版本及必要子模块分别登记研读，两者口径不同，不能直接相加或换算完成率。
 
-本轮开始时的88条固定队列已按实际材料完成研读、整合或无需新增判断及独立评审，当前待核队列为 **0条**。覆盖对照基线为 `1bb2565028724f0d3445b846af462a66f5ee0f26`，逐批结果见[收尾记录](LOG.md#2026-10-15%20%C2%B7%20%E8%A7%86%E8%A7%89%E9%A2%84%E7%AE%97%E4%B8%8EVLA%E6%8E%A5%E5%85%A5%EF%BC%9A%E5%8E%9F88%E6%9D%A1%E9%98%9F%E5%88%97%E6%94%B6%E5%B0%BE)。各来源的实际阅读范围、未读分支与运行状态见上表；另10条历史范围未知记录保持原状态。
+本轮开始时的88条固定队列已按实际材料完成研读、整合或无需新增判断及独立评审，当前待核队列为 **0条**。覆盖对照基线为 `1bb2565028724f0d3445b846af462a66f5ee0f26`，逐批结果见[收尾记录](LOG.md#2026-10-15%20%C2%B7%20%E8%A7%86%E8%A7%89%E9%A2%84%E7%AE%97%E4%B8%8EVLA%E6%8E%A5%E5%85%A5%EF%BC%9A%E5%8E%9F88%E6%9D%A1%E9%98%9F%E5%88%97%E6%94%B6%E5%B0%BE)。各来源的实际阅读范围、未读分支与运行状态见上表；原58条历史范围记录也已处理，结果见上表。
 
 第10–25批已按各来源的实际范围完成。批次划分与原排期保留在 `research/plans/2026-10-11-ingest-batches.md`，知识阅读从[INDEX](INDEX.md)进入。

@@ -16,7 +16,7 @@ sources:
   - raw/repositories/2026-09-21/llama-cpp
   - raw/repositories/2026-09-21/omniserve
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # 量化模型的部署框架与后端支持
@@ -141,7 +141,7 @@ MLC-LLM 的量化模式写成短代码（快照 `6474f7db` 的文档）。权重
 它的校准流程值得单独记录，因为它明确把校准暴露为独立运行阶段：
 
 1. 以校准模式（如 `e4m3_e4m3_f16_max_calibrate`）生成配置并转换权重；
-2. 用 `mlc_llm calibrate` 在 ShareGPT 一类数据上运行校准模型，**把统计结果就地写回权重文件**；文档说明该阶段需要关闭 CUDA graph；
+2. 用 `mlc_llm calibrate` 在 ShareGPT 一类数据上运行校准模型，将参数写入 `--output` 指定的缓存目录。代码启用 `update_if_exists=True`；只有该目录指向原有权重缓存时才是就地更新。文档说明该阶段需要关闭 CUDA graph；
 3. 用目标量化格式重新生成配置并编译模型，权重无需再次转换。
 
 注意第 2 步是「运行模型并写回量化参数」，不是离线统计脚本。[校准数据与量化范围选择](../theory/calibration-and-range-selection.md) 要求的样本、掩码与用途记录在这里同样是复现的前置条件。
