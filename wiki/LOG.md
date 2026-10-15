@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · CUTLASS历史博客 ingest：线程内外积与寄存器复用
+
+- 完整核读snapshot-2026-07-02保存447行、README与10张2026-09-21补采图；正文/图11项哈希与登记一致。页首只保留2018-05-21更新，主体为preview/v0.1.1链接范围，不把抓取日期或图片路径当首次发布日期。
+- 在[计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)第3节补常规SIMT线程的r×c累加状态及r个A/c个B值的外积复用，连接CTA shared复用、线程寄存器活跃状态与warp-cooperative WMMA的分工；线程逻辑行列可交错分布，未按透明图不可辨编号补造lane布局。
+- 现有层次、两级缓冲/资源、epilogue、WMMA和测量解释充分，不复制旧类表或性能表；没有把旧双缓冲的特定屏障安排泛化，也没有为简单外积算术新建测试。
+- INDEX/READING/SELF/计划同步：199条有依据、30条队列（12论文/13文档/5代码），本轮基线88已处理58条；下一项H100 GEMM worklog。独立Astra原件/正文及记录review通过，无必修项。结构/来源strict检查201知识页、718项登记，0错误/待核；4个受影响Wiki页1376条本地链接strict及diff检查通过，199/30记录与12/13/5分类数相符。本项六文件提交，既有Obsidian改动保留；没有新增或重复运行测试。
+
 ## 2026-10-15 · CUTLASS Tile Iterator ingest：旧接口的推进与偏移
 
 - 完整核读snapshot-2026-07-02保存471行、README及同hash通用层次图，正文/图2项哈希核对；正文开头限定legacy CUTLASS2.x，并说明3.0弃用tile access iterators而转用cute::Tensor/Layout。

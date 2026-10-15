@@ -7,6 +7,7 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/articles/2026-09-21/nvidia-cutlass-introduction
   - raw/articles/2026-09-21/cutlass-efficient-gemm
   - raw/articles/2026-09-24/cuda-softmax-worklog
   - raw/articles/2026-09-21/nvidia-warp-primitives
@@ -129,6 +130,18 @@ $$I_{\rm tile}\approx\frac{2B_MB_N}{s(B_M+B_N)}.$$
 
 例如 FP16、$B_M=B_N=32$、$B_K=32$，每步读 4096 字节、计算 65536 FLOPs，I=16；M/N 增到 64、K 不变，I=32，但累加器元素从 1024 增至 4096。累加器分布在整个 program 的线程中，并非单个线程持有全部元素；寄存器压力仍可能降低驻留数量。
 
+### SIMT线程在寄存器中复用输入片段
+
+CUTLASS历史博客的常规SIMT路径把CTA输出tile分给warp，再让每个线程持有二维输出片段。设一个线程负责r个逻辑行位置与c个列位置的组合，它保留 $r\times c$ 个累加值；这些位置在整个warp输出tile中可以交错分布，不要求是一块连续矩形。（“Thread Block Tile”“Warp Tile”“Thread Tile”，图3–5。）
+
+对一个标量K位置，该线程从shared取得对应的r个A值和c个B值，在自己的寄存器中形成外积：
+
+$$R_{ij}\mathrel{+}=a_i b_j,\qquad 0\le i<r,\quad 0\le j<c.$$
+
+因此每个A值在本线程内复用c次，每个B值复用r次，共更新rc个累加位置。图5给出8×8线程tile：8个A值与8个B值参与64个输出的更新。CTA的shared复用让多个线程使用同一输入tile，这一层寄存器复用则让**同一线程的多个输出**共享已取得的输入值；两者减少的是不同层级的数据搬运。
+
+扩大r、c还会增加活跃累加器和输入片段。更多独立累加可提供指令级并行，但寄存器容量与驻留也会约束线程tile，取舍见[资源与工作划分](../../implementation/kernel-configuration-and-autotuning.md)。这里解释的是文中的scalar/SIMT外积；WMMA由warp协作加载、计算分布式fragment，具体线程/指令布局见[Tensor Core接口](../../implementation/tensor-core-quantized-gemm.md)，不能由这幅SIMT线程tile图推定。
+
 ### 复用需要两次同步
 
 NVIDIA `matrixMul.cu:MatrixMulCUDA` 是教学 CUDA 实现：线程先将 A/B tile 搬入共享内存，第一次 `__syncthreads()` 保证可读取完整 tile；每线程计算一个输出局部和，第二次屏障保证所有消费者读完，下一轮才覆盖共享缓冲。
@@ -173,6 +186,7 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| CUTLASS: Fast Linear Algebra in CUDA C++（`https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，10图补采于2026-09-21 | 完整447行/README与10图；正文是preview/v0.1.1链接范围，页首有2018-05-21更新。使用常规SIMT线程外积/寄存器复用，公式按正文展开；旧API/性能不推广为现代支持，未取外链实现或运行。 |
 | Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |
 | Learning CUDA by optimizing softmax: A worklog（`https://maharshi.bearblog.dev/optimizing-softmax-cuda/`） | `indexed-text-snapshot-2026-09-24`，取得于 `2026-09-24T19:49:18+08:00` | 保存505行索引文本与所列对应3图；online/并行归约及原地/片段边界，合并公式与两元素反例为整理者推导；原HTML采集时404，未运行。 |
 | Using CUDA Warp-Level Primitives（`https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 完整保存273行/3图；Listing3参与/缺失源与机会式同址atomic，例子为静态推导；helper/调用省略、API/运行未核。 |
