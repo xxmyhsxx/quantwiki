@@ -9,12 +9,16 @@ tags:
 sources:
   - raw/repositories/2026-09-21/flexq
   - raw/papers/2026-09-21/flexq
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # FlexQ 的位平面、组恢复与所选调用接口
 
-本页核固定a42424d843adffebe4b28ddb62a760cb52b0d2f0：Llama W6/group128、down A8的质量入口；engine的signed W6A6/W6A8、M=1/4/8、K为128整数倍的packing/BMMA/恢复路径；所选FasterTransformer wrapper和FFN调用。方法与原公式边界见[FlexQ](../methods/flexq.md)。没有执行上游、编译或运行GPU，也未将整仓、全模型/全部shape、分布式及完整导出/加载链计为已核查。
+FlexQ 的执行路径把多位整数分成位平面，先用二值 Tensor Core 对各个位对求点积，再结合符号位权和每组尺度恢复浮点输出。权重可以预先量化打包，激活要在每次前向计算范围并打包。理解这条路径，需要分清三件事：质量评测中的浮点模拟、engine 的位平面计算，以及框架如何传入实际载荷。
+
+下文统一用 $A\in\mathbb R^{M\times K}$、$W\in\mathbb R^{K\times N}$、$Y=AW$ 表示逻辑矩阵乘：M 是所有前导维展平后的输入行数，K 是输入通道数，N 是输出通道数。权重在打包入口按 N 个输出行组织；逻辑形状与存储转置不能混同。分组宽度 128 沿 K 划分，chunk 则组织 M 方向上的若干行。
+
+依据固定 `a42424d843adffebe4b28ddb62a760cb52b0d2f0`，范围包括 Llama W6/group128、down A8 的质量入口，engine 的 signed W6A6/W6A8、M=1/4/8、K 为 128 整数倍的 packing/BMMA/恢复，以及所选 FasterTransformer wrapper 和 FFN 调用。方法与原公式边界见 [FlexQ](../methods/flexq.md)。没有执行上游、编译或运行 GPU；整仓、全模型/全部 shape、分布式及完整导出/加载链未全部核查。
 
 ## 1. 质量路径是浮点模拟
 

@@ -8,7 +8,7 @@ tags:
   - kernels
 sources:
   - raw/papers/2026-09-21/flexq
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # FlexQ：INT6 分组量化与二值 Tensor Core 执行
@@ -41,9 +41,11 @@ $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}
 \sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
 \operatorname{BMMA}(A_g^{(r)},W_g^{(s)})_{tj}.$$
 
-这里BMMA只计算0/1位平面沿组内K的内积，尺度恢复和位权是另外两层操作。固定代码确实有temp_mul的位权与符号处理；原式缺项不应据此升级成作者实际kernel缺少位权。公共解释见[位分解执行](../implementation/quantized-matmul-scaling-execution.md#3.1%20%E5%A4%9A%E4%BD%8D%E6%95%B4%E6%95%B0%E6%80%8E%E6%A0%B7%E7%94%A8%E4%BA%8C%E5%80%BC%E7%82%B9%E7%A7%AF%E6%89%A7%E8%A1%8C)。
+这里 BMMA 只计算 0/1 位平面沿组内输入通道的内积，尺度恢复和位权是另外两层操作。固定代码确实有temp_mul的位权与符号处理；原式缺项不应据此升级成作者实际kernel缺少位权。公共解释见[位分解执行](../implementation/quantized-matmul-scaling-execution.md#3.1%20%E5%A4%9A%E4%BD%8D%E6%95%B4%E6%95%B0%E6%80%8E%E6%A0%B7%E7%94%A8%E4%BA%8C%E5%80%BC%E7%82%B9%E7%A7%AF%E6%89%A7%E8%A1%8C)。
 
 ## 3. 紧凑存储需要适合指令的布局
+
+实现布局改用矩阵乘的 M/K/N 记法：M=T 是展平后的输入行数，K=d 是归约的输入通道数，N=o 是输出通道数。因此 M 同时受 batch 与序列长度影响，不能仅理解为请求数。
 
 §4.3把输入组织为 $[K/128,M/c,q,c,128]$ 位布局，$c=\min(M,8)$，每个位平面沿K连续打包；权重采用对应布局。所选代码用ballot收集32个bit、brev调整顺序，128个bit装入4个uint32。它保持6-bit信息量，却通过整字和chunk访问对齐接口，不能用“单元素6 bit不对齐”推断所有packed访问都只剩37.5%利用率。
 
