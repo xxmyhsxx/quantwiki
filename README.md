@@ -28,7 +28,7 @@
 
 `wiki/` 组织知识，`raw/` 保存可追溯的来源。页面写作与引用规则见 [Wiki 规范](wiki/README.md)，资料保存规则见 [raw 规范](raw/README.md)。
 
-`wiki/research/` 保存研究问题、机制综合、方法联系和有依据的结论。根目录 [research/](research/README.md) 保留 Wiki 维护计划、审查记录和已有实验材料；新的应用代码、部署配置与运行结果由对应应用工程承接。
+`wiki/research/` 保存研究问题、机制综合、方法联系和有依据的结论。研究计划、实验代码、部署配置与运行结果由仓库外的应用或实验工程承接；Wiki 的研读状态与维护变动分别记录在 [READING](wiki/READING.md) 和 [LOG](wiki/LOG.md)。
 
 项目职责、覆盖情况与下一步由 [SELF](SELF.md) 说明；Agent 协作约定见 [AGENTS](AGENTS.md)，具体任务方法见 [Skills](.agents/skills/)。
 

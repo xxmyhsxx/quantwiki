@@ -21,9 +21,9 @@
       "purpose": "在应用环境实现或优化算子，完成编译、正确性与性能验证。"
     }
   ],
-  "content_sha256": "9760d6f1153de229a3a12106be2fe48057090a39741d363fa8e6fe0c38023fb8",
+  "content_sha256": "2b35f5c92e03be645d498f7641e82237d5ccdbbd8ff150e8fe2b4d19de415685",
   "files": {
-    "README.md": "10f69f2e0b0b4d59bdf1126ca518ff6d1372357c76bb20e47dab5c39192aec96",
+    "README.md": "ac38bebfa9933d17ad4f075632788cc827ca2c0b949be938516b5b85a617cb0b",
     "SKILL.md": "2ce699ef3a4092d39b2e1cfb47a294f246ad4ed9cde072776270c6da215beb4c",
     "scripts/package.py": "c46acc33b09cd654ef946d1caebafb44121cd87da61275705a8dc7b120c4ca8b",
     "scripts/test_package.py": "99b3fef44b17ad09e9ca53a9e9918ca373c1aac8704c52d734b12055162dee61",
@@ -36,5 +36,5 @@
   },
   "name": "use-quant-wiki",
   "schema_version": 1,
-  "version": 3
+  "version": 4
 }

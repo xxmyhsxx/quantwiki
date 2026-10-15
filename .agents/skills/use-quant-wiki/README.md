@@ -124,7 +124,7 @@
 
 量化知识继续通过 [SELF](/Users/xiao/Desktop/量化/SELF.md)、[INDEX](/Users/xiao/Desktop/量化/wiki/INDEX.md) 和 [Wiki 规范](/Users/xiao/Desktop/量化/wiki/README.md) 获取，不随能力包复制。
 
-[研究知识页](/Users/xiao/Desktop/量化/wiki/research/) 保留研究问题、机制综合、方法联系和有依据的结论。根目录 [research](/Users/xiao/Desktop/量化/research/README.md) 保留 Wiki 维护计划、审查记录及已有实验材料，不打包给应用。新的应用代码、部署配置和运行结果归应用工程；已有实验材料在目标明确、引用核对完成后另行处理，本轮不移动或删除。
+[研究知识页](/Users/xiao/Desktop/量化/wiki/research/) 保留研究问题、机制综合、方法联系和有依据的结论。研究计划、应用代码、部署配置和运行结果由 Wiki 仓库外的应用或实验工程承接；Wiki 的资料状态与维护变动见 [READING](/Users/xiao/Desktop/量化/wiki/READING.md) 和 [LOG](/Users/xiao/Desktop/量化/wiki/LOG.md)。
 
 ## 8. 校验设计
 
