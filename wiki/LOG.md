@@ -1579,3 +1579,10 @@
 ## 2026-10-14 · 能力包统一
 
 - 与 wiki_backbone 使用相同包工具和测试，日常收敛为 prepare、按需能力、统一反馈，发布 v3；保留绑定和三项能力，更新保留旧包。两边各 31 项测试及临时接入、更新和查询流程通过；不增加旧记录兼容，未运行模型或 GPU。
+
+## 2026-10-15 · 系统课程短材料研读：页面说明与挑战公告
+
+- 完整研读大模型系统软件课程页面的README和16行上传者说明，固定为page-description-snapshot-2026-09-24 / BV1R7jc6qEmn。保存的是官方元数据API返回的说明，未含视频/字幕/讲义；课程事件与页面发布时间分别保留，未将160GB、8ND、性能倍数或6D称呼扩成通用结论。
+- 完整研读LeetGPU GPT-2 (120M) Transformer Block公告的README与7行公开索引文本，固定为public-index-post-snapshot-2026-09-24。它只说明挑战方向与语言/设备示例，没有模型规格、实现、测试或性能结果，未沿外链补采。
+- 对照[训练状态](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md)、[roofline](fundamentals/hardware/arithmetic-intensity-and-roofline.md)、[阶段分离](implementation/distributed-llm-serving-orchestration.md)、[Transformer](fundamentals/model/transformer-autoregressive-inference.md)与[算子验证](implementation/kernel-correctness-and-benchmarking.md)，已有解释可承接；两项只登记实际范围，不新增正文、INDEX或sources。
+- READING/SELF/计划同步：209条有依据、20条队列（12论文/5文档/3代码），本轮基线88已处理68条；第21批其余三份课程讲义继续研读。独立Astra review通过，管理链接检查通过（2文件、967条本地链接），git diff --check通过；结构/来源复用203知识页、728项有效结果，不执行上游或增加测试。提交范围为4管理文件，Obsidian改动保留。
