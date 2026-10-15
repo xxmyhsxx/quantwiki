@@ -33,6 +33,8 @@ Mainloop 沿 K 搬入 A/B tile，把乘积累加到同一输出状态；epilogue
 
 例如 warp-specialized collective 可以让 producer 搬运、consumer 做 MMA，并通过共享状态协调依赖。Kernel 则在独立输出任务之间调度；普通 grid 可直接分配任务，persistent kernel 可继续向 work-tile scheduler 领取。每个任务内部的 K 循环仍由 mainloop 处理。具体 Hopper 分工见 [配置与工作划分](kernel-configuration-and-autotuning.md#Hopper%E7%9A%84%E4%B8%A4%E4%B8%AAconsumer%E6%80%8E%E6%A0%B7%E5%88%86%E6%8B%85%E8%BE%93%E5%87%BA)。
 
+多个GEMM怎样组成任务空间、visitor怎样定位problem，见[Grouped GEMM任务调度](kernel-configuration-and-autotuning.md#Grouped%20GEMM%20%E6%80%8E%E6%A0%B7%E5%AE%9A%E4%BD%8D%E5%A4%9A%E4%B8%AA%E9%97%AE%E9%A2%98%E7%9A%84%E8%BE%93%E5%87%BA%20tile)。
+
 ## 2. 实现类型与本次调用参数分开
 
 `CollectiveBuilder` 接收架构、operator class、输入/累加类型、layout、Alignment、tile/cluster shape、stage 和 schedule 等模板参数，匹配实现并给出 `CollectiveOp` 类型。Mainloop 和 epilogue 因此在组装 kernel 时确定；本次处理的矩阵、尺寸和参数状态则由调用入口提供。

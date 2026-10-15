@@ -7,6 +7,7 @@ tags:
   - performance
   - matmul
 sources:
+  - raw/articles/2026-09-21/cutlass-grouped-schedulers
   - raw/articles/2026-09-21/cutlass-efficient-gemm
   - raw/repositories/2026-09-22/kernel-skills
   - raw/repositories/2026-09-21/triton
@@ -102,6 +103,49 @@ Triton `09-persistent-matmul.py:matmul_persistent` 启动 $\min(\text{NUM\_SMS},
 
 普通 tiled GEMM 与 persistent GEMM 都可以只启动一次 kernel，因此后者不必然减少主机 kernel launch 次数。它改变了设备工作调度、循环和可能的数据复用；工作不均、循环状态和资源占用也可能有成本。上述 Triton 例子只核对教程的普通 persistent 分支，不代表 TMA/warp-specialized 分支或所有 persistent 算法。
 
+### Grouped GEMM 怎样定位多个问题的输出 tile
+
+CUTLASS 的 Grouped Kernel Schedulers 文档将多个独立 problem 放进一次 kernel launch，每个 CTA 循环领取其中的输出 tile。problem visitor 确定“哪个问题、哪个输出块”，该任务的 mainloop/epilogue 再完成计算与输出；这里不拆分同一输出的 K 归约。它也不同于单个矩阵乘为改善 L2 局部性而重排的 grouped program ID。（“Introduction”“Grouped GEMM Scheduler”。）
+
+设第 p 个问题的输出为 $M_p\times N_p$，共用输出 tile 形状 $B_M\times B_N$。其 tile 数与在全局序列中的起点为
+
+$$T_p=\lceil M_p/B_M\rceil\lceil N_p/B_N\rceil,\qquad P_p=\sum_{r<p}T_r.$$
+
+令 $H=\mathrm{gridDim.x}$，CTA编号为b，则它依次处理全局tile号 $g=b+qH$，q从0递增，直到所有问题的tile用尽。visitor寻找满足 $P_p\le g<P_p+T_p$ 的problem，得到其中的局部tile号 $\ell=g-P_p$，再按该问题的二维网格做rasterization。不同b覆盖不同余数类，因此任务之间互不重复；一块CTA可以在后续迭代跨到另一个problem。
+
+来源异构网格图给出三个problem，tile数分别为4、6、6，对应区间为 `[0,4)`、`[4,10)`、`[10,16)`。启动8个CTA时，CTA0先处理g=0（problem0的局部tile0），下一轮处理g=8（problem1的局部tile4）。每轮都需重新建立任务与该problem输入/输出的对应关系。（“Computing the schedule for a given block”；以上用g统一原文交替使用的thread_idx/tile_idx命名。）
+
+#### Device查找与Host预计算
+
+文档的 `GroupScheduleMode` 控制上述任务定位工作在哪里完成：
+
+| 模式 | 如何得到problem与局部tile | 增加或节省的工作 |
+| --- | --- | --- |
+| `kDeviceOnly`，默认 | warp内各lane读取一批problem尺寸，计算tile数和prefix；g仍在这批区间内时复用区间做匹配与广播，越界后推进到后续problem | 不需host预建完整调度表；设备承担区间搜索和广播 |
+| `kHostPrecompute` | host为每个CTA预建任务序列，每项为 `(problem_idx,problem_starting_tile)`，复制到device；CTA据此用g求局部tile | 减少设备搜索，增加host预计算、表存储和传输；同CTA连续处理同一problem的多个tile时，表项会重复 |
+
+输入元数据由前一GPU kernel产生时，device-only通常能避免额外host/device往返；元数据已在host且预计算可与前层设备工作重叠时，host-precompute更值得比较。tile计算很短时，调度更可能占主要比例；两种模式都保留同一个任务空间和固定步长分配，而非按CTA完成时间动态取队列。此处模式属于该文的problem visitor接口，与[CUTLASS类型派发](cutlass-gemm-composition-and-dispatch.md)中的 `DispatchPolicy`、`KernelScheduleAuto` 分工不同。（“Scheduler Modes”。）
+
+#### 三角输出需要改变任务枚举
+
+对只更新下三角的SYR2K/HER2K，普通GEMM网格还会分配完全位于上三角的tile；这些任务提前退出，tile数相近仍可能造成有效工作不均。来源的四个2×2网格、8CTA例中，CTA1和5反复只得到无效块。
+
+专用Rank2K visitor先枚举三角网格中的任务。对方形tile网格，零起点行i含i+1个tile，行前缀为 $i(i+1)/2$；给定三角任务号t，找满足
+
+$$i(i+1)/2\le t<(i+1)(i+2)/2$$
+
+的行，再取 $j=t-i(i+1)/2$，即可依次遍历 `(0,0),(1,0),(1,1),(2,0),…`。这是原文sqrt/ceil逆映射的整数区间解释，t是待定位的逻辑任务号，不是永远等于物理CTA编号。
+
+文档对长宽成整数倍的非方形tile先归并成方形macro tile，再用余数拆回真实tile。例如输出128×128、tile64×32得到2×4网格，每个macro tile含两个真实tile；输出132×132则得到3×5网格，文档先按3×6枚举，再让范围外或无三角贡献的任务退出。上三角先交换macro的行列，再展开真实tile。该枚举减少确定无效的区域，边缘任务仍需保留相应范围条件。（“Grouped Rank2K Scheduler”。）
+
+#### tile数量均衡不等于计算量均衡
+
+同一次grouped调用的输出tile形状相同，但不同problem的K可以不同。文档用四个问题说明：`1152×768×128`、`1152×768×1024`、`768×1152×128`、`768×1152×1024`，输出tile为128×128，每个问题54块，共216块。在其GA100、108SM且每SM驻留一个CTA的设定下，108个persistent CTA各处理两块：前54个CTA两块K都是128，后54个两块K都是1024，后者成为长尾。
+
+按K降序重排这组问题后，每个CTA都可得到一块长K和一块短K，从而平衡此例的归约工作量。排序必须连同尺寸、指针、leading dimension等关联元数据一起重排；它仍受其他GEMM性能因素影响，实际收益需计入排序成本。作者在此例报告约30%的运行时间改善，不能作为所有输入的收益。原文总数句/分配表给出216，下一句却写 `(256/108)=2`；这里按尺寸和分配表使用 `216/108=2`。（“Improving Load Balance by Sorting Problems”。）
+
+这一通用任务映射可作为[DeepGEMM专家执行](deepgemm-moe-expert-execution.md)的前置概念；该页固定SM90路径按专家行区间或有效M构造任务，专家通常共享N/K，具体元数据与visitor接口分别以其源码为准。
+
 ### Hopper的两个consumer怎样分担输出
 
 同一快照“Hopper Warp Specialization”另述 Hopper 的 producer/consumer warp-group（承担搬运/计算的 warp 协作组）：producer 先等待 shared buffer empty，用 TMA（Tensor Memory Accelerator）从 global 搬入数据；完成后通知 full，consumer 等待、发起 MMA，消费完成再 release，供下一轮复用。它们用显式完成与释放维护依赖，不能把普通 `cp.async` 的等待距离直接搬给 TMA。
@@ -157,7 +201,7 @@ CUTLASS 的类型组装、运行参数和构建期 `StageCountAuto`，见 [GEMM�
 
 比较时同时观察有效工作量、编译资源和延迟，按场景权重保留必要的配置分派。多测几个配置能提高覆盖，但不存在必须 6–8 个候选才有效的通用定理。最优性仅限已测试候选、输入和环境；配置差异接近测量波动时，不应把最快单次结果当作稳定优势。调优开销与稳态延迟分别记录，具体计时见 [测量页](kernel-correctness-and-benchmarking.md)。
 
-此前整理核对了上述 Triton 源码，并完成资源、尾块与 persistent 分工的 CPU 教学计算；本次 Efficient GEMM 增量核读保存文档/配图，并核对拆 K 后处理的教学算术。
+此前整理核对了上述 Triton 源码，并完成资源、尾块与 persistent 分工的 CPU 教学计算；Efficient GEMM 增量核读保存文档/配图，并核对拆 K 后处理的教学算术。
 
 如何从 Nsight 时间线和计数器判断应改变 tile、warp 数还是 stages，以及怎样检验等待减少是否真的缩短延迟，见 [GPU 算子性能分析](gpu-kernel-performance-analysis.md)。
 
@@ -165,6 +209,7 @@ CUTLASS 的类型组装、运行参数和构建期 `StageCountAuto`，见 [GEMM�
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| Grouped Kernel Schedulers（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/grouped_scheduler.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，7图补采于2026-09-21 | 完整保存311行/7图、README；global tile定位、两模式、Rank2K及K负载。公式/图示按本文展开，原文命名与216/256差异保留；未取外链visitor/sort实现或运行。 |
 | Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |
 | Using Shared Memory in CUDA C/C++（`https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/`） | `snapshot-2026-07-02` | 静态/动态区、launch字节与多数组分区及历史设备条件；完整保存正文已读，对齐推广为整理者说明，未编译/测资源。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.11–2.4.12 hint与前提，保存正文全读；并非实际编译资源/TMA或性能验证，完整API未核。 |

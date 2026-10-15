@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Grouped Scheduler ingest：任务定位与负载分配
+
+- 完整核读snapshot-2026-07-02保存311行、README及7张2026-09-21补采图；正文/图8项哈希核对一致，复用独立准备与Astra原件核读证据。
+- 在[配置与工作划分](implementation/kernel-configuration-and-autotuning.md)第4节承接problem tile数/前缀→全局任务号→CTA固定步长→problem/local tile→完整输出，再解释device warp-prefix与host逐CTA tuple表、三角任务/macro/补齐条件及K长尾。CUTLASS组成页加任务定位入口，既有DeepGEMM具体专家映射保持其源码条件。
+- 原文thread_idx/tile_idx统一为全局任务号；216/256冲突按四问题尺寸及表使用216。三角前缀公式用整数区间解释；排序/关联元数据、GA100例与约30%作者报告限于其参数，未新增教学算术测试或执行上游。
+- INDEX/READING/SELF/计划同步：195条有依据、34条队列（12论文/17文档/5代码），本轮基线88已处理54条；下一项CUTLASS Quickstart。独立Astra正式review闭环通过：已修正device-only复用当前problem区间的说明，并复核上三角macro条件，无剩余必修。结构/来源strict检查201知识页、714项登记，0错误/待核；5个受影响Wiki页1363条本地链接strict及diff检查通过，195/34记录数相符。本项七文件提交，既有Obsidian改动保留；文字修正沿用有效检查，未重跑无关测试。
+
 ## 2026-10-15 · CUTLASS Layouts ingest：映射对象与存储容量
 
 - 完整核读snapshot-2026-07-02保存280行、README及2026-09-21补采通用层次图，复用本批正文/图2项哈希一致的核对；现有stride/转置视图解释充分，保留原阅读路径。
