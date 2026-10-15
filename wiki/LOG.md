@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · CUTLASS Pipeline ingest：阶段复用与双方进度
+
+- 完整核读snapshot-2026-07-02保存112行与README，无附件；正文哈希与登记一致，独立准备与Astra原件核读相符。
+- 在[异步流水](implementation/gpu-async-copy-pipelines.md)第2节接入CUTLASS四API的阻塞/通知职责、初始empty与start state、4stage/2producer1consumer参与计数及各自PipelineState推进；显式保留写入完成可见性和PipelineTmaAsync commit可No-Op的条件。配置页Hopper段链接协议，不重复展开。
+- 页首区分本协议与后续SM80 cp.async批次规则，原有CPU教学推演标为此前工作；源例PipelineAsync/PipelineSync命名差异集中保留，phase/transaction内部细节不由类名补造。没有新增测试或执行上游。
+- INDEX/READING/SELF/计划同步：197条有依据、32条队列（12论文/15文档/5代码），本轮基线88已处理56条；下一项Tile Iterator Concepts。独立Astra原件/正文及记录review通过，无必修项。结构/来源strict检查201知识页、716项登记，0错误/待核；5个受影响Wiki页1368条本地链接strict及diff检查通过，197/32记录数相符。本项七文件提交，既有Obsidian改动保留，没有新增或重复运行测试。
+
 ## 2026-10-15 · CUTLASS Quickstart ingest：主机缓冲与实例调用
 
 - 完整核读snapshot-2026-07-02保存794行、README与通用层次图；正文/同图2项哈希匹配，复用本批通用图及独立准备/Astra原件核读证据。

@@ -148,7 +148,7 @@ $$i(i+1)/2\le t<(i+1)(i+2)/2$$
 
 ### Hopper的两个consumer怎样分担输出
 
-同一快照“Hopper Warp Specialization”另述 Hopper 的 producer/consumer warp-group（承担搬运/计算的 warp 协作组）：producer 先等待 shared buffer empty，用 TMA（Tensor Memory Accelerator）从 global 搬入数据；完成后通知 full，consumer 等待、发起 MMA，消费完成再 release，供下一轮复用。它们用显式完成与释放维护依赖，不能把普通 `cp.async` 的等待距离直接搬给 TMA。
+同一快照“Hopper Warp Specialization”另述 Hopper 的 producer/consumer warp-group（承担搬运/计算的 warp 协作组）：producer 先等待 shared buffer empty，用 TMA（Tensor Memory Accelerator）从 global 搬入数据；完成后通知 full，consumer 等待、发起 MMA，消费完成再 release，供下一轮复用。[CUTLASS Pipeline的生产与消费协议](gpu-async-copy-pipelines.md#CUTLASS%20Pipeline%20%E5%88%86%E5%88%AB%E6%8E%A8%E8%BF%9B%E7%94%9F%E4%BA%A7%E4%B8%8E%E6%B6%88%E8%B4%B9)进一步区分等待数据可读与等待缓冲可复用；具体完成条件随Pipeline类定义，普通 `cp.async` 的等待距离仍按其自身接口理解。
 
 | Hopper persistent 设计 | 两个 consumer 的工作 | 希望重叠或节省什么 |
 | --- | --- | --- |

@@ -7,17 +7,18 @@ tags:
   - memory
   - synchronization
 sources:
+  - raw/articles/2026-09-21/cutlass-synchronization
   - raw/repositories/2026-09-22/kernel-skills
   - raw/articles/2026-09-21/cuda-async-copies
   - raw/repositories/2026-09-21/cutlass
-updated: 2026-09-22
+updated: 2026-10-15
 ---
 
 # GPU 异步拷贝与多级流水：等待完成和缓冲复用
 
 异步拷贝把“发起数据搬运”和“数据已经可用”分开，让线程有机会在等待下一块数据时计算当前块。多级流水进一步复用有限的 shared 缓冲；正确性必须同时保证两件事：读取之前搬运已完成，覆盖之前旧消费者已读完。
 
-本页展开 `Optimize Shared Memory Tiling` Skill 的双缓冲建议，用 CUDA 文档 LDGSTS/Prefetching Data 与 CuTe SM80 包装、SGEMM 流水片段核对。先读 [GPU 存储与同步](../fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)。本页讨论普通 `cp.async` 的 global→shared 路径，不把其等待规则直接套给 TMA、异步 MMA 或其他架构机制。
+本页展开 `Optimize Shared Memory Tiling` Skill 的双缓冲建议，用 CUDA 文档 LDGSTS/Prefetching Data 与 CuTe SM80 包装、SGEMM 流水片段核对。先读 [GPU 存储与同步](../fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)。本页先解释缓冲生命周期，再用CUTLASS的Hopper Pipeline接口说明生产与消费如何协调；后续 `commit_group`/`wait_group` 的具体规则仍针对普通SM80 `cp.async` global→shared路径。两者各按对应接口的参与方式与完成条件理解。
 
 ## 1. 异步搬运减少什么依赖
 
@@ -41,6 +42,23 @@ stateDiagram-v2
 `producer_acquire`、`producer_commit`、`consumer_wait`、`consumer_release` 表达这种生命周期，但具体保证取决于 pipeline 的作用域和参与方式。CUDA Prefetching Data 示例使用线程局部 pipeline；线程各自等待并不足以说明整个 CTA 的拷贝都完成，数据由其他线程读取时还需要块级协调。
 
 写后屏障与读后屏障保护不同方向的依赖。前者防止读到未完成的数据；后者防止快线程覆盖慢线程还在读取的 tile。增加两个 buffer 只提供空间，不自动建立这些依赖。
+
+### CUTLASS Pipeline 分别推进生产与消费
+
+CUTLASS的Synchronization primitives文档把producer定义为满足输入依赖的线程或线程组：它可以搬运数据，也可以先完成别的计算；consumer在依赖满足后使用这些结果。同一线程也可以承担两种角色。Pipeline类以环形stage编排这些依赖，使同一缓冲反复经历生产、消费与复用。（“Asynchronous pipelines”。）
+
+| 方法 | 在当前stage上的作用 | 等待性质 |
+| --- | --- | --- |
+| `producer_acquire` | 在copy/write之前，确认此前consumer已经释放该stage，使producer可以再次使用 | 阻塞等待可复用条件 |
+| `producer_commit` | producer关联操作完成后，通知等待该stage的consumer | 通知本身非阻塞 |
+| `consumer_wait` | 消费前等待producer满足当前stage的输入依赖 | 阻塞等待可读条件 |
+| `consumer_release` | 消费完成后，通知producer可继续复用该stage | 通知本身非阻塞 |
+
+acquire解决“旧数据是否已用完”，wait解决“新数据是否已备好”。初始流水为空时，尚无旧consumer占用stage，文档允许在首轮略过acquire，或用`make_producer_start_state`构造能在开头成功acquire的producer状态。这里的空表示允许开始生产，不表示缓冲已经存有有效输入。（“Producer acquire”“Consumer wait”“Consumer release”。）
+
+保存示例用`PipelineAsync<4>`配置四个stage，另以`producer_arv_count=2`、`consumer_arv_count=1`配置两个producer线程和一个consumer线程。thread0/1分别持有`smem_pipe_write`，由`make_producer_start_state`初始化，在commit后递增；thread2持有默认构造的`smem_pipe_read`，在release后递增。stage数、参与者计数与各线程当前进度因此是三个不同对象；多个producer可以协作同一stage，acquire的作用是阶段复用协调。（“Pipeline example”。）
+
+方法的具体完成保证还取决于所用Pipeline类。示例对普通producer内存操作明确要求先保证写已完成且对consumer可见，再commit。`PipelineTmaAsync`这类TMA producer可由操作自动更新关联barrier，使`producer_commit`成为No-Op；此时consumer仍须按该类协议等待数据满足依赖。不能从是否执行了一个显式commit，判断搬运是否已经完成。（“Producer commit”及“Pipeline example”注释。）
 
 ## 3. `commit_group` 与 `wait_group` 等待的是批次
 
@@ -76,7 +94,7 @@ CuTe `copy_sm80.hpp:cp_async_fence` 发出 `cp.async.commit_group`，将线程�
 
 CuTe `examples/cute/tutorial/sgemm_sm80.cu` 先预取 `K_PIPE_MAX−1` 个 shared 阶段，再用 `cp_async_wait<K_PIPE_MAX−2>()` 等待较早阶段；另外还有 shared→register 的片段预取。主循环把 global→shared、shared→register 和 register 上的 GEMM 交叠起来。
 
-这与 CUDA 文档示例预填 L 份缓冲后等待 L−1 的做法不同，原因是预填数量与循环结构不同。可复用的是“目标 tile 处于已经完成的那部分组中”，不是复制某个固定常量。本轮定向核对了这些预取、等待、轮换和计算片段，没有验证完整 CuTe GEMM 对所有形状的正确性。
+这与 CUDA 文档示例预填 L 份缓冲后等待 L−1 的做法不同，原因是预填数量与循环结构不同。可复用的是“目标 tile 处于已经完成的那部分组中”，不是复制某个固定常量。此前定向核对了这些预取、等待、轮换和计算片段，没有验证完整 CuTe GEMM 对所有形状的正确性。
 
 ## 6. 多阶段用空间换时间，也可能变慢
 
@@ -94,12 +112,13 @@ $$t_{\rm pipeline}\approx t_m+t_c+(Q-1)\max(t_m,t_c).$$
 
 数值参考能发现部分读早/覆盖问题，却不能证明没有竞争；GPU 上还需编译、设备诊断和实际计时。软件状态模型只能验证既定顺序下的逻辑关系，不能模拟 GPU 内存模型。
 
-本轮已用 CPU 状态推演验证组等待反例、短流水启动/排空与环形 buffer 复用关系；未运行 CUDA、未执行竞争诊断或性能测量。已有 [AWQ 新版 GEMM](weight-only-dequant-kernels.md) 的 cp.async/MMA 片段可据此继续理解，但未因这轮知识补充升级为本地运行验证。
+此前整理已用 CPU 状态推演验证组等待反例、短流水启动/排空与环形 buffer 复用关系；未运行 CUDA、未执行竞争诊断或性能测量。已有 [AWQ 新版 GEMM](weight-only-dequant-kernels.md) 的 cp.async/MMA 片段可据此继续理解，但未因这轮知识补充升级为本地运行验证。
 
 ## 来源身份
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| Synchronization primitives — NVIDIA CUTLASS Documentation（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/pipeline.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00` | 完整112行正文与README，无附件；四个API、初始empty、4-stage参与者与PipelineState、TMA commit条件。代码称PipelineAsync，末段文字称PipelineSync，按保存代码说明；phase/transaction内部规则未给，外链实现与编译/运行未核。 |
 | tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | 本页列出的 Skill 提供待解释的问题和经验建议，具体主张经官方材料核对。 |
 | CUDA Programming Guide：Asynchronous Data Copies（`https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/async-copies.html`） | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | LDGSTS、预取及线程间共享的同步条件；章节号以本地快照为准。 |
 | NVIDIA CUTLASS/CuTe（`https://github.com/NVIDIA/cutlass/tree/e8ecfad75b44d1ad56264f5001d877e9e47fe080`） | `e8ecfad75b44d1ad56264f5001d877e9e47fe080` | SM80 异步拷贝包装和 SGEMM 流水片段；未运行。 |
