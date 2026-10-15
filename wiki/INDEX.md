@@ -225,6 +225,8 @@ sources: []
 | [SplitQ：模态离群通道拆分与权重激活双补偿](methods/splitq.md) | SplitQ 把多模态量化冲突拆成两个层次：少数模态离群通道先单独处理；剩余共享通道再分别缓解权重量化误差与激活量化误差。 |
 | [VLMQ：token 重要性加权的二阶量化](methods/vlmq.md) | VLMQ 用局部注意力模块重构损失的梯度估计各 token 的重要性，再把这些因子放进线性层的二阶重构目标。 |
 | [ZeroQuant：逐组权重、逐 token 激活与逐层蒸馏](methods/zeroquant.md) | 8 bit 量化到十亿参数规模时，精度损失主要来自两个数值事实：不同 token 的激活范围相差很大，不同输出行的权重范围也相差很大。 |
+| [医学LLaVA压缩：删层、恢复与AWQ](methods/medical-llava-prune-sft-quantize.md) | 输出相似度评分与恢复顺序、领域judge和压缩/速度对照的条件。 |
+| [SpikeMLLM：模态时间步与脉冲编码](methods/spikemllm.md) | 量化整数的单位/位权展开、MED预算与专用硬件证据。 |
 
 ### 研究抽象
 

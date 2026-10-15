@@ -1628,3 +1628,10 @@
 - [生成Kernel评测](implementation/llm-generated-kernel-evaluation.md)补模型来源与真实输入、状态/通信关系、Trace四对象；区分FastKernels代理主表、MacroEval与46架构端到端实验，解释有效族几何平均和三轴乘积；FlashInfer按workload→solution的宏平均保留基线身份与apply离线选择/fallback。
 - KernelBenchX补shape/dtype前置门、标准/异常输入、六项量化三指标联合阈值，以及任务内多输入总时间比和跨正确任务算术平均。[验证页](implementation/kernel-correctness-and-benchmarking.md)补低精度匹配比例、采样TVD+mask与空KV合法LSE特殊值；不重复计时/反馈基础，也不把静态门、有限测试和算法图扩成实现保证。
 - 原件FastKernels CI/条件速度强表述、FlashInfer Figure8性能与末候选、KernelBenchX图文/名称/环境和do_bench runs差异集中登记，不据此做生成器排名。READING/INDEX/SELF/计划同步218条有依据、11条队列（6论文/2文档/3代码），本轮基线88已处理77条，第23批范围完成；接续第24批。独立Sol review修正apply图号后通过；结构/来源检查通过（206知识页、742项来源），受影响链接检查通过（5文件、1470条本地链接），git diff --check通过。未执行上游/模型/GPU，不新增测试；提交7文件，Obsidian改动保留。
+
+## 2026-10-15 · 多模态压缩案例：删层恢复与脉冲时间编码
+
+- 为并行加速先完成第25批两论文，接续第24批准备。完整研读医学压缩v3的active正文/附录A/B及表1–5，视觉核PDF10/15/16；完整研读SpikeMLLM v1主文/附录§6–10、两等价证明/算法与表1–13，视觉核PDF3/4/8/15。版本证明复用原README，未取外链/改raw；文本提取不记为全部图像已读。
+- 新增[医学删层恢复](methods/medical-llava-prune-sft-quantize.md)：完整答案→MiniLM相似度、整层删除/恢复/权重量化的对象与顺序，两次QLoRA配置、域数据与judge分别说明。保留原件排序方向、参数身份及4.2×与延迟表冲突；百分化1–4评价不改写成诊断正确率。
+- 新增[SpikeMLLM](methods/spikemllm.md)：标准单位脉冲与polar位权编码、尺度/去极端级和符号条件、non-polar差异、MED模态/层预算；用线性展开区分离散表示等价与FP16任务质量。MAC/AC/位宽代理、PE位门控与RTL/周期模型对A800实测分别解释，25.8×按功率比处理，不作GPU算法加速或同任务能效结论。
+- VLM公共入口与INDEX/READING/SELF/计划同步220条有依据、9条队列（4论文/2文档/3代码），本轮基线88已处理79条；第25批选定来源范围完成，第24批四论文/三代码/两文档继续。独立Sol review通过；结构/来源检查通过（208知识页、744项来源），受影响链接检查通过（6文件、1492条本地链接），git diff --check通过。未执行作者软件/RTL/模型或GPU，不新增测试；提交8文件，Obsidian改动保留。

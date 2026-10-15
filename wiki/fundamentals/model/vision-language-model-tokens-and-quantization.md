@@ -21,7 +21,7 @@ sources:
   - raw/papers/2026-09-21/mbq
   - raw/papers/2026-09-21/vlmq
   - raw/repositories/2026-09-21/mbq
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # 视觉语言模型中的 token 与量化对象
@@ -212,11 +212,15 @@ $$
 
 用32层、剪枝点 $[2,16,26]$ 与视觉长度 $256\to128\to64\to32$ 作教学计算：各段层数是3/14/10/5，单看视觉位置的一次项，累计为 $3\times256+14\times128+10\times64+5\times32=3360$，相对 $32\times256=8192$ 为41.0%。这既不是最终12.5%的保留率，也不是完整模型 FLOPs 或实测时延。跨方法即使最后同为32 token，也须核对何层开始缩短、保留哪些非视觉位置及 routing 成本，才能解释实际速度差异。
 
+整层删除则直接缩短语言骨干深度。[医学LLaVA案例](../../methods/medical-llava-prune-sft-quantize.md)按删层前后答案的句向量相似性选择层，再恢复微调与AWQ；这个输出代理与上面的token attention分数、相邻隐藏层变化有不同对象。
+
 ## 8. 难量化、不可删除与值得保护不能互相替代
 
 [QAPruner](../../methods/qapruner.md) 把模拟 INT4 重构误差及通道范围与语义分数融合，用来选择保留视觉 token。这个代理直接测数值可量化性，不直接测删除该 token 后的任务损失；若 scale 在每 token 内独立计算，删掉别的 token 也不会在特征固定时改变它的 scale。它为量化与剪枝的联合选择提供实证，不能把难量化自动当成不可删除的定理。
 
 [AKVQ-VL](../../methods/akvq-vl.md) 则保留 token 集合，按 attention 层模式保护文本或 pivot 的 KV 精度：TSA 层的文本主要 4 bit，PSA 层的 pivot 与 recent 用 16 bit，其余历史主要 2 bit。它的早层文本显著、后层枢纽显著是特定模型观测，原文中也有不出现 TSA 的骨干。模态标签、attention 代理、激活幅值、可删除性和量化敏感度应各自说明证据，不能共用一个“重要性”标签便认为可以直接交换策略。
+[SpikeMLLM](../../methods/spikemllm.md)进一步改变激活的执行表示：按模态/层分配时间步，将量化整数分解成带符号的幅度位脉冲。它保留token集合，表示等价、任务质量与专用硬件收益分别核对。
+
 ## 来源身份
 
 - Qwen3-VL Technical Report（`https://arxiv.org/abs/2511.21631v2`），`arXiv:2511.21631v2`；架构/DeepStack/位置/时间、必要训练与数据、视频及表11–12/图1/3条件，42页PDF关键原件回查。结构式为整理者示意；未核全部任务表、匹配processor/model、mask/频段/patch与运行。
