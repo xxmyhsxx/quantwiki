@@ -164,7 +164,7 @@ $$T_{k,h}[p]=\sum_{n=0}^{\mu-1}x_{h,n}c_{h,n}^{(k)}(2b_n(p)-1),\quad 0\le p<2^\m
 
 若K_b个global基底覆盖N列，K_s个额外残差基底覆盖 $N_{sal}=\rho N$ 列，理想构表/读取项数分别为 $(2^\mu/\mu)(K_bN+K_sN_{sal})$ 与 $(M/\mu)(K_bN+K_sN_{sal})$。忽略构表、映射和归约后，读取项数相对MN的比例为 $(K_b+K_s\rho)/\mu$，其倒数 $\mu/(K_b+K_s\rho)$ 为理想读取项数减少倍数；这是抽象操作计数，不是硬件速度保证。残差覆盖重叠位置，载荷及尺度都应相加，不能只计主体位宽。
 
-将选中权重列映射成连续矩阵可改善残差消费，但当前输入仍需原列索引gather；LUT占用也随每block的token数、基底数和 $2^\mu$ 增长。表示自由度、元数据、构表摊销和共享内存预算需要共同判断。具体行列优化、混合预算及作者测量条件见[FluxBin](../methods/fluxbin.md)；归约尺度原则见[分组恢复](../implementation/quantized-matmul-scaling-execution.md#15.%20%E5%BD%92%E7%BA%A6%E7%BB%B4%E5%88%86%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8%E7%B4%AF%E5%8A%A0%E9%80%94%E4%B8%AD%E6%81%A2%E5%A4%8D%E5%B0%BA%E5%BA%A6)。
+将选中权重列映射成连续矩阵可改善残差消费，但当前输入仍需原列索引gather；LUT占用也随每block的token数、基底数和 $2^\mu$ 增长。表示自由度、元数据、构表摊销和共享内存预算需要共同判断。具体行列优化、混合预算及作者测量条件见[FluxBin](../methods/fluxbin.md)；归约尺度原则见[分组恢复](../implementation/quantized-matmul-scaling-execution.md#1.1%20%E5%BD%92%E7%BA%A6%E7%BB%B4%E5%88%86%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8%E7%B4%AF%E5%8A%A0%E9%80%94%E4%B8%AD%E6%81%A2%E5%A4%8D%E5%B0%BA%E5%BA%A6)。
 
 ## 7. 状态路径可以隐式表示长向量
 

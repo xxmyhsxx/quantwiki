@@ -154,7 +154,7 @@ exact 需要完整二阶矩、矩阵平方根和加权 SVD；approx 只需逐通
 
 附录 A.8 建议将 approx 用于 QPEFT，把节省的初始化时间用于增加秩或训练步数。表 8 的 LLaMA-2-7B／SlimPajama：exact 秩 16、2 epochs 总计 6.8 h、PPL 6.31；approx 秩 64、2 epochs 为 2.6 h、PPL 6.18；approx 秩 16、4 epochs 为 4.5 h、PPL 6.21。A.4.1 报告 QPEFT 平台为四张 A100 80GB、AMD EPYC 64 核 CPU 和 1024GB RAM，矩阵平方根在 CPU 执行。这组比较同时改变了秩或训练量，支持的是作者平台上的总预算分配取舍，不能解释为同配置初始化的纯消融或其他设备的固定时间比。
 
-在相同形状、秩、dtype 和后端下，exact 与 approx 都可部署成 $x\widetilde W+(xA)B$，没有运行时重新估计二阶矩或求平方根的需要。但相对于只有主体的路径，两者都增加 $k(m+n)$ 个因子元素和两次低秩乘法。详细记账见 [低秩辅助分支](../implementation/quantized-matmul-scaling-execution.md#12.%20%E4%BD%8E%E7%A7%A9%E8%BE%85%E5%8A%A9%E5%88%86%E6%94%AF%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E6%88%96%E7%BB%9F%E4%B8%80%E4%BD%8D%E5%AE%BD)。不能把“exact 不比 approx 多一条推理分支”改写成“低秩补偿免费”。
+在相同形状、秩、dtype 和后端下，exact 与 approx 都可部署成 $x\widetilde W+(xA)B$，没有运行时重新估计二阶矩或求平方根的需要。但相对于只有主体的路径，两者都增加 $k(m+n)$ 个因子元素和两次低秩乘法。详细记账见 [低秩辅助分支](../implementation/quantized-matmul-scaling-execution.md#7.2%20%E4%BD%8E%E7%A7%A9%E8%BE%85%E5%8A%A9%E5%88%86%E6%94%AF%E4%B8%8D%E6%98%AF%E5%85%8D%E8%B4%B9%E6%88%96%E7%BB%9F%E4%B8%80%E4%BD%8D%E5%AE%BD)。不能把“exact 不比 approx 多一条推理分支”改写成“低秩补偿免费”。
 
 ## 8. 适用边界与继续使用
 

@@ -15,7 +15,7 @@ updated: 2026-10-12
 
 Atom 将少量原始输入离群通道放在连续尾部，用INT8处理；其余权重和激活采用分组INT4，同时将重排、动态量化、分组恢复和KV读取融合进算子。它连接低位表示与大batch服务，而不是仅压缩权重后调用浮点GEMM。依据为 Atom v3（`https://arxiv.org/abs/2310.19102v3`） 正文、表1–4及性能图；固定作者代码的模拟/整数/基准三条路径见[实现页](../implementation/atom-mixed-gemm-and-paged-kv.md)。没有运行作者模型或GPU。
 
-与 [ResQ](resq.md) 保护PCA投影方向不同，Atom按原通道校准能量选择高精度尾部；与 [LLM-MQ](llm-mq.md) 的低位weight-only GEMV不同，它面向权重复用后的整数GEMM及低位KV读取。大batch是否进入计算瓶颈需按实际算子判断，基础趋势见[矩阵乘法的token数与瓶颈](../implementation/quantized-matmul-scaling-execution.md#4.%20%E4%B8%BA%E4%BB%80%E4%B9%88%20token%20%E6%95%B0%E6%94%B9%E5%8F%98%E7%93%B6%E9%A2%88)。
+与 [ResQ](resq.md) 保护PCA投影方向不同，Atom按原通道校准能量选择高精度尾部；与 [LLM-MQ](llm-mq.md) 的低位weight-only GEMV不同，它面向权重复用后的整数GEMM及低位KV读取。大batch是否进入计算瓶颈需按实际算子判断，基础趋势见[矩阵乘法的token数与瓶颈](../implementation/quantized-matmul-scaling-execution.md#8.%20%E4%B8%BA%E4%BB%80%E4%B9%88%20token%20%E6%95%B0%E6%94%B9%E5%8F%98%E7%93%B6%E9%A2%88)。
 
 ## 1. 离线确定顺序，在线应用固定重排
 
@@ -31,7 +31,7 @@ Atom 将少量原始输入离群通道放在连续尾部，用INT8处理；其�
 
 $$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}+Y^{high}_{tj}.$$
 
-高组也按自己的INT8尺度恢复。归约组的尺度不同时，不能把所有整数部分先加起来再乘一个外部尺度；这一点与仅按输出列/输入token缩放的GEMM不同。Atom把分组恢复和相加融合到MMA流水，减少中间全局写回，但仍有尺度读取、转换及累加成本。（§4.2、图8；公共[分组归约与融合](../implementation/quantized-matmul-scaling-execution.md#15.%20%E5%BD%92%E7%BA%A6%E7%BB%B4%E5%88%86%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8%E7%B4%AF%E5%8A%A0%E9%80%94%E4%B8%AD%E6%81%A2%E5%A4%8D%E5%B0%BA%E5%BA%A6)。）
+高组也按自己的INT8尺度恢复。归约组的尺度不同时，不能把所有整数部分先加起来再乘一个外部尺度；这一点与仅按输出列/输入token缩放的GEMM不同。Atom把分组恢复和相加融合到MMA流水，减少中间全局写回，但仍有尺度读取、转换及累加成本。（§4.2、图8；公共[分组归约与融合](../implementation/quantized-matmul-scaling-execution.md#1.1%20%E5%BD%92%E7%BA%A6%E7%BB%B4%E5%88%86%E7%BB%84%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8%E7%B4%AF%E5%8A%A0%E9%80%94%E4%B8%AD%E6%81%A2%E5%A4%8D%E5%B0%BA%E5%BA%A6)。）
 
 §4.2对Llama-7B的 $d=4096$、高组128、普通4 bit/高组8 bit、每128元素一个FP16尺度，给出元素预算
 

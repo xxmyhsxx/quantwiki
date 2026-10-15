@@ -48,7 +48,7 @@ updated: 2026-10-15
 
 同样写着低比特量化，实际可能是浮点模拟、压缩权重配合即时反量化，或整数输入参与矩阵乘法。理解性能前，需要先明确数据怎么存、乘法吃什么类型、在哪里缩放，以及运行时的主要开销。
 
-本页依据 SmoothQuant v7 §2–4、式 (2)、附录 A及 GPTQ v2 §5、附录 A.2.2展开。公式为对原文的教学推导，代码范围和历史测量在各方法页限定；没有本项目性能实测。
+以下先解释尺度与零点如何进入点积，再区分硬件执行方式、输出再量化和额外分支，最后判断瓶颈与测量口径。基础计算依据 SmoothQuant v7、GPTQ v2 和 Jacob 等整数推理论文 v1；后续案例按各自固定来源登记。公式中的展开与例子为教学推导，没有本项目性能实测。
 
 ## 1. 矩阵乘法的外维与归约维
 
@@ -80,6 +80,18 @@ $a_j$ 留在归约内部，不能直接提到求和外面。例如某次整数�
 SmoothQuant 先离线调整权重与前驱参数，改善激活输入通道范围，随后采用外维可分离的量化方式。其逐输入通道平滑因子 $s_j$ 不应误写成运行时 GEMM 的激活步长 $a_t$。离线缩放如何保持浮点函数、何时能融合到前驱参数，见 [对角缩放与等价变换](../theory/diagonal-scaling-equivalent-transform.md)；本节讨论的是变换之后的运行时量化与乘法。
 
 模态静态尺度也可位于外维：令 $a_t=s_{m(t)}$，同一模态的 token 共享一个离线尺度，整数累加后仍可乘 $s_{m(t)}b_o$。数学上可分离，不代表交错布局下没有路由开销；[MQuant](../methods/mquant.md) 的 AIFS 将模态位置聚集，并同步置换注意力 mask 与原位置编码，试图减少切片和拼接。其表 10 分别测量 MSQ 与 MSQ+AIFS，说明网格、布局与内核应分开评价。（MQuant v2，§3.1、表 10）
+
+### 1.1 归约维分组为什么要在累加途中恢复尺度
+
+外维尺度可以放在整数求和之后；沿输入通道分组时，不同组通常使用不同尺度。沿用上面的 X、W 约定，组 $g$ 的整数部分和为 $C^{(g)}_{to}=\sum_{j\in g}q^X_{tj}q^W_{jo}$，恢复结果为
+
+$$\widehat Y_{to}=\sum_g s^X_{t,g}s^W_{g,o}C^{(g)}_{to}.$$
+
+因此可以先在每组用INT32累加，但需在合并组之前应用该组的两侧尺度。将所有组的INT32部分和直接相加，通常丢失分组权重信息；前面的两通道反例也适用。只有各组尺度乘积相同等额外条件下，才可用一个共同后置尺度。采用高精度尾部时，再加尾部自己的恢复部分和，不能将两路混成同一个INT4网格。
+
+[Atom](../methods/atom.md) v3 §4.2/图8把每组恢复及浮点相加放进MMA流水，省去部分和写回全局内存再发另一kernel的成本。融合不会消除参数读取、类型转换、尺度乘法与跨组相加，也不自动保证计算与访存完全重叠。组变小改善局部范围，但元数据及恢复次数会增加；真实收益仍需按相同shape和测量协议判断。
+
+具体精度也需追到代码：Atom所选DenseLayerGEMM_i4.cu先以FP16相乘两侧尺度，再转float恢复INT32部分和、跨组FP32累加并输出FP16。它与论文的FP16恢复/相加描述及“先在FP32计算尺度乘积”均有区别。原生路径、元数据复制和质量模拟条件见 [Atom实现](atom-mixed-gemm-and-paged-kv.md#3.%20native%20GEMM%E7%9A%84%E8%A1%A8%E7%A4%BA%E3%80%81%E5%B0%BA%E5%BA%A6%E5%92%8C%E7%B4%AF%E5%8A%A0)。数学恒等式不消除有限精度舍入，也不证明实现已达到某个速度。
 
 ## 2. zero-point 会引入哪些额外项
 
@@ -114,41 +126,24 @@ $$
 
 原生浮点/块缩放接口的完整分析见 [Triton 块缩放矩阵乘](block-scaled-matmul-execution.md)，沿输入字节、K 组 scale、descriptor 和 `tl.dot_scaled` 对照 FP32 参考含义，并区分原生硬件入口与实验性软件模拟。
 
-Weight-only 路径的性能上限与批量强相关：[Marlin](marlin-batched-w4a16-gemm.md) 在 A10 上把接近理论上限的加速保持到 batch 约 16–32，之后随进入计算受限区间逐步下降，它用离线重排、异步拷贝与条带划分把权重读取的重叠做到接近峰值。整数矩阵乘路径的困难包括反量化发生的位置：[QServe](../methods/qserve.md) 论证按组 W4A4 在主循环内反量化部分和会被 CUDA 核心限制，因而改用渐进式分组量化，让主矩阵计算落在 INT8 张量核心上。
+Weight-only 的解码可以与乘法融合，例如 [Marlin](marlin-batched-w4a16-gemm.md) 通过离线重排、异步拷贝与条带划分组织读取。整数矩阵乘也可能在主循环中承担分组恢复：[QServe](../methods/qserve.md) 论证按组 W4A4 在主循环内反量化部分和会被 CUDA 核心限制，因而改用渐进式分组量化，让主矩阵计算落在 INT8 张量核心上。
 
 [Q-VLM](../methods/q-vlm.md) 固定代码提供一种组合路径：NF4 权重压缩、激活量化后恢复浮点、多 token 时反量化权重再做浮点线性运算。QLoRA v1 §3 同样明确低比特存储与通常 BF16 计算分开。因而看到激活量化节点和 W4A4 标签，也不能直接归为原生整数 GEMM；[非均匀码本与尺度元数据](../fundamentals/quantization/uniform-quantization-and-groups.md) 决定解码需要哪些信息。
 
-## 4. 为什么 token 数改变瓶颈
+### 3.1 多位整数怎样用二值点积执行
 
-矩阵乘约需 $2Tdr$ 次浮点运算等价计数。仅看读取一次权重的理想流量：FP16 为 $2dr$ 字节，$b$-bit 权重为 $bdr/8$ 字节。于是仅由权重流量估算的算术强度是
+整数不必以同名硬件指令执行。令a、b为沿归约维K的等长整数向量，位宽分别为q、p。将多位数拆成0/1位平面后，二值矩阵乘法可计算每个位对沿K的AND-popcount，再合并位权。unsigned的第r位权为 $2^r$；signed二补码最高位为负，以B表示通用位宽，定义 $\lambda_B(r)=2^r$（非最高位）、$\lambda_B(B-1)=-2^{B-1}$。因此
 
-$$
-I_{\mathrm{weight,FP16}}\approx T,
-\qquad I_{\mathrm{weight},b}\approx16T/b
-\quad\text{（FLOP/Byte）}.
-$$
+$$\langle a,b\rangle=\sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
+\operatorname{popcount}(a^{(r)}\land b^{(s)}).$$
 
-这只是解释趋势的理想模型，忽略了激活、输出、元数据、重复读取和其他层。$T$ 很小时，减少权重读取尤其有价值；$T$ 增大，权重被多个 token 复用，计算负荷相对提高。因此 GPTQ 原始单 token kernel 与 SmoothQuant context/batched 测量的目标不同。[GPTQ A.2.2；SmoothQuant 附录 A]。
+这里 $a^{(r)}$ 是沿K打包的第r个位平面。AND-popcount返回未加权位对内积，不直接得到多位乘积；XOR-popcount的Hamming距离又是另一操作。2-bit的−1与4-bit的−3按signed位权相乘为3，全取正位权却为39。符号位不能因量化器对称就省略。（本段为分配律教学推导；FlexQ v2（`https://arxiv.org/abs/2508.04405v2`），式1–5及所选实现temp_mul。）
 
-真实时间还包含解包、量化统计、缩放、缓存、设备通信和其他算子。用相同比例缩小权重，不意味着同倍数降低总显存或延迟。长上下文的 KV cache 也可能改变主要内存占用；是否压缩 cache 必须查实际路径。
+如果沿K有group尺度，完整输出仍需前述分组恢复：每组位对内积乘以该组的两侧尺度，再与位权合并。尺度或位权缺失都无法恢复原整数量化乘积。不同求和次序在实数域可以交换；固定实现先用FP16相乘尺度、按组FP32累积每个位对，再做FP32位权归约并存FP16，不能由代数等价推出逐bit结果一致。
 
-上面的理想模型只预测瓶颈方向，能否维持由内核实现决定。Marlin 的测量给出一个具体刻度：A10 的算力带宽比约为 200 时，batch 小于约 50 仍受权重读取限制，但既有单 token 内核在 batch 增大后收益迅速消失，只有针对批处理重新设计的调度才能在该区间维持接近理论上限的加速（[Marlin](marlin-batched-w4a16-gemm.md) §3.1 与内核基准图）。因此“低比特权重加大 batch”不会自动得到低比特级别的加速。
+W6A6/W6A8有36/48个逻辑位对，不等于启动36/48个kernel，也不等于原生INT6 MMA。位维度怎样填入8×8×128的二值指令、小batch padding、整字载荷、组尺度与warp归约共同决定成本。以6-bit载荷和每128元素一个FP16尺度为理想预算，仅为6.125 bit/元素；实际对齐、尺度复制、在线packing、FP16输出与workspace还需计费。设计与所选固定代码见[FlexQ](../methods/flexq.md)、[位平面执行](flexq-bitplanes-and-group-restoration.md)。
 
-再往下还差一层：内核要求的数据布局与配置匹配条件（反量化位技巧、元数据对齐、模板命中）属于实现契约，见 [权重量化反量化内核的契约](weight-only-dequant-kernels.md)。
-
-[Disaggregated Quantization](../methods/disaggregated-quantization.md) 把阶段瓶颈用于格式选择：prefill采用原生NVFP4计算，decode保留紧凑weight-only表示；进一步可训练独立权重。必须区分存储格式、临时计算格式与完整转换链；其附录部分LUT计时仅估计激活量化调用开销，不代表权重重转换已包含。
-
-## 5. 应怎样记录性能证据
-
-性能比较至少绑定模型/权重版本、输入输出长度、batch、prefill/decode、位宽与粒度、GPU 型号和数量、后端、并行方式、延迟聚合与显存口径。只知道两个“加速倍数”，无法判断哪个方案在用户的场景更好。
-
-格式名与实际内核的对应关系由部署框架决定：同一算法可能同时存在原生内核与批处理内核两套实现，框架列出的格式也不代表都走了高效路径，见 [部署框架与后端支持](quantized-llm-deployment-backends.md)。
-
-GPTQ 的历史结果和单向量限制见 [GPTQ §7–8](../methods/gptq.md)；SmoothQuant 的后端、减卡实验和 decode 协议缺口见 [SmoothQuant §7](../methods/smoothquant.md)。本页没有为它们补造统一基准。
-
-视觉语言模型还包含视觉编码器、连接器和图文 prefill，整体时间分解见 [视觉语言模型的阶段成本](../fundamentals/model/vision-language-model-tokens-and-quantization.md)。[MBQ](../methods/mbq.md) 分别报告 RTX 4090 上视觉编码、prefill 与 decode；[VLMQ](../methods/vlmq.md) 的 RTX 5090 结果则是线性层微基准。两者不能合并为一个“多模态端到端加速比”，也不能由格式兼容直接推出所有 GPTQ 后端都支持相同位宽与分组。（MBQ v2 表 8–9；VLMQ v2 表 11。）
-
-## 6. 从整数累加到下一层网格
+## 4. 从整数累加到下一层网格
 
 本节依据 Jacob 等整数推理论文 arXiv v1（J，2017）§2、图 1.1、附录 A–C，展开一种静态仿射整数执行方案。它补足前面的整数矩阵乘法，不表示所有 W8A8 后端都采用相同输出类型。
 
@@ -174,7 +169,7 @@ $$
 
 若权重按输出通道量化，bias 的单位和 $M$ 也逐输出通道变化；若激活步长随 token 动态变化，bias 单位可能随之变化，不能直接复用一个固定 $q_b$。J 的静态 per-tensor 方案不自动解决这种动态实现问题。
 
-## 7. 固定点乘法、宽度与舍入
+## 5. 固定点乘法、宽度与舍入
 
 J §2.2 对其经验上 $0<M<1$ 的情形，写成 $M=2^{-n}M_0$，$M_0\in[0.5,1)$，用整数近似 $2^{31}M_0$ 实现固定点乘法，再右移 $n$ 位。普通量化步长可以不是 2 的幂；integer-only 不要求所有步长都是 power-of-two。乘法系数需要离线准备，运行时可使用整数运算。
 
@@ -194,7 +189,7 @@ J 附录 B 的特定 ARM NEON 优化让权重不取 -128，从而可将两个 in
 
 J §2.3 将零点修正组织为行/列和，对 $N\times N$ 矩阵辅助工作为 $O(N^2)$、乘法为 $O(N^3)$。这与白皮书“Symmetric vs. asymmetric quantization”小节所说非对称权重可能增加运行时成本并不矛盾：形状、权重复用、动态统计与融合方式决定占比，不能推广成向量乘或所有后端都免费。
 
-## 8. 残差、拼接与模拟边界
+## 6. 残差、拼接与模拟边界
 
 若 $u=\Delta_1(q_1-z_1)$、$v=\Delta_2(q_2-z_2)$，输出网格为 $(\Delta_o,z_o)$，理想加法为
 
@@ -210,89 +205,31 @@ J 附录 C.4 在残差相加前后区分量化节点，C.8 在 BN 融合后的�
 
 进一步验证要区分代数、舍入一致性和模型质量，见 [量化误差诊断与验证](quantization-error-diagnosis.md)。
 
-## 9. 计算模拟、缓存存储和后端收益分别验证
+## 7. 为改善量化增加的计算也要计费
 
-[OmniQuant](../methods/omniquant.md) 提供一个具体边界案例：默认线性层和注意力输入被映射到低比特网格后以浮点数参与计算；官方 `real_quant` 另行打包纯权重，而论文表 3 的实际速度来自 MLC-LLM。不能将默认模拟路径、打包路径与论文的后端测试视为同一次验证。（OmniQuant v3 §4.5；各代码位置见方法页。）
+在线变换、低秩补偿和稀疏残差分别改变输入分布、补回权重误差或拆分激活。它们可能降低量化误差，但同时改变计算图。需要先写出新增的乘法、恢复与中间张量，再判断哪些可以离线完成或融合。
 
-KV 还需核对缓存写入位置。官方 commit `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` 的 `models/int_llama_layer.py:QuantLlamaAttention.forward` 先把 K/V 写入 `past_key_value`，再对参与矩阵乘的 K/V 做 fake quant；因此缓存仍是浮点张量。要获得低比特缓存占用，必须另有整数码与 scale/zero-point 的存储、读取和计算路径；仅对读取值做量化模拟不会缩小已存缓存。
-
-论文表 3 在 A100-80G、MLC-LLM、生成 512 tokens 的 7B 测试中，W4A16g128 为 134.2 token/s，W3A16g128 为 83.4，FP16 为 69.2。该实例说明低位宽存储更小也可能运行更慢，结论依赖打包、访存和 kernel 支持；不代表当前所有后端的性能顺序。论文没有相应的 W4A4/W6A6 实际加速结果。
-
-## 10. 在线变换的代价与融合
+### 7.1 在线变换的代价与融合
 
 [FlatQuant](../methods/flatquant.md) v4 §3.3、附录 B.3 展示一种可复用的优化：将两次小矩阵变换与范围计算、量化融合，减少中间张量显存读写和 kernel 启动，再交给 INT4 矩阵乘。变换算术仍在；片上容量不足时需要切片或额外读写，并非所有形状都能完全融合。
 
-其附录 C.8 在 RTX 3090、LLaMA-2-7B、2048-token prefill 后 decode 256 tokens 的测试中，batch 小于 16 时 decode 加速比低于 1，而 batch 64 才达到约 1.76×。压缩 KV 的访存收益需抵扣量化与变换开销；不能用大 batch 吞吐替代单请求延迟，也不能把 kernel 融合自身的加速比写成全模型加速比。论文计时与后续真实权重部署的差别在方法页分别记录。
-
-## 11. 旋转路线怎样区分存储、算子和系统结果
-
-[QuaRot](../methods/quarot.md) v2 §4 的 W4A4KV4 将线性权重/输入交给 INT4 GEMM、INT32 累加后返回 FP16；四位 K/V 是压缩缓存，attention 读取后仍做浮点计算。真实缓存初始化还能一边存入四位 cache，一边把当前浮点 K/V 用于 prefill。因此“cache 为四位”“QK 点积为四位”和“整个模型是整数图”是三个独立主张，应逐项核对实现。
-
-在线变换必须计入所在执行阶段。QuaRot 表 15 的单次追加/attention（RTX 3090，32 个宽度 128 的头、已有 2047 token），batch 1 的 INT4 cache 加 FP32 Hadamard 比 FP16 慢，batch 32 则更快；表 16 的约 3.33 倍是 LLaMA-2-70B 形状、2048 token、batch 32 的单 Transformer block prefill，不能当作整模型解码延迟。
+变换是否划算取决于它节省的后续工作：小 batch 的缓存流量收益可能抵不过变换和量化开销。FlatQuant 方法页保留各 batch 的完整协议与结果，公共判断应分别计算变换成本、矩阵乘成本和缓存收益。
 
 [SpinQuant](../methods/spinquant.md) 的 R1/R2 可离线融合，但 R3/R4 仍在线。其 v4 表 6 测量的是 M1 Pro CPU 上 W4A8，表 14 则是 H100 上 FP8 权重/激活的 Hadamard 附加成本，二者都不能直接配上 W4A4KV4 精度结果声称同一配置达到该速度。
 
-## 12. 低秩辅助分支不是免费或统一位宽
+### 7.2 低秩辅助分支不是免费或统一位宽
 
 一个 $d\times o$ 主体矩阵加秩 $r$ 分支，需要额外保存 $r(d+o)$ 个因子元素，并对适用 token 执行两次小矩阵乘。若主体为 $b$ bit、因子为 $p$ bit，额外权重字节相对主体约为 $r(d+o)p/(dob)$；方阵、$r/d=2\%$、$b=4,p=16$ 时约 16%。这是教学存储估算，不含尺度、缓存、对齐及其他模块，不能当作整个模型显存比例。
 
 [MASQuant](../methods/masquant.md) v1 式 29 的旁路使用未量化激活；[SplitQ](../methods/splitq.md) v1 式 17、20 则分别量化权重低秩因子和激活残差。SplitQ 在主体低于四位时仍保留至少四位的辅助路径。两者即使主体都写 W4A4，存储、激活中间量和运算图也不相同。
 
-SplitQ 表 12 的 RTX 4090、Qwen2.5-VL 7B、2048 token、W4A4、batch 1 prefill，从仅 MOCD 的 70.99 ms 到加 CWS 的 75.55 ms，再到全方法 81.78 ms，直接说明辅助分支有成本。此结果不包含 W3A2 内核或 decode。MASQuant 对文字 decode 不需补偿的结构动机，也仍要由真实条件跳过、融合和计时确认；零 mask 的矩阵乘法未必被实际省掉。
+SplitQ 的 prefill 消融显示辅助分支增加延迟，具体条件与数值保留在方法页。MASQuant 对文字 decode 不需补偿的结构动机，也仍要由真实条件跳过、融合和计时确认；零 mask 的矩阵乘法未必被实际省掉。
 
 比较这些方法至少应同时给出主体与旁路位宽、实际秩、适用 token、变换成本以及 prefill/decode；不能只按论文的 W/A 标签匹配速度和质量。
 
 [QERA](../methods/qera.md) v2 附录 A.7–A.8 进一步区分了离线分解与推理：exact 比 approx 多计算完整二阶矩与矩阵平方根，但在相同秩、dtype 和执行方式下，都可保存为 $x\widetilde W+(xA)B$。这只说明 exact 没有引入额外种类的在线分支，不说明两者相对无补偿模型没有成本。教学例：$4096\times4096$ 主体、秩 32、FP16 因子，会新增 262,144 个因子元素，即 0.5 MiB，摊到主体参数上增加 0.25 bit/weight；若主体含尺度为 4.25 bit/weight，二者合计 4.50，仍未包含其他模块与运行缓冲。把 $AB$ 合并回主体后再次量化，又会改变残差，不能继续沿用合并前的精度保证。
 
-## 13. 校准成本与混合格式部署
-
-[LoftQ](../methods/loftq.md) v4 §3.3 冻结量化基座、只更新低秩适配器，可以省去基座参数的梯度与优化器状态；这不免除反量化、激活保存或向前面可训练模块传播梯度。其附录 B、表 9 的 21 秒／43 秒分别是 Xeon E5-2650 v4 @ 2.20GHz CPU 对单个 $4096\times4096$／$5120\times5120$ 矩阵做 5 轮 NF4 初始化的时间，不能当作整模型初始化或推理延迟。附录 A 的压缩比例则把主体与适配器一起除以原预训练大小，属于存储保留比例，不能替代训练峰值显存。
-
-[QIG](../methods/qig.md) v1 表 6 报告的是 A800 上收集激活、归因及缩放搜索的总时间，不能当作推理速度。其固定快照的 W/A 路径使用浮点缓冲区和 `F.linear`；推理不用重新计算 IG，不意味着当前代码已经实现了实际 W4A8 加速。
-
-[LUQ](../methods/luq.md) v3 附录 D 提供另一种边界：主实验选层时使用 BiLLM 1.08/GPTQ 4 参数位宽，部署测试改用 IQ1_M（约 1.75 bpw）/Q4_K_M。保留相同层配置不等于保留相同量化权重与精度，主表质量不能直接与替换格式后的速度组成一个已验证结果。
-
-其 Qwen2.5-VL-7B 表 5 在 i7-13620H 上从 4.8 到 9.0 tokens/s，在 Threadripper PRO 7965WX 上从 14.1 到 18.7；表列内存从 4.4GB 到 3.4GB。这是作者的 10 次生成吞吐与内存报告，缺少完整输入形状、线程/后端版本及视觉端计时条件，不概括为整段图文请求的时延。
-
-[混合精度预算](../theory/mixed-precision-allocation.md) 还需把编码参数、scale、分组/索引、未量化模块和运行缓冲分别计入。BiLLM v2 §3.3、表 6 已明确区分参数位宽与标记/尺度存储，故“1.08 bit 参数”尤其不能直接代替完整模型占用。
-
-
-## 14. 规则化残差、融合边界与整图延迟
-
-[PRQuant](../methods/prquant.md) 把敏感通道移到尾部，将这些列的低比特权重残差与重复激活拼接，目标是让两路乘积进入同一个规则 GEMM。浮点拼接恒等式成立，但块尺度会使“分别量化再拼接”与“拼接后量化”不同；扩宽的输入、权重、上游生产者与中间张量都有代价。原文没有实际延迟/吞吐表，不能从连续布局直接推出端到端加速。
-
-[FoldQuantVLA](../methods/foldquantvla.md) 同时给出论文与固定代码的对应：目标投影使用 INT4 输入、INT32 累加，按 token/输出通道尺度恢复；FWHT 分支融合变换与激活量化，dense rotation 分支则有排列、块旋转和量化等多个调用。“一个插件”不等于“一个 kernel”，代码路径核对也不是本机编译运行。其速度应对比相同 checkpoint 的编译浮点引擎，不能把编译收益全部算到量化名下。
-
-[RAMP](../methods/ramp.md) 的 CPU 图切分消融进一步表明，插入精度边界除 Q/DQ 本身，还可能破坏 Conv/BN/激活融合；某些模型延迟上升时，Q/DQ 数目甚至不增加。这种成本属于完整图的执行关系，不能仅靠减少位宽或降低局部量化误差预测。
-
-[TTS 的真实 INT4/INT8 对照](tts-quantization-evaluation.md) 提供了算子覆盖的具体例子：满足约束的 $1\times1$ Conv 可转成 MatMul，使 Supertonic flow estimator 的更多权重进入 `MatMulNBits`。权重覆盖率仍不等于执行时间覆盖率，保留浮点 vocoder 也意味着系统不是全 INT4。同一研究中存在质量通过却更慢的 INT8，也存在更快却未通过预设质量带的 INT4，必须联合报告实际图、质量约束和时间/内存/能耗口径。
-
-## 15. 归约维分组为什么要在累加途中恢复尺度
-
-§1说明外维尺度可放在整数求和之后；分组沿归约维切开时，尺度一般留在组和内部。令 $A\in\mathbb R^{T\times d}$、$W\in\mathbb R^{d\times o}$，组 $g$ 的整数部分和为 $C^{(g)}_{tj}=\sum_{k\in g}q^A_{tk}q^W_{kj}$，恢复结果为
-
-$$\widehat Y_{tj}=\sum_g s^A_{t,g}s^W_{g,j}C^{(g)}_{tj}.$$
-
-因此可以先在每组用INT32累加，但需在合并组之前应用该组的两侧尺度。将所有组的INT32部分和直接相加，通常丢失分组权重信息；§1的两组反例也适用。只有各组尺度乘积相同等额外条件下，才可用一个共同后置尺度。采用高精度尾部时，再加尾部自己的恢复部分和，不能将两路混成同一个INT4网格。
-
-[Atom](../methods/atom.md) v3 §4.2/图8把每组恢复及浮点相加放进MMA流水，省去部分和写回全局内存再发另一kernel的成本。融合不会消除参数读取、类型转换、尺度乘法与跨组相加，也不自动保证计算与访存完全重叠。组变小改善局部范围，但元数据及恢复次数会增加；真实收益仍需按相同shape和测量协议判断。
-
-具体精度也需追到代码：Atom所选DenseLayerGEMM_i4.cu先以FP16相乘两侧尺度，再转float恢复INT32部分和、跨组FP32累加并输出FP16。它与论文的FP16恢复/相加描述及“先在FP32计算尺度乘积”均有区别。原生路径、元数据复制和质量模拟条件见 [Atom实现](atom-mixed-gemm-and-paged-kv.md#3.%20native%20GEMM%E7%9A%84%E8%A1%A8%E7%A4%BA%E3%80%81%E5%B0%BA%E5%BA%A6%E5%92%8C%E7%B4%AF%E5%8A%A0)。数学恒等式不消除有限精度舍入，也不证明实现已达到某个速度。
-
-## 16. 多位整数怎样用二值点积执行
-
-整数不必以同名硬件指令执行。令a、b为沿归约维K的等长整数向量，位宽分别为q、p。将多位数拆成0/1位平面后，二值矩阵乘法可计算每个位对沿K的AND-popcount，再合并位权。unsigned的第r位权为 $2^r$；signed二补码最高位为负，以B表示通用位宽，定义 $\lambda_B(r)=2^r$（非最高位）、$\lambda_B(B-1)=-2^{B-1}$。因此
-
-$$\langle a,b\rangle=\sum_{r=0}^{q-1}\sum_{s=0}^{p-1}\lambda_q(r)\lambda_p(s)
-\operatorname{popcount}(a^{(r)}\land b^{(s)}).$$
-
-这里 $a^{(r)}$ 是沿K打包的第r个位平面。AND-popcount返回未加权位对内积，不直接得到多位乘积；XOR-popcount的Hamming距离又是另一操作。2-bit的−1与4-bit的−3按signed位权相乘为3，全取正位权却为39。符号位不能因量化器对称就省略。（本段为分配律教学推导；FlexQ v2（`https://arxiv.org/abs/2508.04405v2`），式1–5及所选实现temp_mul。）
-
-如果沿K有group尺度，完整输出仍需第15节的组恢复：每组位对内积乘以该组的两侧尺度，再与位权合并。尺度或位权缺失都无法恢复原整数量化乘积。不同求和次序在实数域可以交换；固定实现先用FP16相乘尺度、按组FP32累积每个位对，再做FP32位权归约并存FP16，不能由代数等价推出逐bit结果一致。
-
-W6A6/W6A8有36/48个逻辑位对，不等于启动36/48个kernel，也不等于原生INT6 MMA。位维度怎样填入8×8×128的二值指令、小batch padding、整字载荷、组尺度与warp归约共同决定成本。以6-bit载荷和每128元素一个FP16尺度为理想预算，仅为6.125 bit/元素；实际对齐、尺度复制、在线packing、FP16输出与workspace还需计费。设计与所选固定代码见[FlexQ](../methods/flexq.md)、[位平面执行](flexq-bitplanes-and-group-restoration.md)。
-
-## 17. 稀疏主干与量化残差怎样共用权重
+### 7.3 稀疏主干与量化残差怎样共用权重
 
 令 $X\in\mathbb R^{T\times K}$，掩码主干为 $X_{sp}=M(X)\odot X$，其量化解码值为 $\widetilde X_{sp}$。残差应定义为 $R=X-\widetilde X_{sp}$，这样它同时包含掩码外值和保留值的量化误差。把R量化为 $\widetilde R$，有 $E_R=R-\widetilde R=X-(\widetilde X_{sp}+\widetilde R)$；只用 $X-X_{sp}$ 会漏掉主干量化误差。（SharQ v1（`https://arxiv.org/abs/2606.26587v1`），式7–13；以下为同一行token约定的教学展开。）
 
@@ -310,6 +247,68 @@ $$XW-\widehat Y=X(W-W_{dn})+E_RW_{dn}
 最后一项解释了为什么某实现要复制32组尺度到两个16组，不能另拟合dense16组却沿用共同W证明。两次GEMM、输出BF16舍入与epilogue读取还会加入有限精度误差；实数恒等式不定义它们每一步的逐bit结果。
 
 稀疏主干减少该分支乘法，却仍需稠密残差GEMM、metadata、两组尺度、在线准备及全局归约。累加epilogue可省掉独立残差输出与额外加法，仍可能读写稀疏BF16中间输出；一个“融合”接口也可能调用多个kernel。具体表示、预算与所选调用见[SharQ](../methods/sharq.md)、[稀疏残差执行](sharq-sparse-residual-and-shared-scales.md)。
+
+### 7.4 拼接与精度边界怎样影响整图
+
+[PRQuant](../methods/prquant.md) 把敏感通道移到尾部，将这些列的低比特权重残差与重复激活拼接，目标是让两路乘积进入同一个规则 GEMM。浮点拼接恒等式成立，但块尺度会使“分别量化再拼接”与“拼接后量化”不同；扩宽的输入、权重、上游生产者与中间张量都有代价。原文没有实际延迟/吞吐表，不能从连续布局直接推出端到端加速。
+
+[FoldQuantVLA](../methods/foldquantvla.md) 同时给出论文与固定代码的对应：目标投影使用 INT4 输入、INT32 累加，按 token/输出通道尺度恢复；FWHT 分支融合变换与激活量化，dense rotation 分支则有排列、块旋转和量化等多个调用。“一个插件”不等于“一个 kernel”，代码路径核对也不是本机编译运行。其速度应对比相同 checkpoint 的编译浮点引擎，不能把编译收益全部算到量化名下。
+
+[RAMP](../methods/ramp.md) 的 CPU 图切分消融进一步表明，插入精度边界除 Q/DQ 本身，还可能破坏 Conv/BN/激活融合；某些模型延迟上升时，Q/DQ 数目甚至不增加。这种成本属于完整图的执行关系，不能仅靠减少位宽或降低局部量化误差预测。
+
+[TTS 的真实 INT4/INT8 对照](tts-quantization-evaluation.md) 提供了算子覆盖的具体例子：满足约束的 $1\times1$ Conv 可转成 MatMul，使 Supertonic flow estimator 的更多权重进入 `MatMulNBits`。权重覆盖率仍不等于执行时间覆盖率，保留浮点 vocoder 也意味着系统不是全 INT4。同一研究中存在质量通过却更慢的 INT8，也存在更快却未通过预设质量带的 INT4，必须联合报告实际图、质量约束和时间/内存/能耗口径。
+
+## 8. 为什么 token 数改变瓶颈
+
+矩阵乘约需 $2Tdr$ 次浮点运算等价计数。仅看读取一次权重的理想流量：FP16 为 $2dr$ 字节，$b$-bit 权重为 $bdr/8$ 字节。于是仅由权重流量估算的算术强度是
+
+$$
+I_{\mathrm{weight,FP16}}\approx T,
+\qquad I_{\mathrm{weight},b}\approx16T/b
+\quad\text{（FLOP/Byte）}.
+$$
+
+这只是解释趋势的理想模型，忽略了激活、输出、元数据、重复读取和其他层。$T$ 很小时，减少权重读取尤其有价值；$T$ 增大，权重被多个 token 复用，计算负荷相对提高。因此 GPTQ 原始单 token kernel 与 SmoothQuant context/batched 测量的目标不同。[GPTQ A.2.2；SmoothQuant 附录 A]。
+
+真实时间还包含解包、量化统计、缩放、缓存、设备通信和其他算子。用相同比例缩小权重，不意味着同倍数降低总显存或延迟。长上下文的 KV cache 也可能改变主要内存占用；是否压缩 cache 必须查实际路径。
+
+上面的理想模型只预测瓶颈方向，能否维持由内核实现决定。Marlin 的测量给出一个具体刻度：A10 的算力带宽比约为 200 时，batch 小于约 50 仍受权重读取限制，但既有单 token 内核在 batch 增大后收益迅速消失，只有针对批处理重新设计的调度才能在该区间维持接近理论上限的加速（[Marlin](marlin-batched-w4a16-gemm.md) §3.1 与内核基准图）。因此“低比特权重加大 batch”不会自动得到低比特级别的加速。
+
+再往下还差一层：内核要求的数据布局与配置匹配条件（反量化位技巧、元数据对齐、模板命中）属于实现契约，见 [权重量化反量化内核的契约](weight-only-dequant-kernels.md)。
+
+[Disaggregated Quantization](../methods/disaggregated-quantization.md) 把阶段瓶颈用于格式选择：prefill采用原生NVFP4计算，decode保留紧凑weight-only表示；进一步可训练独立权重。必须区分存储格式、临时计算格式与完整转换链；其附录部分LUT计时仅估计激活量化调用开销，不代表权重重转换已包含。
+
+## 9. 应怎样记录性能证据
+
+性能比较至少绑定模型/权重版本、输入输出长度、batch、prefill/decode、位宽与粒度、GPU 型号和数量、后端、并行方式、延迟聚合与显存口径。只知道两个“加速倍数”，无法判断哪个方案在用户的场景更好。
+
+格式名与实际内核的对应关系由部署框架决定：同一算法可能同时存在原生内核与批处理内核两套实现，框架列出的格式也不代表都走了高效路径，见 [部署框架与后端支持](quantized-llm-deployment-backends.md)。
+
+GPTQ 的历史结果和单向量限制见 [GPTQ §7–8](../methods/gptq.md)；SmoothQuant 的后端、减卡实验和 decode 协议缺口见 [SmoothQuant §7](../methods/smoothquant.md)。本页没有为它们补造统一基准。
+
+视觉语言模型还包含视觉编码器、连接器和图文 prefill，整体时间分解见 [视觉语言模型的阶段成本](../fundamentals/model/vision-language-model-tokens-and-quantization.md)。[MBQ](../methods/mbq.md) 分别报告 RTX 4090 上视觉编码、prefill 与 decode；[VLMQ](../methods/vlmq.md) 的 RTX 5090 结果则是线性层微基准。两者不能合并为一个“多模态端到端加速比”，也不能由格式兼容直接推出所有 GPTQ 后端都支持相同位宽与分组。（MBQ v2 表 8–9；VLMQ v2 表 11。）
+
+### 模拟、实际存储和设备执行分开核对
+
+[OmniQuant](../methods/omniquant.md) 提供一个具体边界案例：默认线性层和注意力输入被映射到低比特网格后以浮点数参与计算；官方 `real_quant` 另行打包纯权重，而论文表 3 的实际速度来自 MLC-LLM。不能将默认模拟路径、打包路径与论文的后端测试视为同一次验证。（OmniQuant v3 §4.5；各代码位置见方法页。）
+
+KV 还需核对缓存写入位置。官方 commit `feffe8ea87d80f7bb57b6e25e7cff9dc950fcc14` 的 `models/int_llama_layer.py:QuantLlamaAttention.forward` 先把 K/V 写入 `past_key_value`，再对参与矩阵乘的 K/V 做 fake quant；因此缓存仍是浮点张量。要获得低比特缓存占用，必须另有整数码与 scale/zero-point 的存储、读取和计算路径；仅对读取值做量化模拟不会缩小已存缓存。
+
+[QuaRot](../methods/quarot.md) v2 §4 的 W4A4KV4 将线性权重/输入交给 INT4 GEMM、INT32 累加后返回 FP16；四位 K/V 是压缩缓存，attention 读取后仍做浮点计算。真实缓存初始化还能一边存入四位 cache，一边把当前浮点 K/V 用于 prefill。因此“cache 为四位”“QK 点积为四位”和“整个模型是整数图”是三个独立主张，应逐项核对实现。
+
+在线变换必须计入所在执行阶段。QuaRot 表 15 的单次追加/attention（RTX 3090，32 个宽度 128 的头、已有 2047 token），batch 1 的 INT4 cache 加 FP32 Hadamard 比 FP16 慢，batch 32 则更快；表 16 的约 3.33 倍是 LLaMA-2-70B 形状、2048 token、batch 32 的单 Transformer block prefill，不能当作整模型解码延迟。
+
+### 离线成本与部署配置分开记录
+
+[LoftQ](../methods/loftq.md) v4 §3.3 冻结量化基座、只更新低秩适配器，可以省去基座参数的梯度与优化器状态；这不免除反量化、激活保存或向前面可训练模块传播梯度。其附录 B、表 9 的 21 秒／43 秒分别是 Xeon E5-2650 v4 @ 2.20GHz CPU 对单个 $4096\times4096$／$5120\times5120$ 矩阵做 5 轮 NF4 初始化的时间，不能当作整模型初始化或推理延迟。附录 A 的压缩比例则把主体与适配器一起除以原预训练大小，属于存储保留比例，不能替代训练峰值显存。
+
+[QIG](../methods/qig.md) v1 表 6 报告的是 A800 上收集激活、归因及缩放搜索的总时间，不能当作推理速度。其固定快照的 W/A 路径使用浮点缓冲区和 `F.linear`；推理不用重新计算 IG，不意味着当前代码已经实现了实际 W4A8 加速。
+
+[LUQ](../methods/luq.md) v3 附录 D 提供另一种边界：主实验选层时使用 BiLLM 1.08/GPTQ 4 参数位宽，部署测试改用 IQ1_M（约 1.75 bpw）/Q4_K_M。保留相同层配置不等于保留相同量化权重与精度，主表质量不能直接与替换格式后的速度组成一个已验证结果。
+
+其 Qwen2.5-VL-7B 表 5 在 i7-13620H 上从 4.8 到 9.0 tokens/s，在 Threadripper PRO 7965WX 上从 14.1 到 18.7；表列内存从 4.4GB 到 3.4GB。这是作者的 10 次生成吞吐与内存报告，缺少完整输入形状、线程/后端版本及视觉端计时条件，不概括为整段图文请求的时延。
+
+[混合精度预算](../theory/mixed-precision-allocation.md) 还需把编码参数、scale、分组/索引、未量化模块和运行缓冲分别计入。BiLLM v2 §3.3、表 6 已明确区分参数位宽与标记/尺度存储，故“1.08 bit 参数”尤其不能直接代替完整模型占用。
 
 ## 来源身份
 

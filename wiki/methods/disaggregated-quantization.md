@@ -17,7 +17,7 @@ updated: 2026-10-06
 
 DQ 将 prefill 与 decode 的量化选择拆开：长提示处理优先利用原生低精度矩阵乘，小 batch 生成优先减少权重读取。进一步可以给两个阶段训练不同权重，并在单设备上从 SSD 逐块加载只在 prefill 使用的副本。这种流式方案称为 ODP（offloaded disaggregated prefill）。DQ 既包含无需重新训练的格式切换，也包含需要额外训练的量化感知蒸馏，两者应分别说明。
 
-依据 arXiv:2609.26333v1，以及主仓库 `4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba`、ODP fork `a0557fcf59e50a3bcd241e1a7de7b151d315720b` 的定向源码阅读。本文未运行训练、服务或性能测量。前置知识见 [阶段计算瓶颈](../implementation/quantized-matmul-scaling-execution.md#4.%20%E4%B8%BA%E4%BB%80%E4%B9%88%20token%20%E6%95%B0%E6%94%B9%E5%8F%98%E7%93%B6%E9%A2%88) 和 [服务内存与批处理](../implementation/serving-memory-and-batching.md)。
+依据 arXiv:2609.26333v1，以及主仓库 `4a99d6e02817a796bfe3f3d7a5edbf75aeb9f4ba`、ODP fork `a0557fcf59e50a3bcd241e1a7de7b151d315720b` 的定向源码阅读。本文未运行训练、服务或性能测量。前置知识见 [阶段计算瓶颈](../implementation/quantized-matmul-scaling-execution.md#8.%20%E4%B8%BA%E4%BB%80%E4%B9%88%20token%20%E6%95%B0%E6%94%B9%E5%8F%98%E7%93%B6%E9%A2%88) 和 [服务内存与批处理](../implementation/serving-memory-and-batching.md)。
 
 ## 1. 三层分离分别解决什么
 

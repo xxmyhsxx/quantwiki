@@ -107,7 +107,7 @@ GPTQ 的算法列块 $B$ 用于批量补偿，量化 group size $g$ 用于共享
 
 均匀网格不要求步长为 2 的幂。power-of-two scale 进一步限制步长，有助于用移位换算尺度，也减少了可选网格；一般步长则可以由整数固定点乘法和移位近似其比值，仍形成整数推理路径。（白皮书 §2.2.3；Jacob 等 arXiv v1 §2.2。）
 
-存储位宽、乘法输入位宽、累加位宽和输出位宽应分别记录。例如 8-bit 输入可使用 int32 累加，然后再量化到 8-bit 输出；bias 与累加具有共同实数单位，不能直接把浮点 bias 当成整数相加。推导和小例子见 [整数累加、偏置与再量化](../../implementation/quantized-matmul-scaling-execution.md#6.%20%E4%BB%8E%E6%95%B4%E6%95%B0%E7%B4%AF%E5%8A%A0%E5%88%B0%E4%B8%8B%E4%B8%80%E5%B1%82%E7%BD%91%E6%A0%BC)。误差与模型质量的检查关系见 [量化误差诊断与验证](../../implementation/quantization-error-diagnosis.md)。
+存储位宽、乘法输入位宽、累加位宽和输出位宽应分别记录。例如 8-bit 输入可使用 int32 累加，然后再量化到 8-bit 输出；bias 与累加具有共同实数单位，不能直接把浮点 bias 当成整数相加。推导和小例子见 [整数累加、偏置与再量化](../../implementation/quantized-matmul-scaling-execution.md#4.%20%E4%BB%8E%E6%95%B4%E6%95%B0%E7%B4%AF%E5%8A%A0%E5%88%B0%E4%B8%8B%E4%B8%80%E5%B1%82%E7%BD%91%E6%A0%BC)。误差与模型质量的检查关系见 [量化误差诊断与验证](../../implementation/quantization-error-diagnosis.md)。
 
 ## 8. 非均匀码本与尺度的二次量化
 

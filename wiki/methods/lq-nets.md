@@ -95,7 +95,7 @@ $$\widehat w^{\mathsf T}\widehat a
 $$\langle b^w,b^a\rangle
 =2\operatorname{popcount}(P\land A)-\operatorname{popcount}(A).$$
 
-教学反例：$b^w=(1,1),b^a=(0,0)$，真实内积0；把激活0当成$-1$直接套双符号XNOR式会得$-2$。打包尾部还须按有效位掩码计数，$N$不是补齐后的无效位数。一般固定整数位权的展开见[多位整数的二值点积](../implementation/quantized-matmul-scaling-execution.md#16.%20%E5%A4%9A%E4%BD%8D%E6%95%B4%E6%95%B0%E6%80%8E%E6%A0%B7%E7%94%A8%E4%BA%8C%E5%80%BC%E7%82%B9%E7%A7%AF%E6%89%A7%E8%A1%8C)，LQ-Nets还要保留其学习系数和标签映射。
+教学反例：$b^w=(1,1),b^a=(0,0)$，真实内积0；把激活0当成$-1$直接套双符号XNOR式会得$-2$。打包尾部还须按有效位掩码计数，$N$不是补齐后的无效位数。一般固定整数位权的展开见[多位整数的二值点积](../implementation/quantized-matmul-scaling-execution.md#3.1%20%E5%A4%9A%E4%BD%8D%E6%95%B4%E6%95%B0%E6%80%8E%E6%A0%B7%E7%94%A8%E4%BA%8C%E5%80%BC%E7%82%B9%E7%A7%AF%E6%89%A7%E8%A1%8C)，LQ-Nets还要保留其学习系数和标签映射。
 
 论文只说明位运算兼容及理论潜力；没有本文低位内核或端到端推理加速实测。位平面、基、排序/编码、布局、在线打包与浮点加权的具体成本须结合后端核查，不能将“64位可一次计数”写成模型必然加速64倍。
 
