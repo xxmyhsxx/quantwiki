@@ -9,12 +9,16 @@ tags:
 sources:
   - raw/repositories/2026-09-21/sharq
   - raw/papers/2026-09-21/sharq
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # SharQ 的稀疏残差、共享尺度与所选接口
 
-本页核固定3cc584fe48e32e59c8b4e37323470dcdd606bb11的NVFP4/Llama调用、SHARQ_SIM区别、BF16 native准备/共享权重与所选稀疏/稠密GEMM host接口，并核vLLM导出脚本及默认计时入口。匹配CUTLASS固定baea077e425056e2d1d22d2bf5ed928908878790只核必要类型/转换；未核全部vendor、模型/专家/VLM/视频分支、设备主循环同步与完整框架加载链，也未导入上游、编译或运行GPU。机制/原文结果见[SharQ](../methods/sharq.md)。
+SharQ 的原生路径把模型中的部分浮点线性层替换为两路 FP4 矩阵乘：稀疏主干利用硬件支持的稀疏计算，稠密残差补回被掩码去掉的信息和主干量化误差。两路结果相加，有偏置时再加一次偏置，作为该线性层的近似输出。它改变的是投影层的计算方式；attention、激活函数和模型残差连接仍有浮点计算。为什么采用这种分解、质量与速度怎样取舍，见[SharQ 方法页](../methods/sharq.md)。
+
+执行分为三个相接的阶段：创建量化层时，权重量化为一份 FP4 载荷及两路所需的尺度视图；每次前向根据当前激活生成稀疏掩码，准备主干、残差和各自尺度；最后两路矩阵乘共用权重并合并输出。共享权重使两路补偿对应同一个近似线性映射，准备和合并则决定额外计算与中间读写成本。后文沿这条执行过程区分原生 FP4 接口、浮点模拟和可选融合。（`QLinearLayer`、`quantize_w32_shared`；固定版本见文末。）
+
+本页依据所选 NVFP4/Llama 调用及准备、矩阵乘 host 接口的静态阅读，未编译或运行 GPU；完整框架加载和设备主循环未核验。导出与计时脚本的边界见第 6 节，来源版本与覆盖范围见文末。
 
 ## 1. 同名方法有native与模拟两类执行
 
@@ -70,6 +74,6 @@ run_exp.py再调用外部vLLM bench latency/throughput，默认batch8、input102
 
 | 来源 | 固定身份 | 本页范围 |
 | --- | --- | --- |
-| actypedef/SharQ（`https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11`） | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 所选NVFP4/Llama调用、准备/共享权重、GEMM host及导出/默认计时；不代表整仓或完整服务已核 |
-| 匹配 CUTLASS（`https://github.com/NVIDIA/cutlass/tree/baea077e425056e2d1d22d2bf5ed928908878790`） | baea077e425056e2d1d22d2bf5ed928908878790 | E2M1特殊值/必要转换；未核全部设备主循环 |
+| actypedef/SharQ（`https://github.com/actypedef/SharQ/tree/3cc584fe48e32e59c8b4e37323470dcdd606bb11`） | 3cc584fe48e32e59c8b4e37323470dcdd606bb11 | 所选NVFP4/Llama调用、准备/共享权重、GEMM host及导出/默认计时；未核其他模型、专家、VLM/视频分支、完整框架加载或设备主循环同步 |
+| 匹配 CUTLASS（`https://github.com/NVIDIA/cutlass/tree/baea077e425056e2d1d22d2bf5ed928908878790`） | baea077e425056e2d1d22d2bf5ed928908878790 | E2M1特殊值/必要转换；未核其余vendor实现或全部设备主循环 |
 | SharQ（`https://arxiv.org/abs/2606.26587v1`） | arXiv:2606.26587v1 | 图2的两路表示与融合；论文报告与当前调用分别记录 |

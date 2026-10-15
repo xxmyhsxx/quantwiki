@@ -128,11 +128,9 @@ $$
 
 设普通主体在保护位置解码为d、目标保护值为w。若保存绝对值w，恢复应覆盖该位置；若计算时主体与稀疏分支相加，应保存残差r=w−d。保护mask、非零值和残差不是同一对象；没有零点约束时，量化输入0也不表示主体解码为0。
 
-例如采用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,7)$、$d=s(q-z)$，s=0.5、z=1.25的3bit网格将0编码为1，再恢复为d=−0.125。目标w=3时，直接相加得到2.875；残差3.125才恢复3。固定SpQR的旧浮点加载覆盖保存的绝对保护值，所选优化接口直接传这些值去相加，没有减去d；该静态条件与论文原先的调整稀疏分支说明需要分别记录。（固定SpQR（`https://github.com/Vahe1994/SpQR/tree/543d10e56f921e5eeb10d5f0aaaccd30b6662d0e`），spqr_engine.py、modelutils.py、convert_legacy_model_format.py及spqr_cuda.cpp。）
+例如采用 $q=\operatorname{clip}(\operatorname{round}(w/s+z),0,7)$、$d=s(q-z)$，s=0.5、z=1.25的3bit网格将0编码为1，再恢复为d=−0.125。目标w=3时，直接相加得到2.875；残差3.125才恢复3。这是说明覆盖与相加差别的教学例子；固定 SpQR 的保存、转换和消费是否遵守同一协议，见[实现页的保护值分析](../implementation/spqr-metadata-outliers-and-cuda-format.md#3.%20%E4%BF%9D%E6%8A%A4%E5%80%BC%E5%9C%A8%E6%97%A7%E6%81%A2%E5%A4%8D%E4%B8%AD%E8%A6%86%E7%9B%96%EF%BC%8C%E5%9C%A8%E4%BC%98%E5%8C%96%E6%8E%A5%E5%8F%A3%E4%B8%AD%E7%9B%B8%E5%8A%A0)。
 
-预算同样需要跟随物理字段。此实现把16个3bit权重与两个3bit一级码、8bit二级片段、2bit空位放入每行一个64bit字；二级字节在两相邻行重复，16×16 tile实际128字节、4 bpw，论文理想逻辑格式为116字节、3.625 bpw。两个预算都包括主体及元数据，但对齐/重复不同，不能混用。
-
-主体仍占所有位置，CSR保护还加每项16bit值/16bit列、每行累计指针及可选置换；PTCSR按每16行的最大长度补齐，填充也占空间。因此真实保护比例、已存条目密度和runtime峰值分别核算。沿[所选SpQR实现](../implementation/spqr-metadata-outliers-and-cuda-format.md)核转换/恢复/消费，能同时检查质量语义与成本；这段教学核算未运行作者代码或GPU。
+预算也取决于保存协议：若主体仍覆盖全部位置，保护分支的值、索引和行指针要额外计费；物理布局中的重复元数据、对齐和稀疏填充也占空间。因此理想位宽不等于实际字节数，真实保护比例不等于含填充的条目密度，运行峰值还需另算临时数据。SpQR 的位字段、128/116 字节差异及 CSR/PTCSR 核算集中在[实现页的格式预算](../implementation/spqr-metadata-outliers-and-cuda-format.md#4.%20%E9%80%BB%E8%BE%913.625%E4%BD%8D%E5%A6%82%E4%BD%95%E6%88%90%E4%B8%BA%E5%AE%9E%E9%99%854%E4%BD%8D%E7%A8%A0%E5%AF%86%E8%BD%BD%E8%8D%B7)。
 
 ## 6. 从编码走向计算
 
