@@ -1607,3 +1607,10 @@
 - 新增[推测解码](fundamentals/model/speculative-decoding-proposals-verification-and-cost.md)：候选/目标概率→验证→接受前缀与纠正/bonus，区分输出与有效KV；以A+1推进量和期望尾和解释每轮成本，公式为带终止条件的整理者展开。lookahead与旧单query虚拟序列限定在讲义设计，不接成568afb3a普通V1源码；新版完整采样/提交协议及性能未核。
 - [CUTLASS组成](implementation/cutlass-gemm-composition-and-dispatch.md)补SM90 EVT节点、(m,1) bias沿N广播、builder与subtile回调；[布局](fundamentals/operators/tensor-layout-and-kernel-contracts.md)补(4,(2,2))/(2,(1,8))的逻辑分解与存储映射。保留2024-06-07/CUTLASS3.5与伪码范围，不据简化指令/consumer片段改写现有正确解释。量化基础已有充分覆盖，不复制历史性能表或把2/3bit模拟记作原生kernel。
 - INDEX与vLLM/一致性/W8A8按理解需要连接；READING/SELF/计划同步212条有依据、17条队列（12论文/2文档/3代码），本轮基线88已处理71条，第21批五项范围完成，下一项第22批。独立Astra review通过，结构/来源检查通过（205知识页、734项来源），受影响链接检查通过（9文件、1484条本地链接），git diff --check通过。未执行上游、未新增测试；提交11文件，Obsidian改动保留。
+
+## 2026-10-15 · CudaForge v2研读：反馈分流与候选预算
+
+- 完整研读固定arXiv:2511.01884v2的LaTeX六节和必要附录prompt/指标表/案例及任务子集；材料准备视觉核Figure1–9与Table1–8，33页PDF仅作定位与关键原页回查，不将文本提取计作逐页视觉阅读。源包保存证明复用原登记，未改raw或取外链实现。
+- [性能分析](implementation/gpu-kernel-performance-analysis.md)补任务Model→ModelNew、外部验证后分流修复/性能反馈、最新提示状态与跨轮最佳正确候选；解释离线代表任务正确样本的相关指标筛选与在线3–4项/一项改动。Algorithm2单kernel/runtime求相关与正文十样本粒度不一致，按正文说明意图，不补造完整实现；既有NCU/瓶颈/计时解释直接复用。
+- [测量页](implementation/kernel-correctness-and-benchmarking.md)补任务覆盖、候选选择和搜索预算；作者全250/子集25、默认10/扩展30轮与Correct范围分开，只用自身成本0.30美元/26.5分钟并保留RTX6000名称冲突。Perf/失败聚合、H200图文与外部成本单位等未闭合内容不拼成排行榜或成本倍数，原件条件继续保留。
+- INDEX/READING/SELF/计划同步213条有依据、16条队列（11论文/2文档/3代码），本轮基线88已处理72条；接续KernelBench/TritonBench。独立Astra review通过，结构/来源检查通过（205知识页、736项来源），受影响链接检查通过（5文件、1460条本地链接），git diff --check通过。未执行作者框架、生成或GPU实验，不新增测试；提交7文件，Obsidian改动保留。

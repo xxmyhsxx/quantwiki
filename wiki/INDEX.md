@@ -297,7 +297,7 @@ sources: []
 | [推理服务的内存管理与批处理](implementation/serving-memory-and-batching.md) | 量化把每个权重、每个缓存元素压小，但能同时服务多少请求，取决于服务系统怎么用这些省下来的空间。 |
 | [Marlin：批处理 W4A16 GEMM 内核](implementation/marlin-batched-w4a16-gemm.md) | 权重量化的加速通常以「生成阶段受权重读取带宽限制」为前提。 |
 | [量化矩阵乘法的缩放与执行路径](implementation/quantized-matmul-scaling-execution.md) | 同样写着低比特量化，实际可能是浮点模拟、压缩权重配合即时反量化，或整数输入参与矩阵乘法。 |
-| [GPU 算子性能分析：从时间线到瓶颈假设](implementation/gpu-kernel-performance-analysis.md) | 怎样选择 profiling 工具、解释计数器，并用 RMSNorm/量化 GEMM 对照检验瓶颈。 |
+| [GPU 算子性能分析：从时间线到瓶颈假设](implementation/gpu-kernel-performance-analysis.md) | 怎样选择profiling工具、解释计数器、用对照检验瓶颈，以及将观测接入候选生成与修复循环。 |
 | [W8A8 算子：激活量化、整数 GEMM 与输出校正](implementation/w8a8-quantization-gemm-kernels.md) | 两框架的舍入、零行尺度、CUTLASS 主流水和零点校正怎样影响数值与成本。 |
 | [权重量化反量化内核的契约：AWQ 与 marlin 两种实现](implementation/weight-only-dequant-kernels.md) | AWQ/TinyChat 与现代 Marlin 的打包、元数据和设备消费；区分对称 GPTQ 固定偏置与非对称 AWQ 整数零点，以及尺度、MMA、归约和输出顺序。 |
 | [VLM 压缩评测框架：从任务精度到可信度](implementation/lvlm-compression-benchmark.md) | 多模态模型压缩的评测常停在几个 VQA 分数上。 |

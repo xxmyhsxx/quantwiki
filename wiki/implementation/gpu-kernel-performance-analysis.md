@@ -7,12 +7,13 @@ tags:
   - performance
   - evaluation
 sources:
+  - raw/papers/2026-09-21/cudaforge
   - raw/articles/2026-09-22/nsight-compute
   - raw/articles/2026-09-22/nsight-systems
   - raw/articles/2026-09-22/pytorch-performance-tools
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
-updated: 2026-09-22
+updated: 2026-10-15
 ---
 
 # GPU 算子性能分析：从时间线到瓶颈假设
@@ -68,6 +69,21 @@ Nsight Systems 展示执行关系；Nsight Compute 定向收集 kernel 内部计
 | barrier 等待多且同一 CTA 的工作不均 | 到达同步点的时间不一致 | 查屏障前不同 warp 的工作；改善分工。不能为了减少 stall 删除正确性所需的屏障 |
 
 long-scoreboard 常与 L1TEX 路径的未完成依赖有关，不能仅凭名称锁定 HBM；short-scoreboard 也不是 bank conflict 的同义词。采样位置通常落在等待结果的**消费者**上，根因可能是更早的生产者。`not_selected` 表示 warp 已准备好但调度器选择了别的 warp，不应把它当成必须归零的故障。
+
+### 代码生成循环分开修复、性能反馈与最佳候选
+
+硬件分析也可以为代码生成器提供反馈。CudaForge v2将任务定义为PyTorch `Model`及输入输出要求，Coder输出 `ModelNew`：允许替换部分算子、融合或改变算法。候选由外部流程编译并运行预定义用例，再将结果交给Judge；测试职责与生成职责分开。（§2.1–2.2、附录A。）
+
+| 当前候选的结果 | 交给Judge的信息 | 下一轮要处理什么 |
+| --- | --- | --- |
+| 编译失败或输出不满足参考/容限 | 候选代码、错误日志或输出差异 | 给出主要问题和修复建议 |
+| 通过预定义检查 | 当前候选、GPU资源规格及NCU观测 | 形成主要瓶颈假设和一项性能改动 |
+
+下一轮提示只保留任务、上一候选和最新反馈；Judge同样只接收当前轮相关信息，返回结构化反馈，不保留完整对话历史。流程另行保存跨轮最快的正确候选，最多N轮后返回它。**最新候选用于继续修改，最佳正确候选用于最终交付**：中间一次失败或变慢不应覆盖已获得的最好结果。Coder/Judge是职责划分，论文默认两者都用o3。（§2.1–2.2、§3.1。）
+
+反馈集合的选择与每轮决策也分开。按§2.3正文协议，作者先对每个代表任务进行100次生成/自修正，从正确候选中选快慢两端各5个；在每任务的十个候选上去除冗余指标、按与runtime的Pearson绝对相关取Top20，再跨任务保留常出现、同相关方向且跨任务的平均绝对相关分数高于候选第75百分位的指标，得到其24项集合。在线Judge再关注其中3–4项，提出一项主要改动。相关性帮助形成假设，不直接证明因果；这24项是作者数据和设备上的经验选择。Algorithm2却把相关性写在单个kernel/单个runtime内，样本粒度与正文不一致，本页按正文解释意图，未补成可复现筛选实现。
+
+候选仍须按[正确性与测量协议](kernel-correctness-and-benchmarking.md)核对实际执行、输入覆盖与容限，并区分profiling和正常计时。Judge的解释是改动依据，不替代外部结果；生成任务的覆盖、预算和获得实现的成本见[生成系统的报告口径](kernel-correctness-and-benchmarking.md#%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E5%90%8C%E6%97%B6%E6%8A%A5%E5%91%8A%E4%BB%BB%E5%8A%A1%E8%A6%86%E7%9B%96%E4%B8%8E%E6%90%9C%E7%B4%A2%E9%A2%84%E7%AE%97)。
 
 ## 4. Roofline 与实际流量要用同一口径
 
@@ -228,3 +244,4 @@ ncu --nvtx --nvtx-include 'perf_target/' --set basic \
 | PyTorch Profiler（`https://docs.pytorch.org/docs/2.14/profiler.html`）、CUDA Event（`https://docs.pytorch.org/docs/2.14/generated/torch.cuda.Event.html`）、RMSNorm（`https://docs.pytorch.org/docs/2.14/generated/torch.nn.functional.rms_norm.html`） | URL 版本 2.14，snapshot-2026-09-22；API 语义，不代表本机安装或运行该版本 |
 | vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | RMSNorm 加载/归约/写回设计，仅源码证据 |
 | SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | fused-add RMSNorm 与动态 W8A8 wrapper/设备接口；不代表已测性能 |
+| CudaForge: An Agent Framework with Hardware Feedback for CUDA Kernel Optimization（`https://arxiv.org/abs/2511.01884v2`） | `arXiv:2511.01884v2`；§2与附录A/B的任务、双角色、短状态和指标筛选，图3及算法1/2；正文与伪码粒度差异见相应段。未核作者框架实现或运行。 |

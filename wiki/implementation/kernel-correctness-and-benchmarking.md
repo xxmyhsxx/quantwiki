@@ -7,6 +7,7 @@ tags:
   - performance
   - numerics
 sources:
+  - raw/papers/2026-09-21/cudaforge
   - raw/articles/2026-09-24/cuda-softmax-worklog
   - raw/articles/2026-09-21/flashinfer-bench-gpu-time
   - raw/repositories/2026-09-21/vllm
@@ -128,6 +129,14 @@ FlashInfer 0.6.14 文档快照中的 `bench_gpu_time` 接收待测函数 fn 及 
 
 若单 kernel 快 2 倍，但只占原调用链耗时的 20%，其余部分不变且没有额外成本，则整体加速最多为 $1/(0.8+0.2/2)\approx1.11$ 倍。这是教学推导，不是本项目实测。瓶颈方向的理论判断见 [roofline](../fundamentals/hardware/arithmetic-intensity-and-roofline.md)，实际性能仍需测量。
 
+### 生成系统同时报告任务覆盖与搜索预算
+
+评价代码生成系统，先固定任务集合、参考和检查规则，再报告多少任务通过、多少任务通过且快于参考，以及相应加速分布。每任务最多生成/迭代多少候选、从哪些候选中取最佳，也属于结果条件；仅给少数成功候选的速度会隐藏生成失败与搜索成本。硬件反馈驱动的候选更新见[生成与反馈循环](gpu-kernel-performance-analysis.md#%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E5%BE%AA%E7%8E%AF%E5%88%86%E5%BC%80%E4%BF%AE%E5%A4%8D%E3%80%81%E6%80%A7%E8%83%BD%E5%8F%8D%E9%A6%88%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%80%99%E9%80%89)。
+
+CudaForge v2采用KernelBench L1/L2/L3共100/100/50个任务，默认o3/o3、最多10轮，从所有候选中取最快且通过作者预定义检查的版本。Table1报告全250任务的Correct为97.6%，分层25任务子集则为100%；扩至30轮的结果也在该子集上。子集表现与更大候选预算不能直接替代默认全量结果。Correct在此按作者预定义用例与数值容限解释。（§2.2、§3.1–3.2、附录A/D。）
+
+获得实现的成本另行计量。论文§3.5在25任务子集、单RTX6000上报告平均每任务API支出0.30美元、端到端墙钟26.5分钟，墙钟包含生成、编译、执行和NCU。它们不是生成kernel以后的一次调用延迟；离线指标筛选的准备成本也未单列为已摊入。原文设备名称在Quadro与Ada描述间不一致，本页保留“RTX6000”名称，不补定硬件代际。
+
 ### Softmax worklog 的读数与比较范围
 
 Learning CUDA by optimizing softmax 报告1024×32768、FP32：PyTorch 为7.226 ms，shuffle 版为5.174400 ms。按所列时间计算 `7.226/5.1744`，速度比约 **1.396倍**，耗时下降 `1−5.1744/7.226`，约 **28.392%**；作者结论另写1.41倍/29.17%，需保留读数与叙述的差异。这是对作者数字的算术核对，没有 GPU 复测。（“How fast is PyTorch?”“Kernel4—Shuffle instructions”“Conclusion”。）
@@ -243,3 +252,4 @@ SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段�
 | Nsight Compute Profiling Guide（`https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html`） | snapshot-2026-09-22 | profiler 开销与独立计时边界。 |
 | CUTLASS Profiler（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/profiler.html`） | 存量 snapshot-2026-07-02 | 实例库的测试/基准入口与编译范围；未运行。 |
 | PyTorch Profiler（`https://docs.pytorch.org/docs/2.14/profiler.html`） 与 Nsight Systems（`https://docs.nvidia.com/nsight-systems/UserGuide/`） | snapshot-2026-09-22；PyTorch URL 版本 2.14 | 算子关联与 CUDA 时间线的工具分工。 |
+| CudaForge: An Agent Framework with Hardware Feedback for CUDA Kernel Optimization（`https://arxiv.org/abs/2511.01884v2`） | `arXiv:2511.01884v2` | §3.1–3.2/3.5、Table1/3及附录A/D，250/25任务与候选预算/成本；方法容限1e-4与prompt/实验identical措辞不一，按数值检查范围解释。未核作者实现、完整生成产物或运行。 |
