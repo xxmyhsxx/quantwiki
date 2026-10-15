@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Triton Group GEMM ingest：问题表、输入接口与调优key
+
+- 完整核读snapshot-2026-07-02保存561行/代码、48行README，普通与TMA分支均完整保存，无本地附件。定向补核固定Triton81a46fa0的descriptor load/store、make_tensor_descriptor、multiple_of及Autotuner.run；网页身份与源码语义分别登记，未重新执行归档或设备检查。
+- [配置页](implementation/kernel-configuration-and-autotuning.md)复用已有全局tile前缀解释，补host问题表到设备静态定位、两分支NUM_SM及group_size key看不到表内shape/stride/payload dtype的例子；保留JIT特化不等于重新调优。预制四同形组对逐组torch调用的计时协议就近说明，不复制历史性能表。
+- [布局页](fundamentals/operators/tensor-layout-and-kernel-contracts.md)对照普通FP16硬类型/内维stride1/无mask与TMA B[N,K]/统一dtype/descriptor边界和16B前提，解释B.T.contiguous物理成本；来源实际仅FP16检查，未用FP8分支推定通过。原有CUDA包装段分出具体小标题，保持阅读主线。
+- INDEX/READING/SELF/计划同步：204条有依据、25条队列（12论文/9文档/4代码），本轮基线88已处理63条；下一项Triton Persistent Matmul。独立Astra原件/正文及记录review通过，无必修项；两处新增互链改用精确标题锚点后，结构/来源strict检查203知识页、726项登记，0错误/待核，5个受影响Wiki页1412条本地链接strict及diff检查通过；204/58/25记录与12/9/4分类数相符。未新增测试或执行上游/编译/GPU，提交本项7文件，Obsidian改动保留。
+
 ## 2026-10-15 · Triton Matmul ingest：分组任务映射与缓存复用
 
 - 完整核读snapshot-2026-07-02保存443行正文/代码、README与唯一2026-09-21补采图，并定向对照已归档81a46fa0源码kernel/wrapper；网页、源码和图像补采身份分别保留。

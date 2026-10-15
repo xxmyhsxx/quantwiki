@@ -6,6 +6,7 @@ tags:
   - data-layout
   - gpu
 sources:
+  - raw/articles/2026-09-21/triton-group-gemm
   - raw/articles/2026-09-21/cutlass-tile-iterators
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
@@ -152,6 +153,21 @@ Writing Tile Kernels快照§2.4.1–2.4.5沿上一节分工给出两套入口：
 
 Triton 的矩阵乘设备函数使用 A/B/C 的各维 stride，但同时对其作正值假设，包装层还要求 A 连续。不能据“签名里有 stride”就宣布支持零步长广播、负步长或任意视图。
 
+### Group GEMM的指针与TMA接口
+
+Group GEMM将多组矩阵地址与leading dimension交给设备，两个包装的数学输出都为`[M,N]`，输入表示却不同：
+
+| 分支 | 输入存储与类型 | 输出与边界 |
+| --- | --- | --- |
+| 普通`group_gemm_fn` | A `[M,K]`、B `[K,N]`，内维stride隐含为1；A/B/C地址均强制解释成FP16指针 | FP32累加后写FP16；load/store无mask，要求实际试跑及所选tile的访问完整有效 |
+| `group_gemm_tma_fn` | A `[M,K]`、B `[N,K]`，K连续，核内`dot(a,b.T)`；由第一组A统一选择所有矩阵的FP16或FP8指针 | FP32累加后转到所选dtype；descriptor load越界补零，store忽略越界写 |
+
+包装按A.dtype分配C，不会把地址背后的元素转换成核内指针类型，也未逐组证明全部输入条件。TMA示例明确用`B.T.contiguous()`形成新的连续存储，这次物理重排有成本；该路径没有输入恢复尺度，FP8分支也不能与块缩放GEMM互换。（Group GEMM普通/TMA kernel、包装与调用。）
+
+固定版本`make_tensor_descriptor`仍要求16B基址对齐、leading stride的字节数为16的倍数、最内维连续，descriptor访问偏移也须符合16B要求。本例连续C的ldc=N，因此N乘元素字节数仍要满足步长条件；descriptor的尾部处理不意味着任意尺寸都适用。普通分支的`tl.multiple_of`是编译器提示，不改变数据或补充运行检查。来源正确性代码检查四组FP16方阵，不能由保留的FP8代码分支推定其已通过验证。（`core.py:tensor_descriptor_base.load/store/make_tensor_descriptor/multiple_of`；任务与key见[配置页](../../implementation/kernel-configuration-and-autotuning.md#Triton%E7%9A%84%E9%97%AE%E9%A2%98%E8%A1%A8%E4%B8%8E%E8%AE%BE%E5%A4%87%E4%BB%BB%E5%8A%A1%E5%AE%9A%E4%BD%8D)。）
+
+### CUDA模板的设备选择、执行流与注册
+
 Hugging Face `kernel_cuda/kernel.cu` 初始化模板进一步展示了一个完整调用的两层职责：主机包装检查输入是 CUDA、连续、FP32，并检查输入输出的 shape、dtype、device 一致；设置 device guard，取当前 CUDA stream，再启动执行 `input+1` 的设备函数。`torch-ext/torch_binding.cpp` 则注册算子及设备实现，并将 out 声明为会被修改的参数。
 
 但这个模板没有检查输出是否连续，元素数还存入 int，也没有专门处理 n=0。因此它适合说明设备选择、stream 和注册的关系，不能照抄后宣称支持任意输出视图、超大张量或空输入。这些是本页源码核对发现的支持边界，未运行故障测试。
@@ -179,6 +195,7 @@ flowchart LR
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Group GEMM — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/08-grouped-gemm.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00` | 完整561行保存正文/代码与README；普通/TMA的指针类型、B布局、输出及实际FP16检查范围；descriptor边界/对齐另核下列固定Triton API，未执行或补采下载附件。 |
 | Tile Iterator Concepts（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/tile_iterator_concept.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`；通用层次图于2026-09-21补采 | 完整471行/README与同hash通用图；使用legacy 2.x的tile/Fragment、推进与偏移单位、显式读写及实现定义的Mask。仅为类型要求，具体iterator实现、CuTe布局代数、packing/指令映射与编译运行未核。 |
 | Layouts and Tensors（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/layout.html`） | `snapshot-2026-07-02`，取得于`2026-07-02T02:41:08+08:00`；通用层次图补采于2026-09-21 | 完整保存280行、README与配图；使用C++ Layout/TensorRef/View及capacity约定，地址/字节例为教学展开。CuTe布局代数、int4底层打包、附录仅列名称的layout实现与编译运行不在本次范围。 |
 | CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02` | MatAdd二维映射/guard及保存全文；每16-lane段地址步长为整理者按C行优先推导，未运行，省略host示例不作完整程序。 |

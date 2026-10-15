@@ -7,6 +7,7 @@ tags:
   - performance
   - matmul
 sources:
+  - raw/articles/2026-09-21/triton-group-gemm
   - raw/articles/2026-09-21/cutlass-grouped-schedulers
   - raw/articles/2026-09-21/cutlass-efficient-gemm
   - raw/repositories/2026-09-22/kernel-skills
@@ -146,6 +147,14 @@ $$i(i+1)/2\le t<(i+1)(i+2)/2$$
 
 这一通用任务映射可作为[DeepGEMM专家执行](deepgemm-moe-expert-execution.md)的前置概念；该页固定SM90路径按专家行区间或有效M构造任务，专家通常共享N/K，具体元数据与visitor接口分别以其源码为准。
 
+#### Triton的问题表与设备任务定位
+
+Group GEMM教程由host为每个问题分配C，并建立设备上的A/B/C地址表、`[M,N,K]`尺寸表与`[lda,ldb,ldc]`步长表。program顺序读取问题尺寸、累加输出tile前缀，将当前全局tile定位到问题及局部行列；完成全部K后，以`tile_idx += NUM_SM`继续。它复用上述固定步长任务空间，host准备的是问题描述，设备执行静态定位，没有按完成时间抢任务的原子队列。（`group_gemm_fn/grouped_matmul_kernel`。）
+
+普通分支将NUM_SM作为候选launch块数；TMA分支实际传入设备SM数，候选仅改变tile、warp和stage。TMA的descriptor由program在设备上为当前问题建立，并供其多个输出tile复用。两分支的B布局、dtype与尾部约定不同，见[Group GEMM接口对照](../fundamentals/operators/tensor-layout-and-kernel-contracts.md#Group%20GEMM%E7%9A%84%E6%8C%87%E9%92%88%E4%B8%8ETMA%E6%8E%A5%E5%8F%A3)。
+
+该教程计时前已准备四组输入输出、设备元数据和TMA所需的连续转置B；标为cuBLAS的分支则逐组调用四次`torch.matmul`。每个性能点的四组问题尺寸相同，因此曲线比较的是这一调用协议，不能据此判断异构负载均衡或完整包装收益。保存表仅有普通Triton/cuBLAS列，TMA代码另按实际范围核读；计时范围与分位数见[性能测量](kernel-correctness-and-benchmarking.md)。
+
 ### Hopper的两个consumer怎样分担输出
 
 同一快照“Hopper Warp Specialization”另述 Hopper 的 producer/consumer warp-group（承担搬运/计算的 warp 协作组）：producer 先等待 shared buffer empty，用 TMA（Tensor Memory Accelerator）从 global 搬入数据；完成后通知 full，consumer 等待、发起 MMA，消费完成再 release，供下一轮复用。[CUTLASS Pipeline的生产与消费协议](gpu-async-copy-pipelines.md#CUTLASS%20Pipeline%20%E5%88%86%E5%88%AB%E6%8E%A8%E8%BF%9B%E7%94%9F%E4%BA%A7%E4%B8%8E%E6%B6%88%E8%B4%B9)进一步区分等待数据可读与等待缓冲可复用；具体完成条件随Pipeline类定义，普通 `cp.async` 的等待距离仍按其自身接口理解。
@@ -189,6 +198,8 @@ Python `replace_hints`创建具有独立JIT cache的新kernel对象，提供的�
 
 若连续和转置输入、不同 group size 会改变最佳配置，应在接口中传入并将相应区别加入 key 或明确分派。相同 key 下复用某配置只说明免去了调优，不说明该配置适合所有布局。换设备或更改实现后，也应重新确认已有调优结果是否仍适用。
 
+Group GEMM给出一个具体的“元数据隐藏workload”例子：两分支只设`key=['group_size']`，显式张量参数是地址表、尺寸表与步长表。tuner追加的dtype属于这些表，表内M/N/K、stride和地址所指矩阵的dtype并未自动加入key。相同组数下换问题分布，或TMA从FP16改为FP8，可能产生新的JIT特化却复用原配置；这些差异若影响选型，应作为调优参数或显式分派条件。保存脚本的正确性调用和性能扫描都用group_size=4，也不能据横轴shape变化推定每个点重新搜索。（Group GEMM两处`autotune`及`Autotuner.run`。）
+
 `Autotuner._bench` 运行候选并取得耗时，没有计算框架参考结果或比较输出。部分资源/编译失败会得到无限耗时，但没有报错且数值错误的候选仍可能被选中。因此应先用 [边界用例与数值容限](kernel-correctness-and-benchmarking.md) 筛出正确候选，再调优，最终复查胜出配置；不能用“被 autotune 选中”证明正确。
 
 多次试跑还会重复修改数据。对 `out += partial`，若不重置，测试的第二次调用已不是相同初始状态；清零也只适用于目标输出本来应从零开始的情形。`reset_to_zero`、`restore_value` 或自定义 hook 用于维护这种语义，但自定义 hook 会覆盖默认 hook 的相应行为，必须检查实际执行路径。纯覆盖式 `out = f(input)` 与带状态更新的算子应分别处理。
@@ -211,6 +222,7 @@ CUTLASS 的类型组装、运行参数和构建期 `StageCountAuto`，见 [GEMM�
 
 | 来源 | 固定版本或快照 | 使用范围 |
 | --- | --- | --- |
+| Group GEMM — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/08-grouped-gemm.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00` | 完整561行正文/代码及README，无本地附件；使用问题表/设备静态定位、两分支NUM_SM、调优key及预制元数据的计时协议。历史表无TMA列；key语义另核下列固定Triton runtime，未运行。 |
 | Grouped Kernel Schedulers（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/grouped_scheduler.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，7图补采于2026-09-21 | 完整保存311行/7图、README；global tile定位、两模式、Rank2K及K负载。公式/图示按本文展开，原文命名与216/256差异保留；未取外链visitor/sort实现或运行。 |
 | Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |
 | Using Shared Memory in CUDA C/C++（`https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/`） | `snapshot-2026-07-02` | 静态/动态区、launch字节与多数组分区及历史设备条件；完整保存正文已读，对齐推广为整理者说明，未编译/测资源。 |
