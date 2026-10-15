@@ -13,7 +13,8 @@ sources:
   - raw/articles/2026-09-21/cuda-programming-model
   - raw/articles/2026-09-21/cuda-tile-kernels
   - raw/articles/2026-09-21/nvidia-cuda-programming-model
-updated: 2026-10-14
+  - raw/articles/2026-09-21/cutlass-layouts-tensors
+updated: 2026-10-15
 ---
 
 # 张量布局与算子接口：从逻辑下标到内存地址
@@ -55,6 +56,24 @@ $$o(i,j)=i s_0+j s_1.$$
 转置视图改变坐标解释，未必搬动数据。若 kernel 把转置视图一律按 `i*列数+j` 读取，$X^T[1,0]$ 会错误地读到偏移 2，正确偏移是 1。反之，显式重排为连续存储会产生搬运成本，这个成本是否放进计时必须说明。
 
 广播也可以用地址解释：按行加向量 $b_j$ 时，地址不依赖行号，相当于被广播维的 stride 为零。多个逻辑输入位置可以读同一地址；但若把这种映射用作输出，多个线程就会写同一位置。支持广播读取不能推出支持重叠输出。
+
+### CUTLASS 的布局、张量引用与容量
+
+CUTLASS C++ 的 `Layout` 把逻辑坐标映射成元素偏移，并保存所需的动态 stride。例如 `RowMajor` 与 `ColumnMajor` 都接收二维 `(row,column)`，逻辑 rank 为2；连续轴的步长1隐含在类型中，所以 stride 向量的 rank 只有1。算法仍用相同逻辑坐标，具体 layout 决定其物理位置。（Layouts and Tensors，“CUTLASS Layout Concept”及附录。）
+
+访问数据时，映射、数据指针和范围逐层组合：
+
+| 对象 | 保存什么 | 在访问中承担什么职责 |
+| --- | --- | --- |
+| `Layout` | 布局类型及动态 stride | 将逻辑坐标变成元素偏移 |
+| `TensorRef<T,Layout>` | 指针与 layout | 按映射读取或写入已有数据 |
+| `TensorView<T,Layout>` | 在 TensorRef 上增加 extent | 描述有限的逻辑范围，可用 `contains(coord)` 判断坐标是否合法 |
+
+构造 ref/view 只是建立访问描述，数据由调用方提供。view 保存 extent 后，来源示例仍先显式调用 `contains` 再访问；范围元数据本身不等于每次 load/store 都会自动检查或 mask。运算接口也可以只传一份 problem size，再用 TensorRef 表示各操作数，因为它们的 extent 已由运算前提确定。（“Accessing elements within a tensor”。）
+
+逻辑元素数 **size** 与布局所需的元素容量 **capacity** 分别用于描述内容和预算存储。来源的 RowMajor 约定是 `capacity=rows*pitch`，pitch 包含行尾 padding。整理者沿用前面的二维地址公式：shape 为 `(2,3)`、pitch 为5时，size为6，`(1,2)` 的偏移为7，而该接口的 capacity为10；FP32数据对应40字节。只从首元素到最后有效元素算出的8个位置，是最小触及跨度，和该API的容量约定不同。
+
+`Layout::packed(extent)` 返回描述紧密排列的 layout 对象，后续可据此分配、访问相应缓冲。它没有重排已有数据：把pitch为5的原缓冲换成pitch为3的描述，不会自动移除padding。需要把数据变成紧密排列时，还须实际搬运，这与上文“转置视图”和“物理重排”的区别相连。
 
 ## 3. shape、线程数量与逻辑块大小是三个量
 
@@ -143,6 +162,7 @@ flowchart LR
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Layouts and Tensors（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/layout.html`） | `snapshot-2026-07-02`，取得于`2026-07-02T02:41:08+08:00`；通用层次图补采于2026-09-21 | 完整保存280行、README与配图；使用C++ Layout/TensorRef/View及capacity约定，地址/字节例为教学展开。CuTe布局代数、int4底层打包、附录仅列名称的layout实现与编译运行不在本次范围。 |
 | CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02` | MatAdd二维映射/guard及保存全文；每16-lane段地址步长为整理者按C行优先推导，未运行，省略host示例不作完整程序。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02`，图19补采于2026-09-21 | §2.4.1–2.4.6及图19；保存正文全读，启动/特化、坐标与不同边界规则；模块名差异保留，完整API/编译/运行未核。 |
 | CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文与2026-09-21补采图分开登记 | §1.2.2.3与图8–9；block/tile分工与array/tile语义，完整保存正文已读；未核API reference、编译布局或执行。 |

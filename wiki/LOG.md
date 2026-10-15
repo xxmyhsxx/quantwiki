@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · CUTLASS Layouts ingest：映射对象与存储容量
+
+- 完整核读snapshot-2026-07-02保存280行、README及2026-09-21补采通用层次图，复用本批正文/图2项哈希一致的核对；现有stride/转置视图解释充分，保留原阅读路径。
+- 在[张量布局](fundamentals/operators/tensor-layout-and-kernel-contracts.md)第2节补C++ Layout→TensorRef→TensorView的映射、指针与extent分工，以及二维rank/单一动态stride、显式contains、size/capacity与packed元数据职责。shape(2,3)/pitch5的容量和地址为教学展开，不新增算式测试；CuTe、int4底层与未展开类实现的范围集中在来源说明。
+- INDEX/READING/SELF/计划同步：194条有依据、35条队列（12论文/18文档/5代码），本轮基线88已处理53条；下一项Grouped Kernel Schedulers。独立Astra原件/正文及记录review通过，无必修项；结构/来源strict检查201知识页、713项登记，0错误/待核，4个受影响Wiki页1353条本地链接strict及diff检查通过，194/35记录数相符。本项六文件提交，既有Obsidian改动保留，没有重复计算测试或运行上游。
+
 ## 2026-10-15 · CuTe DSL目录研读：无独立机制增量
 
 - 完整核读CuTe DSL的snapshot-2026-07-02保存正文18行与README；目录实际只有这两个文件，正文为标题及16个子页链接，哈希与登记一致。
