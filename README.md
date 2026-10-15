@@ -30,6 +30,8 @@
 
 项目职责、覆盖情况与下一步由 [SELF](SELF.md) 说明；Agent 协作约定见 [AGENTS](AGENTS.md)，具体任务方法见 [Skills](.agents/skills/)。
 
+正文的分批审核范围与进度见 [审核清单](REVIEW.md)。
+
 ## 对外能力包
 
 [use-quant-wiki](.agents/skills/use-quant-wiki/SKILL.md) 为应用项目提供知识查询、问题研究和算子编写能力。应用直接读取原 Wiki，在自己的目录保存代码、环境和运行记录，并回传使用反馈。
