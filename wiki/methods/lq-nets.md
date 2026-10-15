@@ -44,7 +44,7 @@ $$q=v^{\mathsf T}e.$$
 
 $$t_1=-\infty,\qquad t_l=(c_{l-1}+c_l)/2\ (2\le l\le L),\qquad t_{L+1}=+\infty.$$
 
-按$x\in(t_l,t_{l+1}]$选择$c_l$及其二进制标签，等价于对该标量选平方误差最近码。二进制标签顺序不等于实数码值顺序，排序后须保留对应关系。中点推导的共同依据见[标量量化器](../theory/codebook-quantization-and-bit-budget.md#10.%20%E4%BB%8E%E5%A4%B1%E7%9C%9F%E7%9B%AE%E6%A0%87%E6%8E%A8%E5%AF%BC%E6%A0%87%E9%87%8F%E9%87%8F%E5%8C%96%E5%99%A8)；重复值、同距选择及实现端点规则仍未核代码。
+按$x\in(t_l,t_{l+1}]$选择$c_l$及其二进制标签，等价于对该标量选平方误差最近码。二进制标签顺序不等于实数码值顺序，排序后须保留对应关系。中点推导的共同依据见[标量量化器](../theory/codebook-quantization-and-bit-budget.md#2.1%20%E4%BB%8E%E5%A4%B1%E7%9C%9F%E7%9B%AE%E6%A0%87%E6%8E%A8%E5%AF%BC%E6%A0%87%E9%87%8F%E9%87%8F%E5%8C%96%E5%99%A8)；重复值、同距选择及实现端点规则仍未核代码。
 
 ## 2. 前向QEM与外层任务反传分工
 
