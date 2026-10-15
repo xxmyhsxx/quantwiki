@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · fast.cu ingest：H100固定路径与GB300 TMEM
+
+- 核读固定commit `2dfe5e26aecfd9e5f27bf9d5837deea01acda24b`：H100驱动/M11与11→12全部差异，必要早期rung差异及experimental选段；GB300输入准备/runner/shell/r0完整、r9所选helper/几何/完整K组/尾入口与收尾/输出/调度。34文件保存完整性复用有效归档证明，未升级为全部分支语义核验；快照晚于H100文章。
+- [Hopper页](implementation/hopper-gemm-tma-wgmma-pipeline.md)补full=1/empty=4的跨CTA归还、固定几何/Hilbert与M12 padded stmatrix，保留源码实际缺失的输出proxy、写前复用协调及末轮等待、wrapper缓存键和失败仍计时条件。[GB300页](implementation/blackwell-nvfp4-tmem-execution.md)贯通标准尺度、AB/SF两环、SM103a/K96、三槽最后reader和TMEM 0/220共享36列/先drain边缘的复用；不据局部wait证明完整drain同步，标准512B格式只链接已有解释。
+- r9路由4096容量/实际异常降级、输出行对齐、小gate实际K尾而非M/N尾、用户shape参考与首个cuBLASLt heuristic、current/triton/sustained计时协议就近说明；未复制十rung速度表，sum仅核覆盖及已有归约不宜沿用的条件，未新建范例。
+- INDEX/READING/SELF/计划同步：201条有依据、28条队列（12论文/12文档/4代码），本轮基线88已处理60条；第19批选定来源范围完成，下一项Triton Introduction。独立Astra原件/正文与管理记录review通过，无必修项；结构/来源strict检查203知识页、722项登记，0错误/待核，6个受影响Wiki页1387条本地链接strict及diff检查通过；201/58/28记录与12/12/4分类数相符。本批不运行上游/编译/GPU或新增测试，提交本项8文件，Obsidian改动保留。
+
 ## 2026-10-15 · H100 GEMM worklog ingest：TMA、WGMMA 与缓冲复用
 
 - 完整核读599行保存正文、85行README与38个实际附件，正文哈希与登记一致；40处图引用缺swizzle/Hilbert小图，Conclusion性能plot未保存，补采图不声称历史字节同版。关联fast.cu只核README身份，晚于文章，不作为发表时实现证据。

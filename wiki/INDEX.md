@@ -286,7 +286,8 @@ sources: []
 | [RMSNorm 的 CUDA 与 Triton 实现](implementation/rmsnorm-cuda-triton-kernels.md) | 从整行统计理解线程协作、分段读取、残差写回与舍入位置。 |
 | [Kernel 配置选择与自动调优：资源、工作划分和测量](implementation/kernel-configuration-and-autotuning.md) | 从资源与工作划分选择配置，区分拆K归约、grouped任务定位/负载及Hopper consumer分工。 |
 | [GPU 异步拷贝与多级流水：等待完成和缓冲复用](implementation/gpu-async-copy-pipelines.md) | 区分cp.async批次等待与CUTLASS Pipeline双方状态推进，连接数据可读与缓冲复用。 |
-| [Hopper BF16 GEMM：TMA、WGMMA 与缓冲复用](implementation/hopper-gemm-tma-wgmma-pipeline.md) | 从 full/empty 输入队列贯通 WGMMA 完成、consumer 资源分工、persistent 局部性和 TMA 输出暂存复用。 |
+| [Hopper BF16 GEMM：TMA、WGMMA 与缓冲复用](implementation/hopper-gemm-tma-wgmma-pipeline.md) | 从 full/empty 队列贯通 WGMMA、资源/局部性和输出复用；对照固定11/12的实际同步条件与驱动。 |
+| [GB300 NVFP4 GEMM：输入双环、TMEM 累加与输出复用](implementation/blackwell-nvfp4-tmem-execution.md) | 标准FP4/尺度怎样经双环进入TMEM，部分重叠的累加区怎样释放，以及调度与计时覆盖范围。 |
 | [算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 选择验证用例并界定 GPU 计时；用Softmax读数区分速度比、耗时降幅与调用范围。 |
 | [GGUF 与块量化存储格式](implementation/gguf-block-quantization-formats.md) | 论文里的量化方案要落到文件，还需要回答一组工程问题：权重怎么分块、每块保存哪些元数据、文件如何描述张量与模型、量化工具怎样按张量选择格式、以及校准统计在哪里参与。 |
 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | 量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。 |

@@ -9,6 +9,7 @@ tags:
 sources:
   - raw/articles/2026-09-24/h100-gemm-worklog
   - raw/articles/2026-09-21/cuda-async-copies
+  - raw/repositories/2026-09-24/fast-cu
 updated: 2026-10-15
 ---
 
@@ -91,9 +92,32 @@ worklog 的输出图展示 bulk wait → 写 sC → consumer 屏障 → 单线�
 
 最终报告为 764 TFLOP/s，相对文中约 716 TFLOP/s 的 cuBLAS 基线快约 7%。这是所选单 GEMM 的作者结果，完整 cuBLAS 选项、计时实现、时钟/功耗、cache 协议、原始样本和数值容限没有在材料中展开。文章的线程内 `clock()` Load/TC/Store 周期统计用于定位阶段，不能直接相加为整 kernel 的墙钟延迟；通用测量口径见[正确性与性能测量](kernel-correctness-and-benchmarking.md)。
 
+## 7. fast.cu 固定源码如何接续这条流水
+
+本节核对晚于文章的 fast.cu 固定 commit。`h100/matmul.cu` 依次枚举 kernel 0–12，当前驱动固定 M=N=K=8192；它没有按形状自动择优。Makefile 的 H100 目标编译到 `sm_90a`。以下主线选 `matmul_11.cuh` 与 12 相对 11 的完整差异。（`run_kernel`、`runKernel11/12`。）
+
+11/12 都固定每 CTA 输出128×256、BK=64、3个输入 slot、384线程，启动128个 CTA，组成64个2-CTA cluster。前128线程承担 producer 角色，其中一个线程发 TMA；后两组各计算64×256输出，每线程持有128个FP32累加值。每个BK块发四条 `m64n256k16`，新输出的首条以 `ScaleD=0` 开始，后续指令累加。A/B descriptor 对应128B swizzle；源码的3D tensor map将连续K按64元素分段，属于这份实现的布局选择。
+
+输入协议比文章示意更具体：每份 full 初始化 arrival=1，由本 CTA 的 producer 登记 A+B 预期字节；empty 初始化为 `2个consumer×2个CTA=4`。各 CTA 加载自己的 A，rank_m=0 multicast B。每个 consumer 在 WGMMA commit/wait 后，分别向 cluster 两个 CTA 的 empty 通知一次，双方的 producer 才能复用对应 slot。slot 绕过3份缓冲时翻转 parity，状态跨输出 tile 保留。（`init_barrier/expect_bytes/arrive_cluster` 与 `matmulKernel11`。）
+
+任务来自 host 预建的 Hilbert 表：设备 `Schedule<2>::next` 依次解码输出坐标，每个 cluster 有128个表槽；producer 与 consumer 使用相同次序。这是静态任务排列。wrapper 仅在 M 变化时重建 tensor maps，N/K 只由 assert 比较，数据指针不在缓存键中；Makefile 的 `NDEBUG` 又关闭这些 assert。当前固定指针/方阵驱动是其调用条件，换指针或形状时需要重新建立相应参数。（`createHilbert/runKernel11/12`。）
+
+### 12 改变结果怎样落到 shared
+
+11 将 FP32 片段转换为 BF16 写 sC，两个 consumer 的256线程汇合，由 thread128 发起一次 CTA 输出。12 给每组的每列64行片段补8个 BF16 元素，用 `stmatrix.x4.trans` 协作写 shared，再由各组128线程独立汇合、各自发 TMA 输出。每 CTA 的 A/B 三阶段占147456B，输出区从11的65536B增至12的73728B，还须加 barrier、调度表及对齐。这是输出布局与协作范围的变化，主算和输入协议沿用11。
+
+这里有实际源码缺口需要与第5节的必要顺序对照：`store_async` 中未见 proxy fence；所有 writer 执行各自的 bulk wait 后直接写 sC，未见发起者等待完成再向其他 writer 建立的写前协调；输出循环尾部也没有最终 bulk wait。写完 sC 后的 consumer 屏障不能补上此前的覆盖依赖。因此本节说明其数据流和配置，不把该固定输出路径作为同步完整的复用模板。（11的492–530行、12的503–523行及 `store_async`。）
+
+### 驱动计时与正确性结果分别解释
+
+H100 基线实际调用 `cublasGemmEx`，FP32 compute、BF16输出、alpha=1/beta=0；目录中的 cuBLASLt 开发片段没有接入该目标。kernel>1 的输出与基线按绝对阈值0.1比较，差异表达式先做BF16减法再转float；失败只打印，仍继续计时并可返回0。kernel1使用另一套行主序地址且被跳过比较。
+
+每个 kernel 先做一次校验调用，再对同一组地址重复8次，以 CUDA event 整段平均；顺序固定为0→12，每项前 sleep 5秒，输入生成、H2D与首次 Hilbert/tensor-map准备在计时外。该口径与文章4096主例分别保留，程序退出0或打印吞吐均不代表同步缺口已经验证消除。新快照的 [GB300 NVFP4 路径](blackwell-nvfp4-tmem-execution.md)使用另一套输入格式、计算状态与计时驱动。
+
 ## 来源身份
 
 | 来源 | 固定版本或快照 | 核读与使用范围 |
 | --- | --- | --- |
-| Pranjal Shankhdhar，Outperforming cuBLAS on H100: a Worklog（`https://cudaforfun.substack.com/p/outperforming-cublas-on-h100-a-worklog`），发表于 2024-11-29 | `html-body-snapshot-2026-09-24`，取得于 `2026-09-24T19:48:31+08:00` | 完整 599 行正文、85 行 README 与实际 38 个附件；正文哈希与登记一致。40 处图引用缺 swizzle/Hilbert 小图，Conclusion 所称性能 plot 未保存；图片于 2026-10-05 补录。使用 BF16 输入、队列、资源和调度案例；省略的 wrapper、descriptor 及完整尾部路径未由图片补造。关联 fast.cu 仅核 README 版本，其快照晚于文章；未编译、运行 GPU 或复现作者性能。 |
+| Pranjal Shankhdhar，Outperforming cuBLAS on H100: a Worklog（`https://cudaforfun.substack.com/p/outperforming-cublas-on-h100-a-worklog`），发表于 2024-11-29 | `html-body-snapshot-2026-09-24`，取得于 `2026-09-24T19:48:31+08:00` | 完整 599 行正文、85 行 README 与实际 38 个附件；正文哈希与登记一致。40 处图引用缺 swizzle/Hilbert 小图，Conclusion 所称性能 plot 未保存；图片于 2026-10-05 补录。使用 BF16 输入、队列、资源和调度案例；省略的 wrapper、descriptor 及完整尾部路径未由图片补造。后续配套源码按下行版本另核。 |
 | CUDA Programming Guide：Asynchronous Data Copies（`https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/async-copies.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:31:16+08:00` | 定向核读保存正文 519–565、1082–1153 行：TMA 方向与完成机制、多维示例的 arrival/字节、proxy fence、发起者 bulk-group 等待与 shared 源复用；本次未重读其余章节或三张 swizzle 图。 |
+| pranjalssh/fast.cu（`https://github.com/pranjalssh/fast.cu/tree/2dfe5e26aecfd9e5f27bf9d5837deea01acda24b`） | `2dfe5e26aecfd9e5f27bf9d5837deea01acda24b`，取得于 `2026-09-24T19:52:11+08:00` | 完整身份/根README、Makefile、H100驱动与M11，11→12全部差异；M2/3算子入口及3→11相邻版本差异用于核路线，experimental仅选定producer/consumer与wrapper，sum另作覆盖判断。34文件保存完整性复用既有归档证明，不表示全部分支语义核验；GB300范围见独立页。未编译、运行GPU或复现文章/README性能。 |

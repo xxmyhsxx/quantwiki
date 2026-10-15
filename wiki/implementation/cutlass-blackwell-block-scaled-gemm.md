@@ -103,6 +103,8 @@ $$\operatorname{offset}_{512B}(m,v)=16r+4u+v.$$
 
 实际构造layout可使用 `Sm1xxBlockScaledConfig<SFVecSize>` 的 `tile_atom_to_shape_SFA(problem_shape)` 与 `tile_atom_to_shape_SFB(problem_shape)`。前者按M组织，后者按N组织；`problem_shape=(M,N,K,L)`还保留batch轴L。它把逻辑K元素映射到共享尺度，并构造所需的物理块布局。
 
+这份标准尺度布局如何进入设备流水，见 [fast.cu 的 GB300 NVFP4 执行](blackwell-nvfp4-tmem-execution.md)：该页按SM103a固定源码说明A/B与尺度双环、尺度TMEM、部分重叠的累加区和FP16输出；其K96指令形式单独限定架构。
+
 ## 5. Epilogue产生什么输出
 
 mainloop的FP32累加状态进入epilogue后，C/D的dtype、布局、alignment和计算类型决定怎样形成最终输出。文档样例以half C、float compute和E2M1 D说明这些配置彼此独立；单独把D设成FP4元素类型，并没有同时定义一份带新尺度的MX/NV输出。
