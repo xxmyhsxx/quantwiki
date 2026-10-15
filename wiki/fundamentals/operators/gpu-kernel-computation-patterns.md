@@ -7,6 +7,7 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/articles/2026-09-24/cuda-softmax-worklog
   - raw/articles/2026-09-21/nvidia-warp-primitives
   - raw/papers/2026-09-21/flashattention
   - raw/repositories/2026-09-21/vllm
@@ -68,6 +69,22 @@ $$m=\max_jx_j,\qquad u_j=\exp(x_j-m),\qquad y_j=\frac{u_j}{\sum_ku_k}.$$
 反例：一行只有 `[-2,-3,-4]`，若补到 4 项时把失效位置填 0 后也纳入 softmax，分母就多了一个 $e^0$，有效输出的和不再为 1。`mask` 不是单纯的越界开关，填充值也参与数学语义。若整行被屏蔽，或有效数据全为 $-\infty$，会出现 $-\infty-(-\infty)$；教程未定义这种注意力 mask 语义，接入时应单独规定，不能声称有限输入推导已覆盖。
 
 教程使用近似 `tl.exp`，所以公式等价也不保证与其他指数实现逐位相同。程序通过 `row_start=program_id`、`row_step=num_programs` 循环分担多行，不必为每一行创建一个独立 program；每次循环仍把整行逻辑块放在片上处理，超长行的资源需求限制其适用范围。
+
+### 在线分母与并行局部统计使用共同指数基准
+
+Softmax worklog 的在线方案扫描有限非空行时维护最大值 $m$ 与按它定义的指数和 $\ell$。以首元素初始化 $m=x_0、\ell=1$；读入后续元素 x 时，令 $m'=\max(m,x)$，更新
+
+$$\ell'=e^{m-m'}\ell+e^{x-m'}.$$
+
+最大值变大时，旧贡献先转到新基准；因此最大值与分母统计可合并成一遍扫描。得到全行统计后，保存的 Kernel2 仍第二遍读取输入输出概率。它写回 `input[i]`，而 naive 版写 `output[i]`，原地与异地接口不同；重复使用相同输入计时前需恢复被改写的数据。完整状态合并与空状态条件见 [分块怎样保持全行 softmax](../../theory/flash-attention-tiling-and-recomputation.md#2.%20%E5%88%86%E5%9D%97%E6%80%8E%E6%A0%B7%E4%BF%9D%E6%8C%81%E5%85%A8%E8%A1%8Csoftmax)。（文章“Kernel2—Online softmax”；实数等价不保证浮点逐位相同。）
+
+并行版让线程 t 读取列 `t,t+blockDim.x,…`，每个非空子集 $S_t$ 得到 $m_t$ 和 $\ell_t=\sum_{j\in S_t}e^{x_j-m_t}$。先归约出**本行**最大值 $m=\max_tm_t$，再合并
+
+$$\ell=\sum_t e^{m_t-m}\ell_t.$$
+
+这是整理者补出的合并步骤：文章 shared/shuffle 代码只展开到 `global_max`，文字虽说对 local norm 做加法归约，却未列出转基准与完整输出，不能把这些片段当完整 softmax。整理者例子：两个线程分别拥有0与 $\log3$，各自 $\ell_t=1$；共同基准下分母为 $1/3+1=4/3$，概率为1/4、3/4。若直接相加局部分母得到2，再按共同 m 输出，结果为1/6、1/2，总和只有2/3。无有效输入线程还需定义中性状态并满足 collective 成员要求，不能直接在空集合上计算局部最大值。
+
+文章同时把一线程一行改为一 block 一行，使同轮相邻线程读取相邻列；变化涉及工作分配、访存和归约，不能只归因于 shared。其 shared 二分树需相应的2幂 block，保存 `smem[1024]` 也限制线程索引；shuffle 版仍用 shared 和 block 屏障合并各 warp 的结果。`warp_size=4` 是缩小的教学图例，真实32-lane/FULL_MASK的参与条件见 [Warp成员与内存依赖](../hardware/gpu-execution-and-memory-hierarchy.md#Warp%20collective%20%E7%9A%84%E6%88%90%E5%91%98%E4%B8%8E%E5%86%85%E5%AD%98%E4%BE%9D%E8%B5%96)。原文永久锁步与 shuffle 越界“默认值/undefined”的不同说法不作为 API 保证；数学式的求和上界写 N，此处按代码 `col<N` 解释 N 个有效元素。（“Kernel1–4”。）
 
 ### LayerNorm：mask 之后的运算也可能污染归约
 
@@ -141,12 +158,13 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 [AWQ/Marlin 反量化内核](../../implementation/weight-only-dequant-kernels.md) 把“读整数容器 → 解包 → 应用 scale/zero → 矩阵乘”组合起来。这里的核心问题仍是：位布局如何映射给线程、分组参数在哪里复用、是否先写出完整浮点矩阵，以及累加和归约用什么精度。
 
-先用 [roofline](../hardware/arithmetic-intensity-and-roofline.md) 估计值得优化的数据流，再用 [正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md) 判断实际结果。既有地址、mask 与分块流量示例保留此前的 CPU 教学检查范围；本次 Warp 缺失源和分组预留例子是静态下标推导。尚未据此编译 CUDA/Triton 或验证 GPU 性能。
+先用 [roofline](../hardware/arithmetic-intensity-and-roofline.md) 估计值得优化的数据流，再用 [正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md) 判断实际结果。既有地址、mask 与分块流量示例保留此前的 CPU 教学检查范围；Warp 缺失源/分组预留与 Softmax 共同基准/反例均为整理者静态推导。尚未据此编译 CUDA/Triton 或验证 GPU 性能。
 
 ## 来源身份
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Learning CUDA by optimizing softmax: A worklog（`https://maharshi.bearblog.dev/optimizing-softmax-cuda/`） | `indexed-text-snapshot-2026-09-24`，取得于 `2026-09-24T19:49:18+08:00` | 保存505行索引文本与所列对应3图；online/并行归约及原地/片段边界，合并公式与两元素反例为整理者推导；原HTML采集时404，未运行。 |
 | Using CUDA Warp-Level Primitives（`https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 完整保存273行/3图；Listing3参与/缺失源与机会式同址atomic，例子为静态推导；helper/调用省略、API/运行未核。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.7–2.4.10保存示例/正文；block控制、归约形状/K循环与逐元素atomic，tile_sum下标为整理者展开，Python坍缩示例未执行。 |
 | FlashAttention（`https://arxiv.org/abs/2205.14135v2`） | arXiv:2205.14135v2 | §4的分块、融合与反向重计算连接；论文§3.1–3.2、附录B/C，未核作者CUDA或性能。 |

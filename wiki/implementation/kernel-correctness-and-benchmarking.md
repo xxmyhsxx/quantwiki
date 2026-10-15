@@ -7,6 +7,7 @@ tags:
   - performance
   - numerics
 sources:
+  - raw/articles/2026-09-24/cuda-softmax-worklog
   - raw/articles/2026-09-21/flashinfer-bench-gpu-time
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
@@ -17,7 +18,7 @@ sources:
   - raw/articles/2026-09-22/nsight-compute
   - raw/articles/2026-09-22/nsight-systems
   - raw/articles/2026-09-21/cutlass-profiler
-updated: 2026-10-13
+updated: 2026-10-15
 ---
 
 # 算子正确性与性能测量：参考结果、误差和计时边界
@@ -127,6 +128,14 @@ FlashInfer 0.6.14 文档快照中的 `bench_gpu_time` 接收待测函数 fn 及 
 
 若单 kernel 快 2 倍，但只占原调用链耗时的 20%，其余部分不变且没有额外成本，则整体加速最多为 $1/(0.8+0.2/2)\approx1.11$ 倍。这是教学推导，不是本项目实测。瓶颈方向的理论判断见 [roofline](../fundamentals/hardware/arithmetic-intensity-and-roofline.md)，实际性能仍需测量。
 
+### Softmax worklog 的读数与比较范围
+
+Learning CUDA by optimizing softmax 报告1024×32768、FP32：PyTorch 为7.226 ms，shuffle 版为5.174400 ms。按所列时间计算 `7.226/5.1744`，速度比约 **1.396倍**，耗时下降 `1−5.1744/7.226`，约 **28.392%**；作者结论另写1.41倍/29.17%，需保留读数与叙述的差异。这是对作者数字的算术核对，没有 GPU 复测。（“How fast is PyTorch?”“Kernel4—Shuffle instructions”“Conclusion”。）
+
+PyTorch 片段预热1次，再测5次同步墙钟均值，每次调用创建输出；custom 日志把分配、H2D、kernel 和 D2H 分列，却没有展示其计时实现、重复与预热。仅取 kernel 字段，不能直接视为相同范围的完整算子调用，也不能用后来固定仓库替它补齐历史计时条件。online 片段还原地改写输入，与 naive 的独立输出不同；相同输入的重复比较必须处理这种副作用，见前节的状态恢复条件。
+
+文章开头称 GPU 为 GTX1050Ti，结尾称 RTX1050Ti，缺少独立设备确认。原网页在采集时返回404，保存的是505行完整索引文本，三张对应图由另存的固定仓库提供；原HTML与全部网页资产未恢复。报告仅涉及独立前向 softmax，没有 attention 全链或模型端到端速度与质量证据。
+
 ## 7. 标准工具分别验证什么
 
 | 工具 | 适合回答的问题 | 证据边界 |
@@ -209,11 +218,13 @@ event 测量保留开始与结束之间的 stream 空闲：极短 kernel 遇到�
 
 SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段的孤立中位数不保证能相加为完整 Linear。W4A16/W8A8 的数据与操作量口径、真实归约成本见 [量化 GEMM 性能案例](gpu-kernel-performance-analysis.md)。
 
-## 9. 本轮验证范围
+## 9. 既有检查与本次核读范围
 
-已核对教程的地址、mask、FP32 累加、包装限制与 benchmark 工具实现；独立 CPU 教学计算覆盖地址映射、尾块覆盖、softmax/LayerNorm padding 反例、分块 GEMM 等价关系和 FP32 结合顺序差异。它们验证正文中的推理，不验证 CUDA/Triton 编译、原实现运行、GPU 数值或速度。
+本次 Softmax worklog 增量完成保存索引文本与对应配图核读、静态数学推导及报告时间的独立算术核对，没有执行上游代码或 GPU 测量。
 
-新增采集模板在当前编辑主机上仅完成 CLI、语法与 CPU 逻辑核对；NVIDIA 工具命令及 CUDA 路径尚未执行。后续 RMSNorm 和 W8A8 实验将在具备 NVIDIA GPU 和 CUDA 环境的目标设备上开展，执行正确性、内存与竞争诊断、计时和性能分析；本次 CPU 检查记录只代表准备阶段的验证范围。
+此前基础整理已核对教程的地址、mask、FP32 累加、包装限制与 benchmark 工具实现；独立 CPU 教学计算覆盖地址映射、尾块覆盖、softmax/LayerNorm padding 反例、分块 GEMM 等价关系和 FP32 结合顺序差异。它们验证正文中的推理，不验证 CUDA/Triton 编译、原实现运行、GPU 数值或速度。
+
+既有采集模板在编辑主机上仅完成 CLI、语法与 CPU 逻辑核对；NVIDIA 工具命令及 CUDA 路径尚未执行。后续 RMSNorm 和 W8A8 实验将在具备 NVIDIA GPU 和 CUDA 环境的目标设备上开展，执行正确性、内存与竞争诊断、计时和性能分析；上述既有 CPU 检查记录只代表准备阶段的验证范围。
 
 这组基础用于理解并验证真实实现；可继续沿 [AWQ 实现链](awq-implementation.md) 和 [反量化 kernel](weight-only-dequant-kernels.md) 检查输入到内核的完整对应关系。
 
@@ -221,6 +232,7 @@ SGLang 示例同时输出 quant、gemm、linear 的独立测量；这些阶段�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Learning CUDA by optimizing softmax: A worklog（`https://maharshi.bearblog.dev/optimizing-softmax-cuda/`） | `indexed-text-snapshot-2026-09-24`，取得于 `2026-09-24T19:49:18+08:00` | 保存505行索引文本/对应图与报告数字；所列时间独立算术核对，保留计时/型号/原地差异及原HTML缺失，未运行GPU。 |
 | FlashInfer `bench_gpu_time`（`https://docs.flashinfer.ai/generated/flashinfer.testing.bench_gpu_time.html`） | 页面标识 0.6.14；snapshot-2026-07-02，获取于 2026-07-02T02:41:08+08:00 | 保存正文的后端优先级、参数单位、样本返回与缺失边界；未核匹配实现或运行。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |
 | Hugging Face kernels（`https://github.com/huggingface/kernels/tree/5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc`） | `5c2cf07f7625e1b8c5fb60bcfb073cd055581cbc` | kernel-builder 初始化模板；模板不是完整输入验证实现。 |

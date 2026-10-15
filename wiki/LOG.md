@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Softmax worklog ingest：共同基准与计时范围
+
+- 完整读取indexed-text-snapshot-2026-09-24保存505行、README与对应fixed仓库3图，文章正文哈希匹配；原HTML在采集时404，未声称网页完整恢复，仓库代码整项留后续。
+- [计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)补online状态/两遍、并行局部norm共同基准和两元素反例；连接既有FA合并与Warp参与解释。[测量](implementation/kernel-correctness-and-benchmarking.md)补报告读数/算术和不同计时范围；复用公共归约/同步机制，不另建文章摘要页。
+- 保留Kernel2原地与naive异地、shared树2幂/1024容量、warp4教学/真实成员及原文shuffle/锁步差异；shared/shuffle片段未展示的合并标整理推导，报告时间/型号/范围不升级为GPU或端到端结果，历史CPU检查归属区分。
+- READING/INDEX/SELF/计划同步：188条有依据、41条队列，本轮基线88已处理47条；第18批下一项cudacodes固定代码。独立Astra正式review通过，无剩余必修；历史CPU范围及本次静态/算术归属已修正复读，初始化已补清。结构/来源strict检查198知识页、707项登记，0错误/待核；5个受影响Wiki页1348条本地链接strict通过，旧标题回链定向检查无命中，diff及188/41（12论文/23文档/6代码）计数通过；作者时间比值/降幅与两元素反例独立算术核对通过。提交范围为本项7文件，Obsidian改动保留；未运行上游/GPU。
+
 ## 2026-10-15 · Warp primitives ingest：成员、依赖与分组预留
 
 - 核读snapshot-2026-07-02完整保存273行、所有可辨Listing与3图/README，4正文/图现算哈希相符；正文与2026-09-21图片补采分开，未取原HTML/完整API/外链程序或执行原文。
