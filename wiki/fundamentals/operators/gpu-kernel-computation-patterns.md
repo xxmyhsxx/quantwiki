@@ -7,6 +7,7 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/articles/2026-09-24/microsoft-system-for-ai
   - raw/articles/2026-09-21/triton-matmul
   - raw/articles/2026-09-21/nvidia-cutlass-introduction
   - raw/articles/2026-09-21/cutlass-efficient-gemm
@@ -171,6 +172,8 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 融合让中间值留在片上，减少全局读写和 kernel 启动；但较大的中间状态可能增加寄存器使用、spill 或缩小可驻留并行度，因此融合收益需要测量。
 
+峰值内存还取决于同时存活的缓冲：一个张量的最后一次使用完成后，其存储才可供后续张量复用，执行顺序也会改变同时存活的容量。这与融合中间计算分别判断，具体例子见[MoE工作区的存活与复用](../../implementation/moe-routing-and-quantized-expert-execution.md#8.5.%20cache%20%E6%98%AF%E4%B8%B4%E6%97%B6%20workspace%EF%BC%8Cfinalize%20%E4%B8%8D%E5%86%8D%E5%8A%A0%E6%9D%83%E4%B8%80%E6%AC%A1)。（System for AI第9讲PDF第19–20页。）
+
 [FlashAttention](../../theory/flash-attention-tiling-and-recomputation.md)将两次矩阵乘与行归一化共同分块：用逐行统计合并key块，避免物化完整概率矩阵；训练反向再重算局部score/概率，减少保存和读取二次规模中间值。它展示了增加算术仍可能减少访存的情形，稠密算术量仍为$O(N^2d)$；IO定理的容量范围与实测速度必须分别核对。（原论文arXiv:2205.14135v2 §3.1–3.2、附录B/C。）
 
 矩阵乘教程的 grouped program ID 将输出tile按M方向最多G行分组，组内先走M方向，再换到下一个N方向tile。设输出网格为 $P_M=\lceil M/B_M\rceil$、$P_N=\lceil N/B_N\rceil$，有效program号为p，则组号 $g=\lfloor p/(GP_N)\rfloor$、首行 $m_0=gG$，实际组高 $r=\min(P_M-m_0,G)$。令 $u=p\bmod(GP_N)$，该program负责
@@ -204,3 +207,4 @@ $$p_m=m_0+(u\bmod r),\qquad p_n=\lfloor u/r\rfloor.$$
 | NVIDIA CUDA Samples（`https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc`） | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | `matrixMul.cu:MatrixMulCUDA` 的共享内存分块和同步。 |
 | vLLM（`https://github.com/vllm-project/vllm/tree/568afb3a13806beb53bb2e6bd518269357b237c0`） | `568afb3a13806beb53bb2e6bd518269357b237c0` | Triton RMSNorm 的固定分段与两遍读取。 |
 | SGLang（`https://github.com/sgl-project/sglang/tree/2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc`） | `2f730e299f3b574e3bee2c6ef9669fa2a5b26dbc` | JIT 残差 norm 的两级归约与线程参与。未运行 GPU 实现。 |
+| System for AI — Microsoft AI-System Course（`https://microsoft.github.io/AI-System/`） | `repository-commit-2a974e1a483eb5c2f714ba5001ac33d8c58998d5`；获取于2026-09-24T02:12:20+08:00 | 第9讲PDF第19–20、39–42页，缓冲生命周期与跨算子调度进度；六讲材料选择性核读，未核NNFusion/内存规划实现、引用原论文或运行结果。 |

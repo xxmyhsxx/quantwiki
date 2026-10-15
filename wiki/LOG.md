@@ -1593,3 +1593,10 @@
 - 新增[集合通信与ring成本](fundamentals/hardware/gpu-collectives-and-communication-cost.md)：用统一rank/块定义区分SUM归约、收集与交换；解释reduce-scatter→all-gather、两阶段各p−1轮、每rank发送/接收与全组计量，再关联逻辑算法、transport、物理路径及channel/小片流水。通信量和延迟模型标为整理者推导，明确张量dtype、均匀链路、收发重叠和忽略项。
 - 原图2p−1个primitive步骤与2(p−1)次链路传输分开解释；不吸收讲义中的当前NCCL LL概括、ZeRO-2 activation或GELU整列依赖等不准确泛化。TP/FSDP仅补公共解释链接，保留其固定实现与状态生命周期，不重复扩写训练策略。
 - READING/INDEX/SELF/计划同步：210条有依据、19条队列（12论文/4文档/3代码），本轮基线88已处理69条；下一项GPU Mode与Microsoft讲义。独立Astra review通过，结构/来源检查通过（204知识页、729项来源），受影响链接检查通过（6文件、1432条本地链接），git diff --check通过。不运行课程代码或增加算术测试；提交8文件，Obsidian改动保留。
+
+## 2026-10-15 · Microsoft系统讲义研读：跨块进度与缓冲生命周期
+
+- 完整核来源README，固定repository-commit-2a974e1a483eb5c2f714ba5001ac33d8c58998d5；材料准备逐页通读第5–10讲273页可提取文字，并视觉核39页：第7讲25–28，第9讲19–24/39–43，第10讲30–39/50–63。多数图像正文未逐页核，不把文本遍历算273页完整内容研读。根代理回查第9讲20/39–42原页，引用按PDF物理页定位。
+- [硬件页](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)补NNFusion任务融合图的进度死锁：驻留block等待全部Matmul结束，却占满可用资源，尚未调度的依赖任务无法执行。区分数据可见性与执行机会，不推定任意grid自旋屏障或完整软件执行器已可用。
+- [计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)仅补最后使用/同时存活容量与[MoE工作区](implementation/moe-routing-and-quantized-expert-execution.md)的连接；现有实例已说明gate/up消费后复用down缓冲，不另开内存规划专题。保留历史材料身份，不吸收量化数例不一致或把未作答练习当实现证据。
+- READING/SELF/计划同步：211条有依据、18条队列（12论文/3文档/3代码），本轮基线88已处理70条；下一项GPU Mode讲义。独立Astra review通过，结构/来源检查通过（204知识页、731项来源），受影响链接检查通过（4文件、1006条本地链接），git diff --check通过。未执行课程/NNFusion代码，不新增测试；提交6文件，Obsidian改动保留。

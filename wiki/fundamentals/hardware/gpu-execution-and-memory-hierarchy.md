@@ -6,6 +6,7 @@ tags:
   - memory
   - kernels
 sources:
+  - raw/articles/2026-09-24/microsoft-system-for-ai
   - raw/articles/2026-09-21/nvidia-warp-primitives
   - raw/repositories/2026-09-22/kernel-skills
   - raw/articles/2026-09-21/cuda-simt-kernels
@@ -52,6 +53,8 @@ SIMT 允许每线程维护自己的状态和控制流。同一 warp 的分歧路
 NVIDIA `matrixMul.cu:MatrixMulCUDA` 在共享 tile 写好后做一次 `__syncthreads()`，读完后再做一次，分别保证消费者可以开始读和生产者可以覆盖下一块。对普通块内屏障，所有需要参与的线程应按一致顺序到达；不能把屏障只放在部分线程满足的 `if (i<n)` 中。尾部线程可为加载填中性值，再一起参与屏障。
 
 `__syncthreads()` 只同步该 block，不能同步整个 grid；原子加提供相应地址的原子更新，也不是整个计算阶段已经完成的屏障。跨块阶段可以拆成有序的 kernel 调用，或使用满足前提的专门协作机制。核对这些依赖时要同时看共享缓冲生命周期，而不只是查找有没有屏障函数。
+
+将有依赖的多个算子任务放入同一个kernel时，还须保证依赖任务能获得执行机会。System for AI的NNFusion图例中，已驻留的block先完成各自的Matmul任务，再原地等待全部Matmul任务结束才能进入Conv；它们却占满可用驻留资源，使尚未调度的Matmul块无法执行，等待因而不能结束。这里的问题是执行进度：即使共享标记的可见性正确，也不能靠普通block自旋等待构造任意grid屏障。（第9讲PDF第39–42页，按第41页图展开。）
 
 ### Warp collective 的成员与内存依赖
 
@@ -154,3 +157,4 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 | CUDA Programming Guide：Writing SIMT Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html`） | `snapshot-2026-07-02`，获取于 `2026-07-02T02:31:16+08:00` | §2.3.2–2.3.4 的线程、存储与访存解释 |
 | NVIDIA CUDA Samples（`https://github.com/NVIDIA/cuda-samples/tree/b7c5481c556c3fe98db060207ecaa41a4b9a9abc`） | `b7c5481c556c3fe98db060207ecaa41a4b9a9abc` | 矩阵乘屏障与转置 padding；未运行 |
 | tensormux/kernel-skills（`https://github.com/tensormux/kernel-skills/tree/7b7337a123f8711aa8e3d0452351d8fd30dde4b7`） | `7b7337a123f8711aa8e3d0452351d8fd30dde4b7` | shared-memory tiling 的解释需求；bank 判断以官方文档与地址推导为依据 |
+| System for AI — Microsoft AI-System Course（`https://microsoft.github.io/AI-System/`） | `repository-commit-2a974e1a483eb5c2f714ba5001ac33d8c58998d5`；获取于2026-09-24T02:12:20+08:00 | 第9讲PDF第19–20、39–42页，缓冲生命周期与跨算子调度进度；六讲材料选择性核读，未核NNFusion/内存规划实现、引用原论文或运行结果。 |
