@@ -6,6 +6,7 @@ tags:
   - memory
   - kernels
 sources:
+  - raw/articles/2026-09-21/nvidia-warp-primitives
   - raw/repositories/2026-09-22/kernel-skills
   - raw/articles/2026-09-21/cuda-simt-kernels
   - raw/articles/2026-09-21/cuda-programming-model
@@ -15,7 +16,7 @@ sources:
   - raw/repositories/2026-09-21/cs336-lectures
   - raw/papers/2026-09-21/marlin
   - raw/papers/2026-09-21/qserve
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # GPU 的执行模型与存储层次
@@ -51,6 +52,16 @@ SIMT 允许每线程维护自己的状态和控制流。同一 warp 的分歧路
 NVIDIA `matrixMul.cu:MatrixMulCUDA` 在共享 tile 写好后做一次 `__syncthreads()`，读完后再做一次，分别保证消费者可以开始读和生产者可以覆盖下一块。对普通块内屏障，所有需要参与的线程应按一致顺序到达；不能把屏障只放在部分线程满足的 `if (i<n)` 中。尾部线程可为加载填中性值，再一起参与屏障。
 
 `__syncthreads()` 只同步该 block，不能同步整个 grid；原子加提供相应地址的原子更新，也不是整个计算阶段已经完成的屏障。跨块阶段可以拆成有序的 kernel 调用，或使用满足前提的专门协作机制。核对这些依赖时要同时看共享缓冲生命周期，而不只是查找有没有屏障函数。
+
+### Warp collective 的成员与内存依赖
+
+Using CUDA Warp-Level Primitives 的 CUDA 9 教程将同步 collective 的 `mask` 定义为程序逻辑要求参加本次操作的 lane 集合。若成员取决于某个谓词，可先在能共同到达的父集合中执行 `__ballot_sync(parent_mask,predicate)`，再将所得成员位传过分支或函数边界。`FULL_MASK` 要求所指定的 32 个 lane 都能到达匹配调用；同属一个 warp 并不足以满足这一点。`__activemask()` 只报告调用此刻恰好一起执行的 lane，分支内的一次查询不能替代所有应参与该分支的成员。（“Synchronized Data Exchange”“Active Mask Query”，Listing1–5。）
+
+成员同步与内存依赖也要分开看：`__shfl_*_sync` 在 lane 间交换寄存器值，不代替 shared 通信的内存同步。`__syncwarp(mask)` 等待同 mask 的参与者，并提供 memory fence；“写 shared → syncwarp → 读别人的位置”保证数据已产生，“旧值读完 → syncwarp → 覆盖”保护下一阶段的复用。Listing7 在每条 shared `+=` 后放屏障，读写仍可能在同一阶段相互覆盖；Listing8 把读取结果暂存到寄存器，在写前后分别同步，说明这两类依赖。（“Warp Synchronization”，Listing6–8。）
+
+一次同步返回不保证线程此后持续锁步。在 legacy shuffle/ballot 前后包 `__syncwarp()`，不能代替对应的 `*_sync` collective。文章对分歧分支上同步 collective 的讨论限定 **Volta 及以后**，同时仍要满足成员与匹配调用条件，不能推广为任意架构或 intrinsic 的保证。（“Implicit Warp-Synchronous Programming is Unsafe”，Listing9–14。）
+
+保存 Listing6 用 `threadIdx.x` 直接索引 shared `[4][8]`，只足以解释单个 32 线程 warp 的重排；仅声明 1D block 不保护多 warp 范围。其转置拥有者注释表漏 lane9、重复 lane12，本页按实际下标解释。Listing7/8 没有给出完整初始化和 shared 范围，Listing8 的 `v=0` 也不能直接当完整求和的正确性证明。未取得完整 API 参考或执行保存代码；文末 Volta 调度定位用编译选项保留历史身份，不当作现代通用配置。部分归约与机会式聚合的例子见 [归约的成员与数据规则](../operators/gpu-kernel-computation-patterns.md#Warp%20%E7%9A%84%E5%8F%82%E4%B8%8E%E9%9B%86%E5%90%88%E4%B8%8D%E4%BB%A3%E6%9B%BF%E5%B0%BE%E9%83%A8%E6%95%B0%E6%8D%AE%E8%A7%84%E5%88%99)。
 
 ### shared快照支持一次性原地反转
 
@@ -133,6 +144,7 @@ Shared-memory tiling Skill 提醒要先计算地址，但只统计重复 bank �
 
 | 来源 | 版本或快照 | 说明 |
 | --- | --- | --- |
+| Using CUDA Warp-Level Primitives（`https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 完整保存273行/3图；成员与同步依赖、legacy/Volta条件及保存示例边界；完整API与代码/设备运行未核。 |
 | Using Shared Memory in CUDA C/C++（`https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/`） | `snapshot-2026-07-02` | 完整保存137行；固定反转快照/同步、静态动态shared与CC1.x–3.x范围；头名/函数及拼写保存缺口保留，未取作者代码或运行。 |
 | CUDA Refresher: The CUDA Programming Model（`https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/`） | `snapshot-2026-07-02`，配图补采于2026-09-21 | 完整保存正文与4图；CC硬件版本及主体覆盖核对，不将图示当线程永久绑定或全部A100规格，不核deviceQuery/设备运行。 |
 | CUDA Programming Guide：Programming Model（`https://docs.nvidia.com/cuda/cuda-programming-guide/01-introduction/programming-model.html`） | `snapshot-2026-07-02`，正文取得于2026-07-02、配图补采于2026-09-21 | §1.2.1–1.2.3保存正文；cluster/GPC、地址与内存范围，图3–6/8–9与图注回查；高级API/系统分支/设备运行未核。 |

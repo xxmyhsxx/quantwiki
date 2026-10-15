@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Warp primitives ingest：成员、依赖与分组预留
+
+- 核读snapshot-2026-07-02完整保存273行、所有可辨Listing与3图/README，4正文/图现算哈希相符；正文与2026-09-21图片补采分开，未取原HTML/完整API/外链程序或执行原文。
+- [GPU硬件](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md)补mask成员/activemask、寄存器交换与内存依赖、读写分相和Volta/legacy边界；[计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)补20-lane缺失源反例、零贡献/完整参与条件与同址group的预留/rank，互相连接，复用通用归约和block同步解释。
+- 保留Listing6单warp范围和注释表漏9重12、Listing7/8初值/范围、helper/Unicode/legacy调用省略及atomicInc称谓差异；整理者例子为静态推导，不扩成作者完整可运行kernel，不假定mask补零/压lane或同步后持续锁步，不报告GPU/性能。
+- READING/INDEX/SELF/计划同步：187条有依据、42条队列，本轮基线88已处理46条；第18批下一项CUDA Softmax worklog。独立Astra正式review通过，无事实、机制或必要知识缺口必修；新增解释、两页关系与元数据已核。结构/来源strict检查198知识页、705项登记，0错误/待核；5个受影响Wiki页1338条本地链接strict通过，diff及187/42（12论文/24文档/6代码）计数通过。提交范围为本项7文件，Obsidian改动保留；没有编译、设备运行或性能验证。
+
 ## 2026-10-15 · Tensor Core ingest：WMMA片段与历史入口
 
 - 核读snapshot-2026-07-02完整保存334行、全部保存代码及5图/README，6正文/图现算哈希相符；正文与2026-09-21图片补采分开，未取原HTML/外链完整程序/API或编译/运行。

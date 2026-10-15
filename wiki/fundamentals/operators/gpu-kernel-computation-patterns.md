@@ -7,13 +7,14 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/articles/2026-09-21/nvidia-warp-primitives
   - raw/papers/2026-09-21/flashattention
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
   - raw/repositories/2026-09-21/triton
   - raw/repositories/2026-09-21/cuda-samples
   - raw/articles/2026-09-21/cuda-tile-kernels
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # GPU 算子的计算模式：逐元素、归约与分块矩阵乘
@@ -39,6 +40,22 @@ Writing Tile Kernels快照§2.4.7/§2.4.9.4中，scalar `if`控制整个block的
 求和 $s=\sum_{j=0}^{N-1}x_j$ 可以让不同线程先算局部和，再通过树形合并得到结果。并行化改变加法结合顺序，浮点运算通常不能保证逐位相同；累加 dtype 与归约次序都是算子的数值约定。
 
 若一行不能由一个工作单元有效容纳，可以先输出多个部分和，再用后续 kernel 合并，或采用满足条件的原子合并。这会增加中间流量、启动或竞争。普通 block 屏障不能同步整个 grid，不能通过在一个 block 中等待其他普通 block 的共享内存来替代全局归约。
+
+### Warp 的参与集合不代替尾部数据规则
+
+Warp collective 的成员 mask 与内存访问 mask 作用不同；成员位不会压紧 lane 编号，也不会给缺失源补零。同步条件见 [Warp collective 的成员与内存依赖](../hardware/gpu-execution-and-memory-hierarchy.md#Warp%20collective%20%E7%9A%84%E6%88%90%E5%91%98%E4%B8%8E%E5%86%85%E5%AD%98%E4%BE%9D%E8%B5%96)。
+
+Using CUDA Warp-Level Primitives 的 Listing3 先用 ballot 得到成员，却仍执行 offset 为 16、8、4、2、1 的 shuffle-down 树。若仅 lane0…19 参加，第一轮 lane4 就请求 lane20，而后者未参加该循环。保存片段没有为这个缺失源规定求和贡献，不能直接作为任意长度归约模板。这是整理者按下标与参与集合得到的静态条件反例，未运行 GPU，也未读取完整 API 来裁决返回值的全部版本语义。
+
+若复用完整 32-lane 树得到 lane0 的总和，可在 **32 个硬件 lane 均存在且到达每次 collective** 的条件下，让无有效输入的 lane 携带零参加；真实部分 warp 或稀疏集合则须另核合适算法。保护内存访问、定义 padding 的数学贡献、规定 collective 成员，是三个同时需要满足的问题。
+
+### 机会式聚合 atomic 按同地址群组预留
+
+同文 “Opportunistic Warp-level Programming” 的 `atomicAggInc` 允许用当前恰好一起执行的 lane 组成机会集合，再由 `__match_any_sync(__activemask(),ptr)` 按相同目标地址分组。每组 leader 执行一次 `atomicAdd(ptr,group_size)`，取得旧计数 B 并预留一段；广播 B 后，每个 lane 加上组内低于自身 lane 的成员数，得到自己的返回位置。
+
+整理者例子：同址成员是 lane1、4、7，旧计数为100，计数不溢出且目标缓冲容量足够时，leader 预留 `[100,103)`，三者分别得到100、101、102。不同地址各有自己的 atomic；同址线程若分属不同机会批次，也会分别预留。减少的是每个同地址群组内的原子次数，不能由此保证整个 warp 永远只做一次 atomic，或固定跨群组/原逐线程调用的返回次序。
+
+保存函数含 Unicode 减号并省略 `lane_id()` 等 helper，Listing13 的 legacy shuffle 调用也不完整；本页只解释机制，不将片段当作可直接编译实现。文末 `atomicInc` 的称呼与实际 `atomicAdd` 不同，不能由这个名称引入限值回绕语义。
 
 ### softmax：稳定化和 mask 必须同时成立
 
@@ -124,12 +141,13 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 [AWQ/Marlin 反量化内核](../../implementation/weight-only-dequant-kernels.md) 把“读整数容器 → 解包 → 应用 scale/zero → 矩阵乘”组合起来。这里的核心问题仍是：位布局如何映射给线程、分组参数在哪里复用、是否先写出完整浮点矩阵，以及累加和归约用什么精度。
 
-先用 [roofline](../hardware/arithmetic-intensity-and-roofline.md) 估计值得优化的数据流，再用 [正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md) 判断实际结果。本页的小尺寸地址、mask、分块流量关系已做独立 CPU 教学计算；尚未编译 CUDA/Triton 或验证任何 GPU 性能。
+先用 [roofline](../hardware/arithmetic-intensity-and-roofline.md) 估计值得优化的数据流，再用 [正确性与性能测量](../../implementation/kernel-correctness-and-benchmarking.md) 判断实际结果。既有地址、mask 与分块流量示例保留此前的 CPU 教学检查范围；本次 Warp 缺失源和分组预留例子是静态下标推导。尚未据此编译 CUDA/Triton 或验证 GPU 性能。
 
 ## 来源身份
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Using CUDA Warp-Level Primitives（`https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 完整保存273行/3图；Listing3参与/缺失源与机会式同址atomic，例子为静态推导；helper/调用省略、API/运行未核。 |
 | CUDA Programming Guide：Writing Tile Kernels（`https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-tile-kernels.html`） | `snapshot-2026-07-02` | §2.4.7–2.4.10保存示例/正文；block控制、归约形状/K循环与逐元素atomic，tile_sum下标为整理者展开，Python坍缩示例未执行。 |
 | FlashAttention（`https://arxiv.org/abs/2205.14135v2`） | arXiv:2205.14135v2 | §4的分块、融合与反向重计算连接；论文§3.1–3.2、附录B/C，未核作者CUDA或性能。 |
 | Triton 官方教程与工具（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`） | `81a46fa0c04526e5df55a018ecfab72ff922f592` | 正文标明具体文件与函数；未运行 GPU 教程。 |

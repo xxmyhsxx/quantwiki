@@ -95,13 +95,13 @@ sources: []
 | [浮点表示与累加](fundamentals/numeric-formats/floating-point-and-accumulation.md) | FP16/BF16/FP32 的范围、有效数字、FMA 和归约顺序怎样影响结果。 |
 | [张量布局与算子接口：从逻辑下标到内存地址](fundamentals/operators/tensor-layout-and-kernel-contracts.md) | shape、stride、dtype与接口决定读写，区分Tile线程映射、tile-space坐标和语言尾块规则。 |
 | [Triton 语言与编译语义](fundamentals/operators/triton-language-and-compilation.md) | 逻辑张量、广播、mask、类型与 JIT 特化怎样影响设备代码。 |
-| [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解归约、复用与融合，并核Tile归约形状、K累计和atomic边界。 |
+| [GPU 算子的计算模式：逐元素、归约与分块矩阵乘](fundamentals/operators/gpu-kernel-computation-patterns.md) | 从数据依赖理解归约、复用与融合；区分Warp参与/尾部贡献、同址atomic预留及Tile形状/K累计。 |
 | [LayerNorm、RMSNorm与部分统计](fundamentals/operators/layernorm-rmsnorm-and-partial-statistics.md) | 中心化、正尺度与梯度、ε及固定前缀统计为何有不同条件。 |
 | [线性层与输入通道](fundamentals/operators/linear-layer-input-channel.md) | 线性层把一组输入特征加权组合成输出特征。 |
 | [熵、条件熵与依赖：量化代理指标的解释边界](fundamentals/mathematics/entropy-and-dependence.md) | 熵描述一个指定概率分布的不确定性。 |
 | [可逆变换、数值条件与 Kronecker 乘积](fundamentals/mathematics/invertible-transforms-and-kronecker-products.md) | 量化前可以改变坐标，使数值更适合有限网格；另一侧施加逆变换，保持浮点计算。 |
 | [算术强度与 roofline 分析](fundamentals/hardware/arithmetic-intensity-and-roofline.md) | 「这个算子受什么限制」是决定优化方向的第一问题。 |
-| [GPU 的执行模型与存储层次](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) | 硬件特性版本、线程/warp/SM、cluster与内存位置怎样限制执行，区分统一地址与Unified Memory。 |
+| [GPU 的执行模型与存储层次](fundamentals/hardware/gpu-execution-and-memory-hierarchy.md) | 线程/warp/SM、成员与同步依赖、cluster和内存位置怎样限制执行；硬件版本、统一地址与Unified Memory分别核对。 |
 | [FP8 与 Microscaling 数值格式](fundamentals/numeric-formats/fp8-and-mx-data-formats.md) | 整数网格不是低精度表示的唯一形式。 |
 | [视觉语言模型中的 token 与量化对象](fundamentals/model/vision-language-model-tokens-and-quantization.md) | 图像/视频编码、多层视觉输入与位置/时间怎样形成语言输入，数量和模态差异怎样影响校准及量化对象。 |
 | [PTQ、QAT 与代理梯度](fundamentals/quantization/post-training-and-quantization-aware-training.md) | PTQ 从已训练模型出发完成量化转换，可能包含统计、搜索或局部优化；QAT 在训练前向中模拟量化影响，并通过训练调整模型。 |
