@@ -1614,3 +1614,10 @@
 - [性能分析](implementation/gpu-kernel-performance-analysis.md)补任务Model→ModelNew、外部验证后分流修复/性能反馈、最新提示状态与跨轮最佳正确候选；解释离线代表任务正确样本的相关指标筛选与在线3–4项/一项改动。Algorithm2单kernel/runtime求相关与正文十样本粒度不一致，按正文说明意图，不补造完整实现；既有NCU/瓶颈/计时解释直接复用。
 - [测量页](implementation/kernel-correctness-and-benchmarking.md)补任务覆盖、候选选择和搜索预算；作者全250/子集25、默认10/扩展30轮与Correct范围分开，只用自身成本0.30美元/26.5分钟并保留RTX6000名称冲突。Perf/失败聚合、H200图文与外部成本单位等未闭合内容不拼成排行榜或成本倍数，原件条件继续保留。
 - INDEX/READING/SELF/计划同步213条有依据、16条队列（11论文/2文档/3代码），本轮基线88已处理72条；接续KernelBench/TritonBench。独立Astra review通过，结构/来源检查通过（205知识页、736项来源），受影响链接检查通过（5文件、1460条本地链接），git diff --check通过。未执行作者框架、生成或GPU实验，不新增测试；提交7文件，Obsidian改动保留。
+
+## 2026-10-15 · KernelBench与TritonBench：生成任务与指标分母
+
+- 按用户最新要求加速，以同主题合批整合，独立评审改用gpt-6.1-sol，新代理fork_turns:none。KernelBench v1材料准备完整读active主文/附录A–H与表1–15，视觉核关键12页；TritonBench v1完整读正文/表1–6/附录/四构造prompt，视觉核Figure1–7/Table1–6与未引用流程图。固定源包证明复用原登记，无外链补采或raw修改。
+- 新增[生成Kernel任务与评测](implementation/llm-generated-kernel-evaluation.md)：区分任务/Module与设备kernel、全任务fast_p与正确子集速度、预算内至少一次与最后一轮；Table7第8轮正确但慢于Eager、第10轮重新错误作为实际反例。G/E/P与生成/CPU编译/GPU隔离复用已有候选验证和CudaForge状态解释，Events不泛称完整主机wall-clock。
+- TritonBench G184/T166的来源、接口与速度参考分别记录；用Table4覆盖下降而条件速度上升说明分母差异，G的尺寸扫描峰值GPU Efficiency与平均表现、occupancy和NCU流量分开，未扩大到T也有该列。原文Call/Execution冲突、聚合/容限与harness未给范围保留。
+- INDEX与测量/分析页连接；READING/SELF/计划同步215条有依据、14条队列（9论文/2文档/3代码），本轮基线88已处理74条，第22批范围完成。独立Sol review通过，结构/来源检查通过（206知识页、738项来源），受影响链接检查通过（6文件、1473条本地链接），git diff --check通过。未运行生成器/评测器/GPU，未新增测试；提交8文件，Obsidian改动保留。

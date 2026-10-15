@@ -83,7 +83,7 @@ long-scoreboard 常与 L1TEX 路径的未完成依赖有关，不能仅凭名称
 
 反馈集合的选择与每轮决策也分开。按§2.3正文协议，作者先对每个代表任务进行100次生成/自修正，从正确候选中选快慢两端各5个；在每任务的十个候选上去除冗余指标、按与runtime的Pearson绝对相关取Top20，再跨任务保留常出现、同相关方向且跨任务的平均绝对相关分数高于候选第75百分位的指标，得到其24项集合。在线Judge再关注其中3–4项，提出一项主要改动。相关性帮助形成假设，不直接证明因果；这24项是作者数据和设备上的经验选择。Algorithm2却把相关性写在单个kernel/单个runtime内，样本粒度与正文不一致，本页按正文解释意图，未补成可复现筛选实现。
 
-候选仍须按[正确性与测量协议](kernel-correctness-and-benchmarking.md)核对实际执行、输入覆盖与容限，并区分profiling和正常计时。Judge的解释是改动依据，不替代外部结果；生成任务的覆盖、预算和获得实现的成本见[生成系统的报告口径](kernel-correctness-and-benchmarking.md#%E7%94%9F%E6%88%90%E7%B3%BB%E7%BB%9F%E5%90%8C%E6%97%B6%E6%8A%A5%E5%91%8A%E4%BB%BB%E5%8A%A1%E8%A6%86%E7%9B%96%E4%B8%8E%E6%90%9C%E7%B4%A2%E9%A2%84%E7%AE%97)。
+候选仍须按[正确性与测量协议](kernel-correctness-and-benchmarking.md)核对实际执行、输入覆盖与容限，并区分profiling和正常计时。Judge的解释是改动依据，不替代外部结果；生成任务的覆盖、预算和获得实现的成本见[生成Kernel的任务与评测](llm-generated-kernel-evaluation.md)。
 
 ## 4. Roofline 与实际流量要用同一口径
 

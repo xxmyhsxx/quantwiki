@@ -291,6 +291,7 @@ sources: []
 | [Hopper BF16 GEMM：TMA、WGMMA 与缓冲复用](implementation/hopper-gemm-tma-wgmma-pipeline.md) | 从 full/empty 队列贯通 WGMMA、资源/局部性和输出复用；对照固定11/12的实际同步条件与驱动。 |
 | [GB300 NVFP4 GEMM：输入双环、TMEM 累加与输出复用](implementation/blackwell-nvfp4-tmem-execution.md) | 标准FP4/尺度怎样经双环进入TMEM，部分重叠的累加区怎样释放，以及调度与计时覆盖范围。 |
 | [算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 选择验证用例并界定 GPU 计时；用Softmax读数区分速度比、耗时降幅与调用范围。 |
+| [模型生成Kernel的任务与评测](implementation/llm-generated-kernel-evaluation.md) | 全任务fast_p、预算内至少一次成功、正确子集速度与尺寸扫描峰值的统计对象。 |
 | [GGUF 与块量化存储格式](implementation/gguf-block-quantization-formats.md) | 论文里的量化方案要落到文件，还需要回答一组工程问题：权重怎么分块、每块保存哪些元数据、文件如何描述张量与模型、量化工具怎样按张量选择格式、以及校准统计在哪里参与。 |
 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | 量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。 |
 | [FlashInfer KV 接口：分页写入、单请求 attention 与 NVFP4 尺度](implementation/flashinfer-paged-kv-write-and-nvfp4.md) | 页指针、追加位置、NHD/HND、单请求输入输出与交织尺度怎样交给匹配reader。 |
