@@ -1586,3 +1586,10 @@
 - 完整研读LeetGPU GPT-2 (120M) Transformer Block公告的README与7行公开索引文本，固定为public-index-post-snapshot-2026-09-24。它只说明挑战方向与语言/设备示例，没有模型规格、实现、测试或性能结果，未沿外链补采。
 - 对照[训练状态](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md)、[roofline](fundamentals/hardware/arithmetic-intensity-and-roofline.md)、[阶段分离](implementation/distributed-llm-serving-orchestration.md)、[Transformer](fundamentals/model/transformer-autoregressive-inference.md)与[算子验证](implementation/kernel-correctness-and-benchmarking.md)，已有解释可承接；两项只登记实际范围，不新增正文、INDEX或sources。
 - READING/SELF/计划同步：209条有依据、20条队列（12论文/5文档/3代码），本轮基线88已处理68条；第21批其余三份课程讲义继续研读。独立Astra review通过，管理链接检查通过（2文件、967条本地链接），git diff --check通过；结构/来源复用203知识页、728项有效结果，不执行上游或增加测试。提交范围为4管理文件，Obsidian改动保留。
+
+## 2026-10-15 · IIT Bombay系统讲义研读与集合通信整合
+
+- 通读Spring 2026导出快照七份讲义（第2–8讲，共369页）的可提取文本；重点核第6讲collective定义与第8讲ring/网络分层。整理者视觉核11页：第6讲15/20/21/22，第8讲19/33–37/42；独立Astra另核第6/8讲144页渲染总览与第8讲34–36/38放大页。其余图表未逐页视觉核，课程引用论文、当前库和性能结果未据此认定已核。
+- 新增[集合通信与ring成本](fundamentals/hardware/gpu-collectives-and-communication-cost.md)：用统一rank/块定义区分SUM归约、收集与交换；解释reduce-scatter→all-gather、两阶段各p−1轮、每rank发送/接收与全组计量，再关联逻辑算法、transport、物理路径及channel/小片流水。通信量和延迟模型标为整理者推导，明确张量dtype、均匀链路、收发重叠和忽略项。
+- 原图2p−1个primitive步骤与2(p−1)次链路传输分开解释；不吸收讲义中的当前NCCL LL概括、ZeRO-2 activation或GELU整列依赖等不准确泛化。TP/FSDP仅补公共解释链接，保留其固定实现与状态生命周期，不重复扩写训练策略。
+- READING/INDEX/SELF/计划同步：210条有依据、19条队列（12论文/4文档/3代码），本轮基线88已处理69条；下一项GPU Mode与Microsoft讲义。独立Astra review通过，结构/来源检查通过（204知识页、729项来源），受影响链接检查通过（6文件、1432条本地链接），git diff --check通过。不运行课程代码或增加算术测试；提交8文件，Obsidian改动保留。

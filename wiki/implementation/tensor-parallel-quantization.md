@@ -8,7 +8,7 @@ tags:
 sources:
   - raw/repositories/2026-09-21/vllm
   - raw/repositories/2026-09-21/sglang
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # 张量并行与量化：分片、通信和元数据
@@ -69,7 +69,7 @@ SGLang 所选 `AWQLinearScheme.create_weights` 检查分片输入维与 group si
 
 ## 5. 省掉权重流量，不代表通信同步缩小
 
-权重从 FP16 变成 INT4，不会自动把行并行的 $[M,N]$ 部分和也改为 INT4。普通 all-reduce 的通信量由输出 shape、通信 dtype、rank 数与 collective 算法决定。算子越快，通信和调度可能越显眼；增加 rank 还会缩小本地 GEMM 的 $K/N$，降低局部复用或不再满足 tile 条件。
+权重从 FP16 变成 INT4，不会自动把行并行的 $[M,N]$ 部分和也改为 INT4。普通 all-reduce 的通信量由输出 shape、通信 dtype、rank 数与 collective 算法决定；[集合通信与ring成本](../fundamentals/hardware/gpu-collectives-and-communication-cost.md)给出相加/拼接的区别，以及每rank发送、接收和通信轮数的分开计量。算子越快，通信和调度可能越显眼；增加 rank 还会缩小本地 GEMM 的 $K/N$，降低局部复用或不再满足 tile 条件。
 
 SGLang `RowParallelLinear.forward` 可通过 `skip_all_reduce` 或 `reduce_results` 延后/关闭此处归约，还存在 attention TP group 与受条件控制的量化通信分支。因此评估时应记录实际分派，不能把“有量化通信函数”写成“AWQ 一定量化通信”。
 

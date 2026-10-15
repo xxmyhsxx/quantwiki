@@ -8,7 +8,7 @@ tags:
   - memory
 sources:
   - raw/articles/2026-09-24/pytorch-distributed-tutorials
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # FSDP2：参数分片、计算期聚合与checkpoint
@@ -20,6 +20,8 @@ FSDP2降低训练时每个rank持有的参数、梯度和优化器状态，但�
 ## 1. 参数组连接持久分片与临时完整参数
 
 DDP在各rank保留模型副本、处理各自样本，最后用all-reduce同步梯度。FSDP2把持久模型状态分片：参数在前/反向需要完整表示时由all-gather聚合，反向的完整局部梯度经reduce-scatter归约并切回各rank，优化器只更新所属参数片段。它分解了DDP梯度同步的职责，没有取消同步。（How FSDP2 works及workflow/sharding图。）
+
+这些操作的输入输出与ring通信量见[集合通信基础](../fundamentals/hardware/gpu-collectives-and-communication-cost.md)。本页继续追踪它们处理的是参数还是梯度，以及临时完整张量何时出现。
 
 | 状态或操作 | 本rank持有的对象 | 下一阶段需要的动作 |
 | --- | --- | --- |

@@ -260,6 +260,7 @@ sources: []
 | [HELM：场景、提示协议与多指标评测](implementation/helm-evaluation-protocol.md) | 同任务为何还须对齐shot、打分、分箱、可靠排序与运行时间口径。 |
 | [模型质量评测](implementation/model-quality-evaluation.md) | PPL 的有效计数、任务协议与风险—覆盖率怎样定义和比较。 |
 | [推理服务评测](implementation/serving-performance-evaluation.md) | 负载、TTFT、TPOT、吞吐与 SLO 下的 goodput 如何共同解释量化收益。 |
+| [多GPU集合通信：归约、分片与ring成本](fundamentals/hardware/gpu-collectives-and-communication-cost.md) | all-reduce、reduce-scatter、all-gather与all-to-all的数学对象，以及环上轮数、发送量与链路成本。 |
 | [张量并行与量化](implementation/tensor-parallel-quantization.md) | 列/行分片、GQA 复制、collective 与 group/scale/zero 如何配合。 |
 | [FSDP2：参数生命周期与checkpoint](implementation/fsdp2-parameter-lifecycle-and-checkpoint.md) | 持久分片、计算期聚合、梯度归约和full state保存分别需要哪些对象与rank参与。 |
 | [DeepSeek-V3 FP8训练](implementation/deepseek-v3-fp8-training.md) | Fprop/Dgrad/Wgrad、K组尺度与累加、缓存/optim/通信和验证反例怎样共同决定训练精度。 |
