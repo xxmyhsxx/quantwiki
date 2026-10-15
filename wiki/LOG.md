@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · CUTLASS 3 API ingest：类型组装与参数分工
+
+- 完整读取snapshot-2026-07-02保存493行/类型声明及配图、README，复用本批2项正文/图哈希核对；现有矩阵乘、TensorCore、布局/配置/流水正文已有基础，缺少类型组装与参数分工主线。
+- 新增[CUTLASS GEMM组成](implementation/cutlass-gemm-composition-and-dispatch.md)，从mainloop/epilogue→kernel→adapter连接一次调用，再解释Arguments/Params、Shape类型与尺寸值、global/shared/MMA布局及Alignment元素单位、dispatch与构建期Auto。配置页和INDEX接入，公共分块/流水机制复用。
+- B坐标与同一存储地址示例标教学展开；3.0 builder支持声明和2.x/3.x特化按版本保留，核读范围集中在来源说明，不堆重复提醒；没有新增算式断言或运行测试。
+- READING/INDEX/SELF/计划同步：191条有依据、38条队列，本轮基线88已处理50条；第19批下一项Blackwell SM100 GEMMs。独立Astra正式review通过，无必修项；组装/调用主线、单位/类型和教学坐标均已对照原件，新增关系复核有效。结构/来源strict检查200知识页、711项登记，0错误/待核；5个受影响Wiki页1348条本地链接strict通过，diff及191/38（12论文/21文档/5代码）记录核对通过。提交范围为本项7文件，Obsidian改动保留；复用有效来源核验，没有新增运行测试。
+
 ## 2026-10-15 · Efficient GEMM ingest：输出布局、拆K与Hopper分工
 
 - 完整读取snapshot-2026-07-02保存175行/所有伪码与3图/README，4正文/图哈希相符；层级图结构可辨，透明底部分标字按正文核对。未取原HTML/外链实现、编译或运行GPU。
