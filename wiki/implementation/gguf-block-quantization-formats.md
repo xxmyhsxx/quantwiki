@@ -8,7 +8,7 @@ tags:
   - mixed-precision
 sources:
   - raw/repositories/2026-09-21/llama-cpp
-updated: 2026-10-13
+updated: 2026-10-15
 ---
 
 # GGUF 与块量化存储格式
@@ -89,16 +89,16 @@ $$\widehat w = d_1 q - m_1,\qquad d_1 = d\cdot sc,\quad m_1 = d_{\min}\cdot m,\q
 
 ## 4. 码本路线：i-quant
 
-码本索引为何能同时表示多个权重、固定格与可学习加性码本如何区别，见 [码本量化与位宽预算](../theory/codebook-quantization-and-bit-budget.md)。该基础解释帮助阅读以下格式，不表示 GGUF 的 i-quant 与 QuIP# 或 AQLM 使用相同码本、训练流程或二进制布局。
+i-quant 用非均匀码本改善低位宽表示，但包含两种不同机制：IQ1/2/3 用网格索引表示多个权重，再配合符号、尺度或位移恢复数值；IQ4_NL/IQ4_XS 则让每个 4-bit 码单独查非均匀标量表。后者的 `dequantize_row_iq4_nl/iq4_xs` 逐个半字节读取 `kvalues_iq4nl`，并非一个索引同时决定多个权重。
 
-i-quant 走的是另一条路：不再对每个权重独立均匀取整，而是用网格／码本表示一组权重，并在超块级保留尺度或位移。源码注释给出了各界面的有效位宽：
+[码本量化与位宽预算](../theory/codebook-quantization-and-bit-budget.md)解释标量表与向量码本为何具有不同的表示能力。这些通用原理不意味着 i-quant 与 QuIP# 或 AQLM 共享码本或布局。以下按整个块的结构计算有效位宽：
 
 | 类型 | 注释与结构要点 | 每权重位宽 |
 |---|---|---:|
 | iq1_s | fp16 尺度 + 索引 + 高位 | 1.5625 |
 | iq1_m | 网格索引低 8 位 + 高 3 位与移位位 + 3 bit 子块尺度与分散编码的 fp16 超块尺度 | 1.75 |
 | iq2_xxs | 注释称「几乎真正的 2 bit」，因每 256 权重一个 16 bit 尺度而到 2.0625 | 2.0625 |
-| iq2_xs | 同一结构加每 32 权重的尺度 | 2.3125 |
+| iq2_xs | 每 32 权重另存一字节，内含两个各服务 16 权重的 4-bit 尺度 | 2.3125 |
 | iq2_s | 索引 + 高位 + 尺度 | 2.5625 |
 | iq3_xxs | 注释称「几乎真正的 3 bit」，同样含 16 bit 超块尺度 | 3.0625 |
 | iq3_s | 索引 + 高位 + 符号 + 尺度 | 3.4375 |
@@ -123,16 +123,20 @@ const float d = GGML_FP16_TO_FP32(scale.f16);
 
 ## 5. 混合格式与量化工具
 
+`llama-quantize` 读取已有 GGUF。HF 模型需要先转换为 GGUF，再选择量化类型；多模态模型还可能依赖独立的 mmproj 组件。量化输出保存了实际张量类型和块数据，能否运行仍取决于运行时是否支持模型架构、这些类型及目标设备。（`tools/quantize/README.md`：Overview、multimodal。）
+
 `Q4_K_M` 这类名称中的 M／S／L 表示层间混合：对敏感张量使用更高位宽，其余使用基础格式，从而在总大小与质量之间取舍。工具支持显式控制（`tools/quantize/README.md`）：
 
 ```bash
-# 纯格式：所有张量同一类型
+# 纯格式：对可量化且未被专门覆盖的张量使用默认类型
 ./llama-quantize --pure input-f32.gguf output-Q4_K.gguf q4_k_m 8
 # 按张量指定，或对输出层/词嵌入单独指定
 ./llama-quantize --output-tensor-type q5_k --token-embedding-type q3_k input.gguf out.gguf q4_k_m 8
 # 用正则按层号分别指定位宽
 ./llama-quantize --tensor-type "\.(\d*[13579])\.attn_k=q5_k" input.gguf out.gguf q4_k_m 8
 ```
+
+`--pure` 跳过默认混合、正则覆盖及相应的类型 fallback。它仍遵守 `tensor_allows_quantization`：norm、router 等被排除的张量不会因此量化，显式的输出层/词嵌入类型也先于 `pure` 判断。故它不保证整个模型采用同一类型，也不能保证不兼容形状自动回退。（`src/llama-quant.cpp:llama_tensor_get_type`。）
 
 相关参数与语义：`--allow-requantize` 允许对已量化的张量再次量化，文档警告这会显著劣于从 16/32 bit 量化；`--leave-output-tensor` 保持输出层不量化以提升质量；`--keep-split` 保持分片；`--prune-layers` 直接剪层。文档还给出默认实践：多模态组件（mmproj）通常保留 bf16 或 q8，因为其质量直接影响生成结果，而压缩带来的速度与内存收益可以忽略。
 

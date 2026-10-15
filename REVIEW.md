@@ -2,7 +2,7 @@
 
 范围：2026-10-15 的 213 个知识页，分为 54 批。覆盖基础 21 页、理论 16 页、方法 97 页、综合研究 3 页、实现 76 页；不包含管理页、Skill 和 raw 原件。原件只在核验相应主张时读取。
 
-当前进度：完整审核 21/213 页，完成 5/54 批。下一批：06。目前先完成 01–07 批，完成后统一推送；之后按用户安排推进。勾选表示完成正文审核及所记范围的原件核验，不表示没有待修问题。此前四页的局部修正不单独计入整页审核；已在本轮完整审核的页面按对应批次勾选。
+当前进度：已完整审核 25/213 页（01–06 批）；按新增的正文改善要求，已改善并复核 3/213 页，完成 1/54 批。当前回补第 02 批。先完成 01–07 批的审核、必要重写与阅读复核，再统一推送；其余批次按用户安排推进。勾选表示已改善并复核，或确认正文已充分、无需修改；仅有阅读记录或待修建议不计完成。
 
 ## 审核要求
 
@@ -12,13 +12,13 @@
 - 必要前置、公式定义、推理、事实依据、版本及适用条件是否充分；方法收益与系统收益是否混淆。
 - 段落和链接是否提供必要信息；重复、晦涩、无用内容，以及跨页冲突、解释断点和真正缺失的知识。
 
-每页完整阅读正文，再按主张和疑点查相关页与原件。结构和链接检查不能代替内容判断；本次不开展实验。
+每页完整阅读正文，再按主张和疑点查相关页与原件；在授权范围内直接修正事实、补充解释、重组和去重。改后只依据正文与必要链接复述用途、整体过程和取舍，仍有理解断点就继续修改。结构和链接检查不能代替内容判断；不开展实验、不改 raw。
 
 ## 如何使用清单
 
 每次读取当前批次及必要关联页，不把整个清单或 INDEX 作为必读输入。每页只分配一个主审核批次；跨批引用可提前查阅，不因此将目标页标为已审核。长页按章节分段读，整页完成后再勾选。
 
-完成一批后，在该批下面简记主要发现、已修正与待修问题、核验范围及提交；同步页勾选、总进度与下一批。看过标题、抽查过段落或修过一处问题，都不算整页完成；无问题也不为凑数改写。新增页面加入相应批次，页面合并或删除时同步清单。
+完成一批后，简记正文变化、必要依据、验证与遗留问题，更新勾选和进度。保留此前有效审核记录，但区分审核与改善验收；未处理的解释问题不能与完成勾选并存。已有清楚内容不为凑数改写。新增、合并或删除页面时同步清单。
 
 批次按主题关系和篇幅划分，不是缺陷排名。优先检查已出现问题及内容较密集的解释链；必要前置可定向先读。
 
@@ -39,25 +39,23 @@
 - [x] [量化模型的部署框架与后端支持](wiki/implementation/quantized-llm-deployment-backends.md)
 - [x] [GGUF 与块量化存储格式](wiki/implementation/gguf-block-quantization-formats.md)
 
-审核记录（2026-10-15）：三页正文完整阅读；以下问题待修，本批未改知识正文。
+改善与复核（2026-10-15）：三页均完成正文阅读、必要修改和改后阅读检查。
 
-- **确认错误：IQ2_XS 尺度粒度。** GGUF §4 表将其写为“每 32 权重的尺度”。固定 llama.cpp `b820cc8e` 的 `ggml-quants.c:dequantize_row_iq2_xs`（2444–2470 行）从每字节高低半字节分别解出 `db[0/1]`，各覆盖两个 8 元素向量，即每 16 权重一个尺度。字节数量与数值共享粒度混淆会误导解码实现；改为“每 32 权重保存一字节，内含两个各服务 16 权重的 4-bit 尺度”，2.3125 bpw 不变。
-- **确认错误：`--pure` 的作用范围。** GGUF §5 示例称“所有张量同一类型”。同版本 `src/llama-quant.cpp:llama_tensor_get_type` 先执行 `tensor_allows_quantization`，norm、router 等仍被排除，输出/embedding 显式覆盖也先于 `pure` 判断；`pure` 跳过默认混合、正则覆盖和对应的类型 fallback。上游 README 的简写不能覆盖源码条件。改为“对可量化且未被专门覆盖的张量使用默认类型，关闭自动混合”，避免据此推算整个模型位宽或认为不兼容形状会自动回退。
-- **解释混淆：i-quant 并非都用一个索引表示多个权重。** GGUF §4 的引导和总述笼统采用向量网格解释，表内 IQ4_NL/IQ4_XS 实际由 `dequantize_row_iq4_nl/iq4_xs` 逐个半字节查 `kvalues_iq4nl`。建议用一句话区分 IQ1/2/3 的向量网格与 IQ4 的非均匀标量码本；保留现有位宽表和 IQ1_M 分散尺度解释，避免把不同解码机制混为一类。
-- **部署条件遗漏：GGUF 文件不独自保证部署完整。** 部署页 §6“格式即部署”“部署资产是文件本身”过于绝对。同版本 `tools/quantize/README.md` 的 Overview 与 multimodal 小节明确先转换 HF→GGUF 再量化，图像/音频还可能需独立 mmproj；正文也已承认各后端按类型分派。建议改标题并补一句：GGUF 是参数及元数据产物，仍需匹配模型架构、张量类型和运行后端，多模态须带齐组件。GGUF §5 同时补转换输入的前置关系；不必展开转换器源码。
-- **组织断点：ModelOpt §5 第二段与 §6 后半。** block32 粒度、GGML 整除/导出限制、checkpoint mirror/alias 语义被接成一段，FSDP2 接入后又直接转入 MLflow 指针，读者不易辨认哪些条件约束数值表示、哪些仅描述配置复用或追溯。开头已有完整 PTQ 主线，不需重写全页；最小处理是拆开独立主题，把 mirror/alias 放回 §1 的 recipe 解释，把 MLflow 单独成小节，保留全部具体条件和来源。
+- ModelOpt 保留开头，按“选择模块/表示→确定尺度或搜索→导出→后端准备→追溯”重写正文。模型命名、视觉前向、内存/分布式、源格式转换等条件回到对应环节；拆清搜索恢复文件、部署 checkpoint 和运行记录的用途，保留全部尺度公式与关键版本限制。
+- GGUF 修正 IQ2_XS 为每 16 权重一个 4-bit 尺度（每 32 权重合存一字节），区分 IQ1/2/3 向量网格与 IQ4 标量表，修正 `--pure` 的适用范围。补清 HF→GGUF→量化的输入关系；部署页同步说明模型架构、后端和多模态 mmproj 的配套条件。
+- 改后沿三条阅读问题复核：recipe 怎样变成部署参数、块位宽怎样计费、量化文件交给谁执行。正文可直接接通这些关系，既有清楚的格式表和后端章节保留。
 
-原件核验：按来源 README 确认版本；抽核 ModelOpt `f2f0d695` 的量化/导出接口、input_scale1/headroom、KV AutoQuantize 预算与 export-only 条件；vLLM `568afb3a` 注册表和静态 FP8 Linear 参数/重标/转置主链；TensorRT-LLM `a6f41514` 全文与两张支持矩阵；MLC `6474f7db` 参数字节统计、模型库/JIT 交接；llama.cpp `b820cc8e` 容器读取、K/IQ 结构、所选解码、Q4_K 加权拟合、imatrix 统计与作者测量表。以上核心核验未见新增数值冲突。关联阅读抽查校准页的多级尺度说明、LUQ §4/部署口径和本批互链；其余存量关系未逐条核目标全文。未逐项复核部署页其他算法分派、旧 TensorRT-LLM 流程、QServe 和 release 声明，后续对应批次继续核；未核全部设备 kernel、外链或实际运行。链接检查：3 页、47 项通过，客户端跳转未测。
+核验依据沿用本批原件检查：ModelOpt `f2f0d695` 量化/导出、input_scale1/headroom、KV 搜索与 export-only；vLLM `568afb3a` 静态 FP8 加载；TensorRT-LLM `a6f41514` 正文/支持矩阵；MLC `6474f7db` 参数计费/JIT；llama.cpp `b820cc8e` 容器、块结构、解码、量化工具与 imatrix。IQ2_XS 定位 `ggml-quants.c:dequantize_row_iq2_xs` 2444–2470 行，`--pure` 定位 `llama-quant.cpp:llama_tensor_get_type`。无运行验证；未全面重核其他算法分派、历史后端流程、全部设备 kernel、外链或 release 声明。改后链接检查 3 页、46 项通过，差异空白检查通过；保留 ModelOpt §2 既有锚点，其他改名标题未发现入链。
 
-提交：本批记录以 `review: audit batch 01 deployment artifacts` 提交到本地 Git；不推送。后续提交号以该提交记录为准。
+提交：`docs: clarify batch 01 quantization deployment flow`，仅三篇正文与本记录；01–07 完成后统一推送。此前审核提交 `088b03a` 的有效证据已纳入本记录。
 
 ## 02 · 量化矩阵乘的公共解释（3 页）
 
 重点：逻辑计算、缩放、表示与实际执行怎样衔接，公共页与具体实现如何分工。
 
-- [x] [线性层与输入通道](wiki/fundamentals/operators/linear-layer-input-channel.md)
-- [x] [量化矩阵乘法的缩放与执行路径](wiki/implementation/quantized-matmul-scaling-execution.md)
-- [x] [块缩放矩阵乘：FP4/FP8 编码、尺度布局与执行接口](wiki/implementation/block-scaled-matmul-execution.md)
+- [ ] [线性层与输入通道](wiki/fundamentals/operators/linear-layer-input-channel.md)
+- [ ] [量化矩阵乘法的缩放与执行路径](wiki/implementation/quantized-matmul-scaling-execution.md)
+- [ ] [块缩放矩阵乘：FP4/FP8 编码、尺度布局与执行接口](wiki/implementation/block-scaled-matmul-execution.md)
 
 审核记录（2026-10-15）：三页正文完整阅读；线性层页的矩阵约定、误差展开与教学数值自洽，块缩放页的逻辑值、物理表示、消费接口及版本边界清楚，所核核心主张未发现错误。本批未改知识正文。
 
@@ -71,11 +69,11 @@
 
 重点：复核已局部修正的用途、整体流程、公式定义和跨页去重，再检查其余正文。
 
-- [x] [SharQ：动态稀疏 FP4 主干与量化残差](wiki/methods/sharq.md)
-- [x] [SharQ 的稀疏残差、共享尺度与所选接口](wiki/implementation/sharq-sparse-residual-and-shared-scales.md)
-- [x] [SpQR：敏感权重保留与两级量化元数据](wiki/methods/spqr.md)
-- [x] [SpQR 的两级尺度、稀疏保护值与所选 CUDA 格式](wiki/implementation/spqr-metadata-outliers-and-cuda-format.md)
-- [x] [低比特表示的设计空间：坐标、码本与例外预算](wiki/research/low-bit-representation-design.md)
+- [ ] [SharQ：动态稀疏 FP4 主干与量化残差](wiki/methods/sharq.md)
+- [ ] [SharQ 的稀疏残差、共享尺度与所选接口](wiki/implementation/sharq-sparse-residual-and-shared-scales.md)
+- [ ] [SpQR：敏感权重保留与两级量化元数据](wiki/methods/spqr.md)
+- [ ] [SpQR 的两级尺度、稀疏保护值与所选 CUDA 格式](wiki/implementation/spqr-metadata-outliers-and-cuda-format.md)
+- [ ] [低比特表示的设计空间：坐标、码本与例外预算](wiki/research/low-bit-representation-design.md)
 
 审核记录（2026-10-15）：五页正文完整阅读，包含此前仅局部修改的三页。本批未改知识正文。
 
@@ -91,10 +89,10 @@
 
 重点：主体、元数据、例外、解码成本是否使用同一口径；理论页是否变成方法摘录。
 
-- [x] [码本量化：标量、向量、加性表示与位宽预算](wiki/theory/codebook-quantization-and-bit-budget.md)
-- [x] [SqueezeLLM：敏感性加权的非均匀量化与稠密稀疏分解](wiki/methods/squeezellm.md)
-- [x] [GPTVQ：多输入列向量、数据感知码本与移动 CPU 解码](wiki/methods/gptvq.md)
-- [x] [VPTQ：同列向量量化、二阶反馈与码本成本](wiki/methods/vptq.md)
+- [ ] [码本量化：标量、向量、加性表示与位宽预算](wiki/theory/codebook-quantization-and-bit-budget.md)
+- [ ] [SqueezeLLM：敏感性加权的非均匀量化与稠密稀疏分解](wiki/methods/squeezellm.md)
+- [ ] [GPTVQ：多输入列向量、数据感知码本与移动 CPU 解码](wiki/methods/gptvq.md)
+- [ ] [VPTQ：同列向量量化、二阶反馈与码本成本](wiki/methods/vptq.md)
 
 审核记录（2026-10-15）：四页正文完整阅读。所核核心公式、表示预算与原件代表配置未发现新增事实错误；已有作者公式/表格差异不能再报成 Wiki 错误。本批未改知识正文。
 
@@ -109,12 +107,12 @@
 
 重点：方法目标如何对应校准、坐标恢复、打包和推理消费，避免将浮点恢复当成低位执行。
 
-- [x] [QuIP：非相干处理与 LDLQ 二阶量化](wiki/methods/quip.md)
-- [x] [QuIP#：Hadamard 非相干处理与 E8P 格码本](wiki/methods/quip-sharp.md)
-- [x] [AQLM：加性码本与激活感知的联合编码](wiki/methods/aqlm.md)
-- [x] [QuIP 的逆序 LDLQ、坐标恢复与浮点保存路径](wiki/implementation/quip-ldlq-and-coordinate-restoration.md)
-- [x] [QuIP# 的 E8P 打包、解码与所选 Llama 路径](wiki/implementation/quip-sharp-e8p-packing-and-inference.md)
-- [x] [AQLM 的原始校准、模型转换与 2×8 推理读取](wiki/implementation/aqlm-calibration-export-and-inference.md)
+- [ ] [QuIP：非相干处理与 LDLQ 二阶量化](wiki/methods/quip.md)
+- [ ] [QuIP#：Hadamard 非相干处理与 E8P 格码本](wiki/methods/quip-sharp.md)
+- [ ] [AQLM：加性码本与激活感知的联合编码](wiki/methods/aqlm.md)
+- [ ] [QuIP 的逆序 LDLQ、坐标恢复与浮点保存路径](wiki/implementation/quip-ldlq-and-coordinate-restoration.md)
+- [ ] [QuIP# 的 E8P 打包、解码与所选 Llama 路径](wiki/implementation/quip-sharp-e8p-packing-and-inference.md)
+- [ ] [AQLM 的原始校准、模型转换与 2×8 推理读取](wiki/implementation/aqlm-calibration-export-and-inference.md)
 
 审核记录（2026-10-15）：六页正文完整阅读。方法页的目标→表示→编码→执行主线与实现页的固定版本边界对应，所核内容未发现新增事实错误或必须调整的解释缺口；本批未改知识正文。
 
@@ -136,6 +134,8 @@
 - [ ] [StagQ：共享元数据的前缀权重流与稀疏保护](wiki/methods/stagq.md)
 - [ ] [FlexQ：INT6 分组量化与二值 Tensor Core 执行](wiki/methods/flexq.md)
 - [ ] [FlexQ 的位平面、组恢复与所选调用接口](wiki/implementation/flexq-bitplanes-and-group-restoration.md)
+
+审核记录（2026-10-15，改善待完成）：第06批四页全文已读。核心表示与预算自洽；FlexQ 方法 §3 从 T/d/o 改用 M/K/N 未定义对应关系，实现页也直接使用这些维度，需补清。已抽核 DBW `a45f26e1` 分量配额、训练目标、word packing 与两次浮点 Linear；StagQ v1 的前缀、保护重建、元数据目标及代表质量/decoder 对照；FlexQ v2 位展开/式6、代表 PPL/消融，`a42424d8` 的 signed 位权、组尺度与归约。链接检查 4 页、21 项通过，无实验。待回补前五批后按同一标准完成正文改善，不据此勾选。
 
 ## 07 · 高维与二值表示（4 页）
 
