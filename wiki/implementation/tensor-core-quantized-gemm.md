@@ -19,7 +19,7 @@ updated: 2026-10-15
 
 # Tensor Core 与量化 GEMM：从 Tile 到寄存器和编译产物
 
-分块矩阵乘把 $C=AB$ 拆成可复用的 tile，但 Tensor Core 还要求 warp 中每个线程持有规定的寄存器片段。量化 GEMM 需要把文件中的打包权重转换到这个计算接口；“INT4 权重”并不表示设备执行 INT4 MMA。
+分块矩阵乘把 $C=AB$ 拆成可复用的 tile。本页的 WMMA/mma.sync 路径由一个 warp 共同计算，输入和累加状态分布在线程的寄存器片段中；量化 GEMM 还需把打包权重转换到相应接口。“INT4 权重”并不表示设备执行 INT4 MMA。SM100 的另一类协作与块尺度接口见[CUTLASS 块缩放 GEMM](cutlass-blackwell-block-scaled-gemm.md)。
 
 本页从 warp 共同计算的矩阵块出发，对照 WMMA 隐藏的 fragment 与 Marlin 显式 PTX 的寄存器布局，再沿 vLLM/SGLang 现成 AWQ Triton 的索引、解包、`tl.dot` 和 split-K 走到编译检查。各路径的版本、量化格式、累加精度与分派入口分别说明。
 

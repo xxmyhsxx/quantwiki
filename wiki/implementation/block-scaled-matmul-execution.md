@@ -16,7 +16,7 @@ sources:
   - raw/articles/2026-09-21/flashinfer-fp4-quantize
   - raw/articles/2026-09-21/triton-block-scaled-matmul
   - raw/repositories/2026-09-21/triton
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # 块缩放矩阵乘：FP4/FP8 编码、尺度布局与执行接口
@@ -99,6 +99,8 @@ $$S[128i+32u+r,\ 4j+v]=P[i,j,r,u,v],$$
 在上述 $M=128,K=256,V=32$ 的例子中，A 的 P shape 为 `[1,2,32,4,4]`；逻辑 `S[35,5]` 来自 `P[0,1,3,1,1]`，packed 线性偏移为 565，缩放 A 第 35 行的 K 元素 `[160,192)`。B 的行维代表输出列 n，应用同一转换；它最终仍是 `[N,K/V]`，不跟随 `b.T` 再转置。
 
 该例的 `rep_m=1`、`rep_n=2`、`rep_k=2`，A/B 的 descriptor load block 分别为 `[1,1,2,2,256]`、`[1,2,2,2,256]`。所以每轮取回 1024/2048 个尺度，恢复为 `[128,8]` 与 `[256,8]`，正好覆盖两侧的当前 tile。（源码 `initialize_block_scaled` 的 scale reshape、`unpack_scale` 与设备函数的 `reshape/trans`。）
+
+CUTLASS SM100 文档的512B基本块也采用上述块内次序。[CUTLASS块缩放GEMM](cutlass-blackwell-block-scaled-gemm.md)将它接到指令kind、布局/对齐、1/2SM tile与输出尺度配置；本节的Triton索引解释在该页直接复用。
 
 ## 5. 点积调用与累加如何衔接
 

@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Blackwell SM100 ingest：指令、分块与尺度布局
+
+- 完整核读固定snapshot-2026-07-02保存5009行、表1–20、README与两张2026-09-21补采尺度图；正文/两图3项哈希与登记一致，复用独立准备和Astra原件核读证据。
+- 新增[SM100块缩放GEMM](implementation/cutlass-blackwell-block-scaled-gemm.md)，沿输入类型/尺度→AB布局和alignment→指令kind/合法tile→2SM每CTA输出与cluster→512B尺度地址→epilogue D/SFD组织解释。块尺度执行页链接复用，TensorCore首段的寄存器片段说明限定于本页WMMA/mma.sync；INDEX接入。
+- 保留MXFP4 NT三种合法tile、整体tile传给两个builder、SM90软件恢复/SM100原生尺度及SM120独立条件；地址公式标按图推导。来源范围集中登记，删去重复防御性提醒，没有新增算式断言、编译或设备测试。
+- READING/SELF/计划同步：192条有依据、37条队列（12论文/20文档/5代码），本轮基线88已处理51条；下一项CuTe DSL，先按已收录目录范围判断覆盖。独立Astra正文及收尾记录review均通过，无必修项。结构/来源strict检查201知识页、712项登记，0错误/待核；6个受影响Wiki页1366条本地链接strict通过，diff及192/37记录核对通过。提交范围为本项8文件，既有Obsidian改动保留；没有执行上游或新增运行测试。
+
 ## 2026-10-15 · CUTLASS 3 API ingest：类型组装与参数分工
 
 - 完整读取snapshot-2026-07-02保存493行/类型声明及配图、README，复用本批2项正文/图哈希核对；现有矩阵乘、TensorCore、布局/配置/流水正文已有基础，缺少类型组装与参数分工主线。
