@@ -2,6 +2,13 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Triton-Puzzles研读：练习骨架与已有覆盖
+
+- 完整静态研读固定4d794abed02292081500ebf4b1e35cd5fc5fb019的条目/根README、notebook49cell及全部16内嵌PNG；四个source文件的身份/保存证明复用原登记。4个访存demo有实现，12题kernel仍为TODO，19代码cell无保存execution_count/outputs，未将图示或题目目标当已实现/通过。
+- 核对spec注解造数、nelem/B网格、trace/viz与打印式allclose；launcher无诊断返回，不能由failures分支推定已核访存检查。Puzzle12为低nibble优先、G8的scale/整数零点教学格式，参考先物化浮点权重；没有量化/pack或融合kernel，未套成AWQ格式。
+- 与[语言](fundamentals/operators/triton-language-and-compilation.md)、[计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)、[布局](fundamentals/operators/tensor-layout-and-kernel-contracts.md)、[反量化](implementation/weight-only-dequant-kernels.md)和[验证](implementation/kernel-correctness-and-benchmarking.md)对照，已有机制解释充分；保留教材学习用途，不新增重复正文、INDEX或sources。不执行notebook，不补外部triton-viz/依赖或GPU结论。
+- READING/SELF/计划同步：207条有依据、22条队列（12论文/7文档/3代码），本轮基线88已处理66条，第20批六项选定来源范围完成；下一项第21批系统课程材料。独立Astra review通过，管理链接检查通过（2文件、955条本地链接），git diff --check通过；结构/来源复用上一项203知识页、728项有效结果。提交本项4管理文件，Obsidian改动保留。
+
 ## 2026-10-15 · Triton Fused Attention ingest：梯度拥有者与log2统计
 
 - 完整核读snapshot-2026-07-02保存764行/代码、48行README，包括前向/descriptor/配置、预处理/反向两扫描、包装/测试/性能及保存输出，无本地附件；网页与论文v1、后续CUDA库commit分别登记。
