@@ -8,14 +8,14 @@ tags:
   - data-format
 sources:
   - raw/repositories/2026-09-21/quip
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # QuIP 的逆序 LDLQ、坐标恢复与浮点保存路径
 
-本页核固定ac92cfc7a22f6100009e2caf53bb72257d3f3184的OPT校准、预处理、Balance/LDLQ与LDLQ_RG、lazy分块、默认保存/加载及必要网格/评测入口；等价检查脚本只读其配置。未核完整Llama/zeroShot、allbal/ADMM、GPTQ设备运行或legacy Quant3Linear/CUDA消费，未导入上游、安装依赖或运行模型/GPU。论文理论与原结果由[QuIP](../methods/quip.md)承接。
+QuIP 的所选 OPT 实现先收集线性层输入统计，再缩放和旋转权重，用 LDLQ 逐列选低位宽码，最后**离线还原成原坐标的稠密浮点权重**。普通 Linear 继续读取这个矩阵；默认 state_dict 不保存二位打包载荷或推理时的变换参数。因此，这条路径可评估量化近似的模型质量，不能直接交付 W2 的物理压缩与相应速度、内存收益。论文目标和理论见 [QuIP](../methods/quip.md)。
 
-所选OPT路径将变换坐标内的低位宽近似**离线恢复成原坐标稠密浮点权重**，普通Linear继续消费它，默认state_dict没有保存二位packed主体或推理变换。它可表达某种量化近似的模型质量；不直接交付W2物理压缩或相同速度/内存收益。
+下文沿校准→变换→选码→还原保存→评测说明这条过程。依据固定 `ac92cfc7a22f6100009e2caf53bb72257d3f3184` 的 OPT、Balance/LDLQ、LDLQ_RG、lazy 分块及必要网格/评测入口；等价检查脚本只读其配置。未核完整 Llama/zeroShot、allbal/ADMM、GPTQ 设备运行或 legacy Quant3Linear/CUDA 消费，未导入上游、安装依赖或运行模型/GPU。
 
 ## 1. 校准来自逐块量化前缀
 
@@ -29,6 +29,8 @@ find_layers按**精确type**选择nn.Linear/Conv2d，Balance拒绝Conv2d及Trans
 
 ## 2. 坐标和H的修改有具体顺序
 
+以下权重 $W\in\mathbb R^{m\times n}$ 的行对应输出、列对应输入，$H\in\mathbb R^{n\times n}$ 是输入统计；$A$ 表示输入列的对角尺度，$U/V$ 分别作用于输出/输入坐标。预处理要同时修改 W 和 H，才能在新坐标中衡量同一个重构问题。
+
 preproc先可选rescale，再proj，最后gptqH处理。rescale将H除以max(abs(H))，对H对角和 $W^\top W$ 对角设1e-8下界，以四次方根比例得到列尺度A；W右乘A，H两侧除A。退化全零H在最初max归一化的运行行为未验证，后面的下界不能自动证明所有输入安全。
 
 proj生成两个输出/输入维正交矩阵U/V，将W变为 $UWA V^\top$；先将H按trace归一化并加1e-2 I，再做 $VHV^\top$。源码实际把butterfly作用于eye构成稠密U/V，随后普通矩阵乘；不是执行一个经核验的在线FWHT。extra0使用分块随机因子/置换，extra1为不分块的两因子/置换，extra2无置换。
@@ -39,7 +41,11 @@ proj生成两个输出/输入维正交矩阵U/V，将W变为 $UWA V^\top$；先�
 
 ## 3. 网格、逆序反馈与可选贪心分别是什么
 
+### 3.1 网格决定可表示值
+
 qfn=b在已处理权重上用全矩阵 $s=2.4\sqrt{\operatorname{mean}W^2}+10^{-16}$，令maxq=2^b−1，将W/s从[−1,1]映射到[0,maxq]并先裁剪，随后LDLQ选整数码，恢复 $s(2q/\mathrm{maxq}-1)$。2bit时四个值为±s、±s/3，没有精确零；不能换成常见对称INT2的整数零点网格。Balance在此路径局部计算s，并不把它写回quantizer.scale；默认没有用这组元数据进行packed导出。
+
+### 3.2 逆序反馈消费已量化列的误差
 
 round_ldl以Cholesky得到下三角L，将各列除以对角，减去I，随后从最后输入列向第一列量化：
 
@@ -49,9 +55,13 @@ $$q_i=\operatorname{clip}\left(\left\lfloor w_i+(w_{\ge i}-q_{\ge i})L_{\ge i,i}
 
 默认η=0.5，整数正中点向上；unbiased使用[0,1)随机数。nearest的torch.round与此中点规则不同。输入预裁剪、输出裁剪及有限网格也限制无偏/理论最优的适用范围。round_ldl_gptqequiv则翻转H后做上三角/正序反馈；等价脚本专门用GPTQ qfn=c、Balance qfn=a、无预处理来对齐条件，没有验证普通qfn=b、所有顺序或全部低位宽模型等价。
 
+### 3.3 排序与贪心是附加选择
+
 不启用lazy_batch时，ldlqRG先对diag(H)升序排列，再逆序处理，所以高对角列先量化；结果按同一排列写回原列。普通ldlq并不自动排序。npasses默认0；开启贪心后用存储残差s计算H反馈并更新坐标，再在每轮末裁剪。round_ldl/round_ldl_block在裁剪wr后没有同步s；若裁剪改变数值且继续下一轮，s便不再等于当前wr-w，不能称为始终使用真实残差的精确坐标下降。无界网格理论也不保证有限网格迭代损失单调。普通LDL与非lazy的LDLQ_RG入口均assert禁止unbiased与非零greedy passes同时启用，CLI的提示不取消此条件。
 
 教学例：2bit码空间w=[3,0.5]、$H=\begin{bmatrix}1&1\\1&2\end{bmatrix}$，逆序LDL得[3,1]；第一贪心轮裁剪前为[4,0]、裁剪后为[3,0]，存储s仍[1,−0.5]而真实残差为[0,−0.5]。该结果与初值不同，若配置多轮便会带着失配s继续；这是静态数据流配合独立算术的例子，未执行作者函数或验证历史实验采用了多轮。
+
+### 3.4 分块改变调度，组合入口还需匹配参数
 
 普通ldlq的lazy_batch用关键字传递greedy/unbiased，默认选择128列块，从右到左推进，块内反馈和已完成右侧块反馈分开计算。实数域它是同一逆序递推的重新组织，但分块矩阵乘与舍入链不能保证逐bit等于非lazy版本。
 

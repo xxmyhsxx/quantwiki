@@ -2,7 +2,7 @@
 
 范围：2026-10-15 的 213 个知识页，分为 54 批。覆盖基础 21 页、理论 16 页、方法 97 页、综合研究 3 页、实现 76 页；不包含管理页、Skill 和 raw 原件。原件只在核验相应主张时读取。
 
-当前进度：已完整审核 25/213 页（01–06 批）；按新增的正文改善要求，已改善并复核 15/213 页，完成 4/54 批。当前推进第 05 批正文复核。先完成 01–07 批的审核、必要重写与阅读复核，再统一推送；其余批次按用户安排推进。勾选表示已改善并复核，或确认正文已充分、无需修改；仅有阅读记录或待修建议不计完成。
+当前进度：已完整审核 25/213 页（01–06 批）；按新增的正文改善要求，已改善并复核 21/213 页，完成 5/54 批。当前推进第 06 批正文改善。先完成 01–07 批的审核、必要重写与阅读复核，再统一推送；其余批次按用户安排推进。勾选表示已改善并复核，或确认正文已充分、无需修改；仅有阅读记录或待修建议不计完成。
 
 ## 审核要求
 
@@ -108,14 +108,16 @@ SpQR 方法页就地定义 m/n，说明每行指针如何摊销；将末尾堆�
 
 重点：方法目标如何对应校准、坐标恢复、打包和推理消费，避免将浮点恢复当成低位执行。
 
-- [ ] [QuIP：非相干处理与 LDLQ 二阶量化](wiki/methods/quip.md)
-- [ ] [QuIP#：Hadamard 非相干处理与 E8P 格码本](wiki/methods/quip-sharp.md)
-- [ ] [AQLM：加性码本与激活感知的联合编码](wiki/methods/aqlm.md)
-- [ ] [QuIP 的逆序 LDLQ、坐标恢复与浮点保存路径](wiki/implementation/quip-ldlq-and-coordinate-restoration.md)
-- [ ] [QuIP# 的 E8P 打包、解码与所选 Llama 路径](wiki/implementation/quip-sharp-e8p-packing-and-inference.md)
-- [ ] [AQLM 的原始校准、模型转换与 2×8 推理读取](wiki/implementation/aqlm-calibration-export-and-inference.md)
+- [x] [QuIP：非相干处理与 LDLQ 二阶量化](wiki/methods/quip.md)
+- [x] [QuIP#：Hadamard 非相干处理与 E8P 格码本](wiki/methods/quip-sharp.md)
+- [x] [AQLM：加性码本与激活感知的联合编码](wiki/methods/aqlm.md)
+- [x] [QuIP 的逆序 LDLQ、坐标恢复与浮点保存路径](wiki/implementation/quip-ldlq-and-coordinate-restoration.md)
+- [x] [QuIP# 的 E8P 打包、解码与所选 Llama 路径](wiki/implementation/quip-sharp-e8p-packing-and-inference.md)
+- [x] [AQLM 的原始校准、模型转换与 2×8 推理读取](wiki/implementation/aqlm-calibration-export-and-inference.md)
 
-审核记录（2026-10-15）：六页正文完整阅读。方法页的目标→表示→编码→执行主线与实现页的固定版本边界对应，所核内容未发现新增事实错误或必须调整的解释缺口；本批未改知识正文。
+改善与复核（2026-10-15）：六页完成解释复核。三篇方法页和 AQLM 实现页已能独立接通表示、优化、保存与执行，保留正文。两篇 QuIP 实现页重写开头，先交代整体过程和最终产物，再说明核读范围；原 QuIP 页补定义 W/H/A/U/V，拆开网格、逆序反馈、贪心和分块；QuIP# 页拆开逻辑码、物理打包、存储预算与测速范围。独有公式、代码差异与限制全部保留。
+
+改后依据正文复述了三种路径：原 QuIP 默认还原浮点权重，QuIP# 保存压缩码并按输入行数分派，AQLM 分开校准/转换/读取。各自的优化目标、载荷和运行条件已能对应。
 
 - QuIP 的上三角正序说明与源码下三角逆序约定分别自洽；实现页已说明预处理、浮点恢复和默认保存不构成物理 W2 压缩。已有 meta flag 字段差异、贪心裁剪后残差失配和 LDLQ_RG/lazy 位置参数错位均能对应源码，不再当作本次新发现。
 - QuIP# 已区分 16 bit 逻辑码、重排的 int64 载荷、1 KiB 底表与 Python 完整参考表，也区分单行融合解码、多行展开及训练缓存。有限 E8P 与统一二阶矩定理条件、实数变换向量与初始正交条件的差别已写明。
@@ -123,9 +125,9 @@ SpQR 方法页就地定义 m/n，说明每行指针如何摊销；将末尾堆�
 
 原件核验：QuIP v2 的线性反馈最优性条件和代表 OPT/PPL/时延表；固定 `ac92cfc7` 的逆序递推、贪心残差、lazy 参数、meta flag、postproc/error_compute 顺序及默认保存。QuIP# v2 的 BlockLDLQ 条件、E8P 模式/符号/平移构造与残差码本、4096 上下文消融表；固定 `1d8f873e` 的 maybe_pack_idxs、单/多行 forward、cache_WH 及 None 变换矩阵访问。AQLM v4 的加性表示、MRF 展开、交替优化/块微调、主表与微调/生成表；固定 `e79a896e` 的 token 加权 XTX、Adam/早停、HF 有符号转换及 args.pt 依赖、PV 条件分支、输入数分发和所选 CUDA 2×8 低精度运算。独立复核坐标恢复、误差展开、贪心教学例和主体/码本/尺度计费。第04批公共页的 E8P 与加性预算得到交叉支持。
 
-未重核全部 Hadamard 常量/概率证明、离线统计及微调调用链、各 CUDA host/同步/归约、beam search 全实现、模型适配器或历史实验协议；页面原有“已核”描述不等于本轮全部重新审计。未运行上游或实验。链接检查：6 页、32 项通过；本批互链与相关公共表示已核，其余目标全文未逐条阅读。
+未重核全部 Hadamard 常量/概率证明、离线统计及微调调用链、各 CUDA host/同步/归约、beam search 全实现、模型适配器或历史实验协议；页面原有“已核”描述不等于本轮全部重新审计。未运行上游或实验。改后链接检查：6 页、32 项和差异空白检查通过；本批互链与相关公共表示已核，其余目标全文未逐条阅读。
 
-提交：本批记录以 `review: audit batch 05 codebooks and inference paths` 提交到本地 Git；01–07 完成后统一推送。
+提交：`docs: explain batch 05 quantization artifact flow`；此前审核提交 `ce9f404` 的有效证据已纳入本记录。
 
 ## 06 · 因子、多精度与其他编码（4 页）
 

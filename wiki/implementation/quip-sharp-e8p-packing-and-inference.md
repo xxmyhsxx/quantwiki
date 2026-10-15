@@ -8,14 +8,16 @@ tags:
   - gpu-kernel
 sources:
   - raw/repositories/2026-09-21/quip-sharp
-updated: 2026-10-12
+updated: 2026-10-15
 ---
 
 # QuIP# 的 E8P 打包、解码与所选 Llama 路径
 
-本页核固定1d8f873e9a2a8b86b12bb1064c312c5689b77d98的Llama、E8P12二位、had、rank0主链：离线统计→BlockLDLQ/块内微调→分层产物/HF容器→所选单行CUDA消费与多行恢复。读取必要Hadamard入口与形状条件，未逐项审计大型常量矩阵、整仓attention/多GPU协议或3/4bit残差码本，未导入上游、安装、编译或运行模型/GPU。论文机制和原实验由[QuIP#](../methods/quip-sharp.md)承接。
+QuIP# 的所选 Llama 实现把变换坐标中的权重保存为 E8P 索引，同时保留恢复所需的尺度与变换向量。加载时建立自定义 QuantizedLinear：单行输入在 CUDA kernel 内边解码边乘加，多行输入先展开 FP16 权重再做矩阵乘。两条路径读取同一压缩表示，但临时内存和计算组织不同。
 
-这条路径保存E8P索引及变换向量，加载自定义QuantizedLinear；单行输入在kernel内解码，多行输入先展开FP16权重再矩阵乘。与[原QuIP所选OPT的浮点保存](quip-ldlq-and-coordinate-restoration.md)相比，它已具备所选packed消费代码，但这仍不是本轮运行验收。
+完整过程是离线收集统计→变换并用 BlockLDLQ 选码/微调→打包并保存模型→加载后按输入行数选择执行路径。与[原 QuIP 所选 OPT 的浮点保存](quip-ldlq-and-coordinate-restoration.md)相比，这里保留了压缩主体并有对应读取代码。论文机制与原实验见 [QuIP#](../methods/quip-sharp.md)。
+
+本页静态核读固定 `1d8f873e9a2a8b86b12bb1064c312c5689b77d98` 的 Llama、E8P12 二位、had、rank0 主链及必要 Hadamard 入口和形状条件。未逐项审计大型常量矩阵、整仓 attention/多 GPU 协议或 3/4 bit 残差码本，未导入上游、安装、编译或运行模型/GPU；代码路径存在不等于本轮完成运行验收。
 
 ## 1. 离线保存的协方差怎样回到重构二阶矩
 
@@ -43,11 +45,17 @@ Wscale由除尺度前的处理权重RMS再除scale_override或码本opt_scale（
 
 ## 3. 逻辑16位索引如何变成kernel载荷
 
+### 3.1 逻辑索引怎样生成八个数
+
 E8P12有codesz8、packsz4、idx_dtype int64、version1。逻辑上每8个权重选一个16bit码字；int64是**四个码字重排后的容器**，不是每个权重或每个码字都占64bit。
 
 底表256个int32，共1024字节；每个word放8个4bit分量，先按[0,2,4,6,1,3,5,7]重排，利用模式奇偶性修正末分量，再将半整数a编码为2a+8。逻辑码c的高8位选模式，低8位b表示符号；p为这8位的XOR，实际符号用b XOR p（翻转最低位），p还选择−1/4或+1/4。因此不能把代码低8位直接解释为8个独立符号，再假设有一个另外存放的平移位。（latticee8_padded12.py的get_packed_abs_grid/get_full_grid。）
 
+### 3.2 四个索引怎样按 tile 打包
+
 maybe_pack_idxs一次取相邻两输出行、相邻两8D输入块的四个逻辑码。64bit的低32位按顺序放四个模式字节；高32位将四个码的符号位交错，第j个符号位位于4j+i。随后以16输出行×64输入列tile重排，最终Qidxs为m×(n/32)个int64，传kernel时view为[m/16,n/64,8,4]。理想主体位数仍为 $64m(n/32)=2mn$；不能用连续uint16原顺序数组替代同容量的物理格式。共享解释见[逻辑码与载荷](../theory/codebook-quantization-and-bit-budget.md#4.3%20%E9%80%BB%E8%BE%91%E7%A0%81%E5%AD%97%E4%B8%8E%E7%89%A9%E7%90%86%E6%89%93%E5%8C%85%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%88%AB%E6%A0%B8%E5%AF%B9)。
+
+### 3.3 码率与运行内存分别计费
 
 如m=16、n=64，32个int64占256字节，表示1024个权重；展开FP16为2048字节。这个8倍只针对理想主体，不包含SU/SV、可选scaleWH、融合尺度、码本、未量化层、容器或运行临时空间。模块导入仍生成完整65,536×8的FP32参考网格；1KiB描述的是紧凑底表，不能扩大为整个Python进程的码本相关内存。
 
@@ -71,11 +79,15 @@ get_hadK只支持2幂及指定K×2幂维度，K表包含28、52、172等；实�
 
 ## 5. CUDA恢复和乘加用什么类型
 
+### 5.1 接口条件与数值恢复
+
 所选host检查CUDA/contiguous，FP16输入、int64索引、int32底表，n%64=0、m%16=0、m/n<65536；这比量化入口的m%2/n%4更严格，buffered又另需n%128。文件存在不证明任意shape或设备满足接口，未核所有外部调用/设备组合。
 
 quiptools_e8p_gemv.cu将每int64作为uint2：一半是四模式、一半是交错符号；XOR折叠得到四个奇偶bit，用nibble XOR恢复符号。lop3、移位和FP16位模板配合add.f16x2恢复四分之一网格；随后mma.sync.aligned.m16n8k16用FP16权重/输入、FP32累加。32×32线程按输入64列块分工，对16行输出用FP32 atomicAdd汇合；这不是INT2整数乘法，原子汇合也不保证逐bit确定的归约顺序。
 
 注释掉的异步拷贝/共享权重流水不是实际执行证据。多行分支同样按packed布局解码，但将half2写成完整FP16矩阵再调用PyTorch matmul，不能将单行融合kernel的临时存储或速度概括为所有prefill/decode。
+
+### 5.2 测速脚本覆盖什么
 
 eval_speed默认BS1、seqlen1、100次，重复同一token张量，use_cache=False；预热后在循环前后同步设备，将samples次model调用的总时长除以samples，得到平均调用时间。默认可用CUDA graph重放。loader固定attn_implementation='sdpa'，所读use_flash_attn参数没有参与选择。该脚本测量范围不是含真实历史KV的完整generate，也不自动等同论文4090或README RTX6000 ADA数据。test_e8p/benchmark_e8p使用另一组旧接口/输入，且正确性断言或计时被注释，不能用“有测试脚本”代替所选packed GEMV验收。
 
