@@ -7,6 +7,7 @@ tags:
   - matmul
   - reduction
 sources:
+  - raw/articles/2026-09-21/triton-matmul
   - raw/articles/2026-09-21/nvidia-cutlass-introduction
   - raw/articles/2026-09-21/cutlass-efficient-gemm
   - raw/articles/2026-09-24/cuda-softmax-worklog
@@ -172,7 +173,13 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 [FlashAttention](../../theory/flash-attention-tiling-and-recomputation.md)将两次矩阵乘与行归一化共同分块：用逐行统计合并key块，避免物化完整概率矩阵；训练反向再重算局部score/概率，减少保存和读取二次规模中间值。它展示了增加算术仍可能减少访存的情形，稠密算术量仍为$O(N^2d)$；IO定理的容量范围与实测速度必须分别核对。（原论文arXiv:2205.14135v2 §3.1–3.2、附录B/C。）
 
-矩阵乘教程的 grouped program ID 映射则促使相邻输出 tile 复用 L2 中的 A/B 块。它重新安排工作与数据局部性，不改变矩阵的数学结果，也不承诺 GPU 严格按照 program ID 次序执行；不能把这种排序当作同步依赖。
+矩阵乘教程的 grouped program ID 将输出tile按M方向最多G行分组，组内先走M方向，再换到下一个N方向tile。设输出网格为 $P_M=\lceil M/B_M\rceil$、$P_N=\lceil N/B_N\rceil$，有效program号为p，则组号 $g=\lfloor p/(GP_N)\rfloor$、首行 $m_0=gG$，实际组高 $r=\min(P_M-m_0,G)$。令 $u=p\bmod(GP_N)$，该program负责
+
+$$p_m=m_0+(u\bmod r),\qquad p_n=\lfloor u/r\rfloor.$$
+
+末组不足G行时用真实高度r解码，保持每个输出tile有唯一拥有者；各输出仍各自完成整个K归约。这个映射希望邻近任务复用相同A行块与B列块。（Matrix Multiplication “L2 Cache Optimizations”及 `matmul_kernel`。）
+
+来源的9×9块示意比较前9个输出：row-major的一整行需要A的一行9块及B的81块；grouped的3×3输出区域需要A三行27块及B三列27块。因此90→54计的是这片区域所需的**不同输入块集合**，不是各program的dot工作量、实测L2/DRAM事务数或速度比。实际收益由工作集、缓存与调度共同决定；GPU不承诺严格按program ID次序执行，排序不能用来建立同步依赖。
 
 进一步选择 tile、warp 数和流水阶段时，需要同时计算片上资源、尾部浪费与工作块数量，见 [Kernel 配置选择与自动调优](../../implementation/kernel-configuration-and-autotuning.md)。把加载与当前 tile 计算重叠时，还要显式维护完成等待和缓冲生命周期，见 [异步拷贝与多级流水](../../implementation/gpu-async-copy-pipelines.md)。
 
@@ -186,6 +193,7 @@ Triton softmax 教程的逐步 PyTorch 实现总计读写 $8MN+4M$ 个元素，�
 
 | 来源 | 版本或快照 | 核对范围 |
 | --- | --- | --- |
+| Matrix Multiplication — Triton documentation（`https://triton-lang.org/main/getting-started/tutorials/03-matrix-multiplication.html`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:37:55+08:00`，唯一图于2026-09-21补采 | 完整443行正文/代码、README与唯一图；使用grouped映射、末组和输入块集合解释，必要kernel/wrapper与下列固定源码对照。测试仅512方阵并打印allclose，性能表为方阵256–4096，FP8只有Triton线；未把表格当排序单因素对照或本地运行结果。 |
 | CUTLASS: Fast Linear Algebra in CUDA C++（`https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/`） | `snapshot-2026-07-02`，取得于 `2026-07-02T02:41:08+08:00`，10图补采于2026-09-21 | 完整447行/README与10图；正文是preview/v0.1.1链接范围，页首有2018-05-21更新。使用常规SIMT线程外积/寄存器复用，公式按正文展开；旧API/性能不推广为现代支持，未取外链实现或运行。 |
 | Efficient GEMM in CUDA（`https://docs.nvidia.com/cutlass/latest/media/docs/cpp/efficient_gemm.html`） | `snapshot-2026-07-02`，正文取得于 `2026-07-02T02:41:08+08:00`，3图补采于2026-09-21 | 保存175行/3图；epilogue、两级缓冲、拆K和Hopper设计；后处理反例为整理者推导，未取外链源码或运行。 |
 | Learning CUDA by optimizing softmax: A worklog（`https://maharshi.bearblog.dev/optimizing-softmax-cuda/`） | `indexed-text-snapshot-2026-09-24`，取得于 `2026-09-24T19:49:18+08:00` | 保存505行索引文本与所列对应3图；online/并行归约及原地/片段边界，合并公式与两元素反例为整理者推导；原HTML采集时404，未运行。 |

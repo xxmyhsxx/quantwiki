@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Triton Matmul ingest：分组任务映射与缓存复用
+
+- 完整核读snapshot-2026-07-02保存443行正文/代码、README与唯一2026-09-21补采图，并定向对照已归档81a46fa0源码kernel/wrapper；网页、源码和图像补采身份分别保留。
+- [计算模式](fundamentals/operators/gpu-kernel-computation-patterns.md)第4节展开grouped program ID：M方向G行分组、组内M先变化、末组真实高度r解码；用来源9×9图解释90→54为前9输出所需的不同输入块集合，保留真实缓存/调度与同步条件。未减少数学K归约或推定实际访存/速度；已有tile、mask、指针、精度和autotune覆盖复用，不新建页/测试/排行。
+- INDEX/READING/SELF/计划同步：203条有依据、26条队列（12论文/10文档/4代码），本轮基线88已处理62条；下一项Triton Group GEMM。独立Astra原件/正文及记录review通过，无必修项；结构/来源strict检查203知识页、724项登记，0错误/待核，4个受影响Wiki页1394条本地链接strict及diff检查通过；203/58/26记录与12/10/4分类数相符。未新增测试或执行上游/编译/GPU，提交本项6文件，Obsidian改动保留。
+
 ## 2026-10-15 · Triton Introduction ingest：块级数据流与编译职责
 
 - 完整核读snapshot-2026-07-02保存97行、51行README与两张2026-09-21补采图；网页快照与独立Triton源码commit身份分别登记，未据共同归档说明合称同一版本。
