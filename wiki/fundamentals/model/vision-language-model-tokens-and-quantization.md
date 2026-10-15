@@ -185,6 +185,10 @@ Thinker之后的文字/语音依赖、音画时间对齐和code→波形的窗�
 
 物理 gather 后还需决定 position IDs。[LayerPos](../../methods/layerpos.md) 区分原编号的稀疏位置与重新连续编号；它们改变幸存 token 的相对 RoPE 距离，并在感知和定位任务上产生不同取舍。位置策略需贯穿每层 prefill 与 decode，不能仅靠保持序列顺序保证计算关系不变。删除数、删除深度、删除集合与位置策略是四个应分别控制的变量。
 
+[TensorRT Edge DART接入](../../implementation/visual-token-pruning-runtime-integration.md)给出同一keep-list如何更新embedding、DeepStack、mRoPE续行与draft输入的实例；共同子序列需要落实到全部消费者。
+
+[MWOP](../../methods/mwop.md)则保留序列位置，分别减少每头的模态交互与共享FFN的模态执行通道。交互数、执行宽度、序列长度和权重存储是不同预算。
+
 ### 7.1 attention 总量、集中度与所关注对象是三件事
 
 [SAPrune](../../methods/saprune.md) 用动作 query 的视觉 top-$k$ attention mass 选择剪枝层。对于某个 query，或相同归约规则下跨 query/head 的平均权重，设视觉权重为 $a_i\ge0$、视觉总量为 $M_v=\sum_{i\in V}a_i>0$。令 $p_i=a_i/M_v$，就有下面的直接分解：
@@ -220,6 +224,16 @@ $$
 
 [AKVQ-VL](../../methods/akvq-vl.md) 则保留 token 集合，按 attention 层模式保护文本或 pivot 的 KV 精度：TSA 层的文本主要 4 bit，PSA 层的 pivot 与 recent 用 16 bit，其余历史主要 2 bit。它的早层文本显著、后层枢纽显著是特定模型观测，原文中也有不出现 TSA 的骨干。模态标签、attention 代理、激活幅值、可删除性和量化敏感度应各自说明证据，不能共用一个“重要性”标签便认为可以直接交换策略。
 [SpikeMLLM](../../methods/spikemllm.md)进一步改变激活的执行表示：按模态/层分配时间步，将量化整数分解成带符号的幅度位脉冲。它保留token集合，表示等价、任务质量与专用硬件收益分别核对。
+
+## 9. 视觉encoder输入、LLM长度与特征码率分别计账
+
+| 预算 | 改变什么 | 代表机制 |
+| --- | --- | --- |
+| 进入视觉encoder的patch数 | 视觉端实际编码的输入集合 | [CoVisco](../../methods/covisco.md)的codec候选选择 |
+| 送入LLM的视觉长度 | prefill交互与后续KV的位置数量 | CoVisco的abstract/细节接口，或前述物理子集选择 |
+| 每个视觉向量的编码码率 | 保存或传送特征的payload | [RDTok](../../methods/rdtok.md)的有限网格率失真分配 |
+
+CoVisco的短abstract接口经过训练，所选输入patch仍参与视觉encoder；RDTok则保留全部位置，即使零码率重建为均值也不等于删行。减少payload不能直接换算为LLM attention/KV收益，减少送入LLM的视觉长度也不能直接按比例削减先前视觉计算。
 
 ## 来源身份
 

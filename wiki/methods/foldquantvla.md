@@ -9,7 +9,7 @@ tags:
 sources:
   - raw/papers/2026-09-28/foldquantvla
   - raw/repositories/2026-09-28/foldquantvla
-updated: 2026-09-28
+updated: 2026-10-15
 ---
 
 # FoldQuantVLA：共享坐标一致性与原生整数动作推理
@@ -21,6 +21,8 @@ FoldQuantVLA 把同一激活变换贯穿校准、权重舍入与 TensorRT 整数
 ## 1. 动作推理为什么需要独立验证
 
 一次策略查询以图像、语言、状态和初始噪声为条件，输出 $H\times d_a$ 的动作块；控制器执行前 $K\le H$ 个动作后重新观测。GR00T 的实验动作专家迭代 4 次，$H=16$；π0.5 迭代 10 次，$H=10$。因此一次观测到动作的延迟不等于单次专家迭代延迟，动作供给率也不等于闭环反馈频率。
+
+[CPU动作块执行](../implementation/vla-cpu-action-chunk-execution.md)进一步给出固定延迟下lagged与time-aligned的供给窗口条件，并追踪指令缓存到当前观测/动作的消费链；这些预算与本页整数推理机制分别使用。
 
 量化误差会改变动作，进而改变下一次观测。固定观测下与浮点输出接近，只能筛查局部数值退化，不能证明轨迹或成功率不变。
 

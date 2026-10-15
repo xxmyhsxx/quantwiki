@@ -227,6 +227,9 @@ sources: []
 | [ZeroQuant：逐组权重、逐 token 激活与逐层蒸馏](methods/zeroquant.md) | 8 bit 量化到十亿参数规模时，精度损失主要来自两个数值事实：不同 token 的激活范围相差很大，不同输出行的权重范围也相差很大。 |
 | [医学LLaVA压缩：删层、恢复与AWQ](methods/medical-llava-prune-sft-quantize.md) | 输出相似度评分与恢复顺序、领域judge和压缩/速度对照的条件。 |
 | [SpikeMLLM：模态时间步与脉冲编码](methods/spikemllm.md) | 量化整数的单位/位权展开、MED预算与专用硬件证据。 |
+| [MWOP：模态路径与FFN执行宽度](methods/mwop.md) | 贡献敏感度代理、实际归一化、mask预算与恢复候选的关系。 |
+| [CoVisco：摘要接口与双层选择](methods/covisco.md) | codec输入、分段摘要通信和LLM细节预算怎样配合。 |
+| [RDTok：不依赖问题的特征码率](methods/rdtok.md) | 保留位置的有限网格DP、系数/物理预算与跨问题复用。 |
 
 ### 研究抽象
 
@@ -293,6 +296,8 @@ sources: []
 | [Hopper BF16 GEMM：TMA、WGMMA 与缓冲复用](implementation/hopper-gemm-tma-wgmma-pipeline.md) | 从 full/empty 队列贯通 WGMMA、资源/局部性和输出复用；对照固定11/12的实际同步条件与驱动。 |
 | [GB300 NVFP4 GEMM：输入双环、TMEM 累加与输出复用](implementation/blackwell-nvfp4-tmem-execution.md) | 标准FP4/尺度怎样经双环进入TMEM，部分重叠的累加区怎样释放，以及调度与计时覆盖范围。 |
 | [算子正确性与性能测量：参考结果、误差和计时边界](implementation/kernel-correctness-and-benchmarking.md) | 选择验证用例并界定 GPU 计时；用Softmax读数区分速度比、耗时降幅与调用范围。 |
+| [VLA的CPU动作块执行](implementation/vla-cpu-action-chunk-execution.md) | 动作窗口、指令缓存、当前视觉与加载/查询W8A8的主线。 |
+| [视觉token剪枝的运行接入](implementation/visual-token-pruning-runtime-integration.md) | keep-list怎样贯穿base/draft、位置、DeepStack和紧凑缓存。 |
 | [模型生成Kernel的任务与评测](implementation/llm-generated-kernel-evaluation.md) | 全任务/负载/任务族的统计分母、真实输入与状态、数值门、搜索预算和离线选择。 |
 | [GGUF 与块量化存储格式](implementation/gguf-block-quantization-formats.md) | 论文里的量化方案要落到文件，还需要回答一组工程问题：权重怎么分块、每块保存哪些元数据、文件如何描述张量与模型、量化工具怎样按张量选择格式、以及校准统计在哪里参与。 |
 | [量化模型的部署框架与后端支持](implementation/quantized-llm-deployment-backends.md) | 量化方法给出的是算法与一串参数；要让模型真正跑起来，还需要格式、加载路径、内核与运行场景四段配置同时对上。 |

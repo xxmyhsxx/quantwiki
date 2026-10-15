@@ -1635,3 +1635,11 @@
 - 新增[医学删层恢复](methods/medical-llava-prune-sft-quantize.md)：完整答案→MiniLM相似度、整层删除/恢复/权重量化的对象与顺序，两次QLoRA配置、域数据与judge分别说明。保留原件排序方向、参数身份及4.2×与延迟表冲突；百分化1–4评价不改写成诊断正确率。
 - 新增[SpikeMLLM](methods/spikemllm.md)：标准单位脉冲与polar位权编码、尺度/去极端级和符号条件、non-polar差异、MED模态/层预算；用线性展开区分离散表示等价与FP16任务质量。MAC/AC/位宽代理、PE位门控与RTL/周期模型对A800实测分别解释，25.8×按功率比处理，不作GPU算法加速或同任务能效结论。
 - VLM公共入口与INDEX/READING/SELF/计划同步220条有依据、9条队列（4论文/2文档/3代码），本轮基线88已处理79条；第25批选定来源范围完成，第24批四论文/三代码/两文档继续。独立Sol review通过；结构/来源检查通过（208知识页、744项来源），受影响链接检查通过（6文件、1492条本地链接），git diff --check通过。未执行作者软件/RTL/模型或GPU，不新增测试；提交8文件，Obsidian改动保留。
+
+## 2026-10-15 · 视觉预算与VLA接入：原88条队列收尾
+
+- 第24批九项按固定版本完成：vla.simd v1/代码7354b6d7/collection快照、MWOP v1、RDTok v1、CoVisco v1/代码604cd70d、Edge DART文档0.11.0/同版代码e649dadc。各来源README与有效保存证明复用；论文主文/必要附录及关键原件、所列代码主线实际核读，未将保存文件数或提取文本等同全图/全库语义覆盖。
+- 新增[VLA CPU执行](implementation/vla-cpu-action-chunk-execution.md)、[MWOP](methods/mwop.md)、[CoVisco](methods/covisco.md)、[RDTok](methods/rdtok.md)、[DART运行接入](implementation/visual-token-pruning-runtime-integration.md)五页。分别讲动作窗口/缓存/量化、模态执行宽度与恢复、native摘要/输入输出两层选择、保留位置的特征码率DP、共同keep-list/base-draft位置接口。collection只有八仓库索引，已有机制可承接，无需新增正文或sources。
+- 保留独有条件与反例：MWOP贡献gate不含实际softmax重归一化，配置选取使用full benchmark；CoVisco selector仅在所用模式执行、codec外部缺口/40%soft目标/eval shift；RDTok有限source目标最优不扩成真实packing或未来任务最优；VLA供给率不当反馈频率，DART共同成功题集与token ratio不当实测全任务速度。未执行上游、训练/模型/机器人/GPU或新增测试。
+- 公共VLM/FoldQuantVLA与INDEX/READING/SELF/计划同步：**229条有依据、58条历史范围未知、0条待核；原88条全部按实际范围完成。** 对照 `1bb2565028724f0d3445b846af462a66f5ee0f26`的29论文/48文档/11代码逐项核身份：此前79+本批9唯一覆盖全部88，无漏失/重复销项/其他来源混入；18处版本显示补充保留原固定身份，58条历史整行未改变。修正首轮140历史计数与SELF剩余摘要。
+- 独立Sol五页内容及整批管理/阅读路径review通过，修正CoVisco selector适用范围与视觉输入长度措辞。全库机械检查通过（213知识页、752项来源、4185条本地链接；138外链仅登记未访问），errors/warnings均0；基线覆盖复核为141/58/88→229/58/0，原88全部唯一对应，来源集合及58条历史整行保持一致；git diff --check通过。提交12文件，保留Obsidian改动。
