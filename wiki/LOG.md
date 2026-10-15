@@ -2,6 +2,12 @@
 
 记录修改、原因、检查结果与遗留影响，同批变动合并记录。各条范围与计数对应当时版本；规则见 [README](README.md)，阅读入口见 [INDEX](INDEX.md)。
 
+## 2026-10-15 · Triton Introduction ingest：块级数据流与编译职责
+
+- 完整核读snapshot-2026-07-02保存97行、51行README与两张2026-09-21补采图；网页快照与独立Triton源码commit身份分别登记，未据共同归档说明合称同一版本。
+- [语言页](fundamentals/operators/triton-language-and-compilation.md)开头补编译器依据控制流/数据流静态安排迭代块的设计说明，连接已有逻辑张量到线程/存储的分工；program内工作安排与运行时CTA调度分别解释。现有分块GEMM、逻辑shape/线程及语言语义覆盖充分，不新建页或复制伪代码/优化能力清单。
+- INDEX/READING/SELF/计划同步：202条有依据、27条队列（12论文/11文档/4代码），本轮基线88已处理61条；下一项Triton Matrix Multiplication。独立Astra原件/正文及记录review通过，无必修项；结构/来源strict检查203知识页、723项登记，0错误/待核，4个受影响Wiki页1381条本地链接strict及diff检查通过；202/58/27记录与12/11/4分类数相符。不新增测试或执行上游/编译/GPU，提交本项6文件，Obsidian改动保留。
+
 ## 2026-10-15 · fast.cu ingest：H100固定路径与GB300 TMEM
 
 - 核读固定commit `2dfe5e26aecfd9e5f27bf9d5837deea01acda24b`：H100驱动/M11与11→12全部差异，必要早期rung差异及experimental选段；GB300输入准备/runner/shell/r0完整、r9所选helper/几何/完整K组/尾入口与收尾/输出/调度。34文件保存完整性复用有效归档证明，未升级为全部分支语义核验；快照晚于H100文章。

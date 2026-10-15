@@ -8,12 +8,15 @@ tags:
   - floating-point
 sources:
   - raw/repositories/2026-09-21/triton
-updated: 2026-10-04
+  - raw/articles/2026-09-21/triton-introduction
+updated: 2026-10-15
 ---
 
 # Triton 语言与编译语义：从逻辑张量到 GPU Kernel
 
-Triton 用逻辑张量块表达 GPU 计算，编译器再安排元素到线程、warp、寄存器与存储操作。写法接近 Python，不表示按 Python 逐元素解释执行；逻辑 shape、物理线程数、数据类型和编译特化分别影响含义。本页按固定 commit `81a46fa0…` 核对语言与运行时，示例为向量加法教程的整理者改写，未执行 GPU 或 interpreter。
+Triton 用逻辑张量块表达 GPU 计算，编译器再安排元素到线程、warp、寄存器与存储操作。Introduction 将这项编译职责描述为块级数据流分析（block-level data-flow analysis）：依据 program 的控制流与数据流，静态安排迭代块的工作，以利用局部性与并行性。这里安排的是 program 内的工作，运行时 CTA 的调度与驻留由另一层机制决定。（Introduction “Challenges”。）
+
+写法接近 Python，不表示按 Python 逐元素解释执行；逻辑 shape、物理线程数、数据类型和编译特化分别影响含义。本页的语言规则与运行时按固定 commit `81a46fa0…` 核对，示例为向量加法教程的整理者改写，未执行 GPU 或 interpreter。
 
 [张量布局与接口](tensor-layout-and-kernel-contracts.md)已解释 stride、mask 和 program 工作划分；本页补充读懂、修改这些设备函数时需要的语言规则。[计算模式](gpu-kernel-computation-patterns.md)负责算子算法与分块，不重复于此。
 
@@ -132,3 +135,4 @@ JIT 编译缓存回答“这个版本的二进制能否复用”；autotune 缓�
 
 - Triton 官方仓库（`https://github.com/triton-lang/triton/tree/81a46fa0c04526e5df55a018ecfab72ff922f592`），完整 commit `81a46fa0c04526e5df55a018ecfab72ff922f592`。核读 `python/tutorials/01-vector-add.py`、`docs/python-api/triton-semantics.rst`、`docs/programming-guide/chapter-3/debugging.rst`、`python/triton/language/core.py/semantic.py` 与 `python/triton/runtime/jit.py` 的正文所列接口和关键路径。
 - 语言规则与接口均按该固定版本，vLLM/SGLang 或其他环境的实际依赖版本须另行核对。
+- Introduction — Triton documentation（`https://triton-lang.org/main/programming-guide/chapter-1/introduction.html`），`snapshot-2026-07-02`，取得于 `2026-07-02T02:37:55+08:00`。完整核读97行保存正文、51行README与两张2026-09-21补采图；使用blocked-program与块级数据流的设计说明，其矩阵乘为伪代码，未据配图指定lane布局或实际指令。网页快照与上列源码commit分别识别。
